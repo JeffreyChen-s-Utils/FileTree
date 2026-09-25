@@ -1,4 +1,8 @@
-"""Run a scan and its analysis on a background thread so the window stays responsive."""
+"""Run a scan and its analysis on a background thread so the window stays responsive.
+
+The worker hands the root out (``started``) before any folder is read, so the
+window can show the tree while it fills in (see ``FolderTreeModel.live``).
+"""
 
 from __future__ import annotations
 
@@ -22,25 +26,28 @@ class ScanOutcome:
     largest: list[Node]
     extensions: list[ExtensionStat]
     categories: list[CategoryStat]
+    partial: bool = False
 
 
-def analyse(result: ScanResult) -> ScanOutcome:
-    """Compute the largest files and the per-type totals of a scan."""
+def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
+    """Compute the largest files and the per-type totals of a scan (``partial`` when it was stopped)."""
     largest, extensions = summarise(result.root, LARGEST_FILES_LIMIT)
-    return ScanOutcome(result, largest, extensions, category_stats(extensions))
+    return ScanOutcome(result, largest, extensions, category_stats(extensions), partial)
 
 
 class ScanWorker(QThread):
-    """Scans one folder; emits ``progressed`` while running and exactly one of the three end signals.
+    """Scans one folder: ``started(root)`` first, ``progressed`` while running, then exactly one end signal.
 
     The end signals are ``succeeded(ScanOutcome)``, ``failed(str)`` (the folder
-    could not be opened at all) and ``cancelled()``.
+    could not be opened at all) and ``cancelled(ScanOutcome | None)``, which
+    carries what was read before the stop.
     """
 
+    started = Signal(object)
     progressed = Signal(object)
     succeeded = Signal(object)
     failed = Signal(str)
-    cancelled = Signal()
+    cancelled = Signal(object)
 
     def __init__(self, path: str, options: ScanOptions, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -56,14 +63,14 @@ class ScanWorker(QThread):
         """Thread body: scan, analyse, report."""
         try:
             result = scan(self.path, options=self._options, progress=self.progressed.emit,
-                          cancel=self._cancel)
-        except ScanCancelledError:
-            self.cancelled.emit()
+                          cancel=self._cancel, on_root=self.started.emit)
+        except ScanCancelledError as stopped:
+            self.cancelled.emit(analyse(stopped.partial, partial=True) if stopped.partial else None)
             return
         except OSError as error:
             self.failed.emit(error.strerror or str(error))
             return
         if self._cancel.is_set():
-            self.cancelled.emit()
+            self.cancelled.emit(analyse(result, partial=True))
             return
         self.succeeded.emit(analyse(result))

@@ -1,7 +1,10 @@
 """The results page: the folder tree on the left, and treemap / largest files / file types / problems on the right.
 
 Selecting an entry anywhere selects it everywhere: in the tree (expanding the
-folders above it), and outlined in the treemap.
+folders above it), and outlined in the treemap. While a scan runs, the page
+already shows its tree (``show_live_root``) under a progress bar and is
+refreshed about once a second (``refresh_live``); the lists that need the whole
+tree (largest files, file types) fill in when the scan ends.
 """
 
 from __future__ import annotations
@@ -26,8 +29,10 @@ from PySide6.QtWidgets import (
 from file_tree.core.analysis import CATEGORIES, CategoryStat, category_stats, extension_stats, subtract_stats
 from file_tree.core.formatting import format_count, format_size
 from file_tree.core.node import Node
+from file_tree.core.scanner import ScanProgress
 from file_tree.gui.delegates import ShareBarDelegate
 from file_tree.gui.i18n import format_duration, tr
+from file_tree.gui.scan_bar import ScanBar
 from file_tree.gui.scan_worker import ScanOutcome
 from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel, ProblemsModel
 from file_tree.gui.tree_model import NODE_ROLE, SHARE, SIZE, FolderTreeModel
@@ -72,6 +77,8 @@ class ResultsView(QWidget):
         self._categories: list[CategoryStat] = []
         self._outcome: ScanOutcome | None = None
 
+        self.scan_bar = ScanBar()
+        self._live_ticks = 0
         self.summary = QLabel()
         self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.tree = self._build_tree()
@@ -102,18 +109,67 @@ class ResultsView(QWidget):
         """The scan shown."""
         return self._outcome
 
-    def show_outcome(self, outcome: ScanOutcome) -> None:
-        """Show a finished scan."""
-        self._outcome = outcome
-        self.tree_model.set_root(outcome.result.root)
+    def begin_scan(self) -> None:
+        """Clear the page for a new scan and show the progress bar."""
+        self._outcome = None
+        self._live_ticks = 0
+        self.tree_model.set_root(None)
+        for model in (self.largest_model, self.types_model, self.problems_model):
+            model.set_rows([])
+        self._categories = []
+        self.treemap.set_view_root(None)
+        self.scan_bar.start()
+        self._update_texts()
+
+    def show_live_root(self, root: Node) -> None:
+        """Show the tree a running scan is filling in."""
+        self.tree_model.set_root(root, live=True)
         self.tree.expand(self.tree_model.index(0, 0))
+        self.treemap.set_view_root(root)
+        self.select_node(root)
+        self._update_texts()
+
+    def refresh_live(self) -> None:
+        """Show what the running scan added since the last call (the treemap every third call)."""
+        if not self.tree_model.live:
+            return
+        self._live_ticks += 1
+        self.tree_model.refresh()
+        if self._live_ticks % 3 == 0:
+            self.treemap.invalidate()
+        self.selection_changed.emit(self.selected_node())  # its size has grown too
+
+    def show_progress(self, progress: ScanProgress) -> None:
+        """Show the running scan's latest counts in the bar and the summary line."""
+        self.scan_bar.show_progress(progress)
+        if self._outcome is None:
+            self.summary.setText(self._summary_text())
+
+    def end_scan(self) -> None:
+        """Hide the progress bar (the scan ended without a result to show)."""
+        self.scan_bar.hide()
+        if self._outcome is None:
+            self.tree_model.set_root(None)
+            self.treemap.set_view_root(None)
+
+    def show_outcome(self, outcome: ScanOutcome) -> None:
+        """Show a finished (or stopped) scan; folders opened while it ran stay open."""
+        self._outcome = outcome
+        root = outcome.result.root
+        self.scan_bar.hide()
+        if self.tree_model.root is root:
+            self.tree_model.finish_live()
+        else:
+            self.tree_model.set_root(root)
+            self.tree.expand(self.tree_model.index(0, 0))
         self.largest_model.set_rows(outcome.largest)
         self.types_model.set_rows(outcome.extensions)
         self.problems_model.set_rows(outcome.result.errors)
         self._categories = outcome.categories
-        self.treemap.set_view_root(outcome.result.root)
-        self.treemap.set_selected(None)
-        self.select_node(outcome.result.root)
+        view_root = self.treemap.view_root
+        self.treemap.set_view_root(view_root if view_root is not None and _is_under(view_root, root) else root)
+        if self.selected_node() is None:
+            self.select_node(root)
         self._update_texts()
 
     def set_unit(self, unit: str) -> None:
@@ -163,6 +219,7 @@ class ResultsView(QWidget):
         self.tree_model.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model):
             model.refresh()
+        self.scan_bar.retranslate()
         self._treemap_up.setText(tr("treemap_up"))
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
@@ -237,6 +294,7 @@ class ResultsView(QWidget):
         self.splitter = splitter
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
+        layout.addWidget(self.scan_bar)
         layout.addWidget(self.summary)
         layout.addWidget(splitter, 1)
 
@@ -296,11 +354,16 @@ class ResultsView(QWidget):
         self.summary.setText(self._summary_text())
 
     def _summary_text(self) -> str:
-        if self._outcome is None:
+        outcome = self._outcome
+        root = outcome.result.root if outcome is not None else self.tree_model.root
+        if root is None:
             return ""
-        root = self._outcome.result.root
-        return tr("summary", path=root.path, size=format_size(root.size), files=format_count(root.file_count),
-                  folders=format_count(root.dir_count), time=format_duration(self._outcome.result.elapsed))
+        values = {"path": root.path, "size": format_size(root.size), "files": format_count(root.file_count),
+                  "folders": format_count(root.dir_count)}
+        if outcome is None:
+            return tr("summary_live", **values)
+        key = "summary_partial" if outcome.partial else "summary"
+        return tr(key, time=format_duration(outcome.result.elapsed), **values)
 
     def _legend_html(self) -> str:
         sizes = {stat.category: stat.size for stat in self._categories}
@@ -310,11 +373,20 @@ class ResultsView(QWidget):
             if size is None:
                 continue
             colour = CATEGORY_COLOURS[category]
-            # <nobr>: Chinese text may otherwise wrap between any two characters.
-            parts.append(f'<nobr><span style="color:{colour}">&#9632;</span> '
-                         f'{tr(f"category_{category}")} ({format_size(size)})</nobr>')
+            label = _unbreakable(f"\u00a0{tr(f'category_{category}')} ({format_size(size)})")
+            parts.append(f'<span style="color:{colour}">&#9632;</span>\u2060{label}')
         return " &nbsp; ".join(parts)
 
+
+
+def _unbreakable(text: str) -> str:
+    """``text`` that a line break can never split.
+
+    Chinese may break between any two characters and Qt ignores ``<nobr>`` and
+    ``white-space: nowrap`` for that, so spaces become no-break spaces and a
+    word joiner (U+2060) goes between every two characters.
+    """
+    return "\u2060".join(text.replace(" ", "\u00a0"))
 
 
 def _is_under(node: Node, root: Node) -> bool:

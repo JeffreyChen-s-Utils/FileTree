@@ -12,8 +12,9 @@ the window.
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
-- **Fast**: several folders are read at once; about 740,000 files and folders are scanned in 6–8 seconds
-  on an SSD, and the window stays responsive the whole time. Stop a scan whenever you like.
+- **Fast, and live**: several folders are read at once; about 740,000 files and folders are scanned in
+  6–8 seconds on an SSD. The tree fills in while the scan runs, biggest folders first, and Stop keeps
+  what was read so far.
 - **Folder tree** sorted largest first, with a bar showing each entry's share of its folder, file and
   folder counts, and the last change inside it.
 - **Treemap**: every file is a rectangle sized by how much space it takes, coloured by file type. Click to
@@ -57,8 +58,9 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 1. **Choose what to scan**: click *Choose a folder…* or one of the drives on the start page, drag a
    folder onto the window, or type a path in the box at the top and press Enter. You can also start a
    scan from the command line: `file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
-2. **Wait a moment**: the counts and the folder being read update while FileTree works. *Stop* (or Esc)
-   ends the scan at any time.
+2. **Watch it fill in**: the tree appears right away and the biggest folders move to the top while
+   FileTree works; the largest files and file types follow when the scan ends. *Stop* (or Esc) ends the
+   scan at any time and keeps what was read so far, marked as incomplete.
 3. **Find what takes the space**: the biggest folders are at the top of the tree. Open a folder with the
    arrow next to it, or explore the treemap on the right.
 

@@ -14,7 +14,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
 | Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_page.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py` |
+| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py` |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -34,12 +34,18 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 
 ## 4. Main flows
 
-**Scan.** `MainWindow.start_scan` → `ScanWorker` (a `QThread`) runs `scan()`: worker threads (default
-4, measured) share one stack of folders; each lists a folder with `os.scandir`, turns entries into `Node`s
-without following links, and pushes subfolders back. The calling thread reports progress about ten times a
-second and watches the cancel event. When every folder is read, totals are added bottom-up and children
-sorted largest first. The worker then runs `analyse()` (largest files, per-type totals) still off the GUI
-thread and emits `succeeded(ScanOutcome)`. Signals of a replaced worker are ignored.
+**Scan.** `MainWindow.start_scan` opens the results page with its `ScanBar` and starts a `ScanWorker` (a
+`QThread`) running `scan()`: worker threads (default 4, measured) share one stack of folders; each lists a
+folder with `os.scandir`, turns entries into `Node`s without following links, and pushes subfolders back.
+Each finished folder's files are added to the running totals of every folder above it. The root is handed
+out first (`started`), so `FolderTreeModel` shows the tree in live mode while it grows: each folder's
+children are a sorted copy frozen until the next `refresh()`, which the window calls every 700 ms (a layout
+change that moves persistent indexes, so expanded folders, selection and scroll position survive). The
+calling thread reports progress about ten times a second and watches the cancel event. When every folder
+is read, totals are added up again bottom-up and children sorted largest first; `analyse()` (largest
+files, per-type totals) runs still off the GUI thread and `succeeded(ScanOutcome)` ends live mode. Stop
+raises `ScanCancelledError` carrying the partial tree (unread folders marked `NOT_SCANNED`), shown as an
+incomplete outcome. Signals of a replaced worker are ignored.
 
 **Show.** `ResultsView.show_outcome` hands the tree to `FolderTreeModel` (which wraps the `Node`s, sorts
 per folder lazily, and never copies), the tables to their models, and the root to `TreemapWidget` (layout

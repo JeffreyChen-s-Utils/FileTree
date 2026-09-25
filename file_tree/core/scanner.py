@@ -6,7 +6,12 @@ released, so on a disk with many folders the waits overlap. The walk never
 follows links (symlinks and Windows junctions are recorded with size 0, so a
 link loop cannot make a scan run forever), and it keeps going past folders it
 cannot read: those get ``Node.error`` and an entry in ``ScanResult.errors``.
-Totals are added up bottom-up once every folder has been read.
+
+The tree can be shown while it is being read (``on_root`` hands out the root
+first): whenever a folder has been listed, its files are added to the totals
+of every folder above it, so sizes grow as the scan goes. Children are only
+ever appended during the scan; once every folder is read, the totals are
+added up again bottom-up and each folder's children sorted largest first.
 """
 
 from __future__ import annotations
@@ -33,8 +38,21 @@ _FILE_ATTRIBUTE_HIDDEN = 0x2
 DEFAULT_WORKERS = min(4, os.cpu_count() or 1)
 
 
+# ``Node.error`` of a folder the scan never got to because it was stopped.
+NOT_SCANNED = "not scanned: the scan was stopped first"
+
+
 class ScanCancelledError(Exception):
-    """Raised by ``scan`` when its ``cancel`` event is set."""
+    """Raised by ``scan`` when its ``cancel`` event is set.
+
+    ``partial`` is what was read before the stop, added up and sorted like a
+    finished scan; folders never read have ``error == NOT_SCANNED`` (when the
+    stop came before anything was read, that is the root itself).
+    """
+
+    def __init__(self, partial: ScanResult | None = None) -> None:
+        super().__init__("scan cancelled")
+        self.partial = partial
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +83,7 @@ class ScanResult:
 
 
 ProgressCallback = Callable[[ScanProgress], None]
+RootCallback = Callable[[Node], None]
 
 
 @dataclass(slots=True)
@@ -77,17 +96,18 @@ class _FolderRead:
     errors: list[tuple[str, str]] = field(default_factory=list)
 
 
-def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,
+def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  # noqa: PLR0913
          progress: ProgressCallback | None = None, cancel: threading.Event | None = None,
-         progress_interval: float = 0.1) -> ScanResult:
+         progress_interval: float = 0.1, on_root: RootCallback | None = None) -> ScanResult:
     """Scan the folder at ``path`` and return its tree.
 
-    ``progress`` is called about every ``progress_interval`` seconds (and once
-    at the end), always from the calling thread. Setting ``cancel`` stops the
-    scan with ``ScanCancelledError`` within one interval.
+    ``on_root`` is called once with the (still empty) root before any folder is
+    read, for showing the tree while it grows. ``progress`` is called about
+    every ``progress_interval`` seconds (and once at the end). Both run on the
+    calling thread. Setting ``cancel`` stops the scan within one interval.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
-    :raises ScanCancelledError: when ``cancel`` is set during the scan
+    :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
     """
     root_path = os.path.abspath(os.fspath(path))
     if not os.path.isdir(root_path):
@@ -95,8 +115,16 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,
     options = options or ScanOptions()
     started = time.monotonic()
     root = Node(name=root_path, is_dir=True, children=[])
+    if on_root is not None:
+        on_root(root)
     crawler = _Crawler(root, root_path, options)
-    crawler.run(progress, cancel, progress_interval)
+    try:
+        crawler.run(progress, cancel, progress_interval)
+    except ScanCancelledError:
+        for folder, _ in crawler.unread():
+            folder.error = NOT_SCANNED
+        _add_up(crawler.folders)
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started)) from None
     _add_up(crawler.folders)
     if progress is not None:
         progress(crawler.snapshot())
@@ -119,6 +147,11 @@ class _Crawler:
         self.errors: list[tuple[str, str]] = []
         self.files = 0
         self.size = 0
+
+    def unread(self) -> list[tuple[Node, str]]:
+        """The folders still waiting to be read (after ``run`` has returned or raised)."""
+        with self._condition:
+            return list(self._pending)
 
     def snapshot(self) -> ScanProgress:
         """The counts so far."""
@@ -162,7 +195,7 @@ class _Crawler:
                     self._failure = error
                 self._stop()
                 return
-            self._finish(task[1], read)
+            self._finish(task[0], task[1], read)
 
     def _take(self) -> tuple[Node, str] | None:
         """The next folder to read, or None once there is nothing left anywhere."""
@@ -176,7 +209,7 @@ class _Crawler:
             self._busy += 1
             return self._pending.pop()
 
-    def _finish(self, path: str, read: _FolderRead) -> None:
+    def _finish(self, folder: Node, path: str, read: _FolderRead) -> None:
         with self._condition:
             self._busy -= 1
             self._pending.extend(read.subfolders)
@@ -185,10 +218,22 @@ class _Crawler:
             self.size += read.size
             self.errors.extend(read.errors)
             self._current = path
+            _add_to_ancestors(folder, read)
             if read.subfolders:
                 self._condition.notify(len(read.subfolders))
             elif not self._busy and not self._pending:
                 self._condition.notify_all()
+
+
+def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
+    """Count what reading ``folder`` found into it and every folder above it (running totals)."""
+    subfolders = len(read.subfolders)
+    node: Node | None = folder
+    while node is not None:
+        node.size += read.size
+        node.file_count += read.files
+        node.dir_count += subfolders
+        node = node.parent
 
 
 def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:

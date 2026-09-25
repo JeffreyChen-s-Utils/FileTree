@@ -1,11 +1,11 @@
-"""The main window: toolbar and menus around three pages (welcome, scanning, results)."""
+"""The main window: toolbar and menus around two pages (welcome, results; a scan fills the results live)."""
 
 from __future__ import annotations
 
 import os
 from collections.abc import Callable
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt
+from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -27,11 +27,12 @@ from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
 from file_tree.gui.results_view import ResultsView
-from file_tree.gui.scan_page import ScanPage
 from file_tree.gui.scan_worker import ScanOutcome, ScanWorker
 from file_tree.gui.welcome import WelcomePage
 
-WELCOME_PAGE, SCAN_PAGE, RESULTS_PAGE = range(3)
+WELCOME_PAGE, RESULTS_PAGE = range(2)
+# How often the tree of a running scan is refreshed.
+LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _STATUS_TIMEOUT_MS = 8000
@@ -49,11 +50,13 @@ class MainWindow(QMainWindow):
         if self._unit not in _UNITS:
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
-        self.scan_page = ScanPage()
         self.results = ResultsView()
         self.pages = QStackedWidget()
-        for page in (self.welcome, self.scan_page, self.results):
+        for page in (self.welcome, self.results):
             self.pages.addWidget(page)
+        self._live_timer = QTimer(self)
+        self._live_timer.setInterval(LIVE_REFRESH_MS)
+        self._live_timer.timeout.connect(self.results.refresh_live)
         self.setCentralWidget(self.pages)
         self.path_edit = QLineEdit()
         self._actions: dict[str, QAction] = {}
@@ -85,15 +88,18 @@ class MainWindow(QMainWindow):
         worker = ScanWorker(path, ScanOptions(include_hidden=include_hidden), self)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
-        worker.progressed.connect(lambda progress: self._is_current(worker) and self.scan_page.show_progress(progress))
+        worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
+        worker.progressed.connect(
+            lambda progress: self._is_current(worker) and self.results.show_progress(progress))
         worker.succeeded.connect(lambda outcome: self._is_current(worker) and self._scan_succeeded(outcome))
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
-        worker.cancelled.connect(lambda: self._is_current(worker) and self._scan_cancelled())
+        worker.cancelled.connect(lambda outcome: self._is_current(worker) and self._scan_cancelled(outcome))
         worker.finished.connect(worker.deleteLater)
         self._worker = worker
-        self.scan_page.start(path)
-        self.pages.setCurrentIndex(SCAN_PAGE)
+        self.results.begin_scan()
+        self.pages.setCurrentIndex(RESULTS_PAGE)
         self._update_actions()
+        self._live_timer.start()
         worker.start()
 
     def stop_scan(self, *, wait: bool = False) -> None:
@@ -102,10 +108,11 @@ class MainWindow(QMainWindow):
         if worker is None:
             return
         worker.cancel()
-        self.scan_page.stopping()
+        self.results.scan_bar.stopping()
         if wait:
             worker.wait()
             self._worker = None
+            self._live_timer.stop()
 
     def _is_current(self, worker: ScanWorker) -> bool:
         return worker is self._worker
@@ -116,23 +123,33 @@ class MainWindow(QMainWindow):
             self.start_scan(self._last_path)
 
     def _scan_succeeded(self, outcome: ScanOutcome) -> None:
-        self._worker = None
+        self._scan_ended()
         self.results.show_outcome(outcome)
         self.pages.setCurrentIndex(RESULTS_PAGE)
         self._remember(outcome.result.root.path)
         self._update_actions()
 
     def _scan_failed(self, reason: str) -> None:
-        self._worker = None
+        self._scan_ended()
         self._back_from_scan()
         QMessageBox.warning(self, tr("scan_failed_title"), tr("scan_failed", path=self._last_path, reason=reason))
 
-    def _scan_cancelled(self) -> None:
+    def _scan_cancelled(self, outcome: ScanOutcome | None) -> None:
+        self._scan_ended()
+        if outcome is None:
+            self._back_from_scan()
+            self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
+            return
+        self.results.show_outcome(outcome)
+        self._update_actions()
+        self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
+
+    def _scan_ended(self) -> None:
         self._worker = None
-        self._back_from_scan()
-        self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
+        self._live_timer.stop()
 
     def _back_from_scan(self) -> None:
+        self.results.end_scan()
         self.pages.setCurrentIndex(RESULTS_PAGE if self.results.outcome is not None else WELCOME_PAGE)
         self._update_actions()
 
@@ -158,7 +175,7 @@ class MainWindow(QMainWindow):
 
     def move_to_trash(self, node: Node) -> None:
         """Ask, then move ``node`` to the Recycle Bin / Trash and take it out of the results."""
-        if node.parent is None:
+        if node.parent is None or self._worker is not None:
             return
         answer = QMessageBox.question(self, tr("trash_confirm_title"),
                                       tr("trash_confirm", name=node.name, size=format_size(node.size, self._unit)))
@@ -250,7 +267,6 @@ class MainWindow(QMainWindow):
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
         self.path_edit.setToolTip(tr("path_placeholder"))
         self.welcome.retranslate()
-        self.scan_page.retranslate()
         self.results.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
@@ -379,7 +395,7 @@ class MainWindow(QMainWindow):
     def _connect(self) -> None:
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
-        self.scan_page.stop_requested.connect(self.stop_scan)
+        self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
         self.results.selection_changed.connect(self._selection_changed)
 

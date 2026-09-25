@@ -1,43 +1,44 @@
-"""The page shown while a scan runs: live counts, the folder being read, and a Stop button."""
+"""The bar above the results while a scan runs: live counts, the folder being read, and a Stop button."""
 
 from __future__ import annotations
 
 import time
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QLabel, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from file_tree.core.formatting import format_count, format_size
 from file_tree.core.scanner import ScanProgress
 from file_tree.gui.i18n import format_duration, tr
 
+_BUSY_BAR_WIDTH = 120
 
-class ScanPage(QWidget):
-    """Progress of the running scan."""
+
+class ScanBar(QFrame):
+    """Progress of the running scan, shown above the tree that is filling in."""
 
     stop_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self._path = ""
         self._started = time.monotonic()
         self._last: ScanProgress | None = None
-        self._title = QLabel()
+        self._stopping = False
         self._counts = QLabel()
         self._current = QLabel()
-        self._bar = QProgressBar()
+        self._busy = QProgressBar()
         self._stop = QPushButton()
         self._build()
         self.retranslate()
 
-    def start(self, path: str) -> None:
-        """Reset for a new scan of ``path``."""
-        self._path = path
+    def start(self) -> None:
+        """Reset for a new scan and show the bar."""
         self._started = time.monotonic()
         self._last = None
+        self._stopping = False
         self._stop.setEnabled(True)
         self._update()
+        self.show()
 
     def show_progress(self, progress: ScanProgress) -> None:
         """Show the latest counts."""
@@ -46,8 +47,9 @@ class ScanPage(QWidget):
 
     def stopping(self) -> None:
         """Show that the scan is being stopped."""
+        self._stopping = True
         self._stop.setEnabled(False)
-        self._title.setText(tr("scan_stopping"))
+        self._update()
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
@@ -56,35 +58,36 @@ class ScanPage(QWidget):
         self._update()
 
     def _build(self) -> None:
-        font = QFont(self._title.font())
-        font.setPointSizeF(font.pointSizeF() * 1.5)
-        font.setBold(True)
-        self._title.setFont(font)
-        self._title.setWordWrap(True)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self._busy.setRange(0, 0)
+        self._busy.setTextVisible(False)
+        self._busy.setFixedWidth(_BUSY_BAR_WIDTH)
         # A long path must not widen the window: the label takes any width and elides.
         self._current.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self._current.setStyleSheet("color: palette(placeholder-text);")
-        self._bar.setRange(0, 0)
-        self._bar.setTextVisible(False)
-        self._stop.setMinimumHeight(36)
         self._stop.clicked.connect(self.stop_requested)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(48, 48, 48, 48)
-        layout.addStretch(1)
-        for widget in (self._title, self._bar, self._counts, self._current):
-            layout.addWidget(widget)
-        layout.addWidget(self._stop, 0, Qt.AlignmentFlag.AlignLeft)
-        layout.addStretch(2)
+        texts = QVBoxLayout()
+        texts.setSpacing(2)
+        texts.addWidget(self._counts)
+        texts.addWidget(self._current)
+        row = QHBoxLayout(self)
+        row.setContentsMargins(8, 6, 8, 6)
+        row.addWidget(self._busy)
+        row.addLayout(texts, 1)
+        row.addWidget(self._stop)
+        self.hide()
 
     def _update(self) -> None:
-        self._title.setText(tr("scan_title", path=self._path))
+        if self._stopping:
+            self._counts.setText(tr("scan_stopping"))
+            return
         progress = self._last
-        elapsed = format_duration(time.monotonic() - self._started)
         if progress is None:
             self._counts.setText(tr("scan_starting"))
             self._current.setText("")
             return
-        self._counts.setText(tr("scan_counts", files=format_count(progress.files),
+        elapsed = format_duration(time.monotonic() - self._started)
+        self._counts.setText(tr("scan_progress", files=format_count(progress.files),
                                 folders=format_count(progress.folders), size=format_size(progress.size),
                                 time=elapsed))
         width = max(100, self._current.width())

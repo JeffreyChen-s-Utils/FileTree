@@ -55,12 +55,12 @@ EN: dict[str, str] = {
     "welcome_recent": "Recently scanned",
     "welcome_tip": "Tip: you can also drag a folder from your file manager onto this window.",
     # scanning
-    "scan_title": "Scanning {path}",
     "scan_starting": "Starting…",
-    "scan_counts": "{files} files in {folders} folders · {size} · {time}",
+    "scan_progress": "Scanning… {files} files in {folders} folders · {size} · {time}",
     "scan_stop": "Stop",
     "scan_stopping": "Stopping…",
     "scan_cancelled": "Scan stopped.",
+    "scan_stopped_partial": "Scan stopped: the results show what was read so far.",
     "scan_failed_title": "Cannot scan",
     "scan_failed": "FileTree could not read {path}.\n\nReason: {reason}",
     "not_a_folder": "{path} is not a folder that exists.",
@@ -68,6 +68,9 @@ EN: dict[str, str] = {
     "duration_minutes": "{minutes} min {seconds} s",
     # results
     "summary": "<b>{path}</b> — {size} in {files} files and {folders} folders (scanned in {time})",
+    "summary_live": "<b>{path}</b> — {size} in {files} files and {folders} folders so far",
+    "summary_partial": "<b>{path}</b> — {size} in {files} files and {folders} folders · "
+                       "<b>incomplete</b>: the scan was stopped after {time}",
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
     "tab_types": "File types",
@@ -88,6 +91,7 @@ EN: dict[str, str] = {
     "no_extension": "(no extension)",
     "tooltip_unreadable": "{path}\nCould not be read: {reason}",
     "tooltip_link": "{path}\nLink: shown but not followed",
+    "tooltip_not_scanned": "{path}\nNot scanned: the scan was stopped first",
     "treemap_empty": "Nothing to show",
     "treemap_up": "↑ Up",
     "treemap_up_tip": "Show the folder above",
@@ -127,8 +131,9 @@ EN: dict[str, str] = {
 <ol>
 <li><b>Choose what to scan.</b> Click <i>Choose a folder…</i> or one of the drives, drag a folder
 onto the window, or type a path in the box at the top and press Enter.</li>
-<li><b>Wait a moment.</b> FileTree adds up every file and shows its progress. Press <i>Stop</i>
-(or Esc) at any time.</li>
+<li><b>Watch it fill in.</b> The tree appears right away and the biggest folders move to the top
+while FileTree adds up every file; the largest files and file types follow when the scan ends. Press
+<i>Stop</i> (or Esc) at any time: what was read so far stays on screen, marked as incomplete.</li>
 <li><b>Find what takes the space.</b> The biggest folders are at the top of the tree. Click the arrow
 next to a folder to look inside.</li>
 </ol>
@@ -220,18 +225,21 @@ ZH_TW: dict[str, str] = {
     "welcome_drive_free": "可用 {free}，共 {total}",
     "welcome_recent": "最近掃描過",
     "welcome_tip": "小技巧：也可以直接把資料夾從檔案總管拖曳到這個視窗。",
-    "scan_title": "正在掃描 {path}",
     "scan_starting": "準備中…",
-    "scan_counts": "{folders} 個資料夾中的 {files} 個檔案 · {size} · {time}",
+    "scan_progress": "正在掃描… {folders} 個資料夾中的 {files} 個檔案 · {size} · {time}",
     "scan_stop": "停止",
     "scan_stopping": "正在停止…",
     "scan_cancelled": "已停止掃描。",
+    "scan_stopped_partial": "已停止掃描：結果只包含停止前讀到的部分。",
     "scan_failed_title": "無法掃描",
     "scan_failed": "FileTree 無法讀取 {path}。\n\n原因：{reason}",
     "not_a_folder": "{path} 不是存在的資料夾。",
     "duration_seconds": "{value} 秒",
     "duration_minutes": "{minutes} 分 {seconds} 秒",
     "summary": "<b>{path}</b> — {size}，共 {files} 個檔案、{folders} 個資料夾（掃描耗時 {time}）",
+    "summary_live": "<b>{path}</b> — 目前 {size}，{files} 個檔案、{folders} 個資料夾",
+    "summary_partial": "<b>{path}</b> — {size}，{files} 個檔案、{folders} 個資料夾 · "
+                       "<b>不完整</b>：掃描在 {time} 後停止",
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
     "tab_types": "檔案類型",
@@ -252,6 +260,7 @@ ZH_TW: dict[str, str] = {
     "no_extension": "（沒有副檔名）",
     "tooltip_unreadable": "{path}\n無法讀取：{reason}",
     "tooltip_link": "{path}\n連結：只列出，不會跟進去計算",
+    "tooltip_not_scanned": "{path}\n沒有掃描到：掃描在讀到這裡之前就停止了",
     "treemap_empty": "沒有可以顯示的內容",
     "treemap_up": "↑ 上一層",
     "treemap_up_tip": "顯示上一層資料夾",
@@ -288,7 +297,9 @@ ZH_TW: dict[str, str] = {
 <ol>
 <li><b>選擇要掃描的地方。</b>按<i>選擇資料夾…</i>或其中一顆磁碟，把資料夾拖曳到視窗上，
 或在上方的方框輸入路徑後按 Enter。</li>
-<li><b>稍等一下。</b>FileTree 會加總每個檔案的大小並顯示進度，隨時可以按<i>停止</i>（或 Esc）。</li>
+<li><b>邊掃邊看。</b>資料夾樹會立刻出現，FileTree 一邊加總，最大的資料夾一邊往上排；
+最大的檔案與檔案類型在掃描結束時補上。
+隨時可以按<i>停止</i>（或 Esc）：已經讀到的部分會留在畫面上，並標示為不完整。</li>
 <li><b>找出佔空間的東西。</b>最大的資料夾排在最上面，按資料夾旁的箭頭就能看裡面的內容。</li>
 </ol>
 <h2>看懂結果</h2>
@@ -372,18 +383,21 @@ ZH_CN: dict[str, str] = {
     "welcome_drive_free": "可用 {free}，共 {total}",
     "welcome_recent": "最近扫描过",
     "welcome_tip": "小技巧：也可以直接把文件夹从文件管理器拖到这个窗口。",
-    "scan_title": "正在扫描 {path}",
     "scan_starting": "准备中…",
-    "scan_counts": "{folders} 个文件夹中的 {files} 个文件 · {size} · {time}",
+    "scan_progress": "正在扫描… {folders} 个文件夹中的 {files} 个文件 · {size} · {time}",
     "scan_stop": "停止",
     "scan_stopping": "正在停止…",
     "scan_cancelled": "已停止扫描。",
+    "scan_stopped_partial": "已停止扫描：结果只包含停止前读到的部分。",
     "scan_failed_title": "无法扫描",
     "scan_failed": "FileTree 无法读取 {path}。\n\n原因：{reason}",
     "not_a_folder": "{path} 不是存在的文件夹。",
     "duration_seconds": "{value} 秒",
     "duration_minutes": "{minutes} 分 {seconds} 秒",
     "summary": "<b>{path}</b> — {size}，共 {files} 个文件、{folders} 个文件夹（扫描用时 {time}）",
+    "summary_live": "<b>{path}</b> — 目前 {size}，{files} 个文件、{folders} 个文件夹",
+    "summary_partial": "<b>{path}</b> — {size}，{files} 个文件、{folders} 个文件夹 · "
+                       "<b>不完整</b>：扫描在 {time} 后停止",
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
     "tab_types": "文件类型",
@@ -404,6 +418,7 @@ ZH_CN: dict[str, str] = {
     "no_extension": "（没有扩展名）",
     "tooltip_unreadable": "{path}\n无法读取：{reason}",
     "tooltip_link": "{path}\n链接：只列出，不会进入计算",
+    "tooltip_not_scanned": "{path}\n没有扫描到：扫描在读到这里之前就停止了",
     "treemap_empty": "没有可以显示的内容",
     "treemap_up": "↑ 上一级",
     "treemap_up_tip": "显示上一级文件夹",
@@ -440,7 +455,9 @@ ZH_CN: dict[str, str] = {
 <ol>
 <li><b>选择要扫描的地方。</b>点击<i>选择文件夹…</i>或其中一个磁盘，把文件夹拖到窗口上，
 或在上方的输入框输入路径后按 Enter。</li>
-<li><b>稍等一下。</b>FileTree 会加总每个文件的大小并显示进度，随时可以点<i>停止</i>（或按 Esc）。</li>
+<li><b>边扫边看。</b>文件夹树会立刻出现，FileTree 一边加总，最大的文件夹一边往上排；
+最大的文件与文件类型在扫描结束时补上。
+随时可以点<i>停止</i>（或按 Esc）：已经读到的部分会留在画面上，并标示为不完整。</li>
 <li><b>找出占空间的东西。</b>最大的文件夹排在最上面，点文件夹旁的箭头就能看里面的内容。</li>
 </ol>
 <h2>看懂结果</h2>
