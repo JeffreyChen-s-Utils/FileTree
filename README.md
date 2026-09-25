@@ -12,14 +12,17 @@ the window.
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
-- **Fast**: several folders are read at once; about 740,000 files and folders are scanned in 6–8 seconds
-  on an SSD, and the window stays responsive the whole time. Stop a scan whenever you like.
-- **Folder tree** sorted largest first, with a bar showing each entry's share of its folder, file and
-  folder counts, and the last change inside it.
+- **Fast, and live**: several folders are read at once; about 740,000 files and folders are scanned in
+  6–8 seconds on an SSD. The tree fills in while the scan runs, biggest folders first, and Stop keeps
+  what was read so far.
+- **Folder tree** sorted largest first, with the space each entry takes on disk, a bar showing its share of
+  its folder, file and folder counts, and the last change inside it.
 - **Treemap**: every file is a rectangle sized by how much space it takes, coloured by file type. Click to
   find it in the tree, double-click to zoom into a folder.
 - **Largest files**: the 1,000 biggest files anywhere in the scan, with a filter box.
-- **File types**: space used per extension and per kind (pictures, videos, archives…).
+- **Search** (Ctrl+F): find files and folders by name, or by a pattern such as `*.mp4`, anywhere in the scan.
+- **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
+  files last changed; double-click a row to list its largest files.
 - **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; the
   numbers update immediately, without a rescan.
 - **Export** the folder list or the largest files to CSV (opens in Excel), or the folder tree to JSON.
@@ -57,8 +60,9 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 1. **Choose what to scan**: click *Choose a folder…* or one of the drives on the start page, drag a
    folder onto the window, or type a path in the box at the top and press Enter. You can also start a
    scan from the command line: `file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
-2. **Wait a moment**: the counts and the folder being read update while FileTree works. *Stop* (or Esc)
-   ends the scan at any time.
+2. **Watch it fill in**: the tree appears right away and the biggest folders move to the top while
+   FileTree works; the largest files and file types follow when the scan ends. *Stop* (or Esc) ends the
+   scan at any time and keeps what was read so far, marked as incomplete.
 3. **Find what takes the space**: the biggest folders are at the top of the tree. Open a folder with the
    arrow next to it, or explore the treemap on the right.
 
@@ -66,17 +70,22 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 
 | Where | What it tells you |
 |---|---|
-| Folder tree | Size, *% of parent* (the share of the folder above), number of files and folders inside, last change |
+| Folder tree | Size, *On disk* (the space really taken: whole clusters, so usually a little more; less for compressed files, nothing for files kept only online), *% of parent* (the share of the folder above), number of files and folders inside, last change |
 | Treemap | One rectangle per file, sized by space used and coloured by file type; the legend is under the map |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
-| File types | Space per extension; choose a kind above the table to see only that kind |
+| Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); the 1,000 largest matches are listed with the count and total size of all |
+| File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
+| Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |
 
 ### Freeing space
 
 Right-click any entry to open it, show it in your file manager, copy its path, show it in the treemap,
-scan that folder on its own, or move it to the Recycle Bin (the Trash on macOS and Linux). FileTree always
-asks before moving anything and never deletes permanently.
+rescan that folder after changes made outside FileTree (the rest of the results stay), scan that folder on
+its own, or move it to the Recycle Bin (the Trash on macOS and Linux). To move several entries at once,
+pick them with Ctrl+click or Shift+click in the folder tree, the Largest files list or the search results:
+FileTree asks once, listing them with their total size. It always asks before moving anything and never
+deletes permanently.
 
 ### Keyboard shortcuts
 
@@ -85,7 +94,8 @@ asks before moving anything and never deletes permanently.
 | Ctrl+O | Choose a folder |
 | F5 | Rescan |
 | Esc | Stop the scan |
-| Delete | Move the selected entry to the Recycle Bin |
+| Ctrl+F | Search by name |
+| Delete | Move the selected entries to the Recycle Bin |
 | F1 | How to use |
 | Ctrl+Q | Quit |
 
@@ -95,7 +105,10 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 
 - Sizes are real file sizes in binary units (1 KB = 1,024 bytes), the same as Windows Explorer. Pick a
   fixed unit under *View → Size unit*.
-- Some system folders can only be read by an administrator; run FileTree as administrator to count them.
+- On Windows, FileTree asks for administrator rights when it starts, like TreeSize, so it can read protected
+  folders too. Say no and it runs normally; folders it could not read are listed under *Problems*, with a
+  *Restart as administrator* button (also in the *File* menu). Turn the question off under
+  *View → Ask for administrator rights at start*.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).

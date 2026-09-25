@@ -1,13 +1,14 @@
-"""The main window: toolbar and menus around three pages (welcome, scanning, results)."""
+"""The main window: toolbar and menus around two pages (welcome, results; a scan fills the results live)."""
 
 from __future__ import annotations
 
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt
+from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QLineEdit,
     QMainWindow,
@@ -19,22 +20,32 @@ from PySide6.QtWidgets import (
 
 from file_tree import __version__
 from file_tree.core import export
-from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_share, format_size
-from file_tree.core.node import Node
+from file_tree.core.analysis import Summary
+from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
+from file_tree.core.node import Node, outermost
 from file_tree.core.scanner import ScanOptions
-from file_tree.gui import file_actions
+from file_tree.gui import elevation, file_actions
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
-from file_tree.gui.results_view import ResultsView
-from file_tree.gui.scan_page import ScanPage
-from file_tree.gui.scan_worker import ScanOutcome, ScanWorker
+from file_tree.gui.results_view import TREEMAP_TAB, ResultsView
+from file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
 from file_tree.gui.welcome import WelcomePage
 
-WELCOME_PAGE, SCAN_PAGE, RESULTS_PAGE = range(3)
+WELCOME_PAGE, RESULTS_PAGE = range(2)
+# How often the tree of a running scan is refreshed.
+LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
+_LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _STATUS_TIMEOUT_MS = 8000
+ASK_ADMIN_KEY = "ask_admin_at_start"
+
+
+def read_flag(settings: QSettings, key: str, default: bool) -> bool:
+    """A yes/no setting (the registry keeps them as the strings \"true\" and \"false\")."""
+    value = settings.value(key, default)
+    return value if isinstance(value, bool) else str(value).lower() == "true"
 
 
 class MainWindow(QMainWindow):
@@ -44,16 +55,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings if settings is not None else QSettings()
         self._worker: ScanWorker | None = None
+        self._analyser: AnalyseWorker | None = None
         self._last_path = ""
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
-        self.scan_page = ScanPage()
         self.results = ResultsView()
         self.pages = QStackedWidget()
-        for page in (self.welcome, self.scan_page, self.results):
+        for page in (self.welcome, self.results):
             self.pages.addWidget(page)
+        self._live_timer = QTimer(self)
+        self._live_timer.setInterval(LIVE_REFRESH_MS)
+        self._live_timer.timeout.connect(self.results.refresh_live)
         self.setCentralWidget(self.pages)
         self.path_edit = QLineEdit()
         self._actions: dict[str, QAction] = {}
@@ -85,15 +99,18 @@ class MainWindow(QMainWindow):
         worker = ScanWorker(path, ScanOptions(include_hidden=include_hidden), self)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
-        worker.progressed.connect(lambda progress: self._is_current(worker) and self.scan_page.show_progress(progress))
+        worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
+        worker.progressed.connect(
+            lambda progress: self._is_current(worker) and self.results.show_progress(progress))
         worker.succeeded.connect(lambda outcome: self._is_current(worker) and self._scan_succeeded(outcome))
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
-        worker.cancelled.connect(lambda: self._is_current(worker) and self._scan_cancelled())
+        worker.cancelled.connect(lambda outcome: self._is_current(worker) and self._scan_cancelled(outcome))
         worker.finished.connect(worker.deleteLater)
         self._worker = worker
-        self.scan_page.start(path)
-        self.pages.setCurrentIndex(SCAN_PAGE)
+        self.results.begin_scan()
+        self.pages.setCurrentIndex(RESULTS_PAGE)
         self._update_actions()
+        self._live_timer.start()
         worker.start()
 
     def stop_scan(self, *, wait: bool = False) -> None:
@@ -102,10 +119,11 @@ class MainWindow(QMainWindow):
         if worker is None:
             return
         worker.cancel()
-        self.scan_page.stopping()
+        self.results.scan_bar.stopping()
         if wait:
             worker.wait()
             self._worker = None
+            self._live_timer.stop()
 
     def _is_current(self, worker: ScanWorker) -> bool:
         return worker is self._worker
@@ -116,30 +134,40 @@ class MainWindow(QMainWindow):
             self.start_scan(self._last_path)
 
     def _scan_succeeded(self, outcome: ScanOutcome) -> None:
-        self._worker = None
+        self._scan_ended()
         self.results.show_outcome(outcome)
         self.pages.setCurrentIndex(RESULTS_PAGE)
         self._remember(outcome.result.root.path)
         self._update_actions()
 
     def _scan_failed(self, reason: str) -> None:
-        self._worker = None
+        self._scan_ended()
         self._back_from_scan()
         QMessageBox.warning(self, tr("scan_failed_title"), tr("scan_failed", path=self._last_path, reason=reason))
 
-    def _scan_cancelled(self) -> None:
+    def _scan_cancelled(self, outcome: ScanOutcome | None) -> None:
+        self._scan_ended()
+        if outcome is None:
+            self._back_from_scan()
+            self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
+            return
+        self.results.show_outcome(outcome)
+        self._update_actions()
+        self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
+
+    def _scan_ended(self) -> None:
         self._worker = None
-        self._back_from_scan()
-        self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
+        self._live_timer.stop()
 
     def _back_from_scan(self) -> None:
+        self.results.end_scan()
         self.pages.setCurrentIndex(RESULTS_PAGE if self.results.outcome is not None else WELCOME_PAGE)
         self._update_actions()
 
     # --- entry actions ----------------------------------------------------
 
-    def show_menu_for(self, node: Node, point: QPoint) -> None:
-        """Pop up the menu of things to do with ``node``."""
+    def show_menu_for(self, node: Node, picked: Sequence[Node], point: QPoint) -> None:
+        """Pop up the menu of things to do with ``node``; its *Move to Recycle Bin* takes all of ``picked``."""
         menu = QMenu(self)
         entries: list[tuple[str, Callable[[], object]]] = [
             ("menu_open_item", lambda: file_actions.open_path(node.path)),
@@ -148,40 +176,120 @@ class MainWindow(QMainWindow):
         ]
         if node.is_dir and not node.is_link:
             entries.append(("menu_show_treemap", lambda: self._show_in_treemap(node)))
+            entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
-        if node.parent is not None:
+        movable = _movable(picked)
+        if movable:
             menu.addSeparator()
-            menu.addAction(tr("action_trash")).triggered.connect(lambda: self.move_to_trash(node))
+            text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
+                                                                    count=format_count(len(movable)))
+            menu.addAction(text).triggered.connect(lambda: self.move_to_trash(movable))
         menu.exec(point)
 
-    def move_to_trash(self, node: Node) -> None:
-        """Ask, then move ``node`` to the Recycle Bin / Trash and take it out of the results."""
-        if node.parent is None:
+    def rescan_folder(self, node: Node) -> None:
+        """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
+        if self._worker is not None or self.results.outcome is None:
             return
-        answer = QMessageBox.question(self, tr("trash_confirm_title"),
-                                      tr("trash_confirm", name=node.name, size=format_size(node.size, self._unit)))
+        if node.parent is None:
+            self.rescan()
+            return
+        include_hidden = self._actions["hidden"].isChecked()
+        worker = ScanWorker(node.path, ScanOptions(include_hidden=include_hidden), self)
+        before = node.size
+        worker.progressed.connect(
+            lambda progress: self._is_current(worker) and self.results.scan_bar.show_progress(progress))
+        worker.succeeded.connect(
+            lambda outcome: self._is_current(worker) and self._branch_rescanned(node, outcome, before))
+        worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
+        worker.cancelled.connect(lambda _outcome: self._is_current(worker) and self._branch_cancelled())
+        worker.finished.connect(worker.deleteLater)
+        self._worker = worker
+        self.results.scan_bar.start()
+        self._update_actions()
+        worker.start()
+
+    def _branch_rescanned(self, old: Node, outcome: ScanOutcome, before: int) -> None:
+        self._scan_ended()
+        self.results.scan_bar.hide()
+        new = self.results.replace_branch(old, outcome.result)
+        self._update_actions()
+        self.statusBar().showMessage(tr("rescan_done", name=new.name, before=format_size(before, self._unit),
+                                        after=format_size(new.size, self._unit)), _STATUS_TIMEOUT_MS)
+        analyser = AnalyseWorker(self.results.tree_model.root, self)
+        analyser.done.connect(self._summary_ready)
+        analyser.finished.connect(analyser.deleteLater)
+        self._analyser = analyser
+        analyser.start()
+
+    def _summary_ready(self, summary: Summary) -> None:
+        self.results.apply_summary(summary)
+
+    def _branch_cancelled(self) -> None:
+        self._scan_ended()
+        self.results.scan_bar.hide()
+        self._update_actions()
+        self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
+
+    def move_to_trash(self, nodes: Sequence[Node]) -> None:
+        """Ask once, then move ``nodes`` to the Recycle Bin / Trash and take them out of the results.
+
+        An entry inside another of ``nodes`` goes along with its folder; the scanned folder itself is
+        never moved. Entries the system refuses to move stay, and are named in a warning.
+        """
+        chosen = _movable(nodes)
+        if not chosen or self._worker is not None:
+            return
+        answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
             return
-        if not file_actions.move_to_trash(node.path):
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_failed", name=node.name))
+        moved, failed = _trash_each(chosen)
+        freed = format_size(sum(node.size for node in moved), self._unit)
+        if moved:
+            self.results.forget(moved)
+        if failed:
+            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
+                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
+            QMessageBox.warning(self, tr("trash_confirm_title"), message)
+        if not moved:
             return
-        size = node.size
-        self.results.forget(node)
-        self.statusBar().showMessage(tr("trash_done", name=node.name, size=format_size(size, self._unit)),
-                                     _STATUS_TIMEOUT_MS)
+        done = (tr("trash_done", name=moved[0].name, size=freed) if len(moved) == 1 else
+                tr("trash_done_many", count=format_count(len(moved)), size=freed))
+        self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+
+    def _trash_question(self, nodes: list[Node]) -> str:
+        size = format_size(sum(node.size for node in nodes), self._unit)
+        if len(nodes) == 1:
+            return tr("trash_confirm", name=nodes[0].name, size=size)
+        return tr("trash_confirm_many", count=format_count(len(nodes)), size=size, names=self._name_lines(nodes))
+
+    def _name_lines(self, nodes: list[Node]) -> str:
+        """The biggest of ``nodes`` one per line with their sizes, then how many more there are."""
+        ordered = sorted(nodes, key=lambda node: node.size, reverse=True)
+        lines = [f"• {node.name} ({format_size(node.size, self._unit)})" for node in ordered[:_LISTED_NAMES]]
+        if len(ordered) > _LISTED_NAMES:
+            lines.append(tr("trash_more", count=format_count(len(ordered) - _LISTED_NAMES)))
+        return "\n".join(lines)
 
     def _show_in_treemap(self, node: Node) -> None:
         self.results.treemap.set_view_root(node)
-        self.results.tabs.setCurrentIndex(0)
+        self.results.tabs.setCurrentIndex(TREEMAP_TAB)
+
+    def _find(self) -> None:
+        if self.pages.currentIndex() == RESULTS_PAGE and self.results.outcome is not None:
+            self.results.show_search()
 
     def _trash_selected(self) -> None:
-        node = self.results.selected_node()
-        if node is not None and self.pages.currentIndex() == RESULTS_PAGE:
-            self.move_to_trash(node)
+        if self.pages.currentIndex() == RESULTS_PAGE:
+            self.move_to_trash(self.results.focused_selection())
 
     def _selection_changed(self, node: Node | None) -> None:
+        picked = self.results.selected_nodes()
+        if len(picked) > 1:
+            size = format_size(sum(entry.size for entry in outermost(picked)), self._unit)
+            self.statusBar().showMessage(tr("status_selected_many", count=format_count(len(picked)), size=size))
+            return
         if node is None:
             self.statusBar().clearMessage()
             return
@@ -238,7 +346,7 @@ class MainWindow(QMainWindow):
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
-        self.setWindowTitle(tr("app_title"))
+        self.setWindowTitle(tr("app_title_admin") if elevation.is_elevated() else tr("app_title"))
         for key, action in self._actions.items():
             action.setText(tr(f"action_{key}"))
             action.setToolTip(tr(f"action_{key}_tip"))
@@ -250,7 +358,6 @@ class MainWindow(QMainWindow):
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
         self.path_edit.setToolTip(tr("path_placeholder"))
         self.welcome.retranslate()
-        self.scan_page.retranslate()
         self.results.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
@@ -272,7 +379,8 @@ class MainWindow(QMainWindow):
         splitter = self.settings.value("splitter")
         if isinstance(splitter, QByteArray):
             self.results.splitter.restoreState(splitter)
-        self._actions["hidden"].setChecked(str(self.settings.value("include_hidden", "true")).lower() == "true")
+        self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
+        self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_recent(self._recent())
@@ -280,6 +388,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event: QCloseEvent) -> None:
         """Qt: stop the scan and remember the window layout."""
         self.stop_scan(wait=True)
+        self.results.search.stop(wait=True)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
@@ -310,8 +419,11 @@ class MainWindow(QMainWindow):
             ("export_largest", None, lambda: self.export_results("largest")),
             ("export_json", None, lambda: self.export_results("json")),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
+            ("find", QKeySequence.StandardKey.Find, self._find),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
+            ("elevate", None, self.restart_as_admin),
+            ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
         ]
@@ -322,17 +434,21 @@ class MainWindow(QMainWindow):
             action.triggered.connect(lambda _checked=False, run=handler: run())
             self._actions[key] = action
         self._actions["hidden"].setCheckable(True)
+        self._actions["ask_admin"].setCheckable(True)
+        self._actions["elevate"].setVisible(elevation.can_elevate())
+        self._actions["ask_admin"].setVisible(elevation.supported())
 
     def _build_menus(self) -> None:
         bar = self.menuBar()
         file_menu = bar.addMenu("")
-        for key in ("open", "rescan", "stop"):
+        for key in ("open", "rescan", "stop", "find"):
             file_menu.addAction(self._actions[key])
         export_menu = file_menu.addMenu("")
         for key in ("export_folders", "export_largest", "export_json"):
             export_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
+        file_menu.addAction(self._actions["elevate"])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["quit"])
         view_menu = bar.addMenu("")
@@ -354,6 +470,7 @@ class MainWindow(QMainWindow):
             self._language_actions[code] = action
         view_menu.addSeparator()
         view_menu.addAction(self._actions["hidden"])
+        view_menu.addAction(self._actions["ask_admin"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
         help_menu.addAction(self._actions["about"])
@@ -379,16 +496,17 @@ class MainWindow(QMainWindow):
     def _connect(self) -> None:
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
-        self.scan_page.stop_requested.connect(self.stop_scan)
+        self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
         self.results.selection_changed.connect(self._selection_changed)
+        self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
         scanning = self._worker is not None
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
-        for key in ("export_folders", "export_largest", "export_json", "trash"):
+        for key in ("export_folders", "export_largest", "export_json", "trash", "find"):
             self._actions[key].setEnabled(has_results and not scanning)
 
     # --- dialogs ----------------------------------------------------------
@@ -399,6 +517,17 @@ class MainWindow(QMainWindow):
         folder = QFileDialog.getExistingDirectory(self, tr("choose_folder_title"), start)
         if folder:
             self.start_scan(folder)
+
+    def restart_as_admin(self) -> None:
+        """Start FileTree again as administrator (scanning the same folder) and close this copy.
+
+        When the prompt is declined, this copy keeps running and says so.
+        """
+        arguments = [self._last_path] if self._last_path else []
+        if elevation.relaunch_elevated(arguments):
+            self.close()
+            return
+        self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
 
     def show_help(self) -> None:
         """Open the how-to-use window."""
@@ -414,6 +543,24 @@ def _dropped_folder(urls: list) -> str | None:
         if url.isLocalFile() and os.path.isdir(url.toLocalFile()):
             return os.path.normpath(url.toLocalFile())
     return None
+
+
+def _movable(nodes: Sequence[Node]) -> list[Node]:
+    """What moving ``nodes`` to the Recycle Bin really moves: the outermost entries, never the scanned folder."""
+    return outermost(node for node in nodes if node.parent is not None)
+
+
+def _trash_each(nodes: list[Node]) -> tuple[list[Node], list[Node]]:
+    """Move each of ``nodes`` to the Recycle Bin / Trash; returns the moved ones and the refused ones."""
+    moved: list[Node] = []
+    failed: list[Node] = []
+    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+    try:
+        for node in nodes:
+            (moved if file_actions.move_to_trash(node.path) else failed).append(node)
+    finally:
+        QApplication.restoreOverrideCursor()
+    return moved, failed
 
 
 def _safe_name(name: str) -> str:

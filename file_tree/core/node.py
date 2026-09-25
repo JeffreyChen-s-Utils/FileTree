@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
 
@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 class Node:
     """One entry of a scanned tree.
 
-    For a folder, ``size``, ``file_count``, ``dir_count`` and ``modified`` are
+    ``allocated`` is the space taken on disk (see ``file_tree.core.allocation``).
+    For a folder, ``size``, ``allocated``, ``file_count``, ``dir_count`` and ``modified`` are
     totals over everything beneath it (filled in by the scanner once the whole
     tree is read), and ``children`` is a list sorted largest first. A file keeps
     the shared empty tuple instead, which saves a list per file on trees with
@@ -30,6 +31,7 @@ class Node:
     modified: float = 0.0
     is_link: bool = False
     error: str | None = None
+    allocated: int = 0
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
 
@@ -89,6 +91,53 @@ class Node:
         node: Node | None = parent
         while node is not None:
             node.size -= self.size
+            node.allocated -= self.allocated
             node.file_count -= self.file_count
             node.dir_count -= folders
             node = node.parent
+
+    def replace_with(self, new: Node) -> None:
+        """Put ``new`` (a fresh scan of this same folder) in this entry's place and correct every total above it.
+
+        ``new`` takes this entry's name, so a rescan's full-path root reads like
+        the child it replaces. Does nothing for the root.
+        """
+        parent = self.parent
+        if parent is None or not isinstance(parent.children, list):
+            return
+        position = next(index for index, child in enumerate(parent.children) if child is self)
+        new.name = self.name
+        new.parent = parent
+        parent.children[position] = new
+        self.parent = None
+        size = new.size - self.size
+        allocated = new.allocated - self.allocated
+        files = new.file_count - self.file_count
+        folders = new.dir_count - self.dir_count
+        node: Node | None = parent
+        while node is not None:
+            node.size += size
+            node.allocated += allocated
+            node.file_count += files
+            node.dir_count += folders
+            node.modified = max(node.modified, new.modified)
+            node = node.parent
+
+
+def outermost(nodes: Iterable[Node]) -> list[Node]:
+    """``nodes`` without repeats and without those inside another one of them, in the order given.
+
+    Moving or deleting a folder takes everything in it along, so this is the set to act on when
+    several entries were picked.
+    """
+    chosen: dict[int, Node] = {}
+    for node in nodes:
+        chosen.setdefault(id(node), node)
+    kept: list[Node] = []
+    for node in chosen.values():
+        above = node.parent
+        while above is not None and id(above) not in chosen:
+            above = above.parent
+        if above is None:
+            kept.append(node)
+    return kept

@@ -6,6 +6,12 @@ when a folder is expanded. The scanner leaves every folder's children sorted
 largest first; any other order is kept per folder in this model and computed
 the first time that folder is shown, so changing the sort column costs nothing
 up front either.
+
+While a scan is still running (``live``), worker threads keep appending
+children and growing sizes. The model then shows, for each folder, a sorted
+copy of its children taken the first time the folder is asked for, and keeps
+using that copy until ``refresh()``: the view never sees a list change under
+it, and each refresh re-sorts by the sizes reached so far.
 """
 
 from __future__ import annotations
@@ -19,15 +25,17 @@ from PySide6.QtWidgets import QApplication, QStyle
 
 from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from file_tree.core.node import Node
+from file_tree.core.scanner import NOT_SCANNED
 from file_tree.gui.i18n import tr
+from file_tree.gui.reasons import problem_text
 
-NAME, SIZE, SHARE, FILES, FOLDERS, MODIFIED = range(6)
-COLUMN_KEYS = ("column_name", "column_size", "column_share", "column_files", "column_folders",
+NAME, SIZE, ALLOCATED, SHARE, FILES, FOLDERS, MODIFIED = range(7)
+COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_files", "column_folders",
                "column_modified")
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
-_NUMERIC_COLUMNS = (SIZE, SHARE, FILES, FOLDERS)
+_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, FILES, FOLDERS)
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 
 ModelIndex = QModelIndex | QPersistentModelIndex
@@ -38,6 +46,7 @@ def sort_key(column: int) -> Callable[[Node], Any]:
     keys: dict[int, Callable[[Node], Any]] = {
         NAME: lambda node: (not node.is_dir, node.name.lower()),
         SIZE: lambda node: node.size,
+        ALLOCATED: lambda node: node.allocated,
         SHARE: lambda node: node.size,
         FILES: lambda node: node.file_count,
         FOLDERS: lambda node: node.dir_count,
@@ -52,12 +61,20 @@ class FolderTreeModel(QAbstractItemModel):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._root: Node | None = None
+        self._live = False
         self._unit = AUTO_UNIT
         self._sort_column = SIZE
         self._sort_order = Qt.SortOrder.DescendingOrder
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._icons: dict[str, QIcon] = {}
+        self._texts: dict[int, Callable[[Node], str]] = {
+            NAME: lambda node: node.name,
+            SIZE: lambda node: format_size(node.size, self._unit),
+            ALLOCATED: lambda node: "" if node.is_link else format_size(node.allocated, self._unit),
+            SHARE: lambda node: format_share(node.share_of_parent()),
+            MODIFIED: lambda node: format_time(node.modified),
+        }
         self._roles: dict[int, Callable[[Node, int], Any]] = {
             Qt.ItemDataRole.DisplayRole: self._display,
             Qt.ItemDataRole.TextAlignmentRole: lambda _node, column: _RIGHT if column in _NUMERIC_COLUMNS else None,
@@ -74,12 +91,28 @@ class FolderTreeModel(QAbstractItemModel):
         """The scanned folder shown, or None before the first scan."""
         return self._root
 
-    def set_root(self, root: Node | None) -> None:
-        """Show a new tree (or nothing)."""
+    @property
+    def live(self) -> bool:
+        """Whether the tree shown is still being scanned."""
+        return self._live
+
+    def set_root(self, root: Node | None, *, live: bool = False) -> None:
+        """Show a new tree (or nothing); ``live`` while the scan is still filling it in."""
         self.beginResetModel()
         self._root = root
+        self._live = live and root is not None
         self._clear_caches()
         self.endResetModel()
+
+    def refresh(self) -> None:
+        """Show what a running scan has added since the last refresh, keeping expansion and selection."""
+        self._relayout(lambda: None)
+
+    def finish_live(self) -> None:
+        """The scan is done: show its final, sorted tree without collapsing what the user opened."""
+        def stop() -> None:
+            self._live = False
+        self._relayout(stop)
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit`` (``"auto"`` or one of ``SIZE_UNITS``)."""
@@ -160,7 +193,7 @@ class FolderTreeModel(QAbstractItemModel):
         if parent.column() != 0:
             return 0
         node = self.node(parent)
-        return len(node.children) if node is not None else 0
+        return len(self._ordered(node)) if node is not None else 0
 
     def columnCount(self, parent: ModelIndex = QModelIndex()) -> int:  # noqa: B008
         """Qt: the number of columns."""
@@ -171,7 +204,7 @@ class FolderTreeModel(QAbstractItemModel):
         if not parent.isValid():
             return self._root is not None
         node = self.node(parent)
-        return parent.column() == 0 and node is not None and bool(node.children)
+        return parent.column() == 0 and node is not None and bool(self._ordered(node))
 
     def headerData(self, section: int, orientation: Qt.Orientation,
                    role: int = Qt.ItemDataRole.DisplayRole) -> Any:
@@ -196,11 +229,22 @@ class FolderTreeModel(QAbstractItemModel):
         """Qt: order every folder's children by ``column``; folders are re-sorted when next shown."""
         if not 0 <= column < len(COLUMN_KEYS):
             return
+
+        def change() -> None:
+            self._sort_column = column
+            self._sort_order = order
+        self._relayout(change)
+
+    def _relayout(self, change: Callable[[], None]) -> None:
+        """Apply ``change``, drop the cached orders and move every persistent index to its node's new row.
+
+        The view keeps its expanded folders, selection and current item as
+        persistent indexes, so they all follow their nodes.
+        """
         self.layoutAboutToBeChanged.emit()
         persistent = self.persistentIndexList()
         nodes = [(self.node(index), index.column()) for index in persistent]
-        self._sort_column = column
-        self._sort_order = order
+        change()
         self._clear_caches()
         replacements = [self._index_at(node, column_number) for node, column_number in nodes]
         self.changePersistentIndexList(persistent, replacements)
@@ -208,11 +252,26 @@ class FolderTreeModel(QAbstractItemModel):
 
     # --- helpers -----------------------------------------------------------
 
+    def replace(self, old: Node, new: Node) -> None:
+        """Swap a rescanned folder into the tree (``Node.replace_with``), keeping what the view still can.
+
+        Expanded folders and the selection that were inside the old branch are
+        dropped; everywhere else they follow their nodes as after a sort.
+        """
+        self._relayout(lambda: old.replace_with(new))
+
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
-        if node is None:
+        if node is None or not self._in_tree(node):
             return QModelIndex()
         index = self.index_for(node)
         return index.siblingAtColumn(column) if index.isValid() else index
+
+    def _in_tree(self, node: Node) -> bool:
+        """Whether ``node`` still hangs under the root (not in a branch that was replaced or removed)."""
+        top = node
+        while top.parent is not None:
+            top = top.parent
+        return top is self._root
 
     def _clear_caches(self) -> None:
         self._orders.clear()
@@ -222,13 +281,13 @@ class FolderTreeModel(QAbstractItemModel):
         return self._sort_column in (SIZE, SHARE) and self._sort_order == Qt.SortOrder.DescendingOrder
 
     def _ordered(self, folder: Node) -> list[Node] | tuple[()]:
-        """``folder``'s children in the current sort order."""
-        if self._is_default_order() or not folder.children:
+        """``folder``'s children in the current sort order (a frozen copy while the scan is live)."""
+        if not folder.children or (self._is_default_order() and not self._live):
             return folder.children
         cached = self._orders.get(id(folder))
         if cached is None:
             descending = self._sort_order == Qt.SortOrder.DescendingOrder
-            cached = sorted(folder.children, key=sort_key(self._sort_column), reverse=descending)
+            cached = sorted(list(folder.children), key=sort_key(self._sort_column), reverse=descending)
             self._orders[id(folder)] = cached
         return cached
 
@@ -253,28 +312,25 @@ class FolderTreeModel(QAbstractItemModel):
 
     def _refresh_children(self, folder: Node) -> None:
         """Repaint the numbers of every child of ``folder`` (their share of it changed)."""
-        count = len(folder.children)
+        count = len(self._ordered(folder))
         parent_index = self.index_for(folder)
         if count and parent_index.isValid():
             self.dataChanged.emit(self.index(0, SIZE, parent_index),
                                   self.index(count - 1, MODIFIED, parent_index))
 
     def _display(self, node: Node, column: int) -> str:
-        if column == NAME:
-            return node.name
-        if column == SIZE:
-            return format_size(node.size, self._unit)
-        if column == SHARE:
-            return format_share(node.share_of_parent())
-        if column == MODIFIED:
-            return format_time(node.modified)
+        text = self._texts.get(column)
+        if text is not None:
+            return text(node)
         if not node.is_dir or node.is_link:
-            return ""
+            return ""  # the file and folder counts are for folders only
         return format_count(node.file_count if column == FILES else node.dir_count)
 
     def _tooltip(self, node: Node) -> str:
+        if node.error == NOT_SCANNED:
+            return tr("tooltip_not_scanned", path=node.path)
         if node.error:
-            return tr("tooltip_unreadable", path=node.path, reason=node.error)
+            return tr("tooltip_unreadable", path=node.path, reason=problem_text(node.error))
         if node.is_link:
             return tr("tooltip_link", path=node.path)
         return node.path

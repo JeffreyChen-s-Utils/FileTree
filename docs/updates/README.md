@@ -64,6 +64,17 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20260926-14 | 2026-09-26 | Size on disk for every entry | #done #core #gui #perf | [2026-09](2026-09.md) |
+| U-20260926-13 | 2026-09-26 | Search the whole scan by name or pattern | #done #gui #core | [2026-09](2026-09.md) |
+| U-20260926-12 | 2026-09-26 | Tests no longer bring up the real administrator prompt | #fix #test | [2026-09](2026-09.md) |
+| U-20260926-11 | 2026-09-26 | Move several entries to the Recycle Bin with one question | #done #gui | [2026-09](2026-09.md) |
+| U-20260926-10 | 2026-09-26 | Rescan one folder and swap it into the results | #done #scanner #gui | [2026-09](2026-09.md) |
+| U-20260926-09 | 2026-09-26 | An application icon, drawn in code, also in the Nuitka build | #done #gui #build | [2026-09](2026-09.md) |
+| U-20260926-08 | 2026-09-26 | Stop takes effect at once; live-scan tests no longer depend on timing | #incident #scanner #tests | [2026-09](2026-09.md) |
+| U-20260926-07 | 2026-09-26 | Age tab; double-click a type or an age to list its largest files | #done #analysis #gui | [2026-09](2026-09.md) |
+| U-20260926-06 | 2026-09-26 | Unreadable-folder reasons in the window's language | #done #scanner #i18n | [2026-09](2026-09.md) |
+| U-20260926-05 | 2026-09-26 | Ask for administrator rights at start, like TreeSize (Windows) | #done #gui #windows | [2026-09](2026-09.md) |
+| U-20260926-04 | 2026-09-26 | The tree fills in while the scan runs; Stop keeps what was read | #done #scanner #gui | [2026-09](2026-09.md) |
 | U-20260926-03 | 2026-09-26 | The Nuitka script asks Qt where its translations are (Linux CI) | #incident #build #nuitka #ci | [2026-09](2026-09.md) |
 | U-20260926-02 | 2026-09-26 | start_file_tree.py and a Nuitka build with Qt's translations | #release #build #nuitka #docs | [2026-09](2026-09.md) |
 | U-20260926-01 | 2026-09-26 | FileTree 0.1.0: scanner, treemap and PySide6 window | #release #scanner #treemap #gui #i18n | [2026-09](2026-09.md) |

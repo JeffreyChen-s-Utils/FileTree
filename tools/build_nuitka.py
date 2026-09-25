@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT))
 import PySide6  # noqa: E402
 from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
+from file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
 from file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
 
 ENTRY_POINT = ROOT / "start_file_tree.py"
@@ -57,6 +58,27 @@ def translation_options(translations: Path, packages: Path) -> list[str]:
     return options
 
 
+def icon_options(folder: Path, extra: list[str]) -> list[str]:
+    """Write the program icon into ``folder`` and return the Nuitka option that uses it.
+
+    Windows gets a multi-size ``.ico``, Linux a 256-pixel PNG; macOS wants an
+    ``.icns``, which is not made here. Nothing is added when ``extra`` already
+    names an icon.
+    """
+    if any(option.split("=")[0].endswith("-icon") or "-icon-" in option for option in extra):
+        return []
+    folder.mkdir(parents=True, exist_ok=True)
+    if sys.platform == "win32":
+        path = folder / f"{PROGRAM_NAME}.ico"
+        path.write_bytes(ico_bytes())
+        return [f"--windows-icon-from-ico={path}"]
+    if sys.platform.startswith("linux"):
+        path = folder / f"{PROGRAM_NAME}.png"
+        path.write_bytes(png_bytes(draw(256)))
+        return [f"--linux-icon={path}"]
+    return []
+
+
 def nuitka_command(mode: str, extra: list[str]) -> list[str]:
     """The full Nuitka command line for ``mode`` (``standalone``, ``onefile`` or ``app``)."""
     command = [
@@ -78,7 +100,7 @@ def main(argv: list[str]) -> int:
     group.add_argument("--app", action="store_true", help="build a macOS app bundle")
     options, extra = parser.parse_known_args(argv)
     mode = "onefile" if options.onefile else "app" if options.app else "standalone"
-    command = nuitka_command(mode, extra)
+    command = nuitka_command(mode, [*icon_options(ROOT / "build", extra), *extra])
     sys.stdout.write(" ".join(command) + "\n")
     return subprocess.run(command, cwd=ROOT, check=False).returncode  # noqa: S603 # nosec B603
 

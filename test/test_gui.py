@@ -2,25 +2,31 @@
 
 from __future__ import annotations
 
+import functools
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSettings, Qt, QUrl
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
 from file_tree.core.analysis import CATEGORIES
+from file_tree.core.formatting import format_size
 from file_tree.core.node import Node
-from file_tree.core.scanner import ScanCancelledError, scan
+from file_tree.core import scanner
+from file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from file_tree.gui import file_actions, i18n, scan_worker
+from file_tree.gui import main_window as main_window_module
 from file_tree.gui.app import create_window
 from file_tree.gui.help_dialog import HelpDialog
-from file_tree.gui.main_window import RESULTS_PAGE, SCAN_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
+from file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from file_tree.gui.qt_translation import apply_qt_translation
+from file_tree.gui.results_view import SEARCH_TAB
 from file_tree.gui.scan_worker import analyse
 from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
-from file_tree.gui.tree_model import NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
+from file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 
@@ -47,7 +53,19 @@ def window(qapp: QApplication, tmp_path: Path):
 
 def _scanned(window: MainWindow, qapp: QApplication, folder: Path) -> None:
     window.start_scan(str(folder))
-    _wait(qapp, lambda: window.pages.currentIndex() == RESULTS_PAGE)
+    _wait(qapp, lambda: window.results.outcome is not None)
+
+
+def _child(node: Node, name: str) -> Node:
+    return next(child for child in node.children if child.name == name)
+
+
+def _select(window: MainWindow, *nodes: Node) -> None:
+    """Add ``nodes`` to the tree's selection, as Ctrl+click does."""
+    selection = window.results.tree.selectionModel()
+    flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+    for node in nodes:
+        selection.select(window.results.tree_model.index_for(node), flags)
 
 
 # --- models -----------------------------------------------------------------
@@ -171,8 +189,9 @@ def test_a_missing_folder_is_reported_without_leaving_the_page(window: MainWindo
     assert warnings and "missing" in warnings[0]
 
 
-def test_stop_returns_to_the_previous_page(window: MainWindow, qapp: QApplication, sample_tree: Path,
-                                           monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_stop_before_anything_was_read_returns_to_the_start_page(window: MainWindow, qapp: QApplication,
+                                                                    sample_tree: Path,
+                                                                    monkeypatch: pytest.MonkeyPatch) -> None:
     def endless(_path: str, *, cancel, **_kwargs: object) -> None:
         while not cancel.wait(0.01):
             pass
@@ -180,10 +199,72 @@ def test_stop_returns_to_the_previous_page(window: MainWindow, qapp: QApplicatio
 
     monkeypatch.setattr(scan_worker, "scan", endless)
     window.start_scan(str(sample_tree))
-    assert window.pages.currentIndex() == SCAN_PAGE
+    assert window.pages.currentIndex() == RESULTS_PAGE
+    assert window.results.scan_bar.isVisibleTo(window.results)
     window.stop_scan()
     _wait(qapp, lambda: window.pages.currentIndex() == WELCOME_PAGE)
     assert window.statusBar().currentMessage() == "Scan stopped."
+    assert window.results.tree_model.root is None
+
+
+def _gated_scan(monkeypatch: pytest.MonkeyPatch, root: Path) -> threading.Event:
+    """Scan with one worker and hold every folder but the root until the returned gate opens.
+
+    The live tests must see the scan still running when they act, whatever the
+    machine's speed; a sleep only makes that likely (a slow CI runner once
+    finished the scan before Stop arrived).
+    """
+    gate = threading.Event()
+    real = scanner._read_folder
+
+    def gated(folder, path, *rest):
+        if path != str(root):
+            gate.wait(10)
+        return real(folder, path, *rest)
+
+    monkeypatch.setattr(scanner, "_read_folder", gated)
+    monkeypatch.setattr(main_window_module, "ScanOptions", functools.partial(ScanOptions, workers=1))
+    return gate
+
+
+def test_the_tree_shows_and_grows_while_the_scan_runs(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    gate = _gated_scan(monkeypatch, sample_tree)
+    window.start_scan(str(sample_tree))
+    model = window.results.tree_model
+    _wait(qapp, lambda: model.root is not None and model.root.file_count > 0)
+    _wait(qapp, lambda: "so far" in window.results.summary.text())
+    assert model.live and window.results.outcome is None
+    window.results.refresh_live()
+    top = model.index(0, 0)
+    assert model.rowCount(top) == len(model.root.children) > 0
+    window.results.tree.expand(top)
+    gate.set()
+    _wait(qapp, lambda: window.results.outcome is not None, timeout=15)
+    assert not model.live
+    assert window.results.tree.isExpanded(model.index(0, 0)), "what was opened during the scan stays open"
+    assert "1,000 B" in window.results.summary.text()
+    assert not window.results.scan_bar.isVisibleTo(window.results)
+
+
+def test_stopping_keeps_what_was_read(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    gate = _gated_scan(monkeypatch, sample_tree)
+    window.start_scan(str(sample_tree))
+    model = window.results.tree_model
+    _wait(qapp, lambda: model.root is not None and model.root.file_count > 0)
+    window.stop_scan()
+    gate.set()  # the one folder being read finishes; the rest stay unread
+    _wait(qapp, lambda: window.results.outcome is not None, timeout=15)
+    outcome = window.results.outcome
+    assert outcome.partial
+    assert window.pages.currentIndex() == RESULTS_PAGE
+    assert "incomplete" in window.results.summary.text()
+    assert window.statusBar().currentMessage().startswith("Scan stopped: the results show")
+    unread = [node for node in outcome.result.root.iter_nodes() if node.error == scanner.NOT_SCANNED]
+    assert unread
+    tip = model.index_for(unread[0]).data(Qt.ItemDataRole.ToolTipRole)
+    assert "Not scanned" in tip
 
 
 def test_switching_language_and_unit(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
@@ -215,16 +296,121 @@ def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: Q
     big = root.children[0]
     trashed: list[str] = []
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.No)
-    window.move_to_trash(big)
+    window.move_to_trash([big])
     assert root.size == 1000
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
-    window.move_to_trash(big)
+    window.move_to_trash([big])
     assert trashed == [str(sample_tree / "big.bin")]
     assert root.size == 500
     assert [node.name for node in window.results.largest_model.rows()][0] == "a.jpg"
     assert all(stat.extension != ".bin" for stat in window.results.types_model.rows())
     assert "500 B" in window.statusBar().currentMessage()
+
+
+def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    root = window.results.tree_model.root
+    assert root is not None
+    photos = _child(root, "photos")
+    window.results.tree.selectionModel().clearSelection()
+    _select(window, _child(root, "big.bin"), photos, _child(photos, "a.jpg"), _child(root, "notes.txt"))
+    assert window.statusBar().currentMessage() == "4 items selected: 850 B", "a.jpg is inside photos: counted once"
+    _select(window, root)
+    questions: list[str] = []
+    warnings: list[str] = []
+    trashed: list[str] = []
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda _parent, _title, text: questions.append(text) or QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(file_actions, "move_to_trash",
+                        lambda path: trashed.append(path) or not path.endswith("notes.txt"))
+    window._trash_selected()  # what Delete does
+    assert len(questions) == 1
+    assert "3 items (850 B in total)" in questions[0]
+    assert questions[0].index("• big.bin (500 B)") < questions[0].index("• photos (250 B)")
+    assert "a.jpg" not in questions[0]
+    assert sorted(trashed) == sorted(str(sample_tree / name) for name in ("big.bin", "photos", "notes.txt"))
+    assert len(warnings) == 1 and "notes.txt" in warnings[0], "the refused entry is named"
+    assert root.size == 250
+    assert {child.name for child in root.children} == {"code", "notes.txt"}
+    assert {node.name for node in window.results.largest_model.rows()} == {"notes.txt", "main.py", "Makefile"}
+    assert not {".bin", ".jpg", ".png"} & {stat.extension for stat in window.results.types_model.rows()}
+    assert window.statusBar().currentMessage() == "Moved 2 items to the Recycle Bin: 750 B freed."
+
+
+def test_the_context_menu_acts_on_the_selection_it_was_opened_on(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    window.resize(1000, 700)
+    window.show()
+    results = window.results
+    root = results.tree_model.root
+    assert root is not None
+    big, notes, photos = (_child(root, name) for name in ("big.bin", "notes.txt", "photos"))
+    results.tree.expand(results.tree_model.index_for(root))
+    qapp.processEvents()
+    results.tree.selectionModel().clearSelection()
+    _select(window, big, notes)
+    menus: list[list[str]] = []
+
+    class RecordingMenu(QMenu):
+        def exec(self, *_args: object) -> None:  # instead of popping up and waiting for a click
+            menus.append([action.text() for action in self.actions()])
+
+    monkeypatch.setattr(main_window_module, "QMenu", RecordingMenu)
+    requests: list[tuple[Node, list[Node]]] = []
+    results.node_menu_requested.connect(lambda node, picked, _point: requests.append((node, picked)))
+    for node in (notes, photos):
+        results._menu_for(results.tree, results.tree.visualRect(results.tree_model.index_for(node)).center())
+    assert requests[0][0] is notes and {id(node) for node in requests[0][1]} == {id(big), id(notes)}
+    assert requests[1][0] is photos and requests[1][1] == [photos], "a click outside the selection acts alone"
+    assert menus[0][-1] == "Move 2 items to Recycle Bin"
+    assert menus[1][-1] == "Move to Recycle Bin"
+    window.show_menu_for(root, [root], QPoint())
+    assert "Move to Recycle Bin" not in menus[2], "the scanned folder itself cannot be moved"
+
+
+def test_search_finds_entries_anywhere_and_follows_changes_to_the_tree(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    panel = results.search
+    root = results.tree_model.root
+    assert root is not None
+    window._find()  # what Ctrl+F does
+    assert results.tabs.currentIndex() == SEARCH_TAB
+    panel.box.setText("*.jpg;*.png")  # searched once typing pauses
+    _wait(qapp, lambda: len(results.search_model.rows()) == 2 and not panel.busy)
+    assert [node.name for node in results.search_model.rows()] == ["a.jpg", "b.png"]
+    assert panel.summary.text() == "2 matches, 250 B in total."
+    panel.box.setText("photos")
+    panel.box.returnPressed.emit()  # Enter searches at once
+    _wait(qapp, lambda: not panel.busy)
+    photos = _child(root, "photos")
+    assert results.search_model.rows() == [photos]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash([photos])
+    _wait(qapp, lambda: not panel.busy)
+    assert panel.summary.text() == "Nothing matches.", "the search runs again after the tree changed"
+    window.start_scan(str(sample_tree))  # the folder is still there: moving it was pretended
+    assert not panel.box.isEnabled(), "no searching while a scan fills the tree"
+    _wait(qapp, lambda: window.results.outcome is not None and not panel.busy)
+    assert panel.box.isEnabled()
+    assert [node.name for node in results.search_model.rows()] == ["photos"]
+
+
+def test_the_tree_and_the_summary_show_the_space_taken_on_disk(window: MainWindow, qapp: QApplication,
+                                                                  sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    model = window.results.tree_model
+    root = model.root
+    assert root is not None and root.allocated > 0
+    assert model.headerData(ALLOCATED, Qt.Orientation.Horizontal) == "On disk"
+    assert model.index(0, ALLOCATED).data() == format_size(root.allocated)
+    assert f"({format_size(root.allocated)} on disk)" in window.results.summary.text()
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:
@@ -238,3 +424,45 @@ def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path)
 
 def test_explorer_command_always_quotes_the_path() -> None:
     assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
+
+
+def test_double_clicking_a_type_or_an_age_lists_its_largest_files(window: MainWindow, qapp: QApplication,
+                                                                  sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    assert results.age_model.rowCount() == 5
+    results.show_largest_of_type(".jpg")
+    assert [node.name for node in results.largest_model.rows()] == ["a.jpg"]
+    assert results.tabs.currentIndex() == 1
+    assert "Showing only: .jpg" in results._focus_label.text()
+    results.show_largest_of_type("")
+    assert [node.name for node in results.largest_model.rows()] == ["Makefile"]
+    assert "(no extension)" in results._focus_label.text()
+    results.show_largest_of_age("month")
+    assert len(results.largest_model.rows()) == 6, "the sample files were all written just now"
+    results.show_all_largest()
+    assert results.largest_model.rowCount() == 6 and results._focus_bar.isHidden()
+    types_index = results.types_table.model().index(0, 0)
+    results.types_table.doubleClicked.emit(types_index)
+    assert not results._focus_bar.isHidden()
+
+
+def test_rescanning_one_folder_swaps_it_in_and_updates_every_list(window: MainWindow, qapp: QApplication,
+                                                                   sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    root = results.tree_model.root
+    code = next(child for child in root.children if child.name == "code")
+    results.select_node(code)
+    (sample_tree / "photos" / "new.mov").write_bytes(b"v" * 700)
+    photos = next(child for child in root.children if child.name == "photos")
+    window.rescan_folder(photos)
+    _wait(qapp, lambda: any(node.name == "new.mov" for node in results.largest_model.rows()), timeout=15)
+    fresh = next(child for child in root.children if child.name == "photos")
+    assert fresh is not photos and fresh.size == 950
+    assert root.size == 1700 and root.file_count == 7
+    assert results.largest_model.rows()[0].name == "new.mov"
+    assert any(stat.extension == ".mov" for stat in results.types_model.rows())
+    assert results.selected_node() is code, "the selection outside the rescanned folder stays"
+    assert "Rescanned photos: 250 B → 950 B" in window.statusBar().currentMessage()
+    assert results.tree_model.index(0, 0).data() == str(sample_tree)

@@ -57,7 +57,7 @@ python tools/build_nuitka.py --app
 
 产物是 `build/app/FileTree.app`。
 
-其他选项会原样交给 Nuitka，例如加上图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`。
+在 Windows 与 Linux 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`（macOS 否则没有图标）。
 
 ## 3. 脚本运行的选项
 
@@ -70,6 +70,7 @@ python tools/build_nuitka.py --app
 | `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 生成的东西都放在 `build/`，Git 会忽略这个文件夹；每种形式各有自己的文件夹，编其中一种不会删掉另一种 |
 | `--output-filename=FileTree` | 程序叫 FileTree，而不是 start_file_tree |
 | `--assume-yes-for-downloads` | 让 Nuitka 不经询问就下载它需要的辅助工具 |
+| `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
 | `--macos-app-name=FileTree`（只在 `--app` 时） | 在 Finder 与 Dock 显示的名称 |
 
 入口是 `start_file_tree.py`，和 `python -m file_tree` 是同一个程序。

@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -65,14 +66,14 @@ def test_an_unreadable_folder_is_recorded_and_the_scan_goes_on(sample_tree: Path
 
     def scandir(path: str):
         if path == locked:
-            raise PermissionError(13, "Access is denied")
+            raise PermissionError(13, "存取被拒。")  # the OS words it in the system's language
         return real_scandir(path)
 
     monkeypatch.setattr(scanner.os, "scandir", scandir)
     result = scan(sample_tree)
-    assert result.errors == [(locked, "Access is denied")]
+    assert result.errors == [(locked, scanner.ACCESS_DENIED)]
     photos = _child(result.root, "photos")
-    assert photos.error == "Access is denied"
+    assert photos.error == scanner.ACCESS_DENIED
     assert (photos.size, result.root.size, result.root.file_count) == (0, 750, 4)
 
 
@@ -125,8 +126,52 @@ def test_progress_is_reported_from_the_calling_thread_and_ends_with_the_totals(s
 def test_setting_cancel_stops_the_scan(sample_tree: Path) -> None:
     cancel = threading.Event()
     cancel.set()
-    with pytest.raises(ScanCancelledError):
+    with pytest.raises(ScanCancelledError) as stopped:
         scan(sample_tree, cancel=cancel, progress_interval=0.001)
+    partial = stopped.value.partial
+    assert partial is not None
+    assert partial.root.error == scanner.NOT_SCANNED
+    assert (partial.root.size, partial.root.children) == (0, [])
+
+
+def _slow_reads(monkeypatch: pytest.MonkeyPatch, delay: float) -> None:
+    real = scanner._read_folder
+
+    def slow(*args: object):
+        time.sleep(delay)
+        return real(*args)
+
+    monkeypatch.setattr(scanner, "_read_folder", slow)
+
+
+def test_a_stopped_scan_hands_back_what_it_read(sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _slow_reads(monkeypatch, 0.05)
+    cancel = threading.Event()
+    with pytest.raises(ScanCancelledError) as stopped:
+        scan(sample_tree, options=ScanOptions(workers=1), cancel=cancel, progress_interval=0.01,
+             progress=lambda _update: cancel.set())
+    root = stopped.value.partial.root
+    assert root.error is None, "the root was read before the stop"
+    assert root.size == sum(child.size for child in root.children)
+    assert [child.name for child in root.children][0] == "big.bin", "children are sorted like a finished scan"
+    unread = [node for node in root.iter_nodes() if node.error == scanner.NOT_SCANNED]
+    assert unread and all(node.is_dir and node.size == 0 for node in unread)
+
+
+def test_totals_grow_while_the_scan_runs(sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _slow_reads(monkeypatch, 0.02)
+    roots: list[Node] = []
+    seen: list[tuple[int, int, int]] = []
+
+    def watch(_update: ScanProgress) -> None:
+        root = roots[0]
+        seen.append((root.size, root.file_count, root.dir_count))
+
+    result = scan(sample_tree, options=ScanOptions(workers=1), progress=watch, progress_interval=0.005,
+                  on_root=roots.append)
+    assert roots == [result.root]
+    assert seen[0] < seen[-1] == (1000, 6, 3)
+    assert seen == sorted(seen), "running totals only ever grow"
 
 
 def test_an_unexpected_error_in_a_worker_reaches_the_caller(sample_tree: Path,

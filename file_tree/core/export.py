@@ -19,14 +19,15 @@ from typing import Any
 
 from file_tree.core.node import Node
 
-FOLDER_COLUMNS = ("path", "size_bytes", "share_of_parent", "files", "folders", "modified", "error")
-FILE_COLUMNS = ("path", "size_bytes", "modified")
+FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
+                  "error")
+FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified")
 
 
 def export_folders_csv(root: Node, target: str | os.PathLike[str],
                        max_depth: int | None = None) -> int:
     """Write one row per folder (``root`` included, down to ``max_depth`` levels); return the row count."""
-    rows = ([node.path, node.size, round(node.share_of_parent(), 6), node.file_count,
+    rows = ([node.path, node.size, node.allocated, round(node.share_of_parent(), 6), node.file_count,
              node.dir_count, _iso_time(node.modified), node.error or ""]
             for node in _folders(root, max_depth))
     return _write_csv(target, FOLDER_COLUMNS, rows)
@@ -34,7 +35,7 @@ def export_folders_csv(root: Node, target: str | os.PathLike[str],
 
 def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> int:
     """Write one row per file in ``files``, in the given order; return the row count."""
-    rows = ([node.path, node.size, _iso_time(node.modified)] for node in files)
+    rows = ([node.path, node.size, node.allocated, _iso_time(node.modified)] for node in files)
     return _write_csv(target, FILE_COLUMNS, rows)
 
 
@@ -61,7 +62,7 @@ def _folder_json(root: Node, max_depth: int | None) -> dict[str, Any]:
     stack: list[tuple[Node, dict[str, Any], int]] = [(root, top, 0)]
     while stack:
         node, target, depth = stack.pop()
-        target.update(name=node.name, size=node.size, files=node.file_count,
+        target.update(name=node.name, size=node.size, allocated=node.allocated, files=node.file_count,
                       folders=node.dir_count, modified=_iso_time(node.modified))
         if node.error:
             target["error"] = node.error

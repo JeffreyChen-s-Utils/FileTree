@@ -1,8 +1,11 @@
-"""Numbers computed from a scanned tree: the largest files and space per file type."""
+"""Numbers computed from a scanned tree: the largest files, space per file type and per age."""
 
 from __future__ import annotations
 
 import heapq
+import math
+import time
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 from file_tree.core.node import Node
@@ -82,20 +85,88 @@ class CategoryStat:
     count: int
 
 
-def summarise(root: Node, limit: int = 1000) -> tuple[list[Node], list[ExtensionStat]]:
-    """``largest_files`` and ``extension_stats`` together, in one pass over the tree.
+# Age groups by time since a file last changed: (name, the oldest age in days
+# that still belongs to it). The last group takes everything older, and files
+# with no usable time (0) land there too.
+AGE_GROUPS: tuple[tuple[str, float], ...] = (
+    ("month", 30.0), ("half_year", 182.5), ("year", 365.0), ("two_years", 730.0), ("older", math.inf),
+)
+AGES: tuple[str, ...] = tuple(name for name, _ in AGE_GROUPS)
+_DAY = 86400.0
+
+
+@dataclass(frozen=True, slots=True)
+class AgeStat:
+    """Space taken by every file last changed within one age group."""
+
+    age: str
+    size: int
+    count: int
+
+
+@dataclass(frozen=True, slots=True)
+class Summary:
+    """What the result views show, computed in one pass."""
+
+    largest: list[Node]
+    extensions: list[ExtensionStat]
+    ages: list[AgeStat]
+    now: float
+
+
+def summarise(root: Node, limit: int = 1000, *, now: float | None = None) -> Summary:
+    """The largest files, the per-extension totals and the per-age totals, in one pass over the tree.
 
     A single pass matters on big scans: measured on 650,000 files, 0.65 s
-    against 1.4 s for the two functions one after the other.
+    against 1.4 s for the first two computed one after the other. ``now`` is
+    the moment ages are counted from (the current time when omitted).
     """
+    now = time.time() if now is None else now
     files, sizes, counts = _files_and_extensions(root)
     largest = heapq.nlargest(limit, files, key=_file_size) if limit > 0 else []
-    return largest, _extension_list(sizes, counts)
+    return Summary(largest, _extension_list(sizes, counts), age_stats(files, now), now)
 
 
 def largest_files(root: Node, limit: int = 1000) -> list[Node]:
     """The ``limit`` largest files beneath ``root`` (or ``root`` itself if it is a file), largest first."""
-    return summarise(root, limit)[0]
+    return summarise(root, limit).largest
+
+
+def largest_matching(root: Node, keep: Callable[[Node], bool], limit: int = 1000) -> list[Node]:
+    """The ``limit`` largest files beneath ``root`` for which ``keep`` is true, largest first."""
+    files = _files_and_extensions(root)[0]
+    return heapq.nlargest(limit, filter(keep, files), key=_file_size) if limit > 0 else []
+
+
+def files_beneath(root: Node) -> list[Node]:
+    """Every file beneath ``root`` (or ``root`` itself if it is a file), links left out."""
+    return _files_and_extensions(root)[0]
+
+
+def age_of(modified: float, now: float) -> str:
+    """The age group of a file last changed at ``modified`` (a POSIX time), seen from ``now``."""
+    if modified <= 0:
+        return AGES[-1]
+    days = (now - modified) / _DAY
+    return next(name for name, oldest in AGE_GROUPS if days <= oldest)
+
+
+def age_stats(files: Iterable[Node], now: float) -> list[AgeStat]:
+    """Total size and count per age group, in the order of ``AGES`` (empty groups included)."""
+    sizes = dict.fromkeys(AGES, 0)
+    counts = dict.fromkeys(AGES, 0)
+    for node in files:
+        age = age_of(node.modified, now)
+        sizes[age] += node.size
+        counts[age] += 1
+    return [AgeStat(age, sizes[age], counts[age]) for age in AGES]
+
+
+def subtract_ages(ages: list[AgeStat], removed: list[AgeStat]) -> list[AgeStat]:
+    """``ages`` minus ``removed`` group by group (both from ``age_stats``), after files were deleted."""
+    taken = {stat.age: stat for stat in removed}
+    return [AgeStat(stat.age, stat.size - taken[stat.age].size, stat.count - taken[stat.age].count)
+            if stat.age in taken else stat for stat in ages]
 
 
 def extension_stats(root: Node) -> list[ExtensionStat]:

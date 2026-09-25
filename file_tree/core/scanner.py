@@ -6,11 +6,17 @@ released, so on a disk with many folders the waits overlap. The walk never
 follows links (symlinks and Windows junctions are recorded with size 0, so a
 link loop cannot make a scan run forever), and it keeps going past folders it
 cannot read: those get ``Node.error`` and an entry in ``ScanResult.errors``.
-Totals are added up bottom-up once every folder has been read.
+
+The tree can be shown while it is being read (``on_root`` hands out the root
+first): whenever a folder has been listed, its files are added to the totals
+of every folder above it, so sizes grow as the scan goes. Children are only
+ever appended during the scan; once every folder is read, the totals are
+added up again bottom-up and each folder's children sorted largest first.
 """
 
 from __future__ import annotations
 
+import errno
 import os
 import threading
 import time
@@ -18,6 +24,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import cast
 
+from file_tree.core.allocation import Allocation, allocation_for
 from file_tree.core.node import Node
 
 # Windows reparse tags of links that must not be followed. A junction (and a
@@ -33,8 +40,31 @@ _FILE_ATTRIBUTE_HIDDEN = 0x2
 DEFAULT_WORKERS = min(4, os.cpu_count() or 1)
 
 
+# The common reasons are worded here instead of taken from the OS, whose text
+# is in the system's language (a Chinese Windows answers 存取被拒。 in an
+# English window); the GUI translates these, exports keep them as they are.
+ACCESS_DENIED = "access denied"
+NOT_FOUND = "not found"
+PATH_TOO_LONG = "path too long"
+_REASON_BY_ERRNO = {errno.EACCES: ACCESS_DENIED, errno.EPERM: ACCESS_DENIED, errno.ENOENT: NOT_FOUND,
+                    errno.ENAMETOOLONG: PATH_TOO_LONG}
+_WINDOWS_PATH_TOO_LONG = 206  # ERROR_FILENAME_EXCED_RANGE
+
+# ``Node.error`` of a folder the scan never got to because it was stopped.
+NOT_SCANNED = "not scanned: the scan was stopped first"
+
+
 class ScanCancelledError(Exception):
-    """Raised by ``scan`` when its ``cancel`` event is set."""
+    """Raised by ``scan`` when its ``cancel`` event is set.
+
+    ``partial`` is what was read before the stop, added up and sorted like a
+    finished scan; folders never read have ``error == NOT_SCANNED`` (when the
+    stop came before anything was read, that is the root itself).
+    """
+
+    def __init__(self, partial: ScanResult | None = None) -> None:
+        super().__init__("scan cancelled")
+        self.partial = partial
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +95,7 @@ class ScanResult:
 
 
 ProgressCallback = Callable[[ScanProgress], None]
+RootCallback = Callable[[Node], None]
 
 
 @dataclass(slots=True)
@@ -74,20 +105,22 @@ class _FolderRead:
     subfolders: list[tuple[Node, str]] = field(default_factory=list)
     files: int = 0
     size: int = 0
+    allocated: int = 0
     errors: list[tuple[str, str]] = field(default_factory=list)
 
 
-def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,
+def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  # noqa: PLR0913
          progress: ProgressCallback | None = None, cancel: threading.Event | None = None,
-         progress_interval: float = 0.1) -> ScanResult:
+         progress_interval: float = 0.1, on_root: RootCallback | None = None) -> ScanResult:
     """Scan the folder at ``path`` and return its tree.
 
-    ``progress`` is called about every ``progress_interval`` seconds (and once
-    at the end), always from the calling thread. Setting ``cancel`` stops the
-    scan with ``ScanCancelledError`` within one interval.
+    ``on_root`` is called once with the (still empty) root before any folder is
+    read, for showing the tree while it grows. ``progress`` is called about
+    every ``progress_interval`` seconds (and once at the end). Both run on the
+    calling thread. Setting ``cancel`` stops the scan within one interval.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
-    :raises ScanCancelledError: when ``cancel`` is set during the scan
+    :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
     """
     root_path = os.path.abspath(os.fspath(path))
     if not os.path.isdir(root_path):
@@ -95,8 +128,16 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,
     options = options or ScanOptions()
     started = time.monotonic()
     root = Node(name=root_path, is_dir=True, children=[])
-    crawler = _Crawler(root, root_path, options)
-    crawler.run(progress, cancel, progress_interval)
+    if on_root is not None:
+        on_root(root)
+    crawler = _Crawler(root, root_path, options, cancel)
+    try:
+        crawler.run(progress, cancel, progress_interval)
+    except ScanCancelledError:
+        for folder, _ in crawler.unread():
+            folder.error = NOT_SCANNED
+        _add_up(crawler.folders)
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started)) from None
     _add_up(crawler.folders)
     if progress is not None:
         progress(crawler.snapshot())
@@ -106,8 +147,11 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,
 class _Crawler:
     """Worker threads sharing one stack of folders still to read."""
 
-    def __init__(self, root: Node, root_path: str, options: ScanOptions) -> None:
+    def __init__(self, root: Node, root_path: str, options: ScanOptions,
+                 cancel: threading.Event | None = None) -> None:
         self._options = options
+        self._allocation = allocation_for(root_path)
+        self._cancel = cancel
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
         self._stopped = False
@@ -120,6 +164,11 @@ class _Crawler:
         self.files = 0
         self.size = 0
 
+    def unread(self) -> list[tuple[Node, str]]:
+        """The folders still waiting to be read (after ``run`` has returned or raised)."""
+        with self._condition:
+            return list(self._pending)
+
     def snapshot(self) -> ScanProgress:
         """The counts so far."""
         with self._condition:
@@ -127,7 +176,12 @@ class _Crawler:
 
     def run(self, progress: ProgressCallback | None, cancel: threading.Event | None,
             interval: float) -> None:
-        """Read every folder, reporting progress and watching ``cancel`` from this thread."""
+        """Read every folder, reporting progress and watching ``cancel`` from this thread.
+
+        The workers watch ``cancel`` too and take no new folder once it is set,
+        so a stop is immediate instead of up to one ``interval`` late; the
+        folders already being read finish.
+        """
         if cancel is not None and cancel.is_set():
             raise ScanCancelledError
         threads = [threading.Thread(target=self._work, name=f"file-tree-scan-{number}", daemon=True)
@@ -137,7 +191,7 @@ class _Crawler:
         try:
             while not self._done.wait(interval):
                 if cancel is not None and cancel.is_set():
-                    raise ScanCancelledError
+                    break
                 if progress is not None:
                     progress(self.snapshot())
         finally:
@@ -146,6 +200,8 @@ class _Crawler:
                 thread.join()
         if self._failure is not None:
             raise self._failure
+        if cancel is not None and cancel.is_set():
+            raise ScanCancelledError
 
     def _stop(self) -> None:
         with self._condition:
@@ -156,27 +212,28 @@ class _Crawler:
     def _work(self) -> None:
         while (task := self._take()) is not None:
             try:
-                read = _read_folder(task[0], task[1], self._options)
+                read = _read_folder(task[0], task[1], self._options, self._allocation)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
                 with self._condition:
                     self._failure = error
                 self._stop()
                 return
-            self._finish(task[1], read)
+            self._finish(task[0], task[1], read)
 
     def _take(self) -> tuple[Node, str] | None:
         """The next folder to read, or None once there is nothing left anywhere."""
         with self._condition:
             while not self._pending and self._busy and not self._stopped:
                 self._condition.wait()
-            if self._stopped or not self._pending:
+            cancelled = self._cancel is not None and self._cancel.is_set()
+            if self._stopped or cancelled or not self._pending:
                 self._condition.notify_all()
                 self._done.set()
                 return None
             self._busy += 1
             return self._pending.pop()
 
-    def _finish(self, path: str, read: _FolderRead) -> None:
+    def _finish(self, folder: Node, path: str, read: _FolderRead) -> None:
         with self._condition:
             self._busy -= 1
             self._pending.extend(read.subfolders)
@@ -185,13 +242,26 @@ class _Crawler:
             self.size += read.size
             self.errors.extend(read.errors)
             self._current = path
+            _add_to_ancestors(folder, read)
             if read.subfolders:
                 self._condition.notify(len(read.subfolders))
             elif not self._busy and not self._pending:
                 self._condition.notify_all()
 
 
-def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
+def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
+    """Count what reading ``folder`` found into it and every folder above it (running totals)."""
+    subfolders = len(read.subfolders)
+    node: Node | None = folder
+    while node is not None:
+        node.size += read.size
+        node.allocated += read.allocated
+        node.file_count += read.files
+        node.dir_count += subfolders
+        node = node.parent
+
+
+def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
@@ -203,7 +273,7 @@ def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
         return read
     children = cast(list[Node], folder.children)  # folders are always created with a list
     for entry in listing:
-        child = _entry_node(entry, options, read)
+        child = _entry_node(entry, options, read, allocation)
         if child is None:
             continue
         child.parent = folder
@@ -213,7 +283,8 @@ def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
     return read
 
 
-def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead) -> Node | None:
+def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead,
+                allocation: Allocation) -> Node | None:
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
@@ -229,9 +300,11 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
                     is_link=True)
     if entry.is_dir(follow_symlinks=False):
         return Node(name=entry.name, is_dir=True, modified=info.st_mtime, children=[])
+    allocated = allocation(entry, info)
     read.files += 1
     read.size += info.st_size
-    return Node(name=entry.name, is_dir=False, size=info.st_size, file_count=1,
+    read.allocated += allocated
+    return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
                 modified=info.st_mtime)
 
 
@@ -248,7 +321,10 @@ def _points_to_folder(entry: os.DirEntry[str]) -> bool:
 
 
 def _describe(error: OSError) -> str:
-    return error.strerror or type(error).__name__
+    """One of the worded reasons above, or the system's own text for anything else."""
+    if getattr(error, "winerror", None) == _WINDOWS_PATH_TOO_LONG:
+        return PATH_TOO_LONG
+    return _REASON_BY_ERRNO.get(error.errno) or error.strerror or type(error).__name__
 
 
 def _size_first(node: Node) -> tuple[int, str]:
@@ -261,16 +337,18 @@ def _add_up(folders: list[Node]) -> None:
     ``folders`` must list every folder after its parent.
     """
     for folder in reversed(folders):
-        size = files = subfolders = 0
+        size = allocated = files = subfolders = 0
         newest = folder.modified
         children = folder.children
         for child in children:
             size += child.size
+            allocated += child.allocated
             files += child.file_count
             if child.is_dir and not child.is_link:
                 subfolders += 1 + child.dir_count
             newest = max(newest, child.modified)
         folder.size = size
+        folder.allocated = allocated
         folder.file_count = files
         folder.dir_count = subfolders
         folder.modified = newest

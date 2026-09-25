@@ -7,7 +7,22 @@ from pathlib import Path
 
 import pytest
 
+from file_tree.gui import elevation
+
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+
+@pytest.fixture(autouse=True)
+def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch):
+    """Fail any test that reaches the real UAC prompt (it would wait on the desktop of whoever runs the tests).
+
+    A test that needs an answer replaces ``elevation.relaunch_elevated``; the prompt itself counts as declined.
+    """
+    reached: list[str] = []
+    monkeypatch.setattr(elevation, "run_as_admin",
+                        lambda program, _parameters, _folder: reached.append(program) and False)
+    yield
+    assert not reached, f"a test brought up the real administrator prompt for {reached}"
 
 
 def make_tree(root: Path, spec: dict) -> None:

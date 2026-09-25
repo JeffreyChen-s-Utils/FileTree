@@ -11,17 +11,24 @@ import pytest
 
 from file_tree.core import export
 from file_tree.core.analysis import (
+    AGES,
     CATEGORIES,
+    AgeStat,
     ExtensionStat,
+    age_of,
+    age_stats,
     category_of,
     category_stats,
     extension_of,
     extension_stats,
     largest_files,
+    largest_matching,
+    subtract_ages,
     subtract_stats,
+    summarise,
 )
 from file_tree.core.formatting import format_count, format_share, format_size, format_time
-from file_tree.core.node import Node
+from file_tree.core.node import Node, outermost
 from file_tree.core.scanner import scan
 
 
@@ -60,6 +67,16 @@ def test_detach_subtracts_from_every_folder_above(sample_tree: Path) -> None:
     assert (root.size, root.file_count, _child(root, "photos").size) == (800, 3, 200)
     root.detach()  # the root has no parent: nothing happens
     assert root.size == 800
+
+
+def test_outermost_keeps_each_entry_once_and_leaves_out_those_inside_another(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = _child(root, "photos")
+    picture = _child(photos, "a.jpg")
+    big = _child(root, "big.bin")
+    assert outermost([picture, big, photos, picture, big]) == [big, photos]
+    assert outermost([picture, root]) == [root]
+    assert outermost([]) == []
 
 
 # --- analysis -------------------------------------------------------------
@@ -144,7 +161,7 @@ def test_export_folders_csv(sample_tree: Path, tmp_path: Path) -> None:
     assert export.export_folders_csv(root, target) == 4
     rows = _read_csv(target)
     assert rows[0] == list(export.FOLDER_COLUMNS)
-    assert rows[1][:5] == [str(sample_tree), "1000", "1.0", "6", "3"]
+    assert rows[1][:6] == [str(sample_tree), "1000", str(root.allocated), "1.0", "6", "3"]
     assert [row[0] for row in rows[1:]] == [str(sample_tree), str(sample_tree / "photos"),
                                             str(sample_tree / "code"), str(sample_tree / "code" / "empty")]
     assert export.export_folders_csv(root, target, max_depth=0) == 1
@@ -167,6 +184,7 @@ def test_export_json(sample_tree: Path, tmp_path: Path) -> None:
     assert document["format"] == "file-tree/1"
     top = document["root"]
     assert (top["name"], top["size"], top["files"], top["folders"]) == (str(sample_tree), 1000, 6, 3)
+    assert top["allocated"] == root.allocated
     assert [child["name"] for child in top["children"]] == ["photos", "code"]
     assert top["children"][1]["children"][0]["name"] == "empty"
     export.export_json(root, target, max_depth=0)
@@ -186,3 +204,59 @@ def test_a_failed_export_leaves_no_temporary_file(sample_tree: Path, tmp_path: P
     with pytest.raises(PermissionError):
         export.export_json(root, out / "tree.json")
     assert os.listdir(out) == []
+
+
+# --- ages -----------------------------------------------------------------
+
+_DAY = 86400.0
+
+
+def test_age_groups() -> None:
+    now = 1_800_000_000.0
+    assert [age_of(now - days * _DAY, now) for days in (0, 30, 31, 182, 200, 365, 400, 730, 731)] == [
+        "month", "month", "half_year", "half_year", "year", "year", "two_years", "two_years", "older"]
+    assert age_of(now + 5 * _DAY, now) == "month", "a clock set ahead is not older"
+    assert age_of(0.0, now) == "older", "no time at all goes to the oldest group"
+
+
+def test_age_stats_keep_every_group_in_order_and_subtract(sample_tree: Path) -> None:
+    now = 2_000_000_000.0
+    for name, days in (("big.bin", 3), ("notes.txt", 100), ("photos/a.jpg", 1000)):
+        stamp = now - days * _DAY
+        os.utime(sample_tree / name, (stamp, stamp))
+    root = scan(sample_tree).root
+    stats = summarise(root, now=now).ages
+    assert [stat.age for stat in stats] == list(AGES)
+    by_age = {stat.age: (stat.size, stat.count) for stat in stats}
+    assert by_age["month"][0] >= 500 and by_age["half_year"] == (100, 1)
+    assert sum(stat.count for stat in stats) == 6
+    photos = _child(root, "photos")
+    removed = age_stats(list(photos.iter_files()), now)
+    photos.detach()
+    assert subtract_ages(stats, removed) == age_stats(list(root.iter_files()), now)
+    assert AgeStat("month", 1, 1) != AgeStat("month", 1, 2)
+
+
+def test_largest_matching(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    pictures = largest_matching(root, lambda node: node.name.endswith((".jpg", ".png")), 5)
+    assert [node.name for node in pictures] == ["a.jpg", "b.png"]
+    assert largest_matching(root, lambda node: False, 5) == []
+
+
+def test_replace_with_swaps_a_rescanned_folder_in_and_corrects_the_totals(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    (sample_tree / "photos" / "c.gif").write_bytes(b"g" * 300)
+    (sample_tree / "photos" / "b.png").unlink()
+    (sample_tree / "photos" / "raw").mkdir()
+    old = _child(root, "photos")
+    fresh = scan(sample_tree / "photos").root
+    old.replace_with(fresh)
+    photos = _child(root, "photos")
+    assert photos is fresh and photos.parent is root and photos.name == "photos"
+    assert photos.path == str(sample_tree / "photos")
+    assert old.parent is None
+    assert (root.size, root.file_count, root.dir_count) == (1250, 6, 4)
+    assert root.size == sum(child.size for child in root.children)
+    root.replace_with(fresh)  # the root has no parent: nothing happens
+    assert root.size == 1250
