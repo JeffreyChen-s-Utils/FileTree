@@ -65,7 +65,7 @@ python tools/build_nuitka.py --app
 |---|---|
 | `--mode=standalone`／`--mode=onefile`／`--mode=app` | 程式資料夾、單一檔案，或（macOS）應用程式套件 |
 | `--enable-plugin=pyside6` | 複製視窗需要的 Qt 函式庫與外掛 |
-| `--include-data-files=<PySide6>/translations/qtbase_zh_TW.qm=PySide6/translations/qtbase_zh_TW.qm`（以及 `qtbase_zh_CN.qm`） | Nuitka 不會複製 Qt 自己的翻譯檔；少了它們，「是／否／關閉」按鈕會停在英文。`<PySide6>` 是 PySide6 的安裝位置，這就是用腳本來編譯的原因 |
+| `--include-data-files=<Qt 翻譯資料夾>/qtbase_zh_TW.qm=<編譯結果裡的同一個位置>`（以及 `qtbase_zh_CN.qm`） | Nuitka 不會複製 Qt 自己的翻譯檔；少了它們，「是／否／關閉」按鈕會停在英文。這個資料夾隨安裝方式而不同（Windows 是 `PySide6/translations`，Linux 是 `PySide6/Qt/translations`），這就是用腳本來編譯的原因 |
 | `--windows-console-mode=disable` | Windows 上不會在 FileTree 旁邊多開一個黑色主控台視窗（其他系統會忽略） |
 | `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 產生的東西都放在 `build/`，Git 會忽略這個資料夾；每種形式各有自己的資料夾，編其中一種不會刪掉另一種 |
 | `--output-filename=FileTree` | 程式叫 FileTree，而不是 start_file_tree |

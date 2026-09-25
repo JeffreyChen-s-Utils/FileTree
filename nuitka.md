@@ -74,7 +74,7 @@ Any other option is passed on to Nuitka, for example an icon:
 |---|---|
 | `--mode=standalone` / `--mode=onefile` / `--mode=app` | A folder, one file, or (on macOS) an app bundle |
 | `--enable-plugin=pyside6` | Copies the Qt libraries and plugins the window needs |
-| `--include-data-files=<PySide6>/translations/qtbase_zh_TW.qm=PySide6/translations/qtbase_zh_TW.qm` (and `qtbase_zh_CN.qm`) | Nuitka does not copy Qt's own translations; without them the Yes / No / Close buttons stay in English. `<PySide6>` is where PySide6 is installed, which is why a script runs the build |
+| `--include-data-files=<Qt translations>/qtbase_zh_TW.qm=<same place in the build>` (and `qtbase_zh_CN.qm`) | Nuitka does not copy Qt's own translations; without them the Yes / No / Close buttons stay in English. The folder depends on the installation (`PySide6/translations` on Windows, `PySide6/Qt/translations` on Linux), which is why a script runs the build |
 | `--windows-console-mode=disable` | No black console window next to FileTree on Windows (ignored elsewhere) |
 | `--output-dir=build/standalone` (or `build/onefile`, `build/app`) | Everything Nuitka creates goes into `build/`, which Git ignores; each form has its own folder, so building one does not delete another |
 | `--output-filename=FileTree` | The program is called FileTree instead of start_file_tree |

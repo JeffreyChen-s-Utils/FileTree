@@ -9,7 +9,9 @@ Any other option is passed on to Nuitka unchanged (for example
 depends on where PySide6 is installed: Nuitka does not copy Qt's own
 translation catalogues, so without them the Yes / No / Close buttons of the
 compiled program stay in English. They are copied to the place Qt looks for
-them inside the build (``PySide6/translations``). Each form gets its own
+them inside the build, which mirrors where Qt keeps them in the installed
+package (``PySide6/translations`` on Windows, ``PySide6/Qt/translations`` on
+Linux, so both ends are asked from Qt rather than written here). Each form gets its own
 output folder, because a one-file build stages its files in (and then
 deletes) the same ``start_file_tree.dist`` folder a folder build produces.
 """
@@ -25,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import PySide6  # noqa: E402
+from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
 from file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
 
@@ -32,14 +35,25 @@ ENTRY_POINT = ROOT / "start_file_tree.py"
 PROGRAM_NAME = "FileTree"
 
 
-def translation_options(translations: Path) -> list[str]:
-    """``--include-data-files`` options that copy Qt's catalogues for every language FileTree offers."""
+def qt_translations_folder() -> Path:
+    """Where the installed Qt keeps its translation catalogues."""
+    return Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath))
+
+
+def translation_options(translations: Path, packages: Path) -> list[str]:
+    """``--include-data-files`` options that copy Qt's catalogues for every language FileTree offers.
+
+    ``translations`` is Qt's catalogue folder and ``packages`` the folder holding
+    the ``PySide6`` package; inside the build the catalogues keep the same place
+    relative to the package, which is where the compiled Qt looks for them.
+    """
+    target = translations.resolve().relative_to(packages.resolve()).as_posix()
     options = []
     for catalogue in CATALOGUES.values():
         source = translations / f"{catalogue}.qm"
         if not source.is_file():
             raise FileNotFoundError(f"Qt translation catalogue missing: {source}")
-        options.append(f"--include-data-files={source}=PySide6/translations/{catalogue}.qm")
+        options.append(f"--include-data-files={source}={target}/{catalogue}.qm")
     return options
 
 
@@ -49,7 +63,7 @@ def nuitka_command(mode: str, extra: list[str]) -> list[str]:
         sys.executable, "-m", "nuitka", f"--mode={mode}", "--enable-plugin=pyside6",
         "--windows-console-mode=disable", f"--output-dir=build/{mode}", f"--output-filename={PROGRAM_NAME}",
         "--assume-yes-for-downloads",
-        *translation_options(Path(PySide6.__file__).parent / "translations"),
+        *translation_options(qt_translations_folder(), Path(PySide6.__file__).parent.parent),
     ]
     if mode == "app":
         command.append(f"--macos-app-name={PROGRAM_NAME}")

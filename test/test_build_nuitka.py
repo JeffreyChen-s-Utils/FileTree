@@ -31,7 +31,8 @@ def test_the_command_copies_every_qt_catalogue_and_ends_with_the_entry_point() -
     for catalogue in CATALOGUES.values():
         source, target = next(option for option in copies if catalogue in option).split("=", 1)[1].rsplit("=", 1)
         assert Path(source).is_file()
-        assert target == f"PySide6/translations/{catalogue}.qm"
+        # PySide6/translations on Windows, PySide6/Qt/translations on Linux.
+        assert target.startswith("PySide6/") and target.endswith(f"translations/{catalogue}.qm")
     assert command[-2] == "--windows-icon-from-ico=icon.ico"
     assert command[-1].endswith("start_file_tree.py")
     assert Path(command[-1]).is_file()
@@ -45,6 +46,16 @@ def test_modes() -> None:
     assert "--macos-app-name=FileTree" not in build.nuitka_command("standalone", [])
 
 
+def test_the_catalogues_keep_their_place_relative_to_the_package(tmp_path: Path) -> None:
+    translations = tmp_path / "PySide6" / "Qt" / "translations"
+    translations.mkdir(parents=True)
+    for catalogue in CATALOGUES.values():
+        (translations / f"{catalogue}.qm").write_bytes(b"")
+    options = _load().translation_options(translations, tmp_path)
+    assert [option.rsplit("=", 1)[1] for option in options] == [
+        f"PySide6/Qt/translations/{catalogue}.qm" for catalogue in CATALOGUES.values()]
+
+
 def test_a_missing_catalogue_is_reported(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="qtbase_zh"):
-        _load().translation_options(tmp_path)
+        _load().translation_options(tmp_path, tmp_path)
