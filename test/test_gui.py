@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import functools
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -13,8 +15,9 @@ from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 from file_tree.core.analysis import CATEGORIES
 from file_tree.core.node import Node
 from file_tree.core import scanner
-from file_tree.core.scanner import ScanCancelledError, scan
+from file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from file_tree.gui import file_actions, i18n, scan_worker
+from file_tree.gui import main_window as main_window_module
 from file_tree.gui.app import create_window
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
@@ -190,28 +193,39 @@ def test_a_stop_before_anything_was_read_returns_to_the_start_page(window: MainW
     assert window.results.tree_model.root is None
 
 
-def _slow_reads(monkeypatch: pytest.MonkeyPatch, delay: float) -> None:
+def _gated_scan(monkeypatch: pytest.MonkeyPatch, root: Path) -> threading.Event:
+    """Scan with one worker and hold every folder but the root until the returned gate opens.
+
+    The live tests must see the scan still running when they act, whatever the
+    machine's speed; a sleep only makes that likely (a slow CI runner once
+    finished the scan before Stop arrived).
+    """
+    gate = threading.Event()
     real = scanner._read_folder
 
-    def slow(*args: object):
-        time.sleep(delay)
-        return real(*args)
+    def gated(folder, path, options):
+        if path != str(root):
+            gate.wait(10)
+        return real(folder, path, options)
 
-    monkeypatch.setattr(scanner, "_read_folder", slow)
+    monkeypatch.setattr(scanner, "_read_folder", gated)
+    monkeypatch.setattr(main_window_module, "ScanOptions", functools.partial(ScanOptions, workers=1))
+    return gate
 
 
 def test_the_tree_shows_and_grows_while_the_scan_runs(window: MainWindow, qapp: QApplication, sample_tree: Path,
                                                       monkeypatch: pytest.MonkeyPatch) -> None:
-    _slow_reads(monkeypatch, 0.15)
+    gate = _gated_scan(monkeypatch, sample_tree)
     window.start_scan(str(sample_tree))
     model = window.results.tree_model
     _wait(qapp, lambda: model.root is not None and model.root.file_count > 0)
+    _wait(qapp, lambda: "so far" in window.results.summary.text())
     assert model.live and window.results.outcome is None
-    assert "so far" in window.results.summary.text()
     window.results.refresh_live()
     top = model.index(0, 0)
     assert model.rowCount(top) == len(model.root.children) > 0
     window.results.tree.expand(top)
+    gate.set()
     _wait(qapp, lambda: window.results.outcome is not None, timeout=15)
     assert not model.live
     assert window.results.tree.isExpanded(model.index(0, 0)), "what was opened during the scan stays open"
@@ -221,11 +235,12 @@ def test_the_tree_shows_and_grows_while_the_scan_runs(window: MainWindow, qapp: 
 
 def test_stopping_keeps_what_was_read(window: MainWindow, qapp: QApplication, sample_tree: Path,
                                       monkeypatch: pytest.MonkeyPatch) -> None:
-    _slow_reads(monkeypatch, 0.2)
+    gate = _gated_scan(monkeypatch, sample_tree)
     window.start_scan(str(sample_tree))
     model = window.results.tree_model
     _wait(qapp, lambda: model.root is not None and model.root.file_count > 0)
     window.stop_scan()
+    gate.set()  # the one folder being read finishes; the rest stay unread
     _wait(qapp, lambda: window.results.outcome is not None, timeout=15)
     outcome = window.results.outcome
     assert outcome.partial

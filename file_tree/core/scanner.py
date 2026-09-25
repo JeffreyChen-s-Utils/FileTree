@@ -128,7 +128,7 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     root = Node(name=root_path, is_dir=True, children=[])
     if on_root is not None:
         on_root(root)
-    crawler = _Crawler(root, root_path, options)
+    crawler = _Crawler(root, root_path, options, cancel)
     try:
         crawler.run(progress, cancel, progress_interval)
     except ScanCancelledError:
@@ -145,8 +145,10 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
 class _Crawler:
     """Worker threads sharing one stack of folders still to read."""
 
-    def __init__(self, root: Node, root_path: str, options: ScanOptions) -> None:
+    def __init__(self, root: Node, root_path: str, options: ScanOptions,
+                 cancel: threading.Event | None = None) -> None:
         self._options = options
+        self._cancel = cancel
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
         self._stopped = False
@@ -171,7 +173,12 @@ class _Crawler:
 
     def run(self, progress: ProgressCallback | None, cancel: threading.Event | None,
             interval: float) -> None:
-        """Read every folder, reporting progress and watching ``cancel`` from this thread."""
+        """Read every folder, reporting progress and watching ``cancel`` from this thread.
+
+        The workers watch ``cancel`` too and take no new folder once it is set,
+        so a stop is immediate instead of up to one ``interval`` late; the
+        folders already being read finish.
+        """
         if cancel is not None and cancel.is_set():
             raise ScanCancelledError
         threads = [threading.Thread(target=self._work, name=f"file-tree-scan-{number}", daemon=True)
@@ -181,7 +188,7 @@ class _Crawler:
         try:
             while not self._done.wait(interval):
                 if cancel is not None and cancel.is_set():
-                    raise ScanCancelledError
+                    break
                 if progress is not None:
                     progress(self.snapshot())
         finally:
@@ -190,6 +197,8 @@ class _Crawler:
                 thread.join()
         if self._failure is not None:
             raise self._failure
+        if cancel is not None and cancel.is_set():
+            raise ScanCancelledError
 
     def _stop(self) -> None:
         with self._condition:
@@ -213,7 +222,8 @@ class _Crawler:
         with self._condition:
             while not self._pending and self._busy and not self._stopped:
                 self._condition.wait()
-            if self._stopped or not self._pending:
+            cancelled = self._cancel is not None and self._cancel.is_set()
+            if self._stopped or cancelled or not self._pending:
                 self._condition.notify_all()
                 self._done.set()
                 return None
