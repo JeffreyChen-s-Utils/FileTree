@@ -135,6 +135,8 @@ EN: dict[str, str] = {
     "menu_copy_path": "Copy path",
     "menu_show_treemap": "Show in treemap",
     "menu_scan_here": "Scan this folder",
+    "menu_rescan_here": "Rescan this folder",
+    "rescan_done": "Rescanned {name}: {before} → {after}",
     "trash_confirm_title": "Move to Recycle Bin",
     "trash_confirm": "Move “{name}” ({size}) to the Recycle Bin?\n\nYou can restore it from there.",
     "trash_failed": "“{name}” could not be moved to the Recycle Bin. It may be in use or read-only.",
@@ -177,7 +179,8 @@ files.</li>
 </ul>
 <h2>Freeing space</h2>
 <p>Right-click any entry to <i>Open</i> it, <i>Show in file manager</i>, <i>Copy path</i>,
-<i>Show in treemap</i>, <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>.
+<i>Show in treemap</i>, <i>Rescan this folder</i> (after changes made outside FileTree; the rest of the
+results stay), <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
 from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
 <h2>Keyboard shortcuts</h2>
@@ -329,6 +332,8 @@ ZH_TW: dict[str, str] = {
     "menu_copy_path": "複製路徑",
     "menu_show_treemap": "在方塊圖中顯示",
     "menu_scan_here": "只掃描這個資料夾",
+    "menu_rescan_here": "重新掃描這個資料夾",
+    "rescan_done": "已重新掃描 {name}：{before} → {after}",
     "trash_confirm_title": "移到資源回收筒",
     "trash_confirm": "要把「{name}」（{size}）移到資源回收筒嗎？\n\n之後仍可以從資源回收筒還原。",
     "trash_failed": "無法把「{name}」移到資源回收筒，可能正在使用中或是唯讀。",
@@ -365,6 +370,7 @@ ZH_TW: dict[str, str] = {
 </ul>
 <h2>釋出空間</h2>
 <p>在任何項目上按右鍵，可以<i>開啟</i>、<i>在檔案總管中顯示</i>、<i>複製路徑</i>、<i>在方塊圖中顯示</i>、
+<i>重新掃描這個資料夾</i>（在 FileTree 以外改過東西之後用，其餘結果不變）、
 <i>只掃描這個資料夾</i>，或<i>移到資源回收筒</i>。FileTree 不會永久刪除任何東西：每次都會先詢問，
 移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
 <h2>鍵盤快速鍵</h2>
@@ -513,6 +519,8 @@ ZH_CN: dict[str, str] = {
     "menu_copy_path": "复制路径",
     "menu_show_treemap": "在方块图中显示",
     "menu_scan_here": "只扫描这个文件夹",
+    "menu_rescan_here": "重新扫描这个文件夹",
+    "rescan_done": "已重新扫描 {name}：{before} → {after}",
     "trash_confirm_title": "移到回收站",
     "trash_confirm": "要把“{name}”（{size}）移到回收站吗？\n\n之后仍可以从回收站还原。",
     "trash_failed": "无法把“{name}”移到回收站，可能正在使用或是只读。",
@@ -549,6 +557,7 @@ ZH_CN: dict[str, str] = {
 </ul>
 <h2>释放空间</h2>
 <p>在任何项目上点右键，可以<i>打开</i>、<i>在文件管理器中显示</i>、<i>复制路径</i>、<i>在方块图中显示</i>、
+<i>重新扫描这个文件夹</i>（在 FileTree 以外改过东西之后用，其余结果不变）、
 <i>只扫描这个文件夹</i>，或<i>移到回收站</i>。FileTree 不会永久删除任何东西：每次都会先询问，
 移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
 <h2>键盘快捷键</h2>

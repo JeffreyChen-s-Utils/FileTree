@@ -244,11 +244,26 @@ class FolderTreeModel(QAbstractItemModel):
 
     # --- helpers -----------------------------------------------------------
 
+    def replace(self, old: Node, new: Node) -> None:
+        """Swap a rescanned folder into the tree (``Node.replace_with``), keeping what the view still can.
+
+        Expanded folders and the selection that were inside the old branch are
+        dropped; everywhere else they follow their nodes as after a sort.
+        """
+        self._relayout(lambda: old.replace_with(new))
+
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
-        if node is None:
+        if node is None or not self._in_tree(node):
             return QModelIndex()
         index = self.index_for(node)
         return index.siblingAtColumn(column) if index.isValid() else index
+
+    def _in_tree(self, node: Node) -> bool:
+        """Whether ``node`` still hangs under the root (not in a branch that was replaced or removed)."""
+        top = node
+        while top.parent is not None:
+            top = top.parent
+        return top is self._root
 
     def _clear_caches(self) -> None:
         self._orders.clear()

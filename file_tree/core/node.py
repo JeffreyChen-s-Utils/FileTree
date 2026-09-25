@@ -92,3 +92,28 @@ class Node:
             node.file_count -= self.file_count
             node.dir_count -= folders
             node = node.parent
+
+    def replace_with(self, new: Node) -> None:
+        """Put ``new`` (a fresh scan of this same folder) in this entry's place and correct every total above it.
+
+        ``new`` takes this entry's name, so a rescan's full-path root reads like
+        the child it replaces. Does nothing for the root.
+        """
+        parent = self.parent
+        if parent is None or not isinstance(parent.children, list):
+            return
+        position = next(index for index, child in enumerate(parent.children) if child is self)
+        new.name = self.name
+        new.parent = parent
+        parent.children[position] = new
+        self.parent = None
+        size = new.size - self.size
+        files = new.file_count - self.file_count
+        folders = new.dir_count - self.dir_count
+        node: Node | None = parent
+        while node is not None:
+            node.size += size
+            node.file_count += files
+            node.dir_count += folders
+            node.modified = max(node.modified, new.modified)
+            node = node.parent

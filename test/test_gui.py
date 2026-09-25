@@ -326,3 +326,24 @@ def test_double_clicking_a_type_or_an_age_lists_its_largest_files(window: MainWi
     types_index = results.types_table.model().index(0, 0)
     results.types_table.doubleClicked.emit(types_index)
     assert not results._focus_bar.isHidden()
+
+
+def test_rescanning_one_folder_swaps_it_in_and_updates_every_list(window: MainWindow, qapp: QApplication,
+                                                                   sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    root = results.tree_model.root
+    code = next(child for child in root.children if child.name == "code")
+    results.select_node(code)
+    (sample_tree / "photos" / "new.mov").write_bytes(b"v" * 700)
+    photos = next(child for child in root.children if child.name == "photos")
+    window.rescan_folder(photos)
+    _wait(qapp, lambda: any(node.name == "new.mov" for node in results.largest_model.rows()), timeout=15)
+    fresh = next(child for child in root.children if child.name == "photos")
+    assert fresh is not photos and fresh.size == 950
+    assert root.size == 1700 and root.file_count == 7
+    assert results.largest_model.rows()[0].name == "new.mov"
+    assert any(stat.extension == ".mov" for stat in results.types_model.rows())
+    assert results.selected_node() is code, "the selection outside the rescanned folder stays"
+    assert "Rescanned photos: 250 B → 950 B" in window.statusBar().currentMessage()
+    assert results.tree_model.index(0, 0).data() == str(sample_tree)

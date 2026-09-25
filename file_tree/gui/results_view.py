@@ -9,7 +9,10 @@ tree (largest files, file types) fill in when the scan ends.
 
 from __future__ import annotations
 
+import dataclasses
+import os
 from collections.abc import Callable
+
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -31,6 +34,7 @@ from PySide6.QtWidgets import (
 from file_tree.core.analysis import (
     CATEGORIES,
     CategoryStat,
+    Summary,
     age_of,
     age_stats,
     category_stats,
@@ -43,7 +47,7 @@ from file_tree.core.analysis import (
 )
 from file_tree.core.formatting import format_count, format_size
 from file_tree.core.node import Node
-from file_tree.core.scanner import ScanProgress
+from file_tree.core.scanner import ScanProgress, ScanResult
 from file_tree.gui import elevation
 from file_tree.gui.delegates import ShareBarDelegate
 from file_tree.gui.i18n import format_duration, tr
@@ -210,6 +214,46 @@ class ResultsView(QWidget):
             self.select_node(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
+
+    def replace_branch(self, old: Node, fresh: ScanResult) -> Node:
+        """Put a rescan of the folder ``old`` in its place; returns the new node.
+
+        The tree, the treemap, the problems and the summary change at once; the
+        lists that need the whole tree follow with ``apply_summary``.
+        """
+        new = fresh.root
+        view_root = self.treemap.view_root
+        inside_old = view_root is not None and _is_within(view_root, old)
+        prefix = old.path.rstrip("\\/") + os.sep
+        self.tree_model.replace(old, new)
+        if self._outcome is not None:
+            errors = self._outcome.result.errors
+            errors[:] = [error for error in errors if error[0] != old.path and not error[0].startswith(prefix)]
+            errors.extend(fresh.errors)
+            self.problems_model.set_rows(errors)
+        self.treemap.set_view_root(new if inside_old else view_root)
+        self._update_texts()
+        self.selection_changed.emit(self.selected_node())
+        return new
+
+    def apply_summary(self, summary: Summary) -> None:
+        """Show recomputed largest files and per-type and per-age totals for the tree on screen."""
+        outcome = self._outcome
+        if outcome is None:
+            return
+        root = outcome.result.root
+        largest = [node for node in summary.largest if _is_under(node, root)]
+        self._outcome = dataclasses.replace(outcome, largest=largest, extensions=summary.extensions,
+                                            categories=category_stats(summary.extensions), ages=summary.ages,
+                                            now=summary.now)
+        self._largest_all = list(largest)
+        self._focus = None
+        self._focus_bar.hide()
+        self.largest_model.set_rows(self._largest_all)
+        self.types_model.set_rows(summary.extensions)
+        self.age_model.set_rows(summary.ages)
+        self._categories = self._outcome.categories
+        self._update_texts()
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
@@ -496,6 +540,16 @@ def _unbreakable(text: str) -> str:
     word joiner (U+2060) goes between every two characters.
     """
     return "\u2060".join(text.replace(" ", "\u00a0"))
+
+
+def _is_within(node: Node, branch: Node) -> bool:
+    """Whether ``node`` is ``branch`` or lies beneath it."""
+    current: Node | None = node
+    while current is not None:
+        if current is branch:
+            return True
+        current = current.parent
+    return False
 
 
 def _is_under(node: Node, root: Node) -> bool:

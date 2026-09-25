@@ -56,6 +56,11 @@ outlines it in the treemap.
 `FolderTreeModel.remove` detaches the node and subtracts its totals from every folder above; the largest
 files, per-type totals and treemap are updated without a rescan.
 
+**Rescan one folder.** The context menu's *Rescan this folder* runs a `ScanWorker` on that branch alone,
+then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent
+indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes
+the largest files and per-type and per-age totals of the whole tree off the GUI thread.
+
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just

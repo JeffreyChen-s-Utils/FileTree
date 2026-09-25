@@ -27,7 +27,8 @@ from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
 from file_tree.gui.results_view import ResultsView
-from file_tree.gui.scan_worker import ScanOutcome, ScanWorker
+from file_tree.core.analysis import Summary
+from file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
 from file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings if settings is not None else QSettings()
         self._worker: ScanWorker | None = None
+        self._analyser: AnalyseWorker | None = None
         self._last_path = ""
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
@@ -172,6 +174,7 @@ class MainWindow(QMainWindow):
         ]
         if node.is_dir and not node.is_link:
             entries.append(("menu_show_treemap", lambda: self._show_in_treemap(node)))
+            entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
@@ -179,6 +182,50 @@ class MainWindow(QMainWindow):
             menu.addSeparator()
             menu.addAction(tr("action_trash")).triggered.connect(lambda: self.move_to_trash(node))
         menu.exec(point)
+
+    def rescan_folder(self, node: Node) -> None:
+        """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
+        if self._worker is not None or self.results.outcome is None:
+            return
+        if node.parent is None:
+            self.rescan()
+            return
+        include_hidden = self._actions["hidden"].isChecked()
+        worker = ScanWorker(node.path, ScanOptions(include_hidden=include_hidden), self)
+        before = node.size
+        worker.progressed.connect(
+            lambda progress: self._is_current(worker) and self.results.scan_bar.show_progress(progress))
+        worker.succeeded.connect(
+            lambda outcome: self._is_current(worker) and self._branch_rescanned(node, outcome, before))
+        worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
+        worker.cancelled.connect(lambda _outcome: self._is_current(worker) and self._branch_cancelled())
+        worker.finished.connect(worker.deleteLater)
+        self._worker = worker
+        self.results.scan_bar.start()
+        self._update_actions()
+        worker.start()
+
+    def _branch_rescanned(self, old: Node, outcome: ScanOutcome, before: int) -> None:
+        self._scan_ended()
+        self.results.scan_bar.hide()
+        new = self.results.replace_branch(old, outcome.result)
+        self._update_actions()
+        self.statusBar().showMessage(tr("rescan_done", name=new.name, before=format_size(before, self._unit),
+                                        after=format_size(new.size, self._unit)), _STATUS_TIMEOUT_MS)
+        analyser = AnalyseWorker(self.results.tree_model.root, self)
+        analyser.done.connect(self._summary_ready)
+        analyser.finished.connect(analyser.deleteLater)
+        self._analyser = analyser
+        analyser.start()
+
+    def _summary_ready(self, summary: Summary) -> None:
+        self.results.apply_summary(summary)
+
+    def _branch_cancelled(self) -> None:
+        self._scan_ended()
+        self.results.scan_bar.hide()
+        self._update_actions()
+        self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
 
     def move_to_trash(self, node: Node) -> None:
         """Ask, then move ``node`` to the Recycle Bin / Trash and take it out of the results."""

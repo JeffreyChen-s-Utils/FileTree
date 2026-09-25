@@ -79,8 +79,9 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 ### Freeing space
 
 Right-click any entry to open it, show it in your file manager, copy its path, show it in the treemap,
-scan that folder on its own, or move it to the Recycle Bin (the Trash on macOS and Linux). FileTree always
-asks before moving anything and never deletes permanently.
+rescan that folder after changes made outside FileTree (the rest of the results stay), scan that folder on
+its own, or move it to the Recycle Bin (the Trash on macOS and Linux). FileTree always asks before moving
+anything and never deletes permanently.
 
 ### Keyboard shortcuts
 

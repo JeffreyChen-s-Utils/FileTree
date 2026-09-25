@@ -231,3 +231,21 @@ def test_largest_matching(sample_tree: Path) -> None:
     pictures = largest_matching(root, lambda node: node.name.endswith((".jpg", ".png")), 5)
     assert [node.name for node in pictures] == ["a.jpg", "b.png"]
     assert largest_matching(root, lambda node: False, 5) == []
+
+
+def test_replace_with_swaps_a_rescanned_folder_in_and_corrects_the_totals(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    (sample_tree / "photos" / "c.gif").write_bytes(b"g" * 300)
+    (sample_tree / "photos" / "b.png").unlink()
+    (sample_tree / "photos" / "raw").mkdir()
+    old = _child(root, "photos")
+    fresh = scan(sample_tree / "photos").root
+    old.replace_with(fresh)
+    photos = _child(root, "photos")
+    assert photos is fresh and photos.parent is root and photos.name == "photos"
+    assert photos.path == str(sample_tree / "photos")
+    assert old.parent is None
+    assert (root.size, root.file_count, root.dir_count) == (1250, 6, 4)
+    assert root.size == sum(child.size for child in root.children)
+    root.replace_with(fresh)  # the root has no parent: nothing happens
+    assert root.size == 1250
