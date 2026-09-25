@@ -11,7 +11,7 @@ authors = [
 description = "See where your disk space goes: a fast folder-size scanner with a tree, a treemap and a list of the largest files."
 keywords = ["disk-usage", "disk-space", "folder-size", "treemap", "treesize", "pyside6", "qt"]
 requires-python = ">=3.10"
-dependencies = ["PySide6>=6.8"]
+dependencies = ["PySide6>=6.11.2"]
 license = "MIT"
 license-files = ["LICENSE"]
 classifiers = [
