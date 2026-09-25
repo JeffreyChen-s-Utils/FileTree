@@ -14,6 +14,7 @@ from PySide6.QtCore import QObject, QThread, Signal
 from file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
 from file_tree.core.node import Node
 from file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
+from file_tree.core.search import search
 
 LARGEST_FILES_LIMIT = 1000
 
@@ -51,6 +52,28 @@ class AnalyseWorker(QThread):
         """Thread body."""
         summary: Summary = summarise(self._root, LARGEST_FILES_LIMIT)
         self.done.emit(summary)
+
+
+class SearchWorker(QThread):
+    """Searches a tree by name off the GUI thread; emits ``found(SearchResult)`` unless stopped first."""
+
+    found = Signal(object)
+
+    def __init__(self, root: Node, query: str, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._root = root
+        self._query = query
+        self._cancel = threading.Event()
+
+    def stop(self) -> None:
+        """Ask the search to give up (it checks once per folder); ``found`` is then not emitted."""
+        self._cancel.set()
+
+    def run(self) -> None:
+        """Thread body."""
+        result = search(self._root, self._query, LARGEST_FILES_LIMIT, self._cancel)
+        if result is not None:
+            self.found.emit(result)
 
 
 class ScanWorker(QThread):

@@ -22,6 +22,7 @@ from file_tree.gui.app import create_window
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from file_tree.gui.qt_translation import apply_qt_translation
+from file_tree.gui.results_view import SEARCH_TAB
 from file_tree.gui.scan_worker import analyse
 from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from file_tree.gui.tree_model import NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -368,6 +369,36 @@ def test_the_context_menu_acts_on_the_selection_it_was_opened_on(
     assert menus[1][-1] == "Move to Recycle Bin"
     window.show_menu_for(root, [root], QPoint())
     assert "Move to Recycle Bin" not in menus[2], "the scanned folder itself cannot be moved"
+
+
+def test_search_finds_entries_anywhere_and_follows_changes_to_the_tree(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    panel = results.search
+    root = results.tree_model.root
+    assert root is not None
+    window._find()  # what Ctrl+F does
+    assert results.tabs.currentIndex() == SEARCH_TAB
+    panel.box.setText("*.jpg;*.png")  # searched once typing pauses
+    _wait(qapp, lambda: len(results.search_model.rows()) == 2 and not panel.busy)
+    assert [node.name for node in results.search_model.rows()] == ["a.jpg", "b.png"]
+    assert panel.summary.text() == "2 matches, 250 B in total."
+    panel.box.setText("photos")
+    panel.box.returnPressed.emit()  # Enter searches at once
+    _wait(qapp, lambda: not panel.busy)
+    photos = _child(root, "photos")
+    assert results.search_model.rows() == [photos]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash([photos])
+    _wait(qapp, lambda: not panel.busy)
+    assert panel.summary.text() == "Nothing matches.", "the search runs again after the tree changed"
+    window.start_scan(str(sample_tree))  # the folder is still there: moving it was pretended
+    assert not panel.box.isEnabled(), "no searching while a scan fills the tree"
+    _wait(qapp, lambda: window.results.outcome is not None and not panel.busy)
+    assert panel.box.isEnabled()
+    assert [node.name for node in results.search_model.rows()] == ["photos"]
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

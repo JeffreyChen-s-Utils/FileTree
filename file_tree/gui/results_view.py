@@ -53,6 +53,7 @@ from file_tree.gui.delegates import ShareBarDelegate
 from file_tree.gui.i18n import format_duration, tr
 from file_tree.gui.scan_bar import ScanBar
 from file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
+from file_tree.gui.search_panel import SearchPanel
 from file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
 from file_tree.gui.tree_model import NODE_ROLE, SHARE, SIZE, FolderTreeModel
 from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
@@ -65,7 +66,7 @@ _LARGEST_FOLDER_COLUMN = 2
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-TREEMAP_TAB, LARGEST_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(5)
+TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(6)
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -120,14 +121,10 @@ class ResultsView(QWidget):
         self._focus_label = QLabel()
         self._show_all = QPushButton()
         self._focus_bar = _row(self._focus_label, self._show_all)
-        self.largest_table, self._largest_proxy = self._build_table(self.largest_model, _LARGEST_SIZE_COLUMN)
-        largest_header = self.largest_table.horizontalHeader()
-        largest_header.setStretchLastSection(False)
-        for column, width in _LARGEST_COLUMN_WIDTHS.items():
-            self.largest_table.setColumnWidth(column, width)
-        largest_header.setSectionResizeMode(_LARGEST_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self.largest_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # the end of a path says the most
-        self.largest_table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.largest_table, self._largest_proxy = self._build_entries_table(self.largest_model)
+        self.search_model = LargestFilesModel(self)
+        self.search_table, _ = self._build_entries_table(self.search_model)
+        self.search = SearchPanel(self.search_table, self.search_model)
         self._types_combo = QComboBox()
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
@@ -154,6 +151,7 @@ class ResultsView(QWidget):
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
+        self.search.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
@@ -217,6 +215,7 @@ class ResultsView(QWidget):
         self.treemap.set_view_root(view_root if view_root is not None and _is_under(view_root, root) else root)
         if self.selected_node() is None:
             self.select_node(root)
+        self.search.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
 
@@ -237,6 +236,7 @@ class ResultsView(QWidget):
             errors.extend(fresh.errors)
             self.problems_model.set_rows(errors)
         self.treemap.set_view_root(new if inside_old else view_root)
+        self.search.rerun()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
         return new
@@ -263,9 +263,10 @@ class ResultsView(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.tree_model.set_unit(unit)
-        for model in (self.largest_model, self.types_model, self.age_model):
+        for model in (self.largest_model, self.types_model, self.age_model, self.search_model):
             model.unit = unit
             model.refresh()
+        self.search.retranslate()
 
     def selected_node(self) -> Node | None:
         """The entry the tree's cursor is on."""
@@ -277,8 +278,16 @@ class ResultsView(QWidget):
         return _selected_in(self.tree)
 
     def focused_selection(self) -> list[Node]:
-        """The entries selected where the keyboard is: the largest-files list when it has the focus, else the tree."""
-        return _selected_in(self.largest_table if self.largest_table.hasFocus() else self.tree)
+        """The entries selected where the keyboard is: the largest-files or search list if focused, else the tree."""
+        for table in (self.largest_table, self.search_table):
+            if table.hasFocus():
+                return _selected_in(table)
+        return _selected_in(self.tree)
+
+    def show_search(self) -> None:
+        """Bring the Search tab forward with the cursor in its box."""
+        self.tabs.setCurrentIndex(SEARCH_TAB)
+        self.search.focus()
 
     def select_node(self, node: Node) -> None:
         """Select ``node`` in the tree (expanding its folders), and outline it in the treemap."""
@@ -314,6 +323,7 @@ class ResultsView(QWidget):
         if view_root is not None and not _is_under(view_root, root):
             view_root = root
         self.treemap.set_view_root(view_root)
+        self.search.rerun()
         self._update_texts()
 
     def retranslate(self) -> None:
@@ -328,6 +338,7 @@ class ResultsView(QWidget):
         self._treemap_up.setText(tr("treemap_up"))
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
+        self.search.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
         self._elevate_button.setToolTip(tr("action_elevate_tip"))
@@ -356,6 +367,18 @@ class ResultsView(QWidget):
         tree.selectionModel().currentChanged.connect(self._tree_current_changed)
         tree.selectionModel().selectionChanged.connect(lambda *_: self.selection_changed.emit(self.selected_node()))
         return tree
+
+    def _build_entries_table(self, model: LargestFilesModel) -> tuple[QTableView, QSortFilterProxyModel]:
+        """A list of entries (name, size, folder, modified) in which several rows can be selected."""
+        table, proxy = self._build_table(model, _LARGEST_SIZE_COLUMN)
+        header = table.horizontalHeader()
+        header.setStretchLastSection(False)
+        for column, width in _LARGEST_COLUMN_WIDTHS.items():
+            table.setColumnWidth(column, width)
+        header.setSectionResizeMode(_LARGEST_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
+        table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # the end of a path says the most
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        return table, proxy
 
     def _build_table(self, model: LargestFilesModel | ProblemsModel,
                      size_column: int) -> tuple[QTableView, QSortFilterProxyModel]:
@@ -406,6 +429,7 @@ class ResultsView(QWidget):
         self._show_all.clicked.connect(self.show_all_largest)
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
+        self.tabs.addTab(self.search, "")
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
         self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
@@ -519,7 +543,7 @@ class ResultsView(QWidget):
 
     def _update_texts(self) -> None:
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_treemap", "tab_largest", "tab_types", "tab_age")
+        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_types", "tab_age")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))

@@ -20,6 +20,7 @@ the window.
 - **Treemap**: every file is a rectangle sized by how much space it takes, coloured by file type. Click to
   find it in the tree, double-click to zoom into a folder.
 - **Largest files**: the 1,000 biggest files anywhere in the scan, with a filter box.
+- **Search** (Ctrl+F): find files and folders by name, or by a pattern such as `*.mp4`, anywhere in the scan.
 - **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
   files last changed; double-click a row to list its largest files.
 - **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; the
@@ -72,6 +73,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Folder tree | Size, *% of parent* (the share of the folder above), number of files and folders inside, last change |
 | Treemap | One rectangle per file, sized by space used and coloured by file type; the legend is under the map |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
+| Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); the 1,000 largest matches are listed with the count and total size of all |
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |
@@ -81,8 +83,9 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 Right-click any entry to open it, show it in your file manager, copy its path, show it in the treemap,
 rescan that folder after changes made outside FileTree (the rest of the results stay), scan that folder on
 its own, or move it to the Recycle Bin (the Trash on macOS and Linux). To move several entries at once,
-pick them with Ctrl+click or Shift+click in the folder tree or the Largest files list: FileTree asks once,
-listing them with their total size. It always asks before moving anything and never deletes permanently.
+pick them with Ctrl+click or Shift+click in the folder tree, the Largest files list or the search results:
+FileTree asks once, listing them with their total size. It always asks before moving anything and never
+deletes permanently.
 
 ### Keyboard shortcuts
 
@@ -91,6 +94,7 @@ listing them with their total size. It always asks before moving anything and ne
 | Ctrl+O | Choose a folder |
 | F5 | Rescan |
 | Esc | Stop the scan |
+| Ctrl+F | Search by name |
 | Delete | Move the selected entries to the Recycle Bin |
 | F1 | How to use |
 | Ctrl+Q | Quit |

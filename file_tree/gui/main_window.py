@@ -28,7 +28,7 @@ from file_tree.gui import elevation, file_actions
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
-from file_tree.gui.results_view import ResultsView
+from file_tree.gui.results_view import TREEMAP_TAB, ResultsView
 from file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
 from file_tree.gui.welcome import WelcomePage
 
@@ -274,7 +274,11 @@ class MainWindow(QMainWindow):
 
     def _show_in_treemap(self, node: Node) -> None:
         self.results.treemap.set_view_root(node)
-        self.results.tabs.setCurrentIndex(0)
+        self.results.tabs.setCurrentIndex(TREEMAP_TAB)
+
+    def _find(self) -> None:
+        if self.pages.currentIndex() == RESULTS_PAGE and self.results.outcome is not None:
+            self.results.show_search()
 
     def _trash_selected(self) -> None:
         if self.pages.currentIndex() == RESULTS_PAGE:
@@ -384,6 +388,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event: QCloseEvent) -> None:
         """Qt: stop the scan and remember the window layout."""
         self.stop_scan(wait=True)
+        self.results.search.stop(wait=True)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
@@ -414,6 +419,7 @@ class MainWindow(QMainWindow):
             ("export_largest", None, lambda: self.export_results("largest")),
             ("export_json", None, lambda: self.export_results("json")),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
+            ("find", QKeySequence.StandardKey.Find, self._find),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -435,7 +441,7 @@ class MainWindow(QMainWindow):
     def _build_menus(self) -> None:
         bar = self.menuBar()
         file_menu = bar.addMenu("")
-        for key in ("open", "rescan", "stop"):
+        for key in ("open", "rescan", "stop", "find"):
             file_menu.addAction(self._actions[key])
         export_menu = file_menu.addMenu("")
         for key in ("export_folders", "export_largest", "export_json"):
@@ -500,7 +506,7 @@ class MainWindow(QMainWindow):
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
-        for key in ("export_folders", "export_largest", "export_json", "trash"):
+        for key in ("export_folders", "export_largest", "export_json", "trash", "find"):
             self._actions[key].setEnabled(has_results and not scanning)
 
     # --- dialogs ----------------------------------------------------------

@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type and per-age totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -63,6 +63,13 @@ refuses stay and are named in a warning.
 then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent
 indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes
 the largest files and per-type and per-age totals of the whole tree off the GUI thread.
+
+**Search.** The Search tab (`SearchPanel`, Ctrl+F) waits for typing to pause, then runs `core.search.search`
+on a `SearchWorker` thread: names are matched case-insensitively (plain text anywhere in the name, `*`/`?`
+patterns against the whole name, several separated by `;`) and the 1,000 largest matches are shown with the
+count and size of all. A new search stops the one before (it checks once per folder) and only the latest
+result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
+move to the Recycle Bin or a folder rescan.
 
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is

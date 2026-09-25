@@ -33,6 +33,8 @@ EN: dict[str, str] = {
     "action_export_json_tip": "Save the folder tree for scripts and other programs",
     "action_trash": "Move to Recycle Bin",
     "action_trash_tip": "Move the selected files and folders to the Recycle Bin (you are asked first)",
+    "action_find": "Find…",
+    "action_find_tip": "Find files and folders by name anywhere in the scan",
     "action_quit": "Quit",
     "action_quit_tip": "Close FileTree",
     "action_hidden": "Include hidden files",
@@ -80,6 +82,13 @@ EN: dict[str, str] = {
                        "<b>incomplete</b>: the scan was stopped after {time}",
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
+    "tab_search": "Search",
+    "search_placeholder": "Part of a name, or a pattern: backup, *.mp4, *.iso;*.zip",
+    "search_hint": "Type part of a name, or a pattern with * and ?, to find files and folders anywhere in the scan.",
+    "search_running": "Searching…",
+    "search_none": "Nothing matches.",
+    "search_summary": "{count} matches, {size} in total.",
+    "search_limited": "The {shown} largest are listed.",
     "tab_types": "File types",
     "tab_age": "Age",
     "column_age": "Last changed",
@@ -178,6 +187,9 @@ Colours show the file type (the legend is under the map). Click a rectangle to f
 double-click to zoom into a folder, and press <i>Up</i> to zoom out again.</li>
 <li><b>Largest files</b>: the 1,000 biggest files anywhere in the scan. Type in the filter box to
 narrow the list; double-click a row to find the file in the tree.</li>
+<li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
+A pattern such as <code>*.mp4</code> must match the whole name; separate several with <code>;</code>
+(<code>*.iso;*.zip</code>). The 1,000 largest matches are listed, with the count and total size of all.</li>
 <li><b>File types</b>: how much space each kind of file takes, per extension. Pick a type in the list
 above the table to see only that kind; double-click a row to list the largest files of that type.</li>
 <li><b>Age</b>: how much space was last changed within a month, 1–6 months ago, and so on up to over two
@@ -189,8 +201,8 @@ files.</li>
 <p>Right-click any entry to <i>Open</i> it, <i>Show in file manager</i>, <i>Copy path</i>,
 <i>Show in treemap</i>, <i>Rescan this folder</i> (after changes made outside FileTree; the rest of the
 results stay), <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>.
-To move several entries at once, pick them with Ctrl+click or Shift+click in the folder tree or the
-<i>Largest files</i> list: FileTree asks once, listing them with their total size.
+To move several entries at once, pick them with Ctrl+click or Shift+click in the folder tree, the
+<i>Largest files</i> list or the <i>Search</i> results: FileTree asks once, listing them with their total size.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
 from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
 <h2>Keyboard shortcuts</h2>
@@ -198,6 +210,7 @@ from the Recycle Bin (the Trash on macOS and Linux). The numbers update right aw
 <tr><td><b>Ctrl+O</b></td><td>Choose a folder</td></tr>
 <tr><td><b>F5</b></td><td>Rescan</td></tr>
 <tr><td><b>Esc</b></td><td>Stop the scan</td></tr>
+<tr><td><b>Ctrl+F</b></td><td>Search by name</td></tr>
 <tr><td><b>Delete</b></td><td>Move the selected entries to the Recycle Bin</td></tr>
 <tr><td><b>F1</b></td><td>This guide</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>Quit</td></tr>
@@ -244,6 +257,8 @@ ZH_TW: dict[str, str] = {
     "action_export_json_tip": "把資料夾樹存起來，給程式或其他軟體使用",
     "action_trash": "移到資源回收筒",
     "action_trash_tip": "把選取的檔案和資料夾移到資源回收筒（會先詢問）",
+    "action_find": "搜尋…",
+    "action_find_tip": "在整個掃描結果裡依名稱找檔案和資料夾",
     "action_quit": "結束",
     "action_quit_tip": "關閉 FileTree",
     "action_hidden": "包含隱藏檔案",
@@ -288,6 +303,13 @@ ZH_TW: dict[str, str] = {
                        "<b>不完整</b>：掃描在 {time} 後停止",
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
+    "tab_search": "搜尋",
+    "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
+    "search_hint": "輸入名稱的一部分，或含 * 和 ? 的樣式，在整個掃描結果裡找檔案和資料夾。",
+    "search_running": "搜尋中…",
+    "search_none": "沒有符合的項目。",
+    "search_summary": "{count} 個符合，共 {size}。",
+    "search_limited": "只列出最大的 {shown} 個。",
     "tab_types": "檔案類型",
     "tab_age": "檔案新舊",
     "column_age": "最後修改",
@@ -379,6 +401,9 @@ ZH_TW: dict[str, str] = {
 按一下方塊可以在資料夾樹中找到它，按兩下可以放大到那個資料夾，按<i>上一層</i>再縮小回來。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
+<li><b>搜尋</b>（Ctrl+F）：整個掃描範圍內，名稱含有輸入文字的檔案和資料夾。
+<code>*.mp4</code> 這類樣式要符合完整名稱；好幾個樣式用 <code>;</code> 分開（<code>*.iso;*.zip</code>）。
+會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
 <li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類；
 按兩下一列，會列出那種檔案裡最大的幾個。</li>
 <li><b>檔案新舊</b>：一個月內、1–6 個月前……一直到超過 2 年前最後修改的檔案各佔多少空間。
@@ -389,7 +414,7 @@ ZH_TW: dict[str, str] = {
 <p>在任何項目上按右鍵，可以<i>開啟</i>、<i>在檔案總管中顯示</i>、<i>複製路徑</i>、<i>在方塊圖中顯示</i>、
 <i>重新掃描這個資料夾</i>（在 FileTree 以外改過東西之後用，其餘結果不變）、
 <i>只掃描這個資料夾</i>，或<i>移到資源回收筒</i>。
-要一次移走好幾個項目，在資料夾樹或<i>最大的檔案</i>清單裡用 Ctrl+按一下或 Shift+按一下選取，
+要一次移走好幾個項目，在資料夾樹、<i>最大的檔案</i>或<i>搜尋</i>清單裡用 Ctrl+按一下或 Shift+按一下選取，
 只會詢問一次，並列出它們和總大小。
 FileTree 不會永久刪除任何東西：每次都會先詢問，
 移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
@@ -398,6 +423,7 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 <tr><td><b>Ctrl+O</b></td><td>選擇資料夾</td></tr>
 <tr><td><b>F5</b></td><td>重新掃描</td></tr>
 <tr><td><b>Esc</b></td><td>停止掃描</td></tr>
+<tr><td><b>Ctrl+F</b></td><td>依名稱搜尋</td></tr>
 <tr><td><b>Delete</b></td><td>把選取的項目（可以好幾個）移到資源回收筒</td></tr>
 <tr><td><b>F1</b></td><td>這份說明</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>結束</td></tr>
@@ -441,6 +467,8 @@ ZH_CN: dict[str, str] = {
     "action_export_json_tip": "保存文件夹树，供脚本或其他软件使用",
     "action_trash": "移到回收站",
     "action_trash_tip": "把选中的文件和文件夹移到回收站（会先询问）",
+    "action_find": "搜索…",
+    "action_find_tip": "在整个扫描结果里按名称找文件和文件夹",
     "action_quit": "退出",
     "action_quit_tip": "关闭 FileTree",
     "action_hidden": "包含隐藏文件",
@@ -485,6 +513,13 @@ ZH_CN: dict[str, str] = {
                        "<b>不完整</b>：扫描在 {time} 后停止",
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
+    "tab_search": "搜索",
+    "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
+    "search_hint": "输入名称的一部分，或含 * 和 ? 的模式，在整个扫描结果里找文件和文件夹。",
+    "search_running": "搜索中…",
+    "search_none": "没有匹配的项目。",
+    "search_summary": "{count} 个匹配，共 {size}。",
+    "search_limited": "只列出最大的 {shown} 个。",
     "tab_types": "文件类型",
     "tab_age": "文件新旧",
     "column_age": "最后修改",
@@ -576,6 +611,9 @@ ZH_CN: dict[str, str] = {
 单击方块可以在文件夹树中找到它，双击可以放大到那个文件夹，点<i>上一级</i>再缩小回来。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，
 双击某一行就会在文件夹树中找到那个文件。</li>
+<li><b>搜索</b>（Ctrl+F）：整个扫描范围内，名称含有输入文字的文件和文件夹。
+<code>*.mp4</code> 这类模式要匹配完整名称；多个模式用 <code>;</code> 分开（<code>*.iso;*.zip</code>）。
+会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
 <li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类；
 双击一行，会列出那种文件里最大的几个。</li>
 <li><b>文件新旧</b>：一个月内、1–6 个月前……一直到超过 2 年前最后修改的文件各占多少空间。
@@ -586,7 +624,7 @@ ZH_CN: dict[str, str] = {
 <p>在任何项目上点右键，可以<i>打开</i>、<i>在文件管理器中显示</i>、<i>复制路径</i>、<i>在方块图中显示</i>、
 <i>重新扫描这个文件夹</i>（在 FileTree 以外改过东西之后用，其余结果不变）、
 <i>只扫描这个文件夹</i>，或<i>移到回收站</i>。
-要一次移走好几个项目，在文件夹树或<i>最大的文件</i>列表里用 Ctrl+单击或 Shift+单击选中，
+要一次移走好几个项目，在文件夹树、<i>最大的文件</i>或<i>搜索</i>列表里用 Ctrl+单击或 Shift+单击选中，
 只会询问一次，并列出它们和总大小。
 FileTree 不会永久删除任何东西：每次都会先询问，
 移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
@@ -595,6 +633,7 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 <tr><td><b>Ctrl+O</b></td><td>选择文件夹</td></tr>
 <tr><td><b>F5</b></td><td>重新扫描</td></tr>
 <tr><td><b>Esc</b></td><td>停止扫描</td></tr>
+<tr><td><b>Ctrl+F</b></td><td>按名称搜索</td></tr>
 <tr><td><b>Delete</b></td><td>把选中的项目（可以好几个）移到回收站</td></tr>
 <tr><td><b>F1</b></td><td>这份说明</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>退出</td></tr>
