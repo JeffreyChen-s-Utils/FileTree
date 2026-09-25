@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest>=8
+# Keep the pin in step with .github/workflows/test.yml: a newer ruff can
+# promote rules to stable and turn an unchanged tree red.
+ruff==0.15.14

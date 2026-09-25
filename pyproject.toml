@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "file_tree"
+version = "0.1.0"
+authors = [
+    { name = "JE-Chen", email = "jechenmailman@gmail.com" },
+]
+description = "See where your disk space goes: a fast folder-size scanner with a tree, a treemap and a list of the largest files."
+keywords = ["disk-usage", "disk-space", "folder-size", "treemap", "treesize", "pyside6", "qt"]
+requires-python = ">=3.10"
+dependencies = ["PySide6>=6.8"]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Development Status :: 3 - Alpha",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: MacOS X",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Natural Language :: Chinese (Simplified)",
+    "Natural Language :: Chinese (Traditional)",
+    "Operating System :: OS Independent",
+    "Topic :: System :: Filesystems",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/JeffreyChen-s-Utils/FileTree"
+Code = "https://github.com/JeffreyChen-s-Utils/FileTree"
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.gui-scripts]
+file-tree = "file_tree.gui.app:run"
+
+[tool.setuptools.packages.find]
+include = ["file_tree*"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "SIM", "UP", "PL", "S", "C90", "N", "BLE"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.pylint]
+# Workspace limit: seven parameters; options past the first few are keyword-only.
+max-args = 7
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, use magic numbers for expected values, and import inside tests
+# to keep Qt out of the pure-core test modules.
+"test/*" = ["S101", "PLR2004", "PLC0415"]
+# Qt's virtual methods keep Qt's camelCase names.
+"file_tree/gui/*" = ["N802"]

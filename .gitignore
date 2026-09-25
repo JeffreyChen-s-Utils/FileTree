@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tools
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors and logs
+.idea/
+.vscode/
+*.log
+
+# docs/updates ID lock (never committed)
+docs/updates/.id-lock/
