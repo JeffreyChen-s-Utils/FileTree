@@ -55,12 +55,21 @@ from file_tree.gui.scan_bar import ScanBar
 from file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
 from file_tree.gui.search_panel import SearchPanel
 from file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
-from file_tree.gui.tree_model import NODE_ROLE, SHARE, SIZE, FolderTreeModel
+from file_tree.gui.tree_model import (
+    ALLOCATED,
+    FILES,
+    FOLDERS,
+    MODIFIED,
+    NODE_ROLE,
+    SHARE,
+    SIZE,
+    FolderTreeModel,
+)
 from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.
-_TREE_COLUMN_WIDTHS = {1: 80, 2: 110, 3: 70, 4: 70, 5: 125}
+_TREE_COLUMN_WIDTHS = {SIZE: 75, ALLOCATED: 75, SHARE: 95, FILES: 55, FOLDERS: 65, MODIFIED: 120}
 _LARGEST_COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _LARGEST_FOLDER_COLUMN = 2
 _PROBLEM_COLUMN_WIDTH = 220
@@ -442,7 +451,7 @@ class ResultsView(QWidget):
         splitter.addWidget(self.tabs)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
-        splitter.setSizes([600, 500])
+        splitter.setSizes([650, 450])
         self.splitter = splitter
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
@@ -557,8 +566,8 @@ class ResultsView(QWidget):
         root = outcome.result.root if outcome is not None else self.tree_model.root
         if root is None:
             return ""
-        values = {"path": root.path, "size": format_size(root.size), "files": format_count(root.file_count),
-                  "folders": format_count(root.dir_count)}
+        values = {"path": root.path, "size": format_size(root.size), "allocated": format_size(root.allocated),
+                  "files": format_count(root.file_count), "folders": format_count(root.dir_count)}
         if outcome is None:
             return tr("summary_live", **values)
         key = "summary_partial" if outcome.partial else "summary"

@@ -29,13 +29,13 @@ from file_tree.core.scanner import NOT_SCANNED
 from file_tree.gui.i18n import tr
 from file_tree.gui.reasons import problem_text
 
-NAME, SIZE, SHARE, FILES, FOLDERS, MODIFIED = range(6)
-COLUMN_KEYS = ("column_name", "column_size", "column_share", "column_files", "column_folders",
+NAME, SIZE, ALLOCATED, SHARE, FILES, FOLDERS, MODIFIED = range(7)
+COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_files", "column_folders",
                "column_modified")
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
-_NUMERIC_COLUMNS = (SIZE, SHARE, FILES, FOLDERS)
+_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, FILES, FOLDERS)
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 
 ModelIndex = QModelIndex | QPersistentModelIndex
@@ -46,6 +46,7 @@ def sort_key(column: int) -> Callable[[Node], Any]:
     keys: dict[int, Callable[[Node], Any]] = {
         NAME: lambda node: (not node.is_dir, node.name.lower()),
         SIZE: lambda node: node.size,
+        ALLOCATED: lambda node: node.allocated,
         SHARE: lambda node: node.size,
         FILES: lambda node: node.file_count,
         FOLDERS: lambda node: node.dir_count,
@@ -67,6 +68,13 @@ class FolderTreeModel(QAbstractItemModel):
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._icons: dict[str, QIcon] = {}
+        self._texts: dict[int, Callable[[Node], str]] = {
+            NAME: lambda node: node.name,
+            SIZE: lambda node: format_size(node.size, self._unit),
+            ALLOCATED: lambda node: "" if node.is_link else format_size(node.allocated, self._unit),
+            SHARE: lambda node: format_share(node.share_of_parent()),
+            MODIFIED: lambda node: format_time(node.modified),
+        }
         self._roles: dict[int, Callable[[Node, int], Any]] = {
             Qt.ItemDataRole.DisplayRole: self._display,
             Qt.ItemDataRole.TextAlignmentRole: lambda _node, column: _RIGHT if column in _NUMERIC_COLUMNS else None,
@@ -311,16 +319,11 @@ class FolderTreeModel(QAbstractItemModel):
                                   self.index(count - 1, MODIFIED, parent_index))
 
     def _display(self, node: Node, column: int) -> str:
-        if column == NAME:
-            return node.name
-        if column == SIZE:
-            return format_size(node.size, self._unit)
-        if column == SHARE:
-            return format_share(node.share_of_parent())
-        if column == MODIFIED:
-            return format_time(node.modified)
+        text = self._texts.get(column)
+        if text is not None:
+            return text(node)
         if not node.is_dir or node.is_link:
-            return ""
+            return ""  # the file and folder counts are for folders only
         return format_count(node.file_count if column == FILES else node.dir_count)
 
     def _tooltip(self, node: Node) -> str:

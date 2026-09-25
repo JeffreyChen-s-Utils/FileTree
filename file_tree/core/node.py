@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 class Node:
     """One entry of a scanned tree.
 
-    For a folder, ``size``, ``file_count``, ``dir_count`` and ``modified`` are
+    ``allocated`` is the space taken on disk (see ``file_tree.core.allocation``).
+    For a folder, ``size``, ``allocated``, ``file_count``, ``dir_count`` and ``modified`` are
     totals over everything beneath it (filled in by the scanner once the whole
     tree is read), and ``children`` is a list sorted largest first. A file keeps
     the shared empty tuple instead, which saves a list per file on trees with
@@ -30,6 +31,7 @@ class Node:
     modified: float = 0.0
     is_link: bool = False
     error: str | None = None
+    allocated: int = 0
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
 
@@ -89,6 +91,7 @@ class Node:
         node: Node | None = parent
         while node is not None:
             node.size -= self.size
+            node.allocated -= self.allocated
             node.file_count -= self.file_count
             node.dir_count -= folders
             node = node.parent
@@ -108,11 +111,13 @@ class Node:
         parent.children[position] = new
         self.parent = None
         size = new.size - self.size
+        allocated = new.allocated - self.allocated
         files = new.file_count - self.file_count
         folders = new.dir_count - self.dir_count
         node: Node | None = parent
         while node is not None:
             node.size += size
+            node.allocated += allocated
             node.file_count += files
             node.dir_count += folders
             node.modified = max(node.modified, new.modified)

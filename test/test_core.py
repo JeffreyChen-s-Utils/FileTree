@@ -161,7 +161,7 @@ def test_export_folders_csv(sample_tree: Path, tmp_path: Path) -> None:
     assert export.export_folders_csv(root, target) == 4
     rows = _read_csv(target)
     assert rows[0] == list(export.FOLDER_COLUMNS)
-    assert rows[1][:5] == [str(sample_tree), "1000", "1.0", "6", "3"]
+    assert rows[1][:6] == [str(sample_tree), "1000", str(root.allocated), "1.0", "6", "3"]
     assert [row[0] for row in rows[1:]] == [str(sample_tree), str(sample_tree / "photos"),
                                             str(sample_tree / "code"), str(sample_tree / "code" / "empty")]
     assert export.export_folders_csv(root, target, max_depth=0) == 1
@@ -184,6 +184,7 @@ def test_export_json(sample_tree: Path, tmp_path: Path) -> None:
     assert document["format"] == "file-tree/1"
     top = document["root"]
     assert (top["name"], top["size"], top["files"], top["folders"]) == (str(sample_tree), 1000, 6, 3)
+    assert top["allocated"] == root.allocated
     assert [child["name"] for child in top["children"]] == ["photos", "code"]
     assert top["children"][1]["children"][0]["name"] == "empty"
     export.export_json(root, target, max_depth=0)

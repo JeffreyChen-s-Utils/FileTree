@@ -47,7 +47,7 @@ def demo_tree() -> Node:
         root.children.append(folder)
         for name, megabytes in files:
             size = int(megabytes * MB * rng.uniform(0.8, 1.2))
-            folder.children.append(Node(name, False, size=size, file_count=1,
+            folder.children.append(Node(name, False, size=size, allocated=-(-size // 4096) * 4096, file_count=1,
                                         modified=1_780_000_000 + rng.randint(0, 9_000_000), parent=folder))
     _add_up(root)
     return root
@@ -56,10 +56,12 @@ def demo_tree() -> Node:
 def _add_up(root: Node) -> None:
     for folder in root.children:
         folder.size = sum(child.size for child in folder.children)
+        folder.allocated = sum(child.allocated for child in folder.children)
         folder.file_count = len(folder.children)
         folder.modified = max(child.modified for child in folder.children)
         folder.children.sort(key=lambda node: -node.size)
     root.size = sum(folder.size for folder in root.children)
+    root.allocated = sum(folder.allocated for folder in root.children)
     root.file_count = sum(folder.file_count for folder in root.children)
     root.dir_count = len(root.children)
     root.modified = max(folder.modified for folder in root.children)

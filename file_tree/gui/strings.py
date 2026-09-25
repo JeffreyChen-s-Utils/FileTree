@@ -76,9 +76,10 @@ EN: dict[str, str] = {
     "duration_seconds": "{value} s",
     "duration_minutes": "{minutes} min {seconds} s",
     # results
-    "summary": "<b>{path}</b> — {size} in {files} files and {folders} folders (scanned in {time})",
-    "summary_live": "<b>{path}</b> — {size} in {files} files and {folders} folders so far",
-    "summary_partial": "<b>{path}</b> — {size} in {files} files and {folders} folders · "
+    "summary": "<b>{path}</b> — {size} ({allocated} on disk) in {files} files and {folders} folders "
+               "(scanned in {time})",
+    "summary_live": "<b>{path}</b> — {size} ({allocated} on disk) in {files} files and {folders} folders so far",
+    "summary_partial": "<b>{path}</b> — {size} ({allocated} on disk) in {files} files and {folders} folders · "
                        "<b>incomplete</b>: the scan was stopped after {time}",
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
@@ -104,6 +105,7 @@ EN: dict[str, str] = {
     "tab_problems_count": "Problems ({count})",
     "column_name": "Name",
     "column_size": "Size",
+    "column_allocated": "On disk",
     "column_share": "% of parent",
     "column_share_total": "% of total",
     "column_files": "Files",
@@ -179,7 +181,9 @@ next to a folder to look inside.</li>
 </ol>
 <h2>Reading the results</h2>
 <ul>
-<li><b>Folder tree</b> (left): the size of each folder or file, a <i>% of parent</i> bar (how much of
+<li><b>Folder tree</b> (left): the size of each folder or file, the space it takes <i>on disk</i> (whole
+clusters, so usually a little more; less for compressed files, nothing for files kept only online), a
+<i>% of parent</i> bar (how much of
 the folder above it this entry takes), how many files and folders it holds, and when something in it
 last changed. Click a column title to sort by it.</li>
 <li><b>Treemap</b>: every file is a rectangle, and the bigger the file, the bigger the rectangle.
@@ -297,9 +301,10 @@ ZH_TW: dict[str, str] = {
     "not_a_folder": "{path} 不是存在的資料夾。",
     "duration_seconds": "{value} 秒",
     "duration_minutes": "{minutes} 分 {seconds} 秒",
-    "summary": "<b>{path}</b> — {size}，共 {files} 個檔案、{folders} 個資料夾（掃描耗時 {time}）",
-    "summary_live": "<b>{path}</b> — 目前 {size}，{files} 個檔案、{folders} 個資料夾",
-    "summary_partial": "<b>{path}</b> — {size}，{files} 個檔案、{folders} 個資料夾 · "
+    "summary": ("<b>{path}</b> — {size}（磁碟大小 {allocated}），共 {files} 個檔案、{folders} 個資料夾"
+                "（掃描耗時 {time}）"),
+    "summary_live": "<b>{path}</b> — 目前 {size}（磁碟大小 {allocated}），{files} 個檔案、{folders} 個資料夾",
+    "summary_partial": "<b>{path}</b> — {size}（磁碟大小 {allocated}），{files} 個檔案、{folders} 個資料夾 · "
                        "<b>不完整</b>：掃描在 {time} 後停止",
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
@@ -325,6 +330,7 @@ ZH_TW: dict[str, str] = {
     "tab_problems_count": "無法讀取（{count}）",
     "column_name": "名稱",
     "column_size": "大小",
+    "column_allocated": "磁碟大小",
     "column_share": "佔上層比例",
     "column_share_total": "佔總量比例",
     "column_files": "檔案數",
@@ -395,7 +401,8 @@ ZH_TW: dict[str, str] = {
 </ol>
 <h2>看懂結果</h2>
 <ul>
-<li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
+<li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>磁碟大小</i>（實際佔用的磁碟空間：以整個叢集計算，
+通常比大小多一點；壓縮檔案較少，只存在雲端的檔案是 0）、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
 裡面有幾個檔案和資料夾，以及裡面最近一次變動的時間。按欄位標題可以依該欄排序。</li>
 <li><b>方塊圖</b>：每個檔案都是一個方塊，檔案越大、方塊越大；顏色代表檔案類型（圖例在方塊圖下方）。
 按一下方塊可以在資料夾樹中找到它，按兩下可以放大到那個資料夾，按<i>上一層</i>再縮小回來。</li>
@@ -507,9 +514,10 @@ ZH_CN: dict[str, str] = {
     "not_a_folder": "{path} 不是存在的文件夹。",
     "duration_seconds": "{value} 秒",
     "duration_minutes": "{minutes} 分 {seconds} 秒",
-    "summary": "<b>{path}</b> — {size}，共 {files} 个文件、{folders} 个文件夹（扫描用时 {time}）",
-    "summary_live": "<b>{path}</b> — 目前 {size}，{files} 个文件、{folders} 个文件夹",
-    "summary_partial": "<b>{path}</b> — {size}，{files} 个文件、{folders} 个文件夹 · "
+    "summary": ("<b>{path}</b> — {size}（占用空间 {allocated}），共 {files} 个文件、{folders} 个文件夹"
+                "（扫描用时 {time}）"),
+    "summary_live": "<b>{path}</b> — 目前 {size}（占用空间 {allocated}），{files} 个文件、{folders} 个文件夹",
+    "summary_partial": "<b>{path}</b> — {size}（占用空间 {allocated}），{files} 个文件、{folders} 个文件夹 · "
                        "<b>不完整</b>：扫描在 {time} 后停止",
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
@@ -535,6 +543,7 @@ ZH_CN: dict[str, str] = {
     "tab_problems_count": "无法读取（{count}）",
     "column_name": "名称",
     "column_size": "大小",
+    "column_allocated": "占用空间",
     "column_share": "占上级比例",
     "column_share_total": "占总量比例",
     "column_files": "文件数",
@@ -605,7 +614,8 @@ ZH_CN: dict[str, str] = {
 </ol>
 <h2>看懂结果</h2>
 <ul>
-<li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
+<li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占用空间</i>（实际占用的磁盘空间：按整个簇计算，
+通常比大小多一点；压缩文件较少，只在云端的文件是 0）、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
 里面有几个文件和文件夹，以及里面最近一次变动的时间。点列标题可以按该列排序。</li>
 <li><b>方块图</b>：每个文件都是一个方块，文件越大、方块越大；颜色代表文件类型（图例在方块图下方）。
 单击方块可以在文件夹树中找到它，双击可以放大到那个文件夹，点<i>上一级</i>再缩小回来。</li>

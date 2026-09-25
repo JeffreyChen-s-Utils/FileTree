@@ -13,6 +13,7 @@ from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelInd
 from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
 from file_tree.core.analysis import CATEGORIES
+from file_tree.core.formatting import format_size
 from file_tree.core.node import Node
 from file_tree.core import scanner
 from file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
@@ -25,7 +26,7 @@ from file_tree.gui.qt_translation import apply_qt_translation
 from file_tree.gui.results_view import SEARCH_TAB
 from file_tree.gui.scan_worker import analyse
 from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
-from file_tree.gui.tree_model import NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
+from file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 
@@ -216,10 +217,10 @@ def _gated_scan(monkeypatch: pytest.MonkeyPatch, root: Path) -> threading.Event:
     gate = threading.Event()
     real = scanner._read_folder
 
-    def gated(folder, path, options):
+    def gated(folder, path, *rest):
         if path != str(root):
             gate.wait(10)
-        return real(folder, path, options)
+        return real(folder, path, *rest)
 
     monkeypatch.setattr(scanner, "_read_folder", gated)
     monkeypatch.setattr(main_window_module, "ScanOptions", functools.partial(ScanOptions, workers=1))
@@ -399,6 +400,17 @@ def test_search_finds_entries_anywhere_and_follows_changes_to_the_tree(
     _wait(qapp, lambda: window.results.outcome is not None and not panel.busy)
     assert panel.box.isEnabled()
     assert [node.name for node in results.search_model.rows()] == ["photos"]
+
+
+def test_the_tree_and_the_summary_show_the_space_taken_on_disk(window: MainWindow, qapp: QApplication,
+                                                                  sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    model = window.results.tree_model
+    root = model.root
+    assert root is not None and root.allocated > 0
+    assert model.headerData(ALLOCATED, Qt.Orientation.Horizontal) == "On disk"
+    assert model.index(0, ALLOCATED).data() == format_size(root.allocated)
+    assert f"({format_size(root.allocated)} on disk)" in window.results.summary.text()
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

@@ -15,8 +15,8 @@ the window.
 - **Fast, and live**: several folders are read at once; about 740,000 files and folders are scanned in
   6–8 seconds on an SSD. The tree fills in while the scan runs, biggest folders first, and Stop keeps
   what was read so far.
-- **Folder tree** sorted largest first, with a bar showing each entry's share of its folder, file and
-  folder counts, and the last change inside it.
+- **Folder tree** sorted largest first, with the space each entry takes on disk, a bar showing its share of
+  its folder, file and folder counts, and the last change inside it.
 - **Treemap**: every file is a rectangle sized by how much space it takes, coloured by file type. Click to
   find it in the tree, double-click to zoom into a folder.
 - **Largest files**: the 1,000 biggest files anywhere in the scan, with a filter box.
@@ -70,7 +70,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 
 | Where | What it tells you |
 |---|---|
-| Folder tree | Size, *% of parent* (the share of the folder above), number of files and folders inside, last change |
+| Folder tree | Size, *On disk* (the space really taken: whole clusters, so usually a little more; less for compressed files, nothing for files kept only online), *% of parent* (the share of the folder above), number of files and folders inside, last change |
 | Treemap | One rectangle per file, sized by space used and coloured by file type; the legend is under the map |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); the 1,000 largest matches are listed with the count and total size of all |

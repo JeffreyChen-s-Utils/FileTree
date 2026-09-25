@@ -24,6 +24,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import cast
 
+from file_tree.core.allocation import Allocation, allocation_for
 from file_tree.core.node import Node
 
 # Windows reparse tags of links that must not be followed. A junction (and a
@@ -104,6 +105,7 @@ class _FolderRead:
     subfolders: list[tuple[Node, str]] = field(default_factory=list)
     files: int = 0
     size: int = 0
+    allocated: int = 0
     errors: list[tuple[str, str]] = field(default_factory=list)
 
 
@@ -148,6 +150,7 @@ class _Crawler:
     def __init__(self, root: Node, root_path: str, options: ScanOptions,
                  cancel: threading.Event | None = None) -> None:
         self._options = options
+        self._allocation = allocation_for(root_path)
         self._cancel = cancel
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
@@ -209,7 +212,7 @@ class _Crawler:
     def _work(self) -> None:
         while (task := self._take()) is not None:
             try:
-                read = _read_folder(task[0], task[1], self._options)
+                read = _read_folder(task[0], task[1], self._options, self._allocation)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
                 with self._condition:
                     self._failure = error
@@ -252,12 +255,13 @@ def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
     node: Node | None = folder
     while node is not None:
         node.size += read.size
+        node.allocated += read.allocated
         node.file_count += read.files
         node.dir_count += subfolders
         node = node.parent
 
 
-def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
+def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
@@ -269,7 +273,7 @@ def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
         return read
     children = cast(list[Node], folder.children)  # folders are always created with a list
     for entry in listing:
-        child = _entry_node(entry, options, read)
+        child = _entry_node(entry, options, read, allocation)
         if child is None:
             continue
         child.parent = folder
@@ -279,7 +283,8 @@ def _read_folder(folder: Node, path: str, options: ScanOptions) -> _FolderRead:
     return read
 
 
-def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead) -> Node | None:
+def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead,
+                allocation: Allocation) -> Node | None:
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
@@ -295,9 +300,11 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
                     is_link=True)
     if entry.is_dir(follow_symlinks=False):
         return Node(name=entry.name, is_dir=True, modified=info.st_mtime, children=[])
+    allocated = allocation(entry, info)
     read.files += 1
     read.size += info.st_size
-    return Node(name=entry.name, is_dir=False, size=info.st_size, file_count=1,
+    read.allocated += allocated
+    return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
                 modified=info.st_mtime)
 
 
@@ -330,16 +337,18 @@ def _add_up(folders: list[Node]) -> None:
     ``folders`` must list every folder after its parent.
     """
     for folder in reversed(folders):
-        size = files = subfolders = 0
+        size = allocated = files = subfolders = 0
         newest = folder.modified
         children = folder.children
         for child in children:
             size += child.size
+            allocated += child.allocated
             files += child.file_count
             if child.is_dir and not child.is_link:
                 subfolders += 1 + child.dir_count
             newest = max(newest, child.modified)
         folder.size = size
+        folder.allocated = allocated
         folder.file_count = files
         folder.dir_count = subfolders
         folder.modified = newest
