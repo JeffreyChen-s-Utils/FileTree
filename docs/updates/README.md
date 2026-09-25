@@ -64,6 +64,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20260926-07 | 2026-09-26 | Age tab; double-click a type or an age to list its largest files | #done #analysis #gui | [2026-09](2026-09.md) |
 | U-20260926-06 | 2026-09-26 | Unreadable-folder reasons in the window's language | #done #scanner #i18n | [2026-09](2026-09.md) |
 | U-20260926-05 | 2026-09-26 | Ask for administrator rights at start, like TreeSize (Windows) | #done #gui #windows | [2026-09](2026-09.md) |
 | U-20260926-04 | 2026-09-26 | The tree fills in while the scan runs; Stop keeps what was read | #done #scanner #gui | [2026-09](2026-09.md) |

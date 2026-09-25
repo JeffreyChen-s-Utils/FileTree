@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, QThread, Signal
 
-from file_tree.core.analysis import CategoryStat, ExtensionStat, category_stats, summarise
+from file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, category_stats, summarise
 from file_tree.core.node import Node
 from file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
 
@@ -26,13 +26,16 @@ class ScanOutcome:
     largest: list[Node]
     extensions: list[ExtensionStat]
     categories: list[CategoryStat]
+    ages: list[AgeStat]
+    now: float
     partial: bool = False
 
 
 def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
-    """Compute the largest files and the per-type totals of a scan (``partial`` when it was stopped)."""
-    largest, extensions = summarise(result.root, LARGEST_FILES_LIMIT)
-    return ScanOutcome(result, largest, extensions, category_stats(extensions), partial)
+    """Compute the largest files and the per-type and per-age totals of a scan (``partial`` when it was stopped)."""
+    summary = summarise(result.root, LARGEST_FILES_LIMIT)
+    return ScanOutcome(result, summary.largest, summary.extensions, category_stats(summary.extensions),
+                       summary.ages, summary.now, partial)
 
 
 class ScanWorker(QThread):

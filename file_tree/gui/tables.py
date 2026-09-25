@@ -9,7 +9,7 @@ from typing import Any, Generic, TypeVar
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
-from file_tree.core.analysis import ExtensionStat
+from file_tree.core.analysis import AGES, AgeStat, ExtensionStat
 from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from file_tree.core.node import Node
 from file_tree.gui.i18n import tr
@@ -161,6 +161,39 @@ class FileTypesModel(_TableModel[ExtensionStat]):
         return None
 
     def _share(self, stat: ExtensionStat) -> float:
+        return stat.size / self._total if self._total else 0.0
+
+
+class AgeModel(_TableModel[AgeStat]):
+    """Space taken per age group (time since files last changed)."""
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        self._total = 0
+        super().__init__(parent)
+
+    def set_rows(self, rows: Sequence[AgeStat]) -> None:
+        """Replace the rows; shares are relative to their sum."""
+        self._total = sum(stat.size for stat in rows)
+        super().set_rows(rows)
+
+    def build_columns(self) -> Sequence[Column[AgeStat]]:
+        """Age group, size, share, files."""
+        return (
+            Column("column_age", lambda stat: tr(f"age_{stat.age}"), lambda stat: AGES.index(stat.age)),
+            Column("column_size", lambda stat: format_size(stat.size, self.unit), lambda stat: stat.size,
+                   numeric=True),
+            Column("column_share_total", lambda stat: format_share(self._share(stat)), lambda stat: stat.size,
+                   numeric=True),
+            Column("column_files", lambda stat: format_count(stat.count), lambda stat: stat.count, numeric=True),
+        )
+
+    def extra_data(self, row: AgeStat, role: int) -> Any:
+        """The share of the total, for the bar."""
+        if role == SHARE_ROLE:
+            return self._share(row)
+        return None
+
+    def _share(self, stat: AgeStat) -> float:
         return stat.size / self._total if self._total else 0.0
 
 

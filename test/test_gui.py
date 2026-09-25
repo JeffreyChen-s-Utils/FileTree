@@ -290,3 +290,24 @@ def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path)
 
 def test_explorer_command_always_quotes_the_path() -> None:
     assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
+
+
+def test_double_clicking_a_type_or_an_age_lists_its_largest_files(window: MainWindow, qapp: QApplication,
+                                                                  sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    assert results.age_model.rowCount() == 5
+    results.show_largest_of_type(".jpg")
+    assert [node.name for node in results.largest_model.rows()] == ["a.jpg"]
+    assert results.tabs.currentIndex() == 1
+    assert "Showing only: .jpg" in results._focus_label.text()
+    results.show_largest_of_type("")
+    assert [node.name for node in results.largest_model.rows()] == ["Makefile"]
+    assert "(no extension)" in results._focus_label.text()
+    results.show_largest_of_age("month")
+    assert len(results.largest_model.rows()) == 6, "the sample files were all written just now"
+    results.show_all_largest()
+    assert results.largest_model.rowCount() == 6 and results._focus_bar.isHidden()
+    types_index = results.types_table.model().index(0, 0)
+    results.types_table.doubleClicked.emit(types_index)
+    assert not results._focus_bar.isHidden()

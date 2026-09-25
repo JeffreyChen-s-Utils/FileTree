@@ -9,6 +9,7 @@ tree (largest files, file types) fill in when the scan ends.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -27,7 +28,19 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from file_tree.core.analysis import CATEGORIES, CategoryStat, category_stats, extension_stats, subtract_stats
+from file_tree.core.analysis import (
+    CATEGORIES,
+    CategoryStat,
+    age_of,
+    age_stats,
+    category_stats,
+    extension_of,
+    extension_stats,
+    files_beneath,
+    largest_matching,
+    subtract_ages,
+    subtract_stats,
+)
 from file_tree.core.formatting import format_count, format_size
 from file_tree.core.node import Node
 from file_tree.core.scanner import ScanProgress
@@ -35,8 +48,8 @@ from file_tree.gui import elevation
 from file_tree.gui.delegates import ShareBarDelegate
 from file_tree.gui.i18n import format_duration, tr
 from file_tree.gui.scan_bar import ScanBar
-from file_tree.gui.scan_worker import ScanOutcome
-from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel, ProblemsModel
+from file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
+from file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
 from file_tree.gui.tree_model import NODE_ROLE, SHARE, SIZE, FolderTreeModel
 from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
@@ -47,6 +60,8 @@ _LARGEST_COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _LARGEST_FOLDER_COLUMN = 2
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
+_AGE_SHARE_COLUMN = 2
+TREEMAP_TAB, LARGEST_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(5)
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -78,6 +93,9 @@ class ResultsView(QWidget):
         self.largest_model = LargestFilesModel(self)
         self.types_model = FileTypesModel(self)
         self.problems_model = ProblemsModel(self)
+        self.age_model = AgeModel(self)
+        self._largest_all: list[Node] = []
+        self._focus: tuple[str, str] | None = None  # ("type" | "age", value) the largest list shows
         self._categories: list[CategoryStat] = []
         self._outcome: ScanOutcome | None = None
 
@@ -91,6 +109,9 @@ class ResultsView(QWidget):
         self._treemap_path = QLabel()
         self._legend = QLabel()
         self._largest_filter = QLineEdit()
+        self._focus_label = QLabel()
+        self._show_all = QPushButton()
+        self._focus_bar = _row(self._focus_label, self._show_all)
         self.largest_table, self._largest_proxy = self._build_table(self.largest_model, _LARGEST_SIZE_COLUMN)
         largest_header = self.largest_table.horizontalHeader()
         largest_header.setStretchLastSection(False)
@@ -101,6 +122,7 @@ class ResultsView(QWidget):
         self._types_combo = QComboBox()
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
+        self.age_table = self._build_age_table()
         self.problems_table, _ = self._build_table(self.problems_model, 0)
         problems_header = self.problems_table.horizontalHeader()
         problems_header.setStretchLastSection(False)
@@ -125,8 +147,10 @@ class ResultsView(QWidget):
         self._outcome = None
         self._live_ticks = 0
         self.tree_model.set_root(None)
-        for model in (self.largest_model, self.types_model, self.problems_model):
+        for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.set_rows([])
+        self._largest_all = []
+        self._focus = None
         self._categories = []
         self.treemap.set_view_root(None)
         self.scan_bar.start()
@@ -173,8 +197,11 @@ class ResultsView(QWidget):
         else:
             self.tree_model.set_root(root)
             self.tree.expand(self.tree_model.index(0, 0))
-        self.largest_model.set_rows(outcome.largest)
+        self._largest_all = list(outcome.largest)
+        self._focus = None
+        self.largest_model.set_rows(self._largest_all)
         self.types_model.set_rows(outcome.extensions)
+        self.age_model.set_rows(outcome.ages)
         self.problems_model.set_rows(outcome.result.errors)
         self._categories = outcome.categories
         view_root = self.treemap.view_root
@@ -187,7 +214,7 @@ class ResultsView(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.tree_model.set_unit(unit)
-        for model in (self.largest_model, self.types_model):
+        for model in (self.largest_model, self.types_model, self.age_model):
             model.unit = unit
             model.refresh()
 
@@ -216,10 +243,13 @@ class ResultsView(QWidget):
             return
         view_root = self.treemap.view_root
         extensions = subtract_stats(self.types_model.rows(), extension_stats(node))
+        ages = subtract_ages(self.age_model.rows(), age_stats(files_beneath(node), outcome.now))
         self.tree_model.remove(node)
         root = outcome.result.root
+        self._largest_all = [file for file in self._largest_all if _is_under(file, root)]
         self.largest_model.set_rows([file for file in self.largest_model.rows() if _is_under(file, root)])
         self.types_model.set_rows(extensions)
+        self.age_model.set_rows(ages)
         self._categories = category_stats(extensions)
         if view_root is not None and not _is_under(view_root, root):
             view_root = root
@@ -229,8 +259,11 @@ class ResultsView(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self.tree_model.retranslate()
-        for model in (self.largest_model, self.types_model, self.problems_model):
+        for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.refresh()
+        self._show_all.setText(tr("largest_show_all"))
+        self.types_table.setToolTip(tr("list_files_tip"))
+        self.age_table.setToolTip(tr("list_files_tip"))
         self.scan_bar.retranslate()
         self._treemap_up.setText(tr("treemap_up"))
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
@@ -275,6 +308,17 @@ class ResultsView(QWidget):
         table.doubleClicked.connect(lambda index: self._table_activated(table, index))
         return table, proxy
 
+    def _build_age_table(self) -> QTableView:
+        proxy = QSortFilterProxyModel(self)
+        proxy.setSourceModel(self.age_model)
+        proxy.setSortRole(SORT_ROLE)
+        table = _table(proxy)
+        table.setItemDelegateForColumn(_AGE_SHARE_COLUMN, ShareBarDelegate(table))
+        table.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        table.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        table.doubleClicked.connect(lambda index: self._age_activated(proxy, index))
+        return table
+
     def _build_types_table(self) -> QTableView:
         self._types_proxy.setSourceModel(self.types_model)
         self._types_proxy.setSortRole(SORT_ROLE)
@@ -282,6 +326,7 @@ class ResultsView(QWidget):
         table.setItemDelegateForColumn(_TYPES_SHARE_COLUMN, ShareBarDelegate(table))
         table.sortByColumn(2, Qt.SortOrder.DescendingOrder)
         table.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        table.doubleClicked.connect(self._type_activated)
         self._types_combo.currentIndexChanged.connect(self._types_category_changed)
         return table
 
@@ -296,8 +341,11 @@ class ResultsView(QWidget):
         self.treemap.context_menu_requested.connect(self._emit_menu)
 
         self.tabs.addTab(_column(_row(self._treemap_up, self._treemap_path), self.treemap, self._legend), "")
-        self.tabs.addTab(_column(self._largest_filter, self.largest_table), "")
+        self._show_all.clicked.connect(self.show_all_largest)
+        self._focus_bar.hide()
+        self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
+        self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
         self._elevate_button.clicked.connect(self.elevate_requested)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
@@ -345,6 +393,47 @@ class ResultsView(QWidget):
         if node is not None:
             self.node_menu_requested.emit(node, point)
 
+    def show_largest_of_type(self, extension: str) -> None:
+        """List the largest files with this extension (an empty one: files without) on Largest files."""
+        self._show_focused(("type", extension), lambda node: extension_of(node.name) == extension)
+
+    def show_largest_of_age(self, age: str) -> None:
+        """List the largest files last changed within this age group on the Largest files tab."""
+        now = self._outcome.now if self._outcome else 0.0
+        self._show_focused(("age", age), lambda node: age_of(node.modified, now) == age)
+
+    def show_all_largest(self) -> None:
+        """Go back to the largest files of the whole scan."""
+        self._focus = None
+        self._focus_bar.hide()
+        self.largest_model.set_rows(self._largest_all)
+
+    def _show_focused(self, focus: tuple[str, str], keep: Callable[[Node], bool]) -> None:
+        if self._outcome is None:
+            return
+        self._focus = focus
+        self.largest_model.set_rows(largest_matching(self._outcome.result.root, keep, LARGEST_FILES_LIMIT))
+        self._largest_filter.clear()
+        self._focus_bar.show()
+        self._update_texts()
+        self.tabs.setCurrentIndex(LARGEST_TAB)
+
+    def _focus_text(self) -> str:
+        kind, value = self._focus or ("", "")
+        if kind == "age":
+            return tr(f"age_{value}")
+        return value or tr("no_extension")
+
+    def _type_activated(self, index: QModelIndex) -> None:
+        stat = self.types_model.row_at(self._types_proxy.mapToSource(index).row())
+        if stat is not None:
+            self.show_largest_of_type(stat.extension)
+
+    def _age_activated(self, proxy: QSortFilterProxyModel, index: QModelIndex) -> None:
+        stat = self.age_model.row_at(proxy.mapToSource(index).row())
+        if stat is not None:
+            self.show_largest_of_age(stat.age)
+
     def _types_category_changed(self, _position: int) -> None:
         self._types_proxy.category = self._types_combo.currentData() or ""
         self._types_proxy.invalidate()
@@ -364,10 +453,11 @@ class ResultsView(QWidget):
 
     def _update_texts(self) -> None:
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_treemap", "tab_largest", "tab_types")
+        titles = ("tab_treemap", "tab_largest", "tab_types", "tab_age")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
-        self.tabs.setTabText(3, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
+        self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
+        self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
         self._legend.setText(self._legend_html())
         self.summary.setText(self._summary_text())

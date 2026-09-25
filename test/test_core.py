@@ -11,14 +11,21 @@ import pytest
 
 from file_tree.core import export
 from file_tree.core.analysis import (
+    AGES,
     CATEGORIES,
+    AgeStat,
     ExtensionStat,
+    age_of,
+    age_stats,
     category_of,
     category_stats,
     extension_of,
     extension_stats,
     largest_files,
+    largest_matching,
+    subtract_ages,
     subtract_stats,
+    summarise,
 )
 from file_tree.core.formatting import format_count, format_share, format_size, format_time
 from file_tree.core.node import Node
@@ -186,3 +193,41 @@ def test_a_failed_export_leaves_no_temporary_file(sample_tree: Path, tmp_path: P
     with pytest.raises(PermissionError):
         export.export_json(root, out / "tree.json")
     assert os.listdir(out) == []
+
+
+# --- ages -----------------------------------------------------------------
+
+_DAY = 86400.0
+
+
+def test_age_groups() -> None:
+    now = 1_800_000_000.0
+    assert [age_of(now - days * _DAY, now) for days in (0, 30, 31, 182, 200, 365, 400, 730, 731)] == [
+        "month", "month", "half_year", "half_year", "year", "year", "two_years", "two_years", "older"]
+    assert age_of(now + 5 * _DAY, now) == "month", "a clock set ahead is not older"
+    assert age_of(0.0, now) == "older", "no time at all goes to the oldest group"
+
+
+def test_age_stats_keep_every_group_in_order_and_subtract(sample_tree: Path) -> None:
+    now = 2_000_000_000.0
+    for name, days in (("big.bin", 3), ("notes.txt", 100), ("photos/a.jpg", 1000)):
+        stamp = now - days * _DAY
+        os.utime(sample_tree / name, (stamp, stamp))
+    root = scan(sample_tree).root
+    stats = summarise(root, now=now).ages
+    assert [stat.age for stat in stats] == list(AGES)
+    by_age = {stat.age: (stat.size, stat.count) for stat in stats}
+    assert by_age["month"][0] >= 500 and by_age["half_year"] == (100, 1)
+    assert sum(stat.count for stat in stats) == 6
+    photos = _child(root, "photos")
+    removed = age_stats(list(photos.iter_files()), now)
+    photos.detach()
+    assert subtract_ages(stats, removed) == age_stats(list(root.iter_files()), now)
+    assert AgeStat("month", 1, 1) != AgeStat("month", 1, 2)
+
+
+def test_largest_matching(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    pictures = largest_matching(root, lambda node: node.name.endswith((".jpg", ".png")), 5)
+    assert [node.name for node in pictures] == ["a.jpg", "b.png"]
+    assert largest_matching(root, lambda node: False, 5) == []

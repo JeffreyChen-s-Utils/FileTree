@@ -81,6 +81,16 @@ EN: dict[str, str] = {
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
     "tab_types": "File types",
+    "tab_age": "Age",
+    "column_age": "Last changed",
+    "age_month": "Within a month",
+    "age_half_year": "1–6 months ago",
+    "age_year": "6–12 months ago",
+    "age_two_years": "1–2 years ago",
+    "age_older": "Over 2 years ago",
+    "largest_focus": "Showing only: {what}",
+    "largest_show_all": "Show all",
+    "list_files_tip": "Double-click a row to list its largest files",
     "tab_problems": "Problems",
     "tab_problems_count": "Problems ({count})",
     "column_name": "Name",
@@ -159,7 +169,10 @@ double-click to zoom into a folder, and press <i>Up</i> to zoom out again.</li>
 <li><b>Largest files</b>: the 1,000 biggest files anywhere in the scan. Type in the filter box to
 narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>File types</b>: how much space each kind of file takes, per extension. Pick a type in the list
-above the table to see only that kind.</li>
+above the table to see only that kind; double-click a row to list the largest files of that type.</li>
+<li><b>Age</b>: how much space was last changed within a month, 1–6 months ago, and so on up to over two
+years ago. Old data is often what can be archived or deleted; double-click a row to list its largest
+files.</li>
 <li><b>Problems</b>: folders FileTree was not allowed to read. What is inside them is not counted.</li>
 </ul>
 <h2>Freeing space</h2>
@@ -263,6 +276,16 @@ ZH_TW: dict[str, str] = {
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
     "tab_types": "檔案類型",
+    "tab_age": "檔案新舊",
+    "column_age": "最後修改",
+    "age_month": "一個月內",
+    "age_half_year": "1–6 個月前",
+    "age_year": "6–12 個月前",
+    "age_two_years": "1–2 年前",
+    "age_older": "超過 2 年",
+    "largest_focus": "只顯示：{what}",
+    "largest_show_all": "顯示全部",
+    "list_files_tip": "按兩下一列，列出它最大的檔案",
     "tab_problems": "無法讀取",
     "tab_problems_count": "無法讀取（{count}）",
     "column_name": "名稱",
@@ -334,7 +357,10 @@ ZH_TW: dict[str, str] = {
 按一下方塊可以在資料夾樹中找到它，按兩下可以放大到那個資料夾，按<i>上一層</i>再縮小回來。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
-<li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類。</li>
+<li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類；
+按兩下一列，會列出那種檔案裡最大的幾個。</li>
+<li><b>檔案新舊</b>：一個月內、1–6 個月前……一直到超過 2 年前最後修改的檔案各佔多少空間。
+舊資料常常就是可以封存或刪除的東西；按兩下一列，會列出那一段裡最大的檔案。</li>
 <li><b>無法讀取</b>：FileTree 沒有權限讀取的資料夾，裡面的內容不會算進去。</li>
 </ul>
 <h2>釋出空間</h2>
@@ -434,6 +460,16 @@ ZH_CN: dict[str, str] = {
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
     "tab_types": "文件类型",
+    "tab_age": "文件新旧",
+    "column_age": "最后修改",
+    "age_month": "一个月内",
+    "age_half_year": "1–6 个月前",
+    "age_year": "6–12 个月前",
+    "age_two_years": "1–2 年前",
+    "age_older": "超过 2 年",
+    "largest_focus": "只显示：{what}",
+    "largest_show_all": "显示全部",
+    "list_files_tip": "双击一行，列出它最大的文件",
     "tab_problems": "无法读取",
     "tab_problems_count": "无法读取（{count}）",
     "column_name": "名称",
@@ -505,7 +541,10 @@ ZH_CN: dict[str, str] = {
 单击方块可以在文件夹树中找到它，双击可以放大到那个文件夹，点<i>上一级</i>再缩小回来。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，
 双击某一行就会在文件夹树中找到那个文件。</li>
-<li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类。</li>
+<li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类；
+双击一行，会列出那种文件里最大的几个。</li>
+<li><b>文件新旧</b>：一个月内、1–6 个月前……一直到超过 2 年前最后修改的文件各占多少空间。
+旧数据常常就是可以归档或删除的东西；双击一行，会列出那一段里最大的文件。</li>
 <li><b>无法读取</b>：FileTree 没有权限读取的文件夹，里面的内容不会算进去。</li>
 </ul>
 <h2>释放空间</h2>

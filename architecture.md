@@ -13,7 +13,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
+| Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type and per-age totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
 | GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py` |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
