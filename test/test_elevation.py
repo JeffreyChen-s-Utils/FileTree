@@ -134,6 +134,9 @@ def test_denied_folders_bring_the_offer_to_the_problems_tab(window: MainWindow, 
     bar = window.results._problems_bar
     assert not bar.isHidden(), "shown on the Problems tab (a tab that is not current hides its page, not the bar)"
     requested: list[bool] = []
+    asked: list[list[str]] = []
+    monkeypatch.setattr(elevation, "relaunch_elevated", lambda arguments: asked.append(arguments) or False)
     window.results.elevate_requested.connect(lambda: requested.append(True))
     window.results._elevate_button.click()
     assert requested == [True]
+    assert asked == [[str(sample_tree)]], "the button restarts FileTree on the same folder"

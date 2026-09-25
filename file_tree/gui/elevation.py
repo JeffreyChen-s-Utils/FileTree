@@ -71,6 +71,11 @@ def relaunch_elevated(arguments: list[str]) -> bool:
         return False
     program, parameters, folder = relaunch_command(
         arguments, is_compiled=compiled(), executable=sys.executable, program_path=sys.argv[0])
+    return run_as_admin(program, parameters, folder)
+
+
+def run_as_admin(program: str, parameters: str, folder: str) -> bool:
+    """Ask Windows to start ``program`` as administrator, which shows the UAC prompt; True when it started."""
     shell_execute = ctypes.windll.shell32.ShellExecuteW
     shell_execute.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_wchar_p,
                               ctypes.c_wchar_p, ctypes.c_int]
