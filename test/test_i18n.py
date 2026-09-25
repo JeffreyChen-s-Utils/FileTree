@@ -86,3 +86,14 @@ def test_simplified_chinese_uses_simplified_characters() -> None:
     pattern = re.compile(f"[{_TAIWAN_ONLY_CHARACTERS}]")
     for key, text in STRINGS["zh-CN"].items():
         assert not pattern.search(text), f"{key}: {pattern.findall(text)}"
+
+
+def test_the_scanners_worded_reasons_are_translated_and_other_text_passes_through() -> None:
+    from file_tree.core import scanner
+    from file_tree.gui.reasons import problem_text
+
+    assert problem_text(scanner.ACCESS_DENIED) == "Access denied"
+    i18n.set_language("zh-TW")
+    assert problem_text(scanner.ACCESS_DENIED) == "拒絕存取"
+    assert problem_text(scanner.NOT_SCANNED).startswith("沒有掃描到")
+    assert problem_text("Some system text") == "Some system text"

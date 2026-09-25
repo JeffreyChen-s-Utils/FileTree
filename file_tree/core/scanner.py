@@ -16,6 +16,7 @@ added up again bottom-up and each folder's children sorted largest first.
 
 from __future__ import annotations
 
+import errno
 import os
 import threading
 import time
@@ -37,6 +38,16 @@ _FILE_ATTRIBUTE_HIDDEN = 0x2
 # 62k files; past four the threads mostly wait for the interpreter lock.
 DEFAULT_WORKERS = min(4, os.cpu_count() or 1)
 
+
+# The common reasons are worded here instead of taken from the OS, whose text
+# is in the system's language (a Chinese Windows answers 存取被拒。 in an
+# English window); the GUI translates these, exports keep them as they are.
+ACCESS_DENIED = "access denied"
+NOT_FOUND = "not found"
+PATH_TOO_LONG = "path too long"
+_REASON_BY_ERRNO = {errno.EACCES: ACCESS_DENIED, errno.EPERM: ACCESS_DENIED, errno.ENOENT: NOT_FOUND,
+                    errno.ENAMETOOLONG: PATH_TOO_LONG}
+_WINDOWS_PATH_TOO_LONG = 206  # ERROR_FILENAME_EXCED_RANGE
 
 # ``Node.error`` of a folder the scan never got to because it was stopped.
 NOT_SCANNED = "not scanned: the scan was stopped first"
@@ -293,7 +304,10 @@ def _points_to_folder(entry: os.DirEntry[str]) -> bool:
 
 
 def _describe(error: OSError) -> str:
-    return error.strerror or type(error).__name__
+    """One of the worded reasons above, or the system's own text for anything else."""
+    if getattr(error, "winerror", None) == _WINDOWS_PATH_TOO_LONG:
+        return PATH_TOO_LONG
+    return _REASON_BY_ERRNO.get(error.errno) or error.strerror or type(error).__name__
 
 
 def _size_first(node: Node) -> tuple[int, str]:

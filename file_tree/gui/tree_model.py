@@ -27,6 +27,7 @@ from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, for
 from file_tree.core.node import Node
 from file_tree.core.scanner import NOT_SCANNED
 from file_tree.gui.i18n import tr
+from file_tree.gui.reasons import problem_text
 
 NAME, SIZE, SHARE, FILES, FOLDERS, MODIFIED = range(6)
 COLUMN_KEYS = ("column_name", "column_size", "column_share", "column_files", "column_folders",
@@ -311,7 +312,7 @@ class FolderTreeModel(QAbstractItemModel):
         if node.error == NOT_SCANNED:
             return tr("tooltip_not_scanned", path=node.path)
         if node.error:
-            return tr("tooltip_unreadable", path=node.path, reason=node.error)
+            return tr("tooltip_unreadable", path=node.path, reason=problem_text(node.error))
         if node.is_link:
             return tr("tooltip_link", path=node.path)
         return node.path

@@ -66,14 +66,14 @@ def test_an_unreadable_folder_is_recorded_and_the_scan_goes_on(sample_tree: Path
 
     def scandir(path: str):
         if path == locked:
-            raise PermissionError(13, "Access is denied")
+            raise PermissionError(13, "存取被拒。")  # the OS words it in the system's language
         return real_scandir(path)
 
     monkeypatch.setattr(scanner.os, "scandir", scandir)
     result = scan(sample_tree)
-    assert result.errors == [(locked, "Access is denied")]
+    assert result.errors == [(locked, scanner.ACCESS_DENIED)]
     photos = _child(result.root, "photos")
-    assert photos.error == "Access is denied"
+    assert photos.error == scanner.ACCESS_DENIED
     assert (photos.size, result.root.size, result.root.file_count) == (0, 750, 4)
 
 

@@ -13,6 +13,7 @@ from file_tree.core.analysis import ExtensionStat
 from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from file_tree.core.node import Node
 from file_tree.gui.i18n import tr
+from file_tree.gui.reasons import problem_text
 from file_tree.gui.tree_model import NODE_ROLE, SHARE_ROLE
 
 SORT_ROLE = Qt.ItemDataRole.UserRole + 10
@@ -170,7 +171,7 @@ class ProblemsModel(_TableModel[tuple[str, str]]):
         """Path, problem."""
         return (
             Column("column_path", lambda row: row[0], lambda row: row[0].lower()),
-            Column("column_problem", lambda row: row[1], lambda row: row[1]),
+            Column("column_problem", lambda row: problem_text(row[1]), lambda row: row[1]),
         )
 
     def extra_data(self, row: tuple[str, str], role: int) -> Any:
