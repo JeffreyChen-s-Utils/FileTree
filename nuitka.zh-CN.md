@@ -1,0 +1,92 @@
+# 用 Nuitka 编译 FileTree
+
+[English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md)
+
+[Nuitka](https://nuitka.net/) 会把 FileTree 编译成原生程序，没有安装 Python 的电脑也能运行。它把 Python 代码转成 C 再编译，所以程序启动很快；代价是编译时间比较长。它编译的入口是仓库根目录的 `start_file_tree.py`。
+
+> Nuitka 只能编译出运行它的那个系统的程序：在 Windows 上编 Windows 版、在 macOS 上编 macOS 版、在 Linux 上编 Linux 版，不能交叉编译。
+
+## 1. 准备
+
+### 1.1 Python 包（每个系统都要）
+
+使用虚拟环境，编出来的程序才只包含 FileTree 需要的东西：
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+pip install nuitka ordered-set zstandard
+```
+
+在 macOS 与 Linux 上改用 `source .venv/bin/activate` 激活。
+
+### 1.2 C 编译器
+
+| 系统 | 要安装什么 |
+|---|---|
+| Windows | Visual Studio Build Tools，勾选“使用 C++ 的桌面开发”工作负载。没有的话，Nuitka 第一次编译时会提议下载 MinGW64（加上 `--assume-yes-for-downloads` 会自动同意）。 |
+| Linux | `build-essential` 与 `patchelf`（Debian／Ubuntu：`sudo apt install build-essential patchelf`） |
+| macOS | 命令行工具：`xcode-select --install` |
+
+## 2. 编译
+
+在仓库根目录、激活虚拟环境后运行。`tools/build_nuitka.py` 会找出 PySide6 装在哪里，再用 §3 的选项运行 Nuitka，也会打印完整的命令。
+
+### 2.1 程序文件夹（推荐）
+
+```bash
+python tools/build_nuitka.py
+```
+
+产物是 `build/standalone/start_file_tree.dist/` 文件夹，里面有 `FileTree.exe`（Linux 与 macOS 是 `FileTree`）。要给别的电脑用时，复制**整个文件夹**过去，从里面启动程序。这种方式启动最快。
+
+### 2.2 单个文件
+
+```bash
+python tools/build_nuitka.py --onefile
+```
+
+产物只有一个文件：`build/onefile/FileTree.exe`（其他系统是 `build/onefile/FileTree`）。方便传送，但每次启动都要先解压到临时文件夹，所以打开会稍微慢一点。
+
+### 2.3 macOS 应用程序包
+
+```bash
+python tools/build_nuitka.py --app
+```
+
+产物是 `build/app/FileTree.app`。
+
+其他选项会原样交给 Nuitka，例如加上图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`。
+
+## 3. 脚本运行的选项
+
+| 选项 | 用途 |
+|---|---|
+| `--mode=standalone`／`--mode=onefile`／`--mode=app` | 程序文件夹、单个文件，或（macOS）应用程序包 |
+| `--enable-plugin=pyside6` | 复制窗口需要的 Qt 库与插件 |
+| `--include-data-files=<PySide6>/translations/qtbase_zh_TW.qm=PySide6/translations/qtbase_zh_TW.qm`（以及 `qtbase_zh_CN.qm`） | Nuitka 不会复制 Qt 自己的翻译文件；缺了它们，“是／否／关闭”按钮会停在英文。`<PySide6>` 是 PySide6 的安装位置，这就是用脚本来编译的原因 |
+| `--windows-console-mode=disable` | Windows 上不会在 FileTree 旁边多开一个黑色控制台窗口（其他系统会忽略） |
+| `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 生成的东西都放在 `build/`，Git 会忽略这个文件夹；每种形式各有自己的文件夹，编其中一种不会删掉另一种 |
+| `--output-filename=FileTree` | 程序叫 FileTree，而不是 start_file_tree |
+| `--assume-yes-for-downloads` | 让 Nuitka 不经询问就下载它需要的辅助工具 |
+| `--macos-app-name=FileTree`（只在 `--app` 时） | 在 Finder 与 Dock 显示的名称 |
+
+入口是 `start_file_tree.py`，和 `python -m file_tree` 是同一个程序。
+
+## 4. 检查编译结果
+
+1. 从编译出来的文件夹启动程序，扫描一个文件夹。
+2. 在“视图 → 语言”切换到另一种语言，然后把某个项目移到回收站并点取消：“是／否”按钮也要是那种语言。如果还是英文，表示编译结果里缺了 Qt 的翻译文件。
+3. 打开“帮助 → 使用说明”。
+
+## 5. 常见问题
+
+| 看到什么 | 怎么处理 |
+|---|---|
+| 编译出来的程序“是／否／关闭”还是英文 | 是直接手动运行 Nuitka、缺了翻译文件。请改用 `python tools/build_nuitka.py` 编译，它会把翻译文件加进去。 |
+| Nuitka 因为没有 C 编译器而停止 | 按 §1.2 安装编译器。在 Windows 上没有 Visual Studio 时，Nuitka 会自己下载 MinGW64（脚本已经替你同意）。 |
+| 编译时其他程序变得很慢 | Nuitka 会用上所有 CPU 核心。加上 `--jobs=2`（`python tools/build_nuitka.py --jobs=2`）就能给其他程序留出余量。 |
+| 第一次编译很久 | 正常：Nuitka 第一次会把 Qt 的 Python 绑定编译好并重复使用，之后就会快很多。 |
+| 杀毒软件把新的 `.exe` 隔离了 | 新的、没有签名的可执行文件有时会被误判。把编译文件夹加入例外，或给程序签名。 |
+| 找不到 `patchelf`（Linux） | `sudo apt install patchelf` 之后再编译一次。 |

@@ -42,14 +42,21 @@ Or run it from a copy of the source:
 git clone https://github.com/JeffreyChen-s-Utils/FileTree.git
 cd FileTree
 pip install -r requirements.txt
-python -m file_tree
+python start_file_tree.py
 ```
+
+`python -m file_tree` does the same.
+
+### Build a stand-alone program
+
+To give FileTree to someone without Python, compile it with Nuitka into a program folder or a single
+`.exe`: see [nuitka.md](nuitka.md) for the commands and what each option does.
 
 ## How to use
 
 1. **Choose what to scan**: click *Choose a folder…* or one of the drives on the start page, drag a
    folder onto the window, or type a path in the box at the top and press Enter. You can also start a
-   scan from the command line: `file-tree D:\Projects` (or `python -m file_tree D:\Projects`).
+   scan from the command line: `file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
 2. **Wait a moment**: the counts and the folder being read update while FileTree works. *Stop* (or Esc)
    ends the scan at any time.
 3. **Find what takes the space**: the biggest folders are at the top of the tree. Open a folder with the

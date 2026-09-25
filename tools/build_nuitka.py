@@ -1,0 +1,73 @@
+"""Compile FileTree into a stand-alone program with Nuitka (see nuitka.md).
+
+    python tools/build_nuitka.py             # a program folder: build/standalone/start_file_tree.dist/
+    python tools/build_nuitka.py --onefile   # one file: build/onefile/FileTree.exe
+    python tools/build_nuitka.py --app       # macOS: build/app/FileTree.app
+
+Any other option is passed on to Nuitka unchanged (for example
+``--windows-icon-from-ico=icon.ico``). The script exists because one option
+depends on where PySide6 is installed: Nuitka does not copy Qt's own
+translation catalogues, so without them the Yes / No / Close buttons of the
+compiled program stay in English. They are copied to the place Qt looks for
+them inside the build (``PySide6/translations``). Each form gets its own
+output folder, because a one-file build stages its files in (and then
+deletes) the same ``start_file_tree.dist`` folder a folder build produces.
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess  # nosec B404 - runs Nuitka from this interpreter, no shell
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import PySide6  # noqa: E402
+
+from file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
+
+ENTRY_POINT = ROOT / "start_file_tree.py"
+PROGRAM_NAME = "FileTree"
+
+
+def translation_options(translations: Path) -> list[str]:
+    """``--include-data-files`` options that copy Qt's catalogues for every language FileTree offers."""
+    options = []
+    for catalogue in CATALOGUES.values():
+        source = translations / f"{catalogue}.qm"
+        if not source.is_file():
+            raise FileNotFoundError(f"Qt translation catalogue missing: {source}")
+        options.append(f"--include-data-files={source}=PySide6/translations/{catalogue}.qm")
+    return options
+
+
+def nuitka_command(mode: str, extra: list[str]) -> list[str]:
+    """The full Nuitka command line for ``mode`` (``standalone``, ``onefile`` or ``app``)."""
+    command = [
+        sys.executable, "-m", "nuitka", f"--mode={mode}", "--enable-plugin=pyside6",
+        "--windows-console-mode=disable", f"--output-dir=build/{mode}", f"--output-filename={PROGRAM_NAME}",
+        "--assume-yes-for-downloads",
+        *translation_options(Path(PySide6.__file__).parent / "translations"),
+    ]
+    if mode == "app":
+        command.append(f"--macos-app-name={PROGRAM_NAME}")
+    return [*command, *extra, str(ENTRY_POINT)]
+
+
+def main(argv: list[str]) -> int:
+    """Parse the options, show the command and run Nuitka; returns Nuitka's exit code."""
+    parser = argparse.ArgumentParser(description="Compile FileTree with Nuitka.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--onefile", action="store_true", help="build a single executable file")
+    group.add_argument("--app", action="store_true", help="build a macOS app bundle")
+    options, extra = parser.parse_known_args(argv)
+    mode = "onefile" if options.onefile else "app" if options.app else "standalone"
+    command = nuitka_command(mode, extra)
+    sys.stdout.write(" ".join(command) + "\n")
+    return subprocess.run(command, cwd=ROOT, check=False).returncode  # noqa: S603 # nosec B603
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

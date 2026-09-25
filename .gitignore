@@ -13,6 +13,9 @@ venv/
 .coverage
 htmlcov/
 
+# Nuitka crash reports (builds go to build/)
+nuitka-crash-report.xml
+
 # Editors and logs
 .idea/
 .vscode/

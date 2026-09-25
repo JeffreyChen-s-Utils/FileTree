@@ -15,15 +15,19 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 |---|---|---|---|
 | Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
 | GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_page.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py` |
-| Tools | `tools/` | GUI | `make_screenshots.py` (README pictures) |
+| Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
+| Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
 ## 3. Entry points and public interfaces
 
-- `file-tree [folder]` (the `gui-scripts` entry `file_tree.gui.app:run`) and `python -m file_tree [folder]`: open
-  the window, scanning `folder` right away if given.
+- `file-tree [folder]` (the `gui-scripts` entry `file_tree.gui.app:run`), `python start_file_tree.py [folder]`
+  and `python -m file_tree [folder]`: all three call `app.run()`, which opens the window and scans `folder`
+  right away if given (`test/test_start_script.py`).
+- `python tools/build_nuitka.py [--onefile | --app] [Nuitka options]`: compiles `start_file_tree.py` into
+  `build/<mode>/`, copying Qt's translation catalogues listed in `qt_translation.CATALOGUES`.
 - `file_tree.core.scanner.scan(path, *, options, progress, cancel)` → `ScanResult(root, errors, elapsed)`.
 - `file_tree.core.analysis.summarise(root, limit)` → largest files and per-extension totals in one pass.
 - `file_tree.core.treemap.layout(root, rect, ...)` → `Tile`s; `export.export_*` write CSV / JSON.
@@ -53,7 +57,7 @@ recent folders.
 ## 5. Extension points
 
 - **A language**: a table in `file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in
-  `qt_translation._CATALOGUES`, a README translation and a screenshot (`tools/make_screenshots.py`).
+  `qt_translation.CATALOGUES`, a README translation and a screenshot (`tools/make_screenshots.py`).
 - **A file-type group**: `analysis.CATEGORY_EXTENSIONS`, a colour in `treemap_widget.CATEGORY_COLOURS`
   and a `category_<name>` text in every language (tests check all three).
 - **An export format**: a function in `core/export.py` (atomic write) and an action in `main_window.py`.
