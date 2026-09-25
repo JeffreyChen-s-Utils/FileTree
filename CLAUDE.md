@@ -23,7 +23,11 @@ Every change must pass, before it is committed:
    manual check.
 4. A change to what the window looks like reruns `py -3 tools/make_screenshots.py` so the README pictures
    stay current. Never edit the pictures by hand.
-5. A change to layers, entry points, main flows, extension points or cross-project boundaries updates
+5. A change to how FileTree is built into a stand-alone program (`tools/build_nuitka.py`, its options, a new
+   language catalogue) updates `nuitka.md`, `nuitka.zh-TW.md` and `nuitka.zh-CN.md` together; the parity test
+   covers them like the READMEs. Nuitka compiles with every core by default: pass `--jobs=2` on this machine,
+   or the Discord bot running here stalls (measured 2026-09-26: its gateway fell 13 s behind).
+6. A change to layers, entry points, main flows, extension points or cross-project boundaries updates
    `architecture.md` in the same commit.
 
 ## Stage commits, `progress.md`, `docs/updates/` and `architecture.md`

@@ -34,12 +34,18 @@ file-tree
 git clone https://github.com/JeffreyChen-s-Utils/FileTree.git
 cd FileTree
 pip install -r requirements.txt
-python -m file_tree
+python start_file_tree.py
 ```
+
+`python -m file_tree` 的效果相同。
+
+### 編譯成獨立程式
+
+要把 FileTree 給沒有安裝 Python 的人使用，可以用 Nuitka 編譯成程式資料夾或單一 `.exe`：指令與每個選項的用途請見 [nuitka.zh-TW.md](../nuitka.zh-TW.md)。
 
 ## 使用方式
 
-1. **選擇要掃描的地方**：在起始頁按「選擇資料夾…」或其中一顆磁碟、把資料夾拖曳到視窗上，或在上方的方框輸入路徑後按 Enter。也可以從命令列直接開始掃描：`file-tree D:\Projects`（或 `python -m file_tree D:\Projects`）。
+1. **選擇要掃描的地方**：在起始頁按「選擇資料夾…」或其中一顆磁碟、把資料夾拖曳到視窗上，或在上方的方框輸入路徑後按 Enter。也可以從命令列直接開始掃描：`file-tree D:\Projects`（或 `python start_file_tree.py D:\Projects`）。
 2. **稍等一下**：FileTree 工作時會即時更新數量與正在讀取的資料夾。隨時可以按「停止」（或 Esc）結束掃描。
 3. **找出佔空間的東西**：最大的資料夾排在最上面。按資料夾旁的箭頭看裡面的內容，或在右邊的方塊圖裡瀏覽。
 

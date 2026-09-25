@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QCoreApplication, QLibraryInfo, QTranslator
 
 # Qt ships no English catalogue: English is its built-in language.
-_CATALOGUES = {"zh-TW": "qtbase_zh_TW", "zh-CN": "qtbase_zh_CN"}
+CATALOGUES = {"zh-TW": "qtbase_zh_TW", "zh-CN": "qtbase_zh_CN"}
 _installed: list[QTranslator] = []
 
 
@@ -16,7 +16,7 @@ def apply_qt_translation(language: str) -> bool:
         return False
     while _installed:
         app.removeTranslator(_installed.pop())
-    catalogue = _CATALOGUES.get(language)
+    catalogue = CATALOGUES.get(language)
     if catalogue is None:
         return False
     translator = QTranslator(app)
