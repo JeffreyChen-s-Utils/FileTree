@@ -32,7 +32,7 @@ EN: dict[str, str] = {
     "action_export_json": "Folder tree (JSON)…",
     "action_export_json_tip": "Save the folder tree for scripts and other programs",
     "action_trash": "Move to Recycle Bin",
-    "action_trash_tip": "Move the selected file or folder to the Recycle Bin (you are asked first)",
+    "action_trash_tip": "Move the selected files and folders to the Recycle Bin (you are asked first)",
     "action_quit": "Quit",
     "action_quit_tip": "Close FileTree",
     "action_hidden": "Include hidden files",
@@ -141,6 +141,14 @@ EN: dict[str, str] = {
     "trash_confirm": "Move “{name}” ({size}) to the Recycle Bin?\n\nYou can restore it from there.",
     "trash_failed": "“{name}” could not be moved to the Recycle Bin. It may be in use or read-only.",
     "trash_done": "Moved “{name}” to the Recycle Bin: {size} freed.",
+    "action_trash_many": "Move {count} items to Recycle Bin",
+    "trash_confirm_many": ("Move these {count} items ({size} in total) to the Recycle Bin?\n\n{names}\n\n"
+                           "You can restore them from there."),
+    "trash_more": "…and {count} more",
+    "trash_failed_many": ("{count} items could not be moved to the Recycle Bin. "
+                          "They may be in use or read-only:\n\n{names}"),
+    "trash_done_many": "Moved {count} items to the Recycle Bin: {size} freed.",
+    "status_selected_many": "{count} items selected: {size}",
     # export
     "export_title": "Export",
     "csv_filter": "CSV files (*.csv)",
@@ -181,6 +189,8 @@ files.</li>
 <p>Right-click any entry to <i>Open</i> it, <i>Show in file manager</i>, <i>Copy path</i>,
 <i>Show in treemap</i>, <i>Rescan this folder</i> (after changes made outside FileTree; the rest of the
 results stay), <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>.
+To move several entries at once, pick them with Ctrl+click or Shift+click in the folder tree or the
+<i>Largest files</i> list: FileTree asks once, listing them with their total size.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
 from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
 <h2>Keyboard shortcuts</h2>
@@ -188,7 +198,7 @@ from the Recycle Bin (the Trash on macOS and Linux). The numbers update right aw
 <tr><td><b>Ctrl+O</b></td><td>Choose a folder</td></tr>
 <tr><td><b>F5</b></td><td>Rescan</td></tr>
 <tr><td><b>Esc</b></td><td>Stop the scan</td></tr>
-<tr><td><b>Delete</b></td><td>Move the selected entry to the Recycle Bin</td></tr>
+<tr><td><b>Delete</b></td><td>Move the selected entries to the Recycle Bin</td></tr>
 <tr><td><b>F1</b></td><td>This guide</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>Quit</td></tr>
 </table>
@@ -233,7 +243,7 @@ ZH_TW: dict[str, str] = {
     "action_export_json": "資料夾樹（JSON）…",
     "action_export_json_tip": "把資料夾樹存起來，給程式或其他軟體使用",
     "action_trash": "移到資源回收筒",
-    "action_trash_tip": "把選取的檔案或資料夾移到資源回收筒（會先詢問）",
+    "action_trash_tip": "把選取的檔案和資料夾移到資源回收筒（會先詢問）",
     "action_quit": "結束",
     "action_quit_tip": "關閉 FileTree",
     "action_hidden": "包含隱藏檔案",
@@ -338,6 +348,13 @@ ZH_TW: dict[str, str] = {
     "trash_confirm": "要把「{name}」（{size}）移到資源回收筒嗎？\n\n之後仍可以從資源回收筒還原。",
     "trash_failed": "無法把「{name}」移到資源回收筒，可能正在使用中或是唯讀。",
     "trash_done": "已把「{name}」移到資源回收筒，釋出 {size}。",
+    "action_trash_many": "把 {count} 個項目移到資源回收筒",
+    "trash_confirm_many": ("要把這 {count} 個項目（共 {size}）移到資源回收筒嗎？\n\n{names}\n\n"
+                           "之後仍可以從資源回收筒還原。"),
+    "trash_more": "……還有 {count} 個",
+    "trash_failed_many": "有 {count} 個項目無法移到資源回收筒，可能正在使用中或是唯讀：\n\n{names}",
+    "trash_done_many": "已把 {count} 個項目移到資源回收筒，釋出 {size}。",
+    "status_selected_many": "已選取 {count} 個項目：{size}",
     "export_title": "匯出",
     "csv_filter": "CSV 檔案 (*.csv)",
     "json_filter": "JSON 檔案 (*.json)",
@@ -371,14 +388,17 @@ ZH_TW: dict[str, str] = {
 <h2>釋出空間</h2>
 <p>在任何項目上按右鍵，可以<i>開啟</i>、<i>在檔案總管中顯示</i>、<i>複製路徑</i>、<i>在方塊圖中顯示</i>、
 <i>重新掃描這個資料夾</i>（在 FileTree 以外改過東西之後用，其餘結果不變）、
-<i>只掃描這個資料夾</i>，或<i>移到資源回收筒</i>。FileTree 不會永久刪除任何東西：每次都會先詢問，
+<i>只掃描這個資料夾</i>，或<i>移到資源回收筒</i>。
+要一次移走好幾個項目，在資料夾樹或<i>最大的檔案</i>清單裡用 Ctrl+按一下或 Shift+按一下選取，
+只會詢問一次，並列出它們和總大小。
+FileTree 不會永久刪除任何東西：每次都會先詢問，
 移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
 <h2>鍵盤快速鍵</h2>
 <table cellpadding="3">
 <tr><td><b>Ctrl+O</b></td><td>選擇資料夾</td></tr>
 <tr><td><b>F5</b></td><td>重新掃描</td></tr>
 <tr><td><b>Esc</b></td><td>停止掃描</td></tr>
-<tr><td><b>Delete</b></td><td>把選取的項目移到資源回收筒</td></tr>
+<tr><td><b>Delete</b></td><td>把選取的項目（可以好幾個）移到資源回收筒</td></tr>
 <tr><td><b>F1</b></td><td>這份說明</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>結束</td></tr>
 </table>
@@ -420,7 +440,7 @@ ZH_CN: dict[str, str] = {
     "action_export_json": "文件夹树（JSON）…",
     "action_export_json_tip": "保存文件夹树，供脚本或其他软件使用",
     "action_trash": "移到回收站",
-    "action_trash_tip": "把选中的文件或文件夹移到回收站（会先询问）",
+    "action_trash_tip": "把选中的文件和文件夹移到回收站（会先询问）",
     "action_quit": "退出",
     "action_quit_tip": "关闭 FileTree",
     "action_hidden": "包含隐藏文件",
@@ -525,6 +545,13 @@ ZH_CN: dict[str, str] = {
     "trash_confirm": "要把“{name}”（{size}）移到回收站吗？\n\n之后仍可以从回收站还原。",
     "trash_failed": "无法把“{name}”移到回收站，可能正在使用或是只读。",
     "trash_done": "已把“{name}”移到回收站，释放 {size}。",
+    "action_trash_many": "把 {count} 个项目移到回收站",
+    "trash_confirm_many": ("要把这 {count} 个项目（共 {size}）移到回收站吗？\n\n{names}\n\n"
+                           "之后仍可以从回收站还原。"),
+    "trash_more": "……还有 {count} 个",
+    "trash_failed_many": "有 {count} 个项目无法移到回收站，可能正在使用或是只读：\n\n{names}",
+    "trash_done_many": "已把 {count} 个项目移到回收站，释放 {size}。",
+    "status_selected_many": "已选中 {count} 个项目：{size}",
     "export_title": "导出",
     "csv_filter": "CSV 文件 (*.csv)",
     "json_filter": "JSON 文件 (*.json)",
@@ -558,14 +585,17 @@ ZH_CN: dict[str, str] = {
 <h2>释放空间</h2>
 <p>在任何项目上点右键，可以<i>打开</i>、<i>在文件管理器中显示</i>、<i>复制路径</i>、<i>在方块图中显示</i>、
 <i>重新扫描这个文件夹</i>（在 FileTree 以外改过东西之后用，其余结果不变）、
-<i>只扫描这个文件夹</i>，或<i>移到回收站</i>。FileTree 不会永久删除任何东西：每次都会先询问，
+<i>只扫描这个文件夹</i>，或<i>移到回收站</i>。
+要一次移走好几个项目，在文件夹树或<i>最大的文件</i>列表里用 Ctrl+单击或 Shift+单击选中，
+只会询问一次，并列出它们和总大小。
+FileTree 不会永久删除任何东西：每次都会先询问，
 移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
 <h2>键盘快捷键</h2>
 <table cellpadding="3">
 <tr><td><b>Ctrl+O</b></td><td>选择文件夹</td></tr>
 <tr><td><b>F5</b></td><td>重新扫描</td></tr>
 <tr><td><b>Esc</b></td><td>停止扫描</td></tr>
-<tr><td><b>Delete</b></td><td>把选中的项目移到回收站</td></tr>
+<tr><td><b>Delete</b></td><td>把选中的项目（可以好几个）移到回收站</td></tr>
 <tr><td><b>F1</b></td><td>这份说明</td></tr>
 <tr><td><b>Ctrl+Q</b></td><td>退出</td></tr>
 </table>

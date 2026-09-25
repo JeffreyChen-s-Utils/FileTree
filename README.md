@@ -80,8 +80,9 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 
 Right-click any entry to open it, show it in your file manager, copy its path, show it in the treemap,
 rescan that folder after changes made outside FileTree (the rest of the results stay), scan that folder on
-its own, or move it to the Recycle Bin (the Trash on macOS and Linux). FileTree always asks before moving
-anything and never deletes permanently.
+its own, or move it to the Recycle Bin (the Trash on macOS and Linux). To move several entries at once,
+pick them with Ctrl+click or Shift+click in the folder tree or the Largest files list: FileTree asks once,
+listing them with their total size. It always asks before moving anything and never deletes permanently.
 
 ### Keyboard shortcuts
 
@@ -90,7 +91,7 @@ anything and never deletes permanently.
 | Ctrl+O | Choose a folder |
 | F5 | Rescan |
 | Esc | Stop the scan |
-| Delete | Move the selected entry to the Recycle Bin |
+| Delete | Move the selected entries to the Recycle Bin |
 | F1 | How to use |
 | Ctrl+Q | Quit |
 

@@ -9,8 +9,8 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSettings, Qt, QUrl
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
 from file_tree.core.analysis import CATEGORIES
 from file_tree.core.node import Node
@@ -52,6 +52,18 @@ def window(qapp: QApplication, tmp_path: Path):
 def _scanned(window: MainWindow, qapp: QApplication, folder: Path) -> None:
     window.start_scan(str(folder))
     _wait(qapp, lambda: window.results.outcome is not None)
+
+
+def _child(node: Node, name: str) -> Node:
+    return next(child for child in node.children if child.name == name)
+
+
+def _select(window: MainWindow, *nodes: Node) -> None:
+    """Add ``nodes`` to the tree's selection, as Ctrl+click does."""
+    selection = window.results.tree.selectionModel()
+    flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+    for node in nodes:
+        selection.select(window.results.tree_model.index_for(node), flags)
 
 
 # --- models -----------------------------------------------------------------
@@ -282,16 +294,80 @@ def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: Q
     big = root.children[0]
     trashed: list[str] = []
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.No)
-    window.move_to_trash(big)
+    window.move_to_trash([big])
     assert root.size == 1000
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
-    window.move_to_trash(big)
+    window.move_to_trash([big])
     assert trashed == [str(sample_tree / "big.bin")]
     assert root.size == 500
     assert [node.name for node in window.results.largest_model.rows()][0] == "a.jpg"
     assert all(stat.extension != ".bin" for stat in window.results.types_model.rows())
     assert "500 B" in window.statusBar().currentMessage()
+
+
+def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    root = window.results.tree_model.root
+    assert root is not None
+    photos = _child(root, "photos")
+    window.results.tree.selectionModel().clearSelection()
+    _select(window, _child(root, "big.bin"), photos, _child(photos, "a.jpg"), _child(root, "notes.txt"))
+    assert window.statusBar().currentMessage() == "4 items selected: 850 B", "a.jpg is inside photos: counted once"
+    _select(window, root)
+    questions: list[str] = []
+    warnings: list[str] = []
+    trashed: list[str] = []
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda _parent, _title, text: questions.append(text) or QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(file_actions, "move_to_trash",
+                        lambda path: trashed.append(path) or not path.endswith("notes.txt"))
+    window._trash_selected()  # what Delete does
+    assert len(questions) == 1
+    assert "3 items (850 B in total)" in questions[0]
+    assert questions[0].index("• big.bin (500 B)") < questions[0].index("• photos (250 B)")
+    assert "a.jpg" not in questions[0]
+    assert sorted(trashed) == sorted(str(sample_tree / name) for name in ("big.bin", "photos", "notes.txt"))
+    assert len(warnings) == 1 and "notes.txt" in warnings[0], "the refused entry is named"
+    assert root.size == 250
+    assert {child.name for child in root.children} == {"code", "notes.txt"}
+    assert {node.name for node in window.results.largest_model.rows()} == {"notes.txt", "main.py", "Makefile"}
+    assert not {".bin", ".jpg", ".png"} & {stat.extension for stat in window.results.types_model.rows()}
+    assert window.statusBar().currentMessage() == "Moved 2 items to the Recycle Bin: 750 B freed."
+
+
+def test_the_context_menu_acts_on_the_selection_it_was_opened_on(
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    window.resize(1000, 700)
+    window.show()
+    results = window.results
+    root = results.tree_model.root
+    assert root is not None
+    big, notes, photos = (_child(root, name) for name in ("big.bin", "notes.txt", "photos"))
+    results.tree.expand(results.tree_model.index_for(root))
+    qapp.processEvents()
+    results.tree.selectionModel().clearSelection()
+    _select(window, big, notes)
+    menus: list[list[str]] = []
+
+    class RecordingMenu(QMenu):
+        def exec(self, *_args: object) -> None:  # instead of popping up and waiting for a click
+            menus.append([action.text() for action in self.actions()])
+
+    monkeypatch.setattr(main_window_module, "QMenu", RecordingMenu)
+    requests: list[tuple[Node, list[Node]]] = []
+    results.node_menu_requested.connect(lambda node, picked, _point: requests.append((node, picked)))
+    for node in (notes, photos):
+        results._menu_for(results.tree, results.tree.visualRect(results.tree_model.index_for(node)).center())
+    assert requests[0][0] is notes and {id(node) for node in requests[0][1]} == {id(big), id(notes)}
+    assert requests[1][0] is photos and requests[1][1] == [photos], "a click outside the selection acts alone"
+    assert menus[0][-1] == "Move 2 items to Recycle Bin"
+    assert menus[1][-1] == "Move to Recycle Bin"
+    window.show_menu_for(root, [root], QPoint())
+    assert "Move to Recycle Bin" not in menus[2], "the scanned folder itself cannot be moved"
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

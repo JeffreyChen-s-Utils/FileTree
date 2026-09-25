@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
@@ -85,9 +85,13 @@ class _FileTypesProxy(QSortFilterProxyModel):
 
 
 class ResultsView(QWidget):
-    """Shows one scan; asks the window for a context menu with ``node_menu_requested``."""
+    """Shows one scan; asks the window for a context menu with ``node_menu_requested``.
 
-    node_menu_requested = Signal(object, QPoint)
+    ``node_menu_requested(node, picked, point)``: ``node`` is the entry under the mouse, ``picked`` the
+    entries a *Move to Recycle Bin* in that menu acts on (the selection when ``node`` is part of it).
+    """
+
+    node_menu_requested = Signal(object, object, QPoint)
     selection_changed = Signal(object)
     elevate_requested = Signal()
 
@@ -123,6 +127,7 @@ class ResultsView(QWidget):
             self.largest_table.setColumnWidth(column, width)
         largest_header.setSectionResizeMode(_LARGEST_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
         self.largest_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # the end of a path says the most
+        self.largest_table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._types_combo = QComboBox()
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
@@ -263,9 +268,17 @@ class ResultsView(QWidget):
             model.refresh()
 
     def selected_node(self) -> Node | None:
-        """The entry selected in the tree."""
+        """The entry the tree's cursor is on."""
         index = self.tree.currentIndex()
         return self.tree_model.node(index) if index.isValid() else None
+
+    def selected_nodes(self) -> list[Node]:
+        """Every entry selected in the tree (Ctrl+click and Shift+click pick several)."""
+        return _selected_in(self.tree)
+
+    def focused_selection(self) -> list[Node]:
+        """The entries selected where the keyboard is: the largest-files list when it has the focus, else the tree."""
+        return _selected_in(self.largest_table if self.largest_table.hasFocus() else self.tree)
 
     def select_node(self, node: Node) -> None:
         """Select ``node`` in the tree (expanding its folders), and outline it in the treemap."""
@@ -280,15 +293,18 @@ class ResultsView(QWidget):
             index, QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows)
         self.tree.scrollTo(index)
 
-    def forget(self, node: Node) -> None:
-        """Update every view after ``node`` was deleted from disk."""
+    def forget(self, nodes: Sequence[Node]) -> None:
+        """Update every view after ``nodes`` were deleted from disk (none of them inside another)."""
         outcome = self._outcome
         if outcome is None:
             return
         view_root = self.treemap.view_root
-        extensions = subtract_stats(self.types_model.rows(), extension_stats(node))
-        ages = subtract_ages(self.age_model.rows(), age_stats(files_beneath(node), outcome.now))
-        self.tree_model.remove(node)
+        extensions = self.types_model.rows()
+        ages = self.age_model.rows()
+        for node in nodes:
+            extensions = subtract_stats(extensions, extension_stats(node))
+            ages = subtract_ages(ages, age_stats(files_beneath(node), outcome.now))
+            self.tree_model.remove(node)
         root = outcome.result.root
         self._largest_all = [file for file in self._largest_all if _is_under(file, root)]
         self.largest_model.set_rows([file for file in self.largest_model.rows() if _is_under(file, root)])
@@ -327,6 +343,7 @@ class ResultsView(QWidget):
         tree.setSortingEnabled(True)
         tree.sortByColumn(SIZE, Qt.SortOrder.DescendingOrder)
         tree.setAlternatingRowColors(True)
+        tree.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         tree.setItemDelegateForColumn(SHARE, ShareBarDelegate(tree))
         tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         tree.customContextMenuRequested.connect(lambda point: self._menu_for(tree, point))
@@ -337,6 +354,7 @@ class ResultsView(QWidget):
             tree.setColumnWidth(column, width)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         tree.selectionModel().currentChanged.connect(self._tree_current_changed)
+        tree.selectionModel().selectionChanged.connect(lambda *_: self.selection_changed.emit(self.selected_node()))
         return tree
 
     def _build_table(self, model: LargestFilesModel | ProblemsModel,
@@ -430,12 +448,16 @@ class ResultsView(QWidget):
     def _menu_for(self, view: QAbstractItemView, point: QPoint) -> None:
         index = view.indexAt(point)
         node = index.data(NODE_ROLE) if index.isValid() else None
-        if isinstance(node, Node):
-            self._emit_menu(node, view.viewport().mapToGlobal(point))
+        if not isinstance(node, Node):
+            return
+        picked = _selected_in(view)
+        if not any(entry is node for entry in picked):
+            picked = [node]
+        self.node_menu_requested.emit(node, picked, view.viewport().mapToGlobal(point))
 
     def _emit_menu(self, node: Node | None, point: QPoint) -> None:
         if node is not None:
-            self.node_menu_requested.emit(node, point)
+            self.node_menu_requested.emit(node, [node], point)
 
     def show_largest_of_type(self, extension: str) -> None:
         """List the largest files with this extension (an empty one: files without) on Largest files."""
@@ -540,6 +562,12 @@ def _unbreakable(text: str) -> str:
     word joiner (U+2060) goes between every two characters.
     """
     return "\u2060".join(text.replace(" ", "\u00a0"))
+
+
+def _selected_in(view: QAbstractItemView) -> list[Node]:
+    """The entries of the rows selected in ``view``."""
+    nodes = (index.data(NODE_ROLE) for index in view.selectionModel().selectedRows(0))
+    return [node for node in nodes if isinstance(node, Node)]
 
 
 def _is_within(node: Node, branch: Node) -> bool:

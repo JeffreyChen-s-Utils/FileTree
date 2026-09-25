@@ -52,9 +52,12 @@ per folder lazily, and never copies), the tables to their models, and the root t
 and drawing cached in a pixmap, recomputed on resize or zoom). Selecting anything selects it in the tree and
 outlines it in the treemap.
 
-**Free space.** Context menu or Delete → confirmation → `QFile.moveToTrash` → `ResultsView.forget`:
-`FolderTreeModel.remove` detaches the node and subtracts its totals from every folder above; the largest
-files, per-type totals and treemap are updated without a rescan.
+**Free space.** Context menu or Delete → one confirmation → `QFile.moveToTrash` per entry →
+`ResultsView.forget`. The tree and the largest-files list allow several rows to be selected; the entries acted
+on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
+it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the
+largest files, per-type and per-age totals and treemap are updated once, without a rescan. Entries the system
+refuses stay and are named in a warning.
 
 **Rescan one folder.** The context menu's *Rescan this folder* runs a `ScanWorker` on that branch alone,
 then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent

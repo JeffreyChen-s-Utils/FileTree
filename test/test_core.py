@@ -28,7 +28,7 @@ from file_tree.core.analysis import (
     summarise,
 )
 from file_tree.core.formatting import format_count, format_share, format_size, format_time
-from file_tree.core.node import Node
+from file_tree.core.node import Node, outermost
 from file_tree.core.scanner import scan
 
 
@@ -67,6 +67,16 @@ def test_detach_subtracts_from_every_folder_above(sample_tree: Path) -> None:
     assert (root.size, root.file_count, _child(root, "photos").size) == (800, 3, 200)
     root.detach()  # the root has no parent: nothing happens
     assert root.size == 800
+
+
+def test_outermost_keeps_each_entry_once_and_leaves_out_those_inside_another(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = _child(root, "photos")
+    picture = _child(photos, "a.jpg")
+    big = _child(root, "big.bin")
+    assert outermost([picture, big, photos, picture, big]) == [big, photos]
+    assert outermost([picture, root]) == [root]
+    assert outermost([]) == []
 
 
 # --- analysis -------------------------------------------------------------

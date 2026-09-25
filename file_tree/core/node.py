@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
 
@@ -117,3 +117,22 @@ class Node:
             node.dir_count += folders
             node.modified = max(node.modified, new.modified)
             node = node.parent
+
+
+def outermost(nodes: Iterable[Node]) -> list[Node]:
+    """``nodes`` without repeats and without those inside another one of them, in the order given.
+
+    Moving or deleting a folder takes everything in it along, so this is the set to act on when
+    several entries were picked.
+    """
+    chosen: dict[int, Node] = {}
+    for node in nodes:
+        chosen.setdefault(id(node), node)
+    kept: list[Node] = []
+    for node in chosen.values():
+        above = node.parent
+        while above is not None and id(above) not in chosen:
+            above = above.parent
+        if above is None:
+            kept.append(node)
+    return kept

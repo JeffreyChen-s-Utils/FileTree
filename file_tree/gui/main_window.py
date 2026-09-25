@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QLineEdit,
     QMainWindow,
@@ -19,15 +20,15 @@ from PySide6.QtWidgets import (
 
 from file_tree import __version__
 from file_tree.core import export
-from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_share, format_size
-from file_tree.core.node import Node
+from file_tree.core.analysis import Summary
+from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
+from file_tree.core.node import Node, outermost
 from file_tree.core.scanner import ScanOptions
 from file_tree.gui import elevation, file_actions
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
 from file_tree.gui.results_view import ResultsView
-from file_tree.core.analysis import Summary
 from file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
 from file_tree.gui.welcome import WelcomePage
 
@@ -36,6 +37,7 @@ WELCOME_PAGE, RESULTS_PAGE = range(2)
 LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
+_LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 
@@ -164,8 +166,8 @@ class MainWindow(QMainWindow):
 
     # --- entry actions ----------------------------------------------------
 
-    def show_menu_for(self, node: Node, point: QPoint) -> None:
-        """Pop up the menu of things to do with ``node``."""
+    def show_menu_for(self, node: Node, picked: Sequence[Node], point: QPoint) -> None:
+        """Pop up the menu of things to do with ``node``; its *Move to Recycle Bin* takes all of ``picked``."""
         menu = QMenu(self)
         entries: list[tuple[str, Callable[[], object]]] = [
             ("menu_open_item", lambda: file_actions.open_path(node.path)),
@@ -178,9 +180,12 @@ class MainWindow(QMainWindow):
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
-        if node.parent is not None:
+        movable = _movable(picked)
+        if movable:
             menu.addSeparator()
-            menu.addAction(tr("action_trash")).triggered.connect(lambda: self.move_to_trash(node))
+            text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
+                                                                    count=format_count(len(movable)))
+            menu.addAction(text).triggered.connect(lambda: self.move_to_trash(movable))
         menu.exec(point)
 
     def rescan_folder(self, node: Node) -> None:
@@ -227,32 +232,60 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
 
-    def move_to_trash(self, node: Node) -> None:
-        """Ask, then move ``node`` to the Recycle Bin / Trash and take it out of the results."""
-        if node.parent is None or self._worker is not None:
+    def move_to_trash(self, nodes: Sequence[Node]) -> None:
+        """Ask once, then move ``nodes`` to the Recycle Bin / Trash and take them out of the results.
+
+        An entry inside another of ``nodes`` goes along with its folder; the scanned folder itself is
+        never moved. Entries the system refuses to move stay, and are named in a warning.
+        """
+        chosen = _movable(nodes)
+        if not chosen or self._worker is not None:
             return
-        answer = QMessageBox.question(self, tr("trash_confirm_title"),
-                                      tr("trash_confirm", name=node.name, size=format_size(node.size, self._unit)))
+        answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
             return
-        if not file_actions.move_to_trash(node.path):
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_failed", name=node.name))
+        moved, failed = _trash_each(chosen)
+        freed = format_size(sum(node.size for node in moved), self._unit)
+        if moved:
+            self.results.forget(moved)
+        if failed:
+            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
+                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
+            QMessageBox.warning(self, tr("trash_confirm_title"), message)
+        if not moved:
             return
-        size = node.size
-        self.results.forget(node)
-        self.statusBar().showMessage(tr("trash_done", name=node.name, size=format_size(size, self._unit)),
-                                     _STATUS_TIMEOUT_MS)
+        done = (tr("trash_done", name=moved[0].name, size=freed) if len(moved) == 1 else
+                tr("trash_done_many", count=format_count(len(moved)), size=freed))
+        self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+
+    def _trash_question(self, nodes: list[Node]) -> str:
+        size = format_size(sum(node.size for node in nodes), self._unit)
+        if len(nodes) == 1:
+            return tr("trash_confirm", name=nodes[0].name, size=size)
+        return tr("trash_confirm_many", count=format_count(len(nodes)), size=size, names=self._name_lines(nodes))
+
+    def _name_lines(self, nodes: list[Node]) -> str:
+        """The biggest of ``nodes`` one per line with their sizes, then how many more there are."""
+        ordered = sorted(nodes, key=lambda node: node.size, reverse=True)
+        lines = [f"• {node.name} ({format_size(node.size, self._unit)})" for node in ordered[:_LISTED_NAMES]]
+        if len(ordered) > _LISTED_NAMES:
+            lines.append(tr("trash_more", count=format_count(len(ordered) - _LISTED_NAMES)))
+        return "\n".join(lines)
 
     def _show_in_treemap(self, node: Node) -> None:
         self.results.treemap.set_view_root(node)
         self.results.tabs.setCurrentIndex(0)
 
     def _trash_selected(self) -> None:
-        node = self.results.selected_node()
-        if node is not None and self.pages.currentIndex() == RESULTS_PAGE:
-            self.move_to_trash(node)
+        if self.pages.currentIndex() == RESULTS_PAGE:
+            self.move_to_trash(self.results.focused_selection())
 
     def _selection_changed(self, node: Node | None) -> None:
+        picked = self.results.selected_nodes()
+        if len(picked) > 1:
+            size = format_size(sum(entry.size for entry in outermost(picked)), self._unit)
+            self.statusBar().showMessage(tr("status_selected_many", count=format_count(len(picked)), size=size))
+            return
         if node is None:
             self.statusBar().clearMessage()
             return
@@ -504,6 +537,24 @@ def _dropped_folder(urls: list) -> str | None:
         if url.isLocalFile() and os.path.isdir(url.toLocalFile()):
             return os.path.normpath(url.toLocalFile())
     return None
+
+
+def _movable(nodes: Sequence[Node]) -> list[Node]:
+    """What moving ``nodes`` to the Recycle Bin really moves: the outermost entries, never the scanned folder."""
+    return outermost(node for node in nodes if node.parent is not None)
+
+
+def _trash_each(nodes: list[Node]) -> tuple[list[Node], list[Node]]:
+    """Move each of ``nodes`` to the Recycle Bin / Trash; returns the moved ones and the refused ones."""
+    moved: list[Node] = []
+    failed: list[Node] = []
+    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+    try:
+        for node in nodes:
+            (moved if file_actions.move_to_trash(node.path) else failed).append(node)
+    finally:
+        QApplication.restoreOverrideCursor()
+    return moved, failed
 
 
 def _safe_name(name: str) -> str:
