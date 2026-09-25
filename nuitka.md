@@ -64,9 +64,10 @@ python tools/build_nuitka.py --app
 
 The result is `build/app/FileTree.app`.
 
-Any other option is passed on to Nuitka, for example an icon:
+The program gets FileTree's own icon on Windows and Linux (the script draws it into `build/`). Any other
+option is passed on to Nuitka unchanged, for example a different icon:
 `python tools/build_nuitka.py --windows-icon-from-ico=icon.ico` (Windows), `--linux-icon=icon.png` or
-`--macos-app-icon=icon.icns`.
+`--macos-app-icon=icon.icns` (macOS has no icon otherwise).
 
 ## 3. What the script runs
 
@@ -79,6 +80,7 @@ Any other option is passed on to Nuitka, for example an icon:
 | `--output-dir=build/standalone` (or `build/onefile`, `build/app`) | Everything Nuitka creates goes into `build/`, which Git ignores; each form has its own folder, so building one does not delete another |
 | `--output-filename=FileTree` | The program is called FileTree instead of start_file_tree |
 | `--assume-yes-for-downloads` | Lets Nuitka fetch helper tools it needs without asking |
+| `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
 | `--macos-app-name=FileTree` (with `--app` only) | The name shown in Finder and the Dock |
 
 The entry point is `start_file_tree.py`, the same program as `python -m file_tree`.

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 
 from file_tree import __version__
 from file_tree.gui.i18n import LANGUAGES, match_language, set_language
+from file_tree.gui.icon import app_icon
 from file_tree.gui import elevation
 from file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
 from file_tree.gui.qt_translation import apply_qt_translation
@@ -26,6 +27,7 @@ def create_window(settings: QSettings, folder: str | None = None) -> MainWindow:
     set_language(language)
     apply_qt_translation(language)
     window = MainWindow(settings)
+    window.setWindowIcon(app_icon())
     if folder:
         window.start_scan(folder)
     return window
@@ -42,6 +44,7 @@ def main(argv: Sequence[str]) -> int:
     app.setOrganizationName(ORGANIZATION)
     app.setApplicationName(APPLICATION)
     app.setApplicationVersion(__version__)
+    app.setWindowIcon(app_icon())
     folder = next((argument for argument in argv if not argument.startswith("-")), None)
     settings = QSettings()
     # Like TreeSize: ask first, so every folder can be read. Declining keeps this copy.
