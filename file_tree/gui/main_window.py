@@ -22,7 +22,7 @@ from file_tree.core import export
 from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_share, format_size
 from file_tree.core.node import Node
 from file_tree.core.scanner import ScanOptions
-from file_tree.gui import file_actions
+from file_tree.gui import elevation, file_actions
 from file_tree.gui.help_dialog import HelpDialog
 from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from file_tree.gui.qt_translation import apply_qt_translation
@@ -36,6 +36,13 @@ LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _STATUS_TIMEOUT_MS = 8000
+ASK_ADMIN_KEY = "ask_admin_at_start"
+
+
+def read_flag(settings: QSettings, key: str, default: bool) -> bool:
+    """A yes/no setting (the registry keeps them as the strings \"true\" and \"false\")."""
+    value = settings.value(key, default)
+    return value if isinstance(value, bool) else str(value).lower() == "true"
 
 
 class MainWindow(QMainWindow):
@@ -255,7 +262,7 @@ class MainWindow(QMainWindow):
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
-        self.setWindowTitle(tr("app_title"))
+        self.setWindowTitle(tr("app_title_admin") if elevation.is_elevated() else tr("app_title"))
         for key, action in self._actions.items():
             action.setText(tr(f"action_{key}"))
             action.setToolTip(tr(f"action_{key}_tip"))
@@ -288,7 +295,8 @@ class MainWindow(QMainWindow):
         splitter = self.settings.value("splitter")
         if isinstance(splitter, QByteArray):
             self.results.splitter.restoreState(splitter)
-        self._actions["hidden"].setChecked(str(self.settings.value("include_hidden", "true")).lower() == "true")
+        self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
+        self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_recent(self._recent())
@@ -328,6 +336,8 @@ class MainWindow(QMainWindow):
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
+            ("elevate", None, self.restart_as_admin),
+            ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
         ]
@@ -338,6 +348,9 @@ class MainWindow(QMainWindow):
             action.triggered.connect(lambda _checked=False, run=handler: run())
             self._actions[key] = action
         self._actions["hidden"].setCheckable(True)
+        self._actions["ask_admin"].setCheckable(True)
+        self._actions["elevate"].setVisible(elevation.can_elevate())
+        self._actions["ask_admin"].setVisible(elevation.supported())
 
     def _build_menus(self) -> None:
         bar = self.menuBar()
@@ -349,6 +362,7 @@ class MainWindow(QMainWindow):
             export_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
+        file_menu.addAction(self._actions["elevate"])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["quit"])
         view_menu = bar.addMenu("")
@@ -370,6 +384,7 @@ class MainWindow(QMainWindow):
             self._language_actions[code] = action
         view_menu.addSeparator()
         view_menu.addAction(self._actions["hidden"])
+        view_menu.addAction(self._actions["ask_admin"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
         help_menu.addAction(self._actions["about"])
@@ -398,6 +413,7 @@ class MainWindow(QMainWindow):
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
         self.results.selection_changed.connect(self._selection_changed)
+        self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
         scanning = self._worker is not None
@@ -415,6 +431,17 @@ class MainWindow(QMainWindow):
         folder = QFileDialog.getExistingDirectory(self, tr("choose_folder_title"), start)
         if folder:
             self.start_scan(folder)
+
+    def restart_as_admin(self) -> None:
+        """Start FileTree again as administrator (scanning the same folder) and close this copy.
+
+        When the prompt is declined, this copy keeps running and says so.
+        """
+        arguments = [self._last_path] if self._last_path else []
+        if elevation.relaunch_elevated(arguments):
+            self.close()
+            return
+        self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
 
     def show_help(self) -> None:
         """Open the how-to-use window."""

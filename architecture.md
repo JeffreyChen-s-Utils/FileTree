@@ -14,7 +14,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
 | Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `analysis.py` (largest files, per-type totals), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py` |
+| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py` |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -55,6 +55,12 @@ outlines it in the treemap.
 **Free space.** Context menu or Delete → confirmation → `QFile.moveToTrash` → `ResultsView.forget`:
 `FolderTreeModel.remove` detaches the node and subtracts its totals from every folder above; the largest
 files, per-type totals and treemap are updated without a rescan.
+
+**Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
+to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is
+off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
+continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
+the scanned folder as its argument. A built program restarts itself; from Python it is `-m file_tree`.
 
 **Language.** `i18n.set_language` + `qt_translation.apply_qt_translation` (Qt's own buttons and dialogs),
 then every widget's `retranslate()`. The choice is stored in `QSettings` with the unit, window layout and

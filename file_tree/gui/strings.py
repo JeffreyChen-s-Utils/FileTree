@@ -41,6 +41,13 @@ EN: dict[str, str] = {
     "action_help_tip": "Short guide to FileTree",
     "action_about": "About FileTree",
     "action_about_tip": "Version and license",
+    "app_title_admin": "FileTree (Administrator)",
+    "action_elevate": "Restart as administrator",
+    "action_elevate_tip": "Start FileTree again with administrator rights, so it can read every folder",
+    "action_ask_admin": "Ask for administrator rights at start",
+    "action_ask_admin_tip": "Windows asks for permission when FileTree starts, so protected folders can be read too",
+    "problems_hint": "Some folders need administrator rights. Restart FileTree as administrator to read them too.",
+    "elevate_declined": "FileTree is still running without administrator rights.",
     "unit_auto": "Automatic",
     "path_placeholder": "Type or paste a folder path and press Enter",
     "choose_folder_title": "Choose a folder to scan",
@@ -172,8 +179,10 @@ from the Recycle Bin (the Trash on macOS and Linux). The numbers update right aw
 Choose a fixed unit under <i>View → Size unit</i>.</li>
 <li>Shortcuts and links (symbolic links, junctions) are listed but never followed, so nothing is
 counted twice.</li>
-<li>Some system folders can only be read by an administrator; run FileTree as administrator to count
-them too.</li>
+<li>On Windows, FileTree asks for administrator rights when it starts, like TreeSize, so it can read
+protected folders too. Say no and it runs normally; folders it could not read are listed under
+<i>Problems</i>, with a <i>Restart as administrator</i> button. Turn the question off under
+<i>View → Ask for administrator rights at start</i>.</li>
 <li>Hidden files are counted. Turn off <i>View → Include hidden files</i> to leave them out of the
 next scan.</li>
 <li>Save the results with <i>File → Export</i>: CSV opens in Excel, JSON is for scripts.</li>
@@ -213,6 +222,13 @@ ZH_TW: dict[str, str] = {
     "action_help_tip": "FileTree 的簡短使用說明",
     "action_about": "關於 FileTree",
     "action_about_tip": "版本與授權",
+    "app_title_admin": "FileTree（系統管理員）",
+    "action_elevate": "以系統管理員身分重新啟動",
+    "action_elevate_tip": "用系統管理員權限重新啟動 FileTree，才能讀取每一個資料夾",
+    "action_ask_admin": "啟動時要求系統管理員權限",
+    "action_ask_admin_tip": "FileTree 啟動時由 Windows 詢問權限，受保護的資料夾也能讀取",
+    "problems_hint": "有些資料夾需要系統管理員權限。以系統管理員身分重新啟動 FileTree 就能一起讀取。",
+    "elevate_declined": "FileTree 仍以一般權限執行。",
     "unit_auto": "自動",
     "path_placeholder": "輸入或貼上資料夾路徑，按 Enter 開始掃描",
     "choose_folder_title": "選擇要掃描的資料夾",
@@ -332,7 +348,9 @@ ZH_TW: dict[str, str] = {
 <li>大小是檔案的實際大小，以二進位單位計算（1 KB = 1,024 位元組），和 Windows 檔案總管相同；
 可以在<i>檢視 → 大小單位</i>改用固定的單位。</li>
 <li>捷徑與連結（符號連結、目錄連接）會列出來，但不會跟進去計算，所以不會重複計算。</li>
-<li>有些系統資料夾只有系統管理員能讀取；用系統管理員身分執行 FileTree 就能一起計算。</li>
+<li>在 Windows 上，FileTree 啟動時會像 TreeSize 一樣要求系統管理員權限，受保護的資料夾也能讀取。
+拒絕的話它照常以一般權限執行，讀不到的資料夾列在<i>無法讀取</i>分頁，那裡有<i>以系統管理員身分重新啟動</i>按鈕。
+不想每次被問，可以關掉<i>檢視 → 啟動時要求系統管理員權限</i>。</li>
 <li>預設會計算隱藏檔案；關掉<i>檢視 → 包含隱藏檔案</i>，下次掃描就不會算進去。</li>
 <li>用<i>檔案 → 匯出</i>儲存結果：CSV 可用 Excel 開啟，JSON 給程式使用。</li>
 </ul>
@@ -371,6 +389,13 @@ ZH_CN: dict[str, str] = {
     "action_help_tip": "FileTree 的简短使用说明",
     "action_about": "关于 FileTree",
     "action_about_tip": "版本与许可证",
+    "app_title_admin": "FileTree（管理员）",
+    "action_elevate": "以管理员身份重新启动",
+    "action_elevate_tip": "用管理员权限重新启动 FileTree，才能读取每一个文件夹",
+    "action_ask_admin": "启动时请求管理员权限",
+    "action_ask_admin_tip": "FileTree 启动时由 Windows 询问权限，受保护的文件夹也能读取",
+    "problems_hint": "有些文件夹需要管理员权限。以管理员身份重新启动 FileTree 就能一起读取。",
+    "elevate_declined": "FileTree 仍以普通权限运行。",
     "unit_auto": "自动",
     "path_placeholder": "输入或粘贴文件夹路径，按 Enter 开始扫描",
     "choose_folder_title": "选择要扫描的文件夹",
@@ -490,7 +515,9 @@ ZH_CN: dict[str, str] = {
 <li>大小是文件的实际大小，按二进制单位计算（1 KB = 1,024 字节），和 Windows 资源管理器相同；
 可以在<i>视图 → 大小单位</i>改用固定的单位。</li>
 <li>快捷方式与链接（符号链接、目录联接）会列出来，但不会进入计算，所以不会重复计算。</li>
-<li>有些系统文件夹只有管理员能读取；以管理员身份运行 FileTree 就能一起计算。</li>
+<li>在 Windows 上，FileTree 启动时会像 TreeSize 一样请求管理员权限，受保护的文件夹也能读取。
+拒绝的话它照常以普通权限运行，读不到的文件夹列在<i>无法读取</i>标签页，那里有<i>以管理员身份重新启动</i>按钮。
+不想每次被问，可以关掉<i>视图 → 启动时请求管理员权限</i>。</li>
 <li>默认会计算隐藏文件；关掉<i>视图 → 包含隐藏文件</i>，下次扫描就不会算进去。</li>
 <li>用<i>文件 → 导出</i>保存结果：CSV 可用 Excel 打开，JSON 供脚本使用。</li>
 </ul>

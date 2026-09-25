@@ -64,6 +64,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20260926-05 | 2026-09-26 | Ask for administrator rights at start, like TreeSize (Windows) | #done #gui #windows | [2026-09](2026-09.md) |
 | U-20260926-04 | 2026-09-26 | The tree fills in while the scan runs; Stop keeps what was read | #done #scanner #gui | [2026-09](2026-09.md) |
 | U-20260926-03 | 2026-09-26 | The Nuitka script asks Qt where its translations are (Linux CI) | #incident #build #nuitka #ci | [2026-09](2026-09.md) |
 | U-20260926-02 | 2026-09-26 | start_file_tree.py and a Nuitka build with Qt's translations | #release #build #nuitka #docs | [2026-09](2026-09.md) |

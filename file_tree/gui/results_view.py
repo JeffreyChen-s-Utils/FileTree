@@ -12,6 +12,7 @@ from __future__ import annotations
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QPushButton,
     QComboBox,
     QHBoxLayout,
     QHeaderView,
@@ -30,6 +31,7 @@ from file_tree.core.analysis import CATEGORIES, CategoryStat, category_stats, ex
 from file_tree.core.formatting import format_count, format_size
 from file_tree.core.node import Node
 from file_tree.core.scanner import ScanProgress
+from file_tree.gui import elevation
 from file_tree.gui.delegates import ShareBarDelegate
 from file_tree.gui.i18n import format_duration, tr
 from file_tree.gui.scan_bar import ScanBar
@@ -43,6 +45,7 @@ _LARGEST_SIZE_COLUMN = 1
 _TREE_COLUMN_WIDTHS = {1: 80, 2: 110, 3: 70, 4: 70, 5: 125}
 _LARGEST_COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _LARGEST_FOLDER_COLUMN = 2
+_PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 
 
@@ -67,6 +70,7 @@ class ResultsView(QWidget):
 
     node_menu_requested = Signal(object, QPoint)
     selection_changed = Signal(object)
+    elevate_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -98,6 +102,13 @@ class ResultsView(QWidget):
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
         self.problems_table, _ = self._build_table(self.problems_model, 0)
+        problems_header = self.problems_table.horizontalHeader()
+        problems_header.setStretchLastSection(False)
+        problems_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.problems_table.setColumnWidth(1, _PROBLEM_COLUMN_WIDTH)
+        self.problems_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self._problems_hint = QLabel()
+        self._elevate_button = QPushButton()
         self.tabs = QTabWidget()
         self._assemble()
         self.retranslate()
@@ -171,6 +182,7 @@ class ResultsView(QWidget):
         if self.selected_node() is None:
             self.select_node(root)
         self._update_texts()
+        self.selection_changed.emit(self.selected_node())  # its size is final now
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
@@ -223,6 +235,9 @@ class ResultsView(QWidget):
         self._treemap_up.setText(tr("treemap_up"))
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
+        self._problems_hint.setText(tr("problems_hint"))
+        self._elevate_button.setText(tr("action_elevate"))
+        self._elevate_button.setToolTip(tr("action_elevate_tip"))
         self._fill_types_combo()
         self._update_texts()
 
@@ -283,7 +298,10 @@ class ResultsView(QWidget):
         self.tabs.addTab(_column(_row(self._treemap_up, self._treemap_path), self.treemap, self._legend), "")
         self.tabs.addTab(_column(self._largest_filter, self.largest_table), "")
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
-        self.tabs.addTab(self.problems_table, "")
+        self._problems_hint.setWordWrap(True)
+        self._elevate_button.clicked.connect(self.elevate_requested)
+        self._problems_bar = _row(self._problems_hint, self._elevate_button)
+        self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self.tree)
@@ -350,6 +368,7 @@ class ResultsView(QWidget):
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
         self.tabs.setTabText(3, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
+        self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
         self._legend.setText(self._legend_html())
         self.summary.setText(self._summary_text())
 

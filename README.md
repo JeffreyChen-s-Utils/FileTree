@@ -97,7 +97,10 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 
 - Sizes are real file sizes in binary units (1 KB = 1,024 bytes), the same as Windows Explorer. Pick a
   fixed unit under *View → Size unit*.
-- Some system folders can only be read by an administrator; run FileTree as administrator to count them.
+- On Windows, FileTree asks for administrator rights when it starts, like TreeSize, so it can read protected
+  folders too. Say no and it runs normally; folders it could not read are listed under *Problems*, with a
+  *Restart as administrator* button (also in the *File* menu). Turn the question off under
+  *View → Ask for administrator rights at start*.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
