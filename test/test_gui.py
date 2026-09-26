@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox, QSizePolicy
 
 from conftest import make_tree
 from je_file_tree.core.analysis import CATEGORIES
@@ -26,10 +26,18 @@ from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from je_file_tree.gui import file_actions, i18n, scan_worker
 from je_file_tree.gui import main_window as main_window_module
 from je_file_tree.gui.app import create_window
+from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import CHANGES_TAB, CLEANUP_TAB, LARGEST_TAB, SEARCH_TAB, _selected_in
+from je_file_tree.gui.results_view import (
+    CHANGES_TAB,
+    CHART_TAB,
+    CLEANUP_TAB,
+    LARGEST_TAB,
+    SEARCH_TAB,
+    _selected_in,
+)
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -797,6 +805,30 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
     _wait(qapp, lambda: not panel.busy and [group.key for group in panel.groups] == ["crash_dumps", "empty_folders"])
     panel.select_all_entries()
     assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
+
+
+def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qapp: QApplication,
+                                                          tmp_path: Path) -> None:
+    label = ElidedLabel()
+    label.resize(300, 20)
+    long_path = "C:\\" + "\\".join(["a-rather-long-folder-name"] * 8) + "\\photos"
+    label.setText(long_path)
+    assert label.full_text() == long_path
+    assert label.toolTip() == long_path
+    assert "…" in label.text()
+    assert label.text().endswith("photos"), "shortened in the middle: the end of a path says the most"
+    assert label.minimumSizeHint().width() < 300
+    label.deleteLater()
+    deep = tmp_path.joinpath(*["a-rather-long-folder-name"] * 6, "R&D")
+    deep.mkdir(parents=True)
+    (deep / "x.txt").write_bytes(b"x")
+    _scanned(window, qapp, deep)
+    results = window.results
+    path_width = results._treemap_path.fontMetrics().horizontalAdvance(str(deep))
+    assert results.tabs.widget(CHART_TAB).minimumSizeHint().width() < path_width, "the path label asks for no width"
+    assert results.summary.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Ignored
+    assert "R&amp;D" in results.summary.text(), "the path is escaped in the rich-text summary"
+    assert results.summary.toolTip() == str(deep)
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

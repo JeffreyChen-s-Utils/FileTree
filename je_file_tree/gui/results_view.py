@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import contextlib
 import dataclasses
+import html
 import os
 from collections.abc import Callable, Mapping, Sequence
 
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, QTimer, Signal
+from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QButtonGroup,
@@ -24,6 +26,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
+    QSizePolicy,
     QSplitter,
     QTableView,
     QTabWidget,
@@ -57,6 +60,7 @@ from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
@@ -139,12 +143,11 @@ class ResultsView(QWidget):
 
         self.scan_bar = ScanBar()
         self._live_ticks = 0
-        self.summary = QLabel()
-        self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.summary = _summary_label()
         self.tree = self._build_tree()
         self._build_chart_controls()
         self._treemap_up = QToolButton()
-        self._treemap_path = QLabel()
+        self._treemap_path = ElidedLabel()
         self._legend = QLabel()
         self._largest_filter = QLineEdit()
         self._focus_label = QLabel()
@@ -808,12 +811,26 @@ class ResultsView(QWidget):
         root = outcome.result.root if outcome is not None else self.tree_model.root
         if root is None:
             return ""
-        values = {"path": root.path, "size": format_size(root.size), "allocated": format_size(root.allocated),
-                  "files": format_count(root.file_count), "folders": format_count(root.dir_count)}
+        self.summary.setToolTip(root.path)
+        values = {"path": html.escape(self._fitting_path(root.path)), "size": format_size(root.size),
+                  "allocated": format_size(root.allocated), "files": format_count(root.file_count),
+                  "folders": format_count(root.dir_count)}
         if outcome is None:
             return tr("summary_live", **values)
         key = "summary_partial" if outcome.partial else "summary"
         return tr(key, time=format_duration(outcome.result.elapsed), **values)
+
+    def _fitting_path(self, path: str) -> str:
+        """``path`` shortened in the middle to half the summary line's width (it is shown in bold)."""
+        font = QFont(self.summary.font())
+        font.setBold(True)
+        room = max(self.summary.width() // 2, 160)
+        return QFontMetrics(font).elidedText(path, Qt.TextElideMode.ElideMiddle, room)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        """Qt: fit the scanned path in the summary line again."""
+        super().resizeEvent(event)
+        self.summary.setText(self._summary_text())
 
     def _legend_html(self) -> str:
         sizes = {stat.category: stat.size for stat in self._categories}
@@ -868,6 +885,15 @@ def _table(model: QSortFilterProxyModel) -> QTableView:
     table.horizontalHeader().setStretchLastSection(True)
     table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     return table
+
+
+def _summary_label() -> QLabel:
+    """The line over the tree; the scanned path in it is shortened to fit (``_summary_text``), so a long
+    one never widens the window."""
+    label = QLabel()
+    label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+    label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+    return label
 
 
 def _fill_combo(combo: QComboBox, items: list[tuple[str, object]], current: object) -> None:
