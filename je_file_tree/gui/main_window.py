@@ -418,6 +418,7 @@ class MainWindow(QMainWindow):
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
+        self.results.cleanup.stop(wait=True)
         self.results.changes.stop(wait=True)
         self.results.wait_for_lists()
         for worker in self._exports.copy():  # a file being written is finished, never left half-written

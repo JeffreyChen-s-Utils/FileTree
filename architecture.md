@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `cleanup_panel.py`, `duplicates_panel.py`, `grouped_list.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -96,7 +96,14 @@ count and size of all. A new search stops the one before (it checks once per fol
 result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
 move to the Recycle Bin or a folder rescan.
 
-**Duplicates.** The Duplicates tab (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
+**Clean up.** The Clean up tab has two pages. *Suggestions* (`CleanupPanel`): after every scan a
+`CleanupWorker` runs `core.cleanup.find_cleanup`, one walk that tests each folder against the rules' path
+endings (indexed by their last name) and each file against their name patterns, suggesting a matching
+folder whole without looking inside it, then adds `empty_folders` (only folders known to be empty, the
+outermost); it runs again after a move to the Recycle Bin or a folder rescan. The rules are data
+(`cleanup.RULES`). *Duplicates* is the page below; both list their groups with `grouped_list`.
+
+**Duplicates.** The Duplicates page (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
 `DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are
 hashed on a thread pool, first their first 64 KB, then, for those still alike, the whole file; hard links
 (same device and file number) count once. Progress reaches the window at most ten times a second; Stop is

@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from PySide6.QtCore import QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
@@ -102,6 +103,27 @@ class ExportWorker(QThread):
             self.failed.emit(error.strerror or str(error))
             return
         self.done.emit(count)
+
+
+class CleanupWorker(QThread):
+    """Looks for clean-up suggestions off the GUI thread; emits ``done(list[CleanupGroup])`` unless stopped."""
+
+    done = Signal(object)
+
+    def __init__(self, root: Node, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._root = root
+        self._cancel = threading.Event()
+
+    def stop(self) -> None:
+        """Ask the search to give up (checked once per folder); ``done`` is then not emitted."""
+        self._cancel.set()
+
+    def run(self) -> None:
+        """Thread body."""
+        groups = find_cleanup(self._root, cancel=self._cancel)
+        if groups is not None:
+            self.done.emit(groups)
 
 
 class CompareWorker(QThread):

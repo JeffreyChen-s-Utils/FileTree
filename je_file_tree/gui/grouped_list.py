@@ -39,13 +39,16 @@ def build_view(model: QStandardItemModel) -> QTreeView:
     return view
 
 
-def fill(model: QStandardItemModel, view: QTreeView, groups: Sequence[tuple[str, Sequence[Node]]], unit: str) -> None:
-    """Show ``groups`` (a title and its entries, in the order given), all opened."""
+def fill(model: QStandardItemModel, view: QTreeView, groups: Sequence[tuple[str, Sequence[Node]]], unit: str,
+         *, tips: Sequence[str] | None = None) -> None:
+    """Show ``groups`` (a title and its entries, in the order given), all opened; ``tips``: one tooltip per group."""
     model.clear()
     model.setHorizontalHeaderLabels([tr(key) for key in COLUMNS])
-    for title, nodes in groups:
+    for position, (title, nodes) in enumerate(groups):
         head = QStandardItem(title)
         head.setEditable(False)
+        if tips is not None:
+            head.setToolTip(tips[position])
         for node in nodes:
             head.appendRow(_row(node.name, format_size(node.size, unit), os.path.dirname(node.path),
                                 format_time(node.modified), node=node))
@@ -67,6 +70,17 @@ def select_entries(model: QStandardItemModel, view: QTreeView, *, skip_first: bo
         count = model.rowCount(group)
         if count > start:
             selection.select(model.index(start, 0, group), model.index(count - 1, len(COLUMNS) - 1, group))
+    view.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    view.setFocus()
+
+
+def select_group(model: QStandardItemModel, view: QTreeView, row: int) -> None:
+    """Select the entry lines of the group on line ``row``, focusing the view."""
+    group = model.index(row, 0)
+    count = model.rowCount(group)
+    selection = QItemSelection()
+    if count:
+        selection.select(model.index(0, 0, group), model.index(count - 1, len(COLUMNS) - 1, group))
     view.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
     view.setFocus()
 

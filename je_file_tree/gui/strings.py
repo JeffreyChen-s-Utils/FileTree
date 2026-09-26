@@ -131,6 +131,35 @@ EN: dict[str, str] = {
     "changes_summary": ("Compared with {path}, saved {when}: {before} then, {now} now ({change}); "
                         "{count} folders changed."),
     "tab_duplicates": "Duplicates",
+    "tab_cleanup": "Clean up",
+    "cleanup_suggestions": "Suggestions",
+    "cleanup_select_all": "Select all",
+    "cleanup_select_group": "Select this group",
+    "cleanup_running": "Looking for things to clean up…",
+    "cleanup_hint": "Places whose contents can usually go appear here after a scan.",
+    "cleanup_none": "Nothing to suggest in this scan.",
+    "cleanup_summary": ("{size} could be freed in {groups} groups. Select entries and press Delete to move them to "
+                        "the Recycle Bin; hover over a group to see what deleting it does."),
+    "cleanup_group": "{title} — {size} ({count})",
+    "cleanup_temp": "Temporary files",
+    "cleanup_temp_tip": "Files programs left behind for a while; a program that is still running may need some.",
+    "cleanup_browser_cache": "Browser caches",
+    "cleanup_browser_cache_tip": "Copies of web pages and pictures; browsers download them again as needed.",
+    "cleanup_thumbnails": "Thumbnail caches",
+    "cleanup_thumbnails_tip": "Small previews of pictures; they are made again when folders are opened.",
+    "cleanup_crash_dumps": "Crash dumps",
+    "cleanup_crash_dumps_tip": "Memory saved when a program crashed, only useful to report the crash.",
+    "cleanup_package_caches": "Package caches (pip, npm, Gradle…)",
+    "cleanup_package_caches_tip": ("Downloaded packages kept for the next install; they are downloaded again when "
+                                   "needed."),
+    "cleanup_build_output": "Build output (can be rebuilt)",
+    "cleanup_build_output_tip": ("Installed dependencies and compiled files of projects; building the project again "
+                                 "recreates them."),
+    "cleanup_old_installers": "Installers in Downloads, untouched for 90 days",
+    "cleanup_old_installers_tip": ("Setup files that were most likely run long ago; keep the ones you install from "
+                                   "again."),
+    "cleanup_empty_folders": "Empty folders",
+    "cleanup_empty_folders_tip": "Folders with nothing in them, or only other empty folders.",
     "duplicates_min_size": "Compare files from",
     "duplicates_any_size": "any size",
     "duplicates_find": "Find duplicates",
@@ -296,7 +325,11 @@ A pattern such as <code>*.mp4</code> must match the whole name; separate several
 (<code>*.iso;*.zip</code>). The conditions under the box (size, when last changed, file type, files or
 folders) narrow the search or make one on their own, and <i>Save…</i> keeps a search under a name. The
 1,000 largest matches are listed, with the count and total size of all.</li>
-<li><b>Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
+<li><b>Clean up → Suggestions</b>: after every scan, the places whose contents can usually go, one group per
+kind (temporary files, caches, crash dumps, build output that can be rebuilt, old installers in Downloads,
+empty folders); hover over a group to see what deleting it does, then <i>Select this group</i> or
+<i>Select all</i> and press Delete.</li>
+<li><b>Clean up → Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
 same size are read; files under 1 MB are left out unless you choose a smaller size, because reading takes
 time. Each group lists its copies oldest first; <i>Select extra copies</i> selects all but the oldest, and
 Delete moves them to the Recycle Bin.</li>
@@ -472,6 +505,32 @@ ZH_TW: dict[str, str] = {
     "changes_summary": ("與 {path}（儲存於 {when}）比較：之前 {before}，現在 {now}（{change}）；"
                         "{count} 個資料夾有變化。"),
     "tab_duplicates": "重複檔案",
+    "tab_cleanup": "清理",
+    "cleanup_suggestions": "建議",
+    "cleanup_select_all": "全部選取",
+    "cleanup_select_group": "選取這一組",
+    "cleanup_running": "正在找可以清理的東西…",
+    "cleanup_hint": "掃描完成後，這裡會列出內容通常可以刪掉的位置。",
+    "cleanup_none": "這次掃描沒有可以建議清理的東西。",
+    "cleanup_summary": ("共 {groups} 組，可以釋出 {size}。選取項目後按 Delete 會移到資源回收筒；"
+                        "滑鼠停在組名上可以看刪掉它的影響。"),
+    "cleanup_group": "{title}：{count} 項，共 {size}",
+    "cleanup_temp": "暫存檔",
+    "cleanup_temp_tip": "程式暫時留下的檔案；仍在執行的程式可能還在使用其中一些。",
+    "cleanup_browser_cache": "瀏覽器快取",
+    "cleanup_browser_cache_tip": "網頁與圖片的副本；瀏覽器需要時會重新下載。",
+    "cleanup_thumbnails": "縮圖快取",
+    "cleanup_thumbnails_tip": "圖片的小型預覽；開啟資料夾時會重新產生。",
+    "cleanup_crash_dumps": "當機傾印檔",
+    "cleanup_crash_dumps_tip": "程式當機時存下的記憶體內容，只有回報當機時才用得到。",
+    "cleanup_package_caches": "套件快取（pip、npm、Gradle…）",
+    "cleanup_package_caches_tip": "為下次安裝保留的已下載套件；需要時會重新下載。",
+    "cleanup_build_output": "編譯產物（可以重新建置）",
+    "cleanup_build_output_tip": "專案安裝的相依套件與編譯出來的檔案；重新建置專案就會再產生。",
+    "cleanup_old_installers": "下載資料夾裡 90 天沒動的安裝檔",
+    "cleanup_old_installers_tip": "多半很久以前就執行過的安裝程式；之後還要拿來安裝的請留著。",
+    "cleanup_empty_folders": "空資料夾",
+    "cleanup_empty_folders_tip": "裡面什麼都沒有，或只有其他空資料夾的資料夾。",
     "duplicates_min_size": "比對的最小檔案",
     "duplicates_any_size": "任何大小",
     "duplicates_find": "尋找重複檔案",
@@ -623,7 +682,10 @@ ZH_TW: dict[str, str] = {
 <code>*.mp4</code> 這類樣式要符合完整名稱；好幾個樣式用 <code>;</code> 分開（<code>*.iso;*.zip</code>）。
 搜尋框下方的條件（大小、修改時間、檔案類型、檔案或資料夾）可以縮小範圍，也可以單獨搜尋；
 <i>儲存…</i>可以把搜尋取名存起來。會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
-<li><b>重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
+<li><b>清理 → 建議</b>：每次掃描後列出內容通常可以刪掉的位置，每種一組
+（暫存檔、快取、當機傾印檔、可以重新建置的編譯產物、下載資料夾裡的舊安裝檔、空資料夾）；
+滑鼠停在組名上可以看刪掉它的影響，再按<i>選取這一組</i>或<i>全部選取</i>，然後按 Delete。</li>
+<li><b>清理 → 重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
 除非選了較小的大小，否則會略過 1 MB 以下的檔案。每一組由舊到新列出副本；<i>選取多餘的副本</i>會選取最舊那份以外的全部，
 再按 Delete 就會移到資源回收筒。</li>
 <li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類；
@@ -793,6 +855,32 @@ ZH_CN: dict[str, str] = {
     "changes_summary": ("与 {path}（保存于 {when}）比较：之前 {before}，现在 {now}（{change}）；"
                         "{count} 个文件夹有变化。"),
     "tab_duplicates": "重复文件",
+    "tab_cleanup": "清理",
+    "cleanup_suggestions": "建议",
+    "cleanup_select_all": "全部选中",
+    "cleanup_select_group": "选中这一组",
+    "cleanup_running": "正在查找可以清理的东西…",
+    "cleanup_hint": "扫描完成后，这里会列出内容通常可以删掉的位置。",
+    "cleanup_none": "这次扫描没有可以建议清理的东西。",
+    "cleanup_summary": ("共 {groups} 组，可以释放 {size}。选中项目后按 Delete 会移到回收站；"
+                        "鼠标停在组名上可以看删掉它的影响。"),
+    "cleanup_group": "{title}：{count} 项，共 {size}",
+    "cleanup_temp": "临时文件",
+    "cleanup_temp_tip": "程序暂时留下的文件；仍在运行的程序可能还在使用其中一些。",
+    "cleanup_browser_cache": "浏览器缓存",
+    "cleanup_browser_cache_tip": "网页与图片的副本；浏览器需要时会重新下载。",
+    "cleanup_thumbnails": "缩略图缓存",
+    "cleanup_thumbnails_tip": "图片的小型预览；打开文件夹时会重新生成。",
+    "cleanup_crash_dumps": "崩溃转储",
+    "cleanup_crash_dumps_tip": "程序崩溃时保存的内存内容，只有报告崩溃时才用得到。",
+    "cleanup_package_caches": "包缓存（pip、npm、Gradle…）",
+    "cleanup_package_caches_tip": "为下次安装保留的已下载包；需要时会重新下载。",
+    "cleanup_build_output": "构建产物（可以重新构建）",
+    "cleanup_build_output_tip": "项目安装的依赖与编译出来的文件；重新构建项目就会再生成。",
+    "cleanup_old_installers": "下载文件夹里 90 天没动的安装包",
+    "cleanup_old_installers_tip": "多半很久以前就运行过的安装程序；之后还要拿来安装的请留着。",
+    "cleanup_empty_folders": "空文件夹",
+    "cleanup_empty_folders_tip": "里面什么都没有，或只有其他空文件夹的文件夹。",
     "duplicates_min_size": "比较的最小文件",
     "duplicates_any_size": "任意大小",
     "duplicates_find": "查找重复文件",
@@ -944,7 +1032,10 @@ ZH_CN: dict[str, str] = {
 <code>*.mp4</code> 这类模式要匹配完整名称；多个模式用 <code>;</code> 分开（<code>*.iso;*.zip</code>）。
 搜索框下方的条件（大小、修改时间、文件类型、文件或文件夹）可以缩小范围，也可以单独搜索；
 <i>保存…</i>可以把搜索取名保存起来。会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
-<li><b>重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
+<li><b>清理 → 建议</b>：每次扫描后列出内容通常可以删掉的位置，每种一组
+（临时文件、缓存、崩溃转储、可以重新构建的构建产物、下载文件夹里的旧安装包、空文件夹）；
+鼠标停在组名上可以看删掉它的影响，再点<i>选中这一组</i>或<i>全部选中</i>，然后按 Delete。</li>
+<li><b>清理 → 重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
 除非选了较小的大小，否则会跳过 1 MB 以下的文件。每一组从旧到新列出副本；<i>选中多余的副本</i>会选中最旧那份以外的全部，
 再按 Delete 就会移到回收站。</li>
 <li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类；

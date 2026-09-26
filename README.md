@@ -24,7 +24,10 @@ the window.
   into a folder; all three follow.
 - **Largest files**: the 1,000 biggest files anywhere in the scan, with a filter box.
 - **Search** (Ctrl+F): find files and folders by name, or by a pattern such as `*.mp4`, anywhere in the scan.
-- **Duplicates**: files with the same content, grouped, with the space the extra copies take; select the
+- **Clean up**: suggestions of what can usually go — temporary files, browser caches, crash dumps, package
+  caches, build output that can be rebuilt, old installers in Downloads and empty folders — grouped, with
+  what deleting each kind does.
+- **Duplicates** (in *Clean up*): files with the same content, grouped, with the space the extra copies take; select the
   extra copies with one click and move them to the Recycle Bin.
 - **Compare with an earlier scan**: save a scan as JSON, and later see which folders grew, shrank,
   appeared or disappeared since.
@@ -86,7 +89,8 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Chart | *Treemap*: one rectangle per file, sized by space used; each folder has a strip with its name and size, and tiles show their size. *Levels* sets how many levels are drawn (2 at first, up to all), *Colours* colours by file type (the legend is under it) or by top-level folder. *Bars*: one bar per entry of the folder shown, largest first, with its size and share of the folder. *Sunburst*: the folder in the centre and each deeper level as a ring, the angles by size, each top-level folder in its own colour; click the centre to go up. Double-click a folder to go into it and *Up* to go back; the three views always show the same folder, and FileTree remembers which one you chose |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); conditions under the box narrow it down or search on their own: larger or smaller than a size, changed within a week / month / year or not for one, two or five years, a file type, files only or folders only; a search can be saved under a name and chosen again later; the 1,000 largest matches are listed with the count and total size of all |
-| Duplicates | Press *Find duplicates*: files of the same size are compared, first by their first 64 KB, then by their whole content (hard links count once). Files under 1 MB are left out unless you choose a smaller size, because reading takes time. Each group lists its copies oldest first; *Select extra copies* selects all but the oldest, ready for Delete |
+| Clean up → Suggestions | Found after every scan: temporary files, browser caches, thumbnail caches, crash dumps, package caches (pip, npm, Gradle…), build output that can be rebuilt (`node_modules`, `__pycache__`, `target` beside `Cargo.toml`…), installers in Downloads untouched for 90 days, and empty folders; one group per kind, the largest first, with a tooltip on what deleting it does. *Select this group* or *Select all*, then Delete |
+| Clean up → Duplicates | Press *Find duplicates*: files of the same size are compared, first by their first 64 KB, then by their whole content (hard links count once). Files under 1 MB are left out unless you choose a smaller size, because reading takes time. Each group lists its copies oldest first; *Select extra copies* selects all but the oldest, ready for Delete |
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |

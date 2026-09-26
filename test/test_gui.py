@@ -16,6 +16,7 @@ from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelInd
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox
 
+from conftest import make_tree
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.node import Node
@@ -28,7 +29,7 @@ from je_file_tree.gui.app import create_window
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import CHANGES_TAB, LARGEST_TAB, SEARCH_TAB, _selected_in
+from je_file_tree.gui.results_view import CHANGES_TAB, CLEANUP_TAB, LARGEST_TAB, SEARCH_TAB, _selected_in
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -766,6 +767,36 @@ def test_search_conditions_and_saved_searches(window: MainWindow, qapp: QApplica
     assert json.loads(window.settings.value("saved_searches")) == {}
     window.settings.setValue("saved_searches", "not json")
     assert main_window_module._saved_searches(window.settings) == {}, "a damaged setting counts as none"
+
+
+def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = tmp_path / "work"
+    folder.mkdir()
+    make_tree(folder, {"site": {"package.json": b"{}", "node_modules": {"lib.js": b"j" * 400}},
+                       "old": {"nothing": {}}, "memory.dmp": b"d" * 50, "keep.txt": b"k"})
+    _scanned(window, qapp, folder)
+    results = window.results
+    assert results.tabs.tabText(CLEANUP_TAB) == "Clean up"
+    assert results.cleanup_pages.tabText(0) == "Suggestions"
+    assert results.cleanup_pages.tabText(1) == "Duplicates"
+    panel = results.cleanup
+    _wait(qapp, lambda: not panel.busy and bool(panel.groups))
+    assert [(group.key, [node.name for node in group.nodes]) for group in panel.groups] == [
+        ("build_output", ["node_modules"]), ("crash_dumps", ["memory.dmp"]), ("empty_folders", ["old"])]
+    assert panel.model.index(0, 0).data() == "Build output (can be rebuilt) — 400 B (1)"
+    assert "building the project again" in panel.model.index(0, 0).data(Qt.ItemDataRole.ToolTipRole)
+    assert panel.status.text().startswith("450 B could be freed in 3 groups.")
+    panel.view.setCurrentIndex(panel.model.index(0, 0, panel.model.index(0, 0)))
+    panel.select_current_group()
+    picked = _selected_in(panel.view)
+    assert [node.name for node in picked] == ["node_modules"]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash(picked)
+    _wait(qapp, lambda: not panel.busy and [group.key for group in panel.groups] == ["crash_dumps", "empty_folders"])
+    panel.select_all_entries()
+    assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

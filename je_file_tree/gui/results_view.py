@@ -57,6 +57,7 @@ from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
@@ -91,7 +92,8 @@ _CHANGE_COLUMN = 3
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-CHART_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -153,6 +155,8 @@ class ResultsView(QWidget):
         self.search_table, _ = self._build_entries_table(self.search_model)
         self.search = SearchPanel(self.search_table, self.search_model)
         self.duplicates = DuplicatesPanel()
+        self.cleanup = CleanupPanel()
+        self.cleanup_pages = QTabWidget()
         self.changes_model = ChangesModel(self)
         self.changes_table, _ = self._build_table(self.changes_model, _CHANGE_COLUMN)
         self.changes = ChangesPanel(self.changes_table, self.changes_model)
@@ -186,6 +190,7 @@ class ResultsView(QWidget):
         self._outcome = None
         self.search.set_root(None)
         self.duplicates.set_root(None)
+        self.cleanup.set_root(None)
         self.changes.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
@@ -250,6 +255,7 @@ class ResultsView(QWidget):
             self.select_node(root)
         self.search.set_root(root)
         self.duplicates.set_root(root)
+        self.cleanup.set_root(root)
         self.changes.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
@@ -273,6 +279,7 @@ class ResultsView(QWidget):
         self.charts.set_view_root(new if inside_old else view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.cleanup.refresh()
         self.changes.refresh()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
@@ -302,6 +309,7 @@ class ResultsView(QWidget):
             model.refresh()
         self.search.retranslate()
         self.duplicates.set_unit(unit)
+        self.cleanup.set_unit(unit)
         self.charts.set_unit(unit)
         self.changes.retranslate()
 
@@ -316,7 +324,7 @@ class ResultsView(QWidget):
 
     def focused_selection(self) -> list[Node]:
         """The entries selected where the keyboard is: the largest-files, search or duplicates list, else the tree."""
-        for view in (self.largest_table, self.search_table, self.duplicates.view):
+        for view in (self.largest_table, self.search_table, self.duplicates.view, self.cleanup.view):
             if view.hasFocus():
                 return _selected_in(view)
         return _selected_in(self.tree)
@@ -391,6 +399,7 @@ class ResultsView(QWidget):
         self.charts.set_view_root(view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.cleanup.refresh()
         self.changes.refresh()
         self._update_texts()
 
@@ -417,6 +426,7 @@ class ResultsView(QWidget):
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
+        self.cleanup.retranslate()
         self.changes.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
@@ -553,10 +563,12 @@ class ResultsView(QWidget):
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
         self.tabs.addTab(self.search, "")
-        self.tabs.addTab(self.duplicates, "")
-        view = self.duplicates.view
-        view.customContextMenuRequested.connect(lambda point: self._menu_for(view, point))
-        view.doubleClicked.connect(lambda index: self._table_activated(view, index))
+        self.cleanup_pages.addTab(self.cleanup, "")
+        self.cleanup_pages.addTab(self.duplicates, "")
+        self.tabs.addTab(self.cleanup_pages, "")
+        for view in (self.cleanup.view, self.duplicates.view):
+            view.customContextMenuRequested.connect(lambda point, view=view: self._menu_for(view, point))
+            view.doubleClicked.connect(lambda index, view=view: self._table_activated(view, index))
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
         self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
@@ -780,9 +792,11 @@ class ResultsView(QWidget):
     def _update_texts(self) -> None:
         self._update_scope_button()
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_chart", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age", "tab_changes")
+        titles = ("tab_chart", "tab_largest", "tab_search", "tab_cleanup", "tab_types", "tab_age", "tab_changes")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
+        self.cleanup_pages.setTabText(SUGGESTIONS_PAGE, tr("cleanup_suggestions"))
+        self.cleanup_pages.setTabText(DUPLICATES_PAGE, tr("tab_duplicates"))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
