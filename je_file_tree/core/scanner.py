@@ -27,6 +27,7 @@ from typing import cast
 from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 # Windows reparse tags of links that must not be followed. A junction (and a
 # volume mounted into a folder) is a mount point; ``is_symlink()`` is False for
@@ -215,6 +216,7 @@ class _Crawler:
 
     def _work(self) -> None:
         while (task := self._take()) is not None:
+            give_way()
             try:
                 read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
@@ -348,6 +350,7 @@ def _add_up(folders: list[Node]) -> None:
     ``folders`` must list every folder after its parent.
     """
     for folder in reversed(folders):
+        give_way()
         size = allocated = files = subfolders = 0
         newest = folder.modified
         children = folder.children

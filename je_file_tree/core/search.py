@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from je_file_tree.core.analysis import category_of, extension_of
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.pacing import give_way
 
 WILDCARDS = frozenset("*?[")
 ANY, FILES, FOLDERS = "any", "files", "folders"
@@ -94,6 +95,7 @@ def _collect(root: Node, test: Callable[..., object], cancel: threading.Event | 
     while stack:
         if cancel is not None and cancel.is_set():
             return None
+        give_way()
         for child in stack.pop().children:
             if test(child.name if by_name else child):
                 found.append(child)

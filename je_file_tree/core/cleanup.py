@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from pathlib import PurePath
 
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.pacing import give_way
 
 EMPTY_FOLDERS = "empty_folders"
 _DAY = 86400.0
@@ -101,6 +102,7 @@ def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None) -> dict
     while stack:
         if cancel is not None and cancel.is_set():
             return None
+        give_way()
         folder, parts = stack.pop()
         stack.extend(_visit(folder, parts, matcher, found))
     return found

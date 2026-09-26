@@ -14,6 +14,7 @@ from je_file_tree.gui.icon import app_icon, claim_taskbar_button
 from je_file_tree.gui import elevation
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
 from je_file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree.gui.scan_worker import pace_workers
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
@@ -51,6 +52,7 @@ def main(argv: Sequence[str]) -> int:
     # Like TreeSize: ask first, so every folder can be read. Declining keeps this copy.
     if wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
         return 0
+    pace_workers()  # background work waits while the window is busy
     window = create_window(settings, folder)
     window.show()
     return app.exec()

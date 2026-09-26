@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
                   "error")
@@ -54,6 +55,7 @@ def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | Non
 def _folders(root: Node, max_depth: int | None) -> Iterable[Node]:
     stack = [(root, 0)]
     while stack:
+        give_way()
         node, depth = stack.pop()
         yield node
         if max_depth is not None and depth >= max_depth:
@@ -67,6 +69,7 @@ def _folder_json(root: Node, max_depth: int | None) -> dict[str, Any]:
     top: dict[str, Any] = {}
     stack: list[tuple[Node, dict[str, Any], int]] = [(root, top, 0)]
     while stack:
+        give_way()
         node, target, depth = stack.pop()
         target.update(name=node.name, size=node.size, allocated=node.allocated, files=node.file_count,
                       folders=node.dir_count, modified=_iso_time(node.modified))

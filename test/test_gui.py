@@ -12,13 +12,25 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtCore import (
+    QEventLoop,
+    QItemSelectionModel,
+    QModelIndex,
+    QPersistentModelIndex,
+    QPoint,
+    QSettings,
+    Qt,
+    QThread,
+    QTimer,
+    QUrl,
+)
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox, QSizePolicy
 
 from conftest import make_tree
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
+from je_file_tree.core import pacing
 from je_file_tree.core.node import Node
 from je_file_tree.core.protected import PROGRAMS, Protection
 from je_file_tree.core import scanner
@@ -38,7 +50,7 @@ from je_file_tree.gui.results_view import (
     SEARCH_TAB,
     _selected_in,
 )
-from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.scan_worker import analyse, pace_workers, wait_for
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from je_file_tree.gui import bar_chart
@@ -155,6 +167,56 @@ def test_table_models(qapp: QApplication, sample_tree: Path) -> None:
     shares = [types.index(row, 3).data(SHARE_ROLE) for row in range(types.rowCount())]
     assert sum(shares) == pytest.approx(1.0)
     assert types.headerData(3, Qt.Orientation.Horizontal) == "% of total"
+
+
+# --- background work gives way ------------------------------------------------
+
+
+def test_workers_wait_while_the_window_handles_something(qapp: QApplication) -> None:
+    pace_workers()
+    try:
+        seen: list[bool] = []
+        QTimer.singleShot(0, lambda: seen.append(pacing.WINDOW.is_open))
+        _wait(qapp, lambda: bool(seen))
+        assert seen == [False], "the gate is closed while the window handles an event"
+        opened = threading.Event()
+        watcher = threading.Thread(target=lambda: opened.set() if _opens_within(1.0) else None)
+        watcher.start()
+        loop = QEventLoop()
+        QTimer.singleShot(300, loop.quit)
+        loop.exec()  # the window waits for the timer: the gate opens meanwhile
+        watcher.join()
+        assert opened.is_set()
+    finally:
+        pace_workers(connect=False)
+    assert pacing.WINDOW.is_open
+
+
+def _opens_within(seconds: float) -> bool:
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if pacing.WINDOW.is_open:
+            return True
+        time.sleep(0.001)
+    return False
+
+
+class _GivingWay(QThread):
+    def run(self) -> None:
+        pacing.give_way()
+
+
+def test_waiting_for_a_worker_opens_the_gate_first(qapp: QApplication, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pacing, "PAUSE_LIMIT", 10.0)
+    pacing.WINDOW.close()
+    worker = _GivingWay()
+    try:
+        worker.start()
+        started = time.monotonic()
+        wait_for(worker)  # the window blocks on the worker: holding the gate shut would only stall it
+        assert time.monotonic() - started < 2.0
+    finally:
+        pacing.WINDOW.open()
 
 
 # --- treemap ----------------------------------------------------------------

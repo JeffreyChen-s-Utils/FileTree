@@ -15,6 +15,7 @@ from typing import Any
 
 from je_file_tree.core.export import JSON_FORMAT
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 
 class SavedScanError(ValueError):
@@ -117,6 +118,7 @@ def compare(root: Node, saved: SavedScan) -> list[FolderChange]:
     seen: set[str] = set()
     stack: list[tuple[Node, str]] = [(root, "")]
     while stack:
+        give_way()
         folder, path = stack.pop()
         key = folder_key(path)
         seen.add(key)

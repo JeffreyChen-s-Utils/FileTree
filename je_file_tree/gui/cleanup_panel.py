@@ -10,7 +10,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.gui import grouped_list
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.scan_worker import CleanupWorker
+from je_file_tree.gui.scan_worker import CleanupWorker, wait_for
 
 
 class CleanupPanel(QWidget):
@@ -86,7 +86,7 @@ class CleanupPanel(QWidget):
         for worker in self._running.copy():
             worker.stop()
             if wait:
-                worker.wait()
+                wait_for(worker)
 
     def select_all_entries(self) -> None:
         """Select every suggested entry, ready for Delete."""

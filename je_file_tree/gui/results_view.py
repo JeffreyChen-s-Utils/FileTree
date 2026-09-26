@@ -65,7 +65,7 @@ from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
-from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome
+from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.search_panel import SearchPanel
 from je_file_tree.gui.tables import (
     SORT_ROLE,
@@ -665,7 +665,7 @@ class ResultsView(QWidget):
     def wait_for_lists(self) -> None:
         """Wait for list computations still running (before the window closes)."""
         for worker in self._list_workers.copy():
-            worker.wait()
+            wait_for(worker)
 
     def _show_lists(self, largest: Sequence[Node], extensions: Sequence[ExtensionStat],
                     ages: Sequence[AgeStat]) -> None:

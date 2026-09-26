@@ -23,7 +23,7 @@ from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.core.search import Query, SearchResult, accepts
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.scan_worker import SearchWorker
+from je_file_tree.gui.scan_worker import SearchWorker, wait_for
 from je_file_tree.gui.search_filters import SearchFilters
 from je_file_tree.gui.tables import LargestFilesModel
 
@@ -148,7 +148,7 @@ class SearchPanel(QWidget):
         for worker in list(self._running):
             worker.stop()
             if wait:
-                worker.wait()
+                wait_for(worker)
 
     def focus(self) -> None:
         """Put the cursor in the search box, its text selected."""

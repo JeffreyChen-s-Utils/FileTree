@@ -18,7 +18,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui import grouped_list
-from je_file_tree.gui.scan_worker import DuplicatesWorker
+from je_file_tree.gui.scan_worker import DuplicatesWorker, wait_for
 
 MIN_SIZES = (1, 100 * 1024, DEFAULT_MIN_SIZE, 10 * 1024 * 1024, 100 * 1024 * 1024)
 LISTED_GROUPS = 1000
@@ -100,7 +100,7 @@ class DuplicatesPanel(QWidget):
             return
         worker.stop()
         if wait:
-            worker.wait()
+            wait_for(worker)
         self._worker = None
         self._stopped = True
         self._update()

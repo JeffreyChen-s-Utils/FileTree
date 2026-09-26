@@ -13,7 +13,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `pacing.py` (background work gives way to the window), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
 | GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `cleanup_panel.py`, `duplicates_panel.py`, `grouped_list.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
@@ -51,6 +51,16 @@ is read, totals are added up again bottom-up and children sorted largest first; 
 files, per-type totals) runs still off the GUI thread and `succeeded(ScanOutcome)` ends live mode. Stop
 raises `ScanCancelledError` carrying the partial tree (unread folders marked `NOT_SCANNED`), shown as an
 incomplete outcome. Signals of a replaced worker are ignored.
+
+**Background work gives way.** In CPython one thread runs Python at a time, and every call Qt makes into
+Python (each cell the folder tree paints, every event handler) needs that lock, so a worker walking the
+tree used to make the window queue behind it. `core.pacing.WINDOW` is a gate: `scan_worker.pace_workers`
+(called once by `app.main`) closes it when the GUI thread's event loop wakes (`awake`) and opens it when the
+loop is about to wait (`aboutToBlock`). Every walk over the tree calls `pacing.give_way()` once per folder
+(the scan's workers, `_add_up`, the analysis, clean-up, search, compare, export, each file hashed), which
+waits while the gate is closed, at most `PAUSE_LIMIT` (50 ms) and never on the thread that closed it, so
+nothing can hang on it. The window blocks on a worker only through `scan_worker.wait_for`, which opens the
+gate first.
 
 **Show.** `ResultsView.show_outcome` hands the tree to `FolderTreeModel` (which wraps the `Node`s, sorts
 per folder lazily, and never copies), the tables to their models, and the root to `TreemapWidget` (layout
@@ -162,6 +172,9 @@ with `tools/build_nuitka.py --onefile` for the GitHub release.
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with
   one); 740,000 entries in 6–8 s; analysis 0.65 s; treemap layout under 0.1 s (at most 20,000 tiles).
+- The window during a scan (125,000 entries, the folder tree repainted every 50 ms): 37 ms per repaint as
+  when idle, against 80 ms, and up to 2.1 s while the clean-up suggestions ran, before the workers gave way;
+  the scan itself took as long either way with an idle window (2.6 s).
 - Memory: about 250 bytes per entry (740,000 entries ≈ 185 MB); only the root stores a full path.
 - Links are never followed; unreadable folders are recorded, never fatal.
 - Nothing is deleted permanently; every move to the trash is confirmed.

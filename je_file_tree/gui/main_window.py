@@ -33,7 +33,7 @@ from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
-from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker
+from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         worker.cancel()
         self.results.scan_bar.stopping()
         if wait:
-            worker.wait()
+            wait_for(worker)
             self._worker = None
             self._live_timer.stop()
 
@@ -422,7 +422,7 @@ class MainWindow(QMainWindow):
         self.results.changes.stop(wait=True)
         self.results.wait_for_lists()
         for worker in self._exports.copy():  # a file being written is finished, never left half-written
-            worker.wait()
+            wait_for(worker)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
