@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import importlib.util
 import struct
 import sys
@@ -74,3 +75,19 @@ def test_the_build_leaves_macos_and_an_icon_given_by_hand_alone(tmp_path: Path,
     monkeypatch.setattr(sys, "platform", "win32")
     assert build.icon_options(tmp_path, ["--windows-icon-from-ico=mine.ico"]) == []
     assert list(tmp_path.iterdir()) == []
+
+
+def test_the_taskbar_button_is_filetree_s_own(monkeypatch: pytest.MonkeyPatch) -> None:
+    if sys.platform != "win32":
+        assert icon.claim_taskbar_button() is False
+        return
+    assert icon.claim_taskbar_button() is True
+    shell32 = ctypes.windll.shell32
+    value = ctypes.c_wchar_p()
+    shell32.GetCurrentProcessExplicitAppUserModelID.argtypes = [ctypes.POINTER(ctypes.c_wchar_p)]
+    shell32.GetCurrentProcessExplicitAppUserModelID.restype = ctypes.c_long
+    assert shell32.GetCurrentProcessExplicitAppUserModelID(ctypes.byref(value)) == 0
+    assert value.value == icon.APP_USER_MODEL_ID
+    ctypes.windll.ole32.CoTaskMemFree(value)
+    monkeypatch.setattr(icon.sys, "platform", "linux")
+    assert icon.claim_taskbar_button() is False, "nothing to claim elsewhere"

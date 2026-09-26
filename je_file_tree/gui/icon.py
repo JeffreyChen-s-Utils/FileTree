@@ -6,7 +6,9 @@ pictures into a Windows ``.ico`` for the Nuitka build (``tools/build_nuitka.py``
 
 from __future__ import annotations
 
+import ctypes
 import struct
+import sys
 
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QImage, QPainter, QPixmap
@@ -14,6 +16,8 @@ from PySide6.QtGui import QColor, QIcon, QImage, QPainter, QPixmap
 from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS
 
 SIZES = (16, 24, 32, 48, 64, 128, 256)
+APP_USER_MODEL_ID = "JE-Chen.FileTree"
+_S_OK = 0
 
 # (x, y, width, height) in a unit square and the file-type colour of each block:
 # one big block and a column of smaller ones, the way a treemap of a real disk looks.
@@ -48,6 +52,22 @@ def draw(size: int) -> QImage:
         painter.drawRoundedRect(block, size * 0.03, size * 0.03)
     painter.end()
     return image
+
+
+def claim_taskbar_button() -> bool:
+    """Give this process FileTree's own Windows AppUserModelID; True when set, False elsewhere.
+
+    Run from Python (``je-file-tree``, ``start_file_tree.py``), the process is ``python.exe`` or
+    ``pythonw.exe``, and Windows groups its windows under Python's taskbar button with Python's icon.
+    With an ID of its own FileTree gets its own button, showing the window icon. Call it before the
+    first window is created; the compiled ``FileTree.exe`` gets the same grouping.
+    """
+    if sys.platform != "win32":
+        return False
+    set_id = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID
+    set_id.argtypes = [ctypes.c_wchar_p]
+    set_id.restype = ctypes.c_long  # an HRESULT
+    return set_id(APP_USER_MODEL_ID) == _S_OK
 
 
 def app_icon() -> QIcon:

@@ -110,6 +110,9 @@ system is). The Changes tab, hidden until then, lists changed, new and gone fold
 again after each scan, move to the Recycle Bin and folder rescan until *Stop comparing*. Reading and
 comparing took 0.68 s and 0.49 s on 86,000 folders, hence the worker.
 
+**Taskbar (Windows).** `app.main` first gives the process FileTree's own AppUserModelID (`icon.claim_taskbar_button`), so run from Python its windows get their own taskbar button with FileTree's
+icon instead of being filed under `python.exe`.
+
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
