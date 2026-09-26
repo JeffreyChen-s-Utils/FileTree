@@ -132,6 +132,8 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
   folders too. Say no and it runs normally; folders it could not read are listed under *Problems*, with a
   *Restart as administrator* button (also in the *File* menu). Turn the question off under
   *View → Ask for administrator rights at start*.
+- *Largest files*, *File types* and *Age* cover the whole scan; *Selected folder only*, at the top right of
+  those tabs, makes them follow the folder selected in the tree.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
 - To leave folders out of every scan, list them in *View → Skip while scanning*: a name such as
   `node_modules` or `*.cache` skips every folder of that name, a path skips one folder. Skipped folders are

@@ -27,7 +27,7 @@ from je_file_tree.gui.app import create_window
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import CHANGES_TAB, SEARCH_TAB, _selected_in
+from je_file_tree.gui.results_view import CHANGES_TAB, LARGEST_TAB, SEARCH_TAB, _selected_in
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -680,6 +680,46 @@ def test_exclusions_are_skipped_greyed_out_and_saved(window: MainWindow, qapp: Q
     assert "1 exclusions saved" in window.statusBar().currentMessage()
     window.rescan()
     _wait(qapp, lambda: window.results.outcome is not None and window.results.tree_model.root.size == 1000)
+
+
+def test_the_lists_can_cover_the_selected_folder_only(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    root = results.tree_model.root
+    assert root is not None
+    button = results._scope_button
+    assert button.isHidden(), "not on the Chart tab"
+    results.tabs.setCurrentIndex(LARGEST_TAB)
+    assert not button.isHidden()
+
+    def largest() -> list[str]:
+        return [node.name for node in results.largest_model.rows()]
+
+    photos, code = _child(root, "photos"), _child(root, "code")
+    results.select_node(photos)
+    button.click()
+    _wait(qapp, lambda: largest() == ["a.jpg", "b.png"])
+    assert {stat.extension for stat in results.types_model.rows()} == {".jpg", ".png"}
+    assert button.text() == "Only in photos"
+    results.select_node(code)  # the lists follow the selection, once it settles
+    _wait(qapp, lambda: largest() == ["main.py", "Makefile"])
+    results.select_node(_child(code, "main.py"))  # a file: its folder
+    qapp.processEvents()
+    _wait(qapp, lambda: not results._scope_timer.isActive() and results._scope_worker is None)
+    assert largest() == ["main.py", "Makefile"]
+    results.show_largest_of_type(".jpg")
+    assert largest() == [], "a type's largest files within the folder shown"
+    results.show_all_largest()
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash([_child(code, "Makefile")])
+    _wait(qapp, lambda: largest() == ["main.py"])
+    assert sum(stat.size for stat in results.types_model.rows()) == 100, "the folder's types after the move"
+    button.click()  # back to the whole scan, whose totals followed the move too
+    assert sorted(largest()) == ["a.jpg", "b.png", "big.bin", "main.py", "notes.txt"], "Makefile is gone"
+    assert largest()[:2] == ["big.bin", "a.jpg"]
+    assert sum(stat.size for stat in results.types_model.rows()) == 950
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

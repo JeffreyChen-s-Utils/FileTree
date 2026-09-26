@@ -78,6 +78,11 @@ keeps a strip at the top of every opened folder that is at least three strips wi
 widget prints the folder's name and size; colours come from the file type or, with `treemap_colours` =
 `folder`, from a hue per top-level folder (the legend is hidden then).
 
+**Lists for one folder.** *Largest files*, *File types* and *Age* show the outcome's whole-scan lists, or,
+with *Selected folder only* (the tab bar's corner), `analysis.summarise` of the folder selected in the tree,
+run on an `AnalyseWorker` 250 ms after the selection settles. The outcome keeps the whole scan's totals up to
+date after a move to the Recycle Bin, so switching back needs no recount.
+
 **Rescan one folder.** The context menu's *Rescan this folder* runs a `ScanWorker` on that branch alone,
 then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent
 indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes

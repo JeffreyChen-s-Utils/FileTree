@@ -108,6 +108,10 @@ EN: dict[str, str] = {
     "bars_empty_folder": "This folder is empty.",
     "bars_more": "{count} more: {size}",
     "tab_largest": "Largest files",
+    "scope_folder": "Selected folder only",
+    "scope_folder_named": "Only in {name}",
+    "scope_folder_tip": ("Show the largest files, types and ages of the folder selected in the tree instead of "
+                         "the whole scan"),
     "tab_search": "Search",
     "tab_changes": "Changes",
     "action_compare": "Compare with a saved scan…",
@@ -311,6 +315,8 @@ counted twice.</li>
 protected folders too. Say no and it runs normally; folders it could not read are listed under
 <i>Problems</i>, with a <i>Restart as administrator</i> button. Turn the question off under
 <i>View → Ask for administrator rights at start</i>.</li>
+<li><i>Largest files</i>, <i>File types</i> and <i>Age</i> cover the whole scan; <i>Selected folder only</i>,
+at the top right of those tabs, makes them follow the folder selected in the tree.</li>
 <li>Hidden files are counted. Turn off <i>View → Include hidden files</i> to leave them out of the
 next scan.</li>
 <li>To leave folders out of every scan, list them in <i>View → Skip while scanning</i>: a name such as
@@ -417,6 +423,9 @@ ZH_TW: dict[str, str] = {
     "bars_empty_folder": "這個資料夾是空的。",
     "bars_more": "其餘 {count} 個：{size}",
     "tab_largest": "最大的檔案",
+    "scope_folder": "只看選取的資料夾",
+    "scope_folder_named": "只看 {name}",
+    "scope_folder_tip": "改為列出資料夾樹中選取的資料夾（而不是整個掃描範圍）的最大檔案、類型與新舊",
     "tab_search": "搜尋",
     "tab_changes": "變化",
     "action_compare": "與先前儲存的掃描比較…",
@@ -604,6 +613,8 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 <li>在 Windows 上，FileTree 啟動時會像 TreeSize 一樣要求系統管理員權限，受保護的資料夾也能讀取。
 拒絕的話它照常以一般權限執行，讀不到的資料夾列在<i>無法讀取</i>分頁，那裡有<i>以系統管理員身分重新啟動</i>按鈕。
 不想每次被問，可以關掉<i>檢視 → 啟動時要求系統管理員權限</i>。</li>
+<li><i>最大的檔案</i>、<i>檔案類型</i>與<i>檔案新舊</i>預設統計整個掃描範圍；
+按這幾個分頁右上角的<i>只看選取的資料夾</i>，就會改為跟著資料夾樹中選取的資料夾。</li>
 <li>預設會計算隱藏檔案；關掉<i>檢視 → 包含隱藏檔案</i>，下次掃描就不會算進去。</li>
 <li>要讓某些資料夾每次都不掃描，把它們加進<i>檢視 → 掃描時略過</i>：
 像 <code>node_modules</code> 這樣的名稱會略過所有同名的資料夾，路徑只略過那一個資料夾。
@@ -709,6 +720,9 @@ ZH_CN: dict[str, str] = {
     "bars_empty_folder": "这个文件夹是空的。",
     "bars_more": "其余 {count} 个：{size}",
     "tab_largest": "最大的文件",
+    "scope_folder": "只看选中的文件夹",
+    "scope_folder_named": "只看 {name}",
+    "scope_folder_tip": "改为列出文件夹树中选中的文件夹（而不是整个扫描范围）的最大文件、类型与新旧",
     "tab_search": "搜索",
     "tab_changes": "变化",
     "action_compare": "与之前保存的扫描比较…",
@@ -896,6 +910,8 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 <li>在 Windows 上，FileTree 启动时会像 TreeSize 一样请求管理员权限，受保护的文件夹也能读取。
 拒绝的话它照常以普通权限运行，读不到的文件夹列在<i>无法读取</i>标签页，那里有<i>以管理员身份重新启动</i>按钮。
 不想每次被问，可以关掉<i>视图 → 启动时请求管理员权限</i>。</li>
+<li><i>最大的文件</i>、<i>文件类型</i>与<i>文件新旧</i>默认统计整个扫描范围；
+点这几个选项卡右上角的<i>只看选中的文件夹</i>，就会改为跟着文件夹树中选中的文件夹。</li>
 <li>默认会计算隐藏文件；关掉<i>视图 → 包含隐藏文件</i>，下次扫描就不会算进去。</li>
 <li>要让某些文件夹每次都不扫描，把它们加进<i>视图 → 扫描时跳过</i>：
 像 <code>node_modules</code> 这样的名称会跳过所有同名的文件夹，路径只跳过那一个文件夹。
