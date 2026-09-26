@@ -39,10 +39,15 @@ the window.
 
 ## Install
 
-FileTree needs Python 3.10 or newer. It runs on Windows, macOS and Linux.
+FileTree runs on Windows, macOS and Linux.
+
+**Windows, without Python**: download `FileTree-<version>.exe` from the [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) page and run it;
+there is nothing to install.
+
+**With Python 3.10 or newer**, from PyPI:
 
 ```bash
-pip install git+https://github.com/JeffreyChen-s-Utils/FileTree.git
+pip install je_file_tree
 je-file-tree
 ```
 

@@ -24,10 +24,14 @@
 
 ## 安裝
 
-FileTree 需要 Python 3.10 以上，可在 Windows、macOS 與 Linux 上執行。
+FileTree 可在 Windows、macOS 與 Linux 上執行。
+
+**Windows，不需要 Python**：從 [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 頁面下載 `FileTree-<版本>.exe` 直接執行，不必安裝。
+
+**有 Python 3.10 以上**，從 PyPI 安裝：
 
 ```bash
-pip install git+https://github.com/JeffreyChen-s-Utils/FileTree.git
+pip install je_file_tree
 je-file-tree
 ```
 
