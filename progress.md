@@ -26,7 +26,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Finding things
 
-- **#26** (P1) Filters in Search: combine conditions with the name pattern (`je_file_tree/core/search.py:44`, `je_file_tree/gui/search_panel.py`): size at least / at most, modified before / after, file-type group, files only or folders only; saved filters with a name ("Videos over 1 GB untouched for a year") kept in the settings. Core: a `Query` dataclass matched in the same walk; the name matcher stays as it is.
 - **#27** (P2) Last access and creation time: columns and an age mode "not opened since…" from `st_atime` and the creation time. Windows may not update the last access time (`NtfsDisableLastAccessUpdate`); detect that and say so instead of showing misleading dates. Two more values per `Node`: measure the memory first (the current cost per entry is in U-20260926-14) and consider keeping them for files only.
 - **#28** (P2) Space per owner: a Users tab with the size owned by each user. On POSIX `st_uid` comes with the stat the scan already makes; Windows needs `GetNamedSecurityInfoW` per file, an extra call: measure it as #2 was measured and make it an option if it slows the scan.
 - **#29** (P2) Cloud-only and special files: list OneDrive/Dropbox placeholders (the recall attributes `je_file_tree/core/allocation.py` already reads), compressed, sparse and offline files, with what they would take once downloaded; today they only count as 0 on disk without a word.

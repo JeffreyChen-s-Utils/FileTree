@@ -148,8 +148,32 @@ EN: dict[str, str] = {
     "duplicates_skipped": "{count} files could not be read.",
     "duplicates_group": "{count} copies of {size} — {extra} in extra copies",
     "search_placeholder": "Part of a name, or a pattern: backup, *.mp4, *.iso;*.zip",
-    "search_hint": "Type part of a name, or a pattern with * and ?, to find files and folders anywhere in the scan.",
+    "search_hint": ("Type part of a name or a pattern with * and ?, choose conditions, or both, to find files "
+                    "and folders anywhere in the scan."),
     "search_running": "Searching…",
+    "search_larger": "Larger than",
+    "search_smaller": "Smaller than",
+    "search_no_limit": "no limit",
+    "search_changed": "Changed",
+    "search_changed_any": "any time",
+    "search_changed_week": "in the last week",
+    "search_changed_month": "in the last month",
+    "search_changed_year": "in the last year",
+    "search_changed_stale_year": "not for a year",
+    "search_changed_stale_2y": "not for 2 years",
+    "search_changed_stale_5y": "not for 5 years",
+    "search_type": "Type",
+    "search_type_any": "any type",
+    "search_show": "Show",
+    "search_kind_any": "files and folders",
+    "search_kind_files": "files only",
+    "search_kind_folders": "folders only",
+    "search_saved": "Saved searches",
+    "search_saved_none": "(none)",
+    "search_save": "Save…",
+    "search_delete": "Delete",
+    "search_save_title": "Save this search",
+    "search_save_prompt": "Name:",
     "search_none": "Nothing matches.",
     "search_summary": "{count} matches, {size} in total.",
     "search_limited": "The {shown} largest are listed.",
@@ -268,7 +292,9 @@ tree, double-click a folder to go into it, and press <i>Up</i> to go back.</li>
 narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
 A pattern such as <code>*.mp4</code> must match the whole name; separate several with <code>;</code>
-(<code>*.iso;*.zip</code>). The 1,000 largest matches are listed, with the count and total size of all.</li>
+(<code>*.iso;*.zip</code>). The conditions under the box (size, when last changed, file type, files or
+folders) narrow the search or make one on their own, and <i>Save…</i> keeps a search under a name. The
+1,000 largest matches are listed, with the count and total size of all.</li>
 <li><b>Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
 same size are read; files under 1 MB are left out unless you choose a smaller size, because reading takes
 time. Each group lists its copies oldest first; <i>Select extra copies</i> selects all but the oldest, and
@@ -462,8 +488,31 @@ ZH_TW: dict[str, str] = {
     "duplicates_skipped": "有 {count} 個檔案無法讀取。",
     "duplicates_group": "{count} 份相同的 {size} 檔案，多餘的副本佔 {extra}",
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
-    "search_hint": "輸入名稱的一部分，或含 * 和 ? 的樣式，在整個掃描結果裡找檔案和資料夾。",
+    "search_hint": "輸入名稱的一部分或含 * 和 ? 的樣式、選擇條件，或兩者一起，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
+    "search_larger": "大於",
+    "search_smaller": "小於",
+    "search_no_limit": "不限",
+    "search_changed": "修改時間",
+    "search_changed_any": "不限",
+    "search_changed_week": "最近一週內",
+    "search_changed_month": "最近一個月內",
+    "search_changed_year": "最近一年內",
+    "search_changed_stale_year": "超過一年沒動",
+    "search_changed_stale_2y": "超過兩年沒動",
+    "search_changed_stale_5y": "超過五年沒動",
+    "search_type": "類型",
+    "search_type_any": "不限類型",
+    "search_show": "顯示",
+    "search_kind_any": "檔案和資料夾",
+    "search_kind_files": "只有檔案",
+    "search_kind_folders": "只有資料夾",
+    "search_saved": "已存的搜尋",
+    "search_saved_none": "（無）",
+    "search_save": "儲存…",
+    "search_delete": "刪除",
+    "search_save_title": "儲存這個搜尋",
+    "search_save_prompt": "名稱：",
     "search_none": "沒有符合的項目。",
     "search_summary": "{count} 個符合，共 {size}。",
     "search_limited": "只列出最大的 {shown} 個。",
@@ -571,7 +620,8 @@ ZH_TW: dict[str, str] = {
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
 <li><b>搜尋</b>（Ctrl+F）：整個掃描範圍內，名稱含有輸入文字的檔案和資料夾。
 <code>*.mp4</code> 這類樣式要符合完整名稱；好幾個樣式用 <code>;</code> 分開（<code>*.iso;*.zip</code>）。
-會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
+搜尋框下方的條件（大小、修改時間、檔案類型、檔案或資料夾）可以縮小範圍，也可以單獨搜尋；
+<i>儲存…</i>可以把搜尋取名存起來。會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
 <li><b>重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
 除非選了較小的大小，否則會略過 1 MB 以下的檔案。每一組由舊到新列出副本；<i>選取多餘的副本</i>會選取最舊那份以外的全部，
 再按 Delete 就會移到資源回收筒。</li>
@@ -759,8 +809,31 @@ ZH_CN: dict[str, str] = {
     "duplicates_skipped": "有 {count} 个文件无法读取。",
     "duplicates_group": "{count} 份相同的 {size} 文件，多余的副本占 {extra}",
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
-    "search_hint": "输入名称的一部分，或含 * 和 ? 的模式，在整个扫描结果里找文件和文件夹。",
+    "search_hint": "输入名称的一部分或含 * 和 ? 的模式、选择条件，或两者一起，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",
+    "search_larger": "大于",
+    "search_smaller": "小于",
+    "search_no_limit": "不限",
+    "search_changed": "修改时间",
+    "search_changed_any": "不限",
+    "search_changed_week": "最近一周内",
+    "search_changed_month": "最近一个月内",
+    "search_changed_year": "最近一年内",
+    "search_changed_stale_year": "超过一年没动",
+    "search_changed_stale_2y": "超过两年没动",
+    "search_changed_stale_5y": "超过五年没动",
+    "search_type": "类型",
+    "search_type_any": "不限类型",
+    "search_show": "显示",
+    "search_kind_any": "文件和文件夹",
+    "search_kind_files": "只有文件",
+    "search_kind_folders": "只有文件夹",
+    "search_saved": "已保存的搜索",
+    "search_saved_none": "（无）",
+    "search_save": "保存…",
+    "search_delete": "删除",
+    "search_save_title": "保存这个搜索",
+    "search_save_prompt": "名称：",
     "search_none": "没有匹配的项目。",
     "search_summary": "{count} 个匹配，共 {size}。",
     "search_limited": "只列出最大的 {shown} 个。",
@@ -868,7 +941,8 @@ ZH_CN: dict[str, str] = {
 双击某一行就会在文件夹树中找到那个文件。</li>
 <li><b>搜索</b>（Ctrl+F）：整个扫描范围内，名称含有输入文字的文件和文件夹。
 <code>*.mp4</code> 这类模式要匹配完整名称；多个模式用 <code>;</code> 分开（<code>*.iso;*.zip</code>）。
-会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
+搜索框下方的条件（大小、修改时间、文件类型、文件或文件夹）可以缩小范围，也可以单独搜索；
+<i>保存…</i>可以把搜索取名保存起来。会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
 <li><b>重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
 除非选了较小的大小，否则会跳过 1 MB 以下的文件。每一组从旧到新列出副本；<i>选中多余的副本</i>会选中最旧那份以外的全部，
 再按 Delete 就会移到回收站。</li>

@@ -106,7 +106,7 @@ def accepts(query: Query, now: float) -> Callable[[Node], bool] | None:
     """The test of an entry against every condition of ``query``; None when it has no condition at all."""
     name = name_matcher(query.text)
     files_only = query.kind == FILES or query.category is not None
-    folders_only = query.kind == FOLDERS and not files_only
+    folders_only = query.kind == FOLDERS  # with a file type too, nothing can match: every condition holds
     kept = _kept_by_size_and_age(query, now)
     category = query.category
     if name is None and not files_only and not folders_only and kept is None:
@@ -115,7 +115,7 @@ def accepts(query: Query, now: float) -> Callable[[Node], bool] | None:
     def test(node: Node) -> bool:
         if name is not None and name(node.name) is None:
             return False
-        if node.is_dir if files_only else folders_only and (not node.is_dir or node.is_link):
+        if (files_only and node.is_dir) or (folders_only and (not node.is_dir or node.is_link)):
             return False
         if category is not None and category_of(extension_of(node.name)) != category:
             return False

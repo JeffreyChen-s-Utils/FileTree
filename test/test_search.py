@@ -67,6 +67,7 @@ def test_conditions_on_size_age_type_and_kind(sample_tree: Path) -> None:
     assert names(min_size=100, kind="files") == ["a.jpg", "big.bin", "main.py", "notes.txt"]
     assert names(kind="folders") == ["code", "empty", "photos"]
     assert names(category="images") == ["a.jpg", "b.png"]
+    assert names(category="images", kind="folders") == [], "every condition must hold"
     assert names(changed_within=100_000.0) == ["a.jpg"]
     assert "a.jpg" not in names(unchanged_for=100_000.0)
     assert names(text="*.p*", min_size=60) == ["main.py"], "the name and the size together"

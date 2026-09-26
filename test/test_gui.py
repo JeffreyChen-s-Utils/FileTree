@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import json
 import math
 import os
 import threading
@@ -720,6 +721,50 @@ def test_the_lists_can_cover_the_selected_folder_only(window: MainWindow, qapp: 
     assert sorted(largest()) == ["a.jpg", "b.png", "big.bin", "main.py", "notes.txt"], "Makefile is gone"
     assert largest()[:2] == ["big.bin", "a.jpg"]
     assert sum(stat.size for stat in results.types_model.rows()) == 950
+
+
+def test_search_conditions_and_saved_searches(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    panel = window.results.search
+
+    def found() -> list[str]:
+        _wait(qapp, lambda: not panel.busy)
+        return sorted(node.name for node in window.results.search_model.rows())
+
+    filters = panel.filters
+    filters.category.setCurrentIndex(filters.category.findData("images"))  # a condition alone searches
+    assert found() == ["a.jpg", "b.png"]
+    filters.kind.setCurrentIndex(filters.kind.findData("folders"))
+    assert found() == [], "a file type means files"
+    filters.apply({})  # back to any
+    filters.kind.setCurrentIndex(filters.kind.findData("folders"))
+    assert found() == ["code", "empty", "photos"]
+    filters.min_size.setCurrentIndex(filters.min_size.findData(10 << 30))  # 10 GB: nothing that big here
+    assert found() == []
+    assert filters.min_size.currentData() == 10 << 30, "sizes beyond 32 bits survive the list"
+    filters.apply({"kind": "files"})
+    panel.box.setText("*.p*")
+    panel.rerun()
+    assert found() == ["b.png", "main.py"]
+    panel.save("Pictures and code")
+    saved = json.loads(window.settings.value("saved_searches"))
+    assert saved == {"Pictures and code": {"text": "*.p*", "min_size": None, "max_size": None, "changed": "any",
+                                           "category": None, "kind": "files"}}
+    again = create_window(window.settings)  # a new window finds it in the settings
+    assert again.results.search.saved.findData("Pictures and code") > 0
+    again.close()
+    again.deleteLater()
+    panel.box.setText("")
+    filters.apply({})
+    panel.saved.setCurrentIndex(panel.saved.findData("Pictures and code"))
+    panel._load_saved()
+    assert panel.box.text() == "*.p*"
+    assert filters.kind.currentData() == "files"
+    assert found() == ["b.png", "main.py"]
+    panel.delete_saved()
+    assert json.loads(window.settings.value("saved_searches")) == {}
+    window.settings.setValue("saved_searches", "not json")
+    assert main_window_module._saved_searches(window.settings) == {}, "a damaged setting counts as none"
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Callable, Sequence
 
@@ -44,6 +45,7 @@ _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are count
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
+SEARCHES_KEY = "saved_searches"
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours")
 
 
@@ -536,6 +538,9 @@ class MainWindow(QMainWindow):
         self.results.apply_chart_settings({key: self.settings.value(key) for key in _CHART_SETTINGS
                                            if self.settings.contains(key)})
         self.results.chart_setting_changed.connect(self.settings.setValue)
+        self.results.search.set_saved(_saved_searches(self.settings))
+        self.results.search.saved_changed.connect(
+            lambda searches: self.settings.setValue(SEARCHES_KEY, json.dumps(searches, ensure_ascii=False)))
         self.results.compare_failed.connect(
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)
@@ -617,6 +622,15 @@ def _write_json(root: Node, target: str) -> int:
     """Write the folder tree as JSON; returns the number of folders written."""
     export.export_json(root, target)
     return root.dir_count + 1
+
+
+def _saved_searches(settings: QSettings) -> dict[str, object]:
+    """The saved searches kept in the settings as JSON; anything unreadable counts as none."""
+    try:
+        searches = json.loads(str(settings.value(SEARCHES_KEY, "{}")))
+    except ValueError:
+        return {}
+    return searches if isinstance(searches, dict) else {}
 
 
 def _movable(nodes: Sequence[Node]) -> list[Node]:

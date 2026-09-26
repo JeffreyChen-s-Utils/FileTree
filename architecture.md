@@ -88,7 +88,8 @@ then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every t
 indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes
 the largest files and per-type and per-age totals of the whole tree off the GUI thread.
 
-**Search.** The Search tab (`SearchPanel`, Ctrl+F) waits for typing to pause, then runs `core.search.search`
+**Search.** The Search tab (`SearchPanel`, Ctrl+F; conditions in `SearchFilters`, saved searches as JSON in the
+`saved_searches` setting) waits for typing to pause, then runs `core.search.search` with a `Query`
 on a `SearchWorker` thread: names are matched case-insensitively (plain text anywhere in the name, `*`/`?`
 patterns against the whole name, several separated by `;`) and the 1,000 largest matches are shown with the
 count and size of all. A new search stops the one before (it checks once per folder) and only the latest
