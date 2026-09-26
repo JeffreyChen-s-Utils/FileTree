@@ -55,6 +55,17 @@ def test_iter_files_skips_folders_and_links(sample_tree: Path) -> None:
         "Makefile", "a.jpg", "b.png", "big.bin", "main.py", "notes.txt"]
 
 
+def test_is_in_follows_the_parents_up_to_the_root(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = _child(root, "photos")
+    picture = _child(photos, "a.jpg")
+    assert root.is_in(root) and photos.is_in(root) and picture.is_in(root)
+    assert not root.is_in(photos)
+    photos.detach()
+    assert not photos.is_in(root) and not picture.is_in(root), "a detached branch is out, with everything in it"
+    assert picture.is_in(photos)
+
+
 def test_detach_subtracts_from_every_folder_above(sample_tree: Path) -> None:
     root = scan(sample_tree).root
     code = _child(root, "code")

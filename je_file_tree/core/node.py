@@ -76,6 +76,13 @@ class Node:
         """Every file beneath this node (links excluded)."""
         return (node for node in self.iter_nodes() if not node.is_dir and not node.is_link)
 
+    def is_in(self, root: Node) -> bool:
+        """Whether this entry is ``root`` or hangs beneath it (False once it or a folder above was detached)."""
+        top = self
+        while top.parent is not None:
+            top = top.parent
+        return top is root
+
     def detach(self) -> None:
         """Take this entry out of the tree and subtract its totals from every folder above it.
 

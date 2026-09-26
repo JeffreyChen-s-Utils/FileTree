@@ -261,17 +261,10 @@ class FolderTreeModel(QAbstractItemModel):
         self._relayout(lambda: old.replace_with(new))
 
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
-        if node is None or not self._in_tree(node):
+        if node is None or self._root is None or not node.is_in(self._root):
             return QModelIndex()
         index = self.index_for(node)
         return index.siblingAtColumn(column) if index.isValid() else index
-
-    def _in_tree(self, node: Node) -> bool:
-        """Whether ``node`` still hangs under the root (not in a branch that was replaced or removed)."""
-        top = node
-        while top.parent is not None:
-            top = top.parent
-        return top is self._root
 
     def _clear_caches(self) -> None:
         self._orders.clear()

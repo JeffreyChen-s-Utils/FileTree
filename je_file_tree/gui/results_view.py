@@ -221,7 +221,7 @@ class ResultsView(QWidget):
         self.problems_model.set_rows(outcome.result.errors)
         self._categories = outcome.categories
         view_root = self.treemap.view_root
-        self.treemap.set_view_root(view_root if view_root is not None and _is_under(view_root, root) else root)
+        self.treemap.set_view_root(view_root if view_root is not None and view_root.is_in(root) else root)
         if self.selected_node() is None:
             self.select_node(root)
         self.search.set_root(root)
@@ -256,7 +256,7 @@ class ResultsView(QWidget):
         if outcome is None:
             return
         root = outcome.result.root
-        largest = [node for node in summary.largest if _is_under(node, root)]
+        largest = [node for node in summary.largest if node.is_in(root)]
         self._outcome = dataclasses.replace(outcome, largest=largest, extensions=summary.extensions,
                                             categories=category_stats(summary.extensions), ages=summary.ages,
                                             now=summary.now)
@@ -324,12 +324,12 @@ class ResultsView(QWidget):
             ages = subtract_ages(ages, age_stats(files_beneath(node), outcome.now))
             self.tree_model.remove(node)
         root = outcome.result.root
-        self._largest_all = [file for file in self._largest_all if _is_under(file, root)]
-        self.largest_model.set_rows([file for file in self.largest_model.rows() if _is_under(file, root)])
+        self._largest_all = [file for file in self._largest_all if file.is_in(root)]
+        self.largest_model.set_rows([file for file in self.largest_model.rows() if file.is_in(root)])
         self.types_model.set_rows(extensions)
         self.age_model.set_rows(ages)
         self._categories = category_stats(extensions)
-        if view_root is not None and not _is_under(view_root, root):
+        if view_root is not None and not view_root.is_in(root):
             view_root = root
         self.treemap.set_view_root(view_root)
         self.search.rerun()
@@ -611,13 +611,6 @@ def _is_within(node: Node, branch: Node) -> bool:
             return True
         current = current.parent
     return False
-
-
-def _is_under(node: Node, root: Node) -> bool:
-    top = node
-    while top.parent is not None:
-        top = top.parent
-    return top is root
 
 
 def _table(model: QSortFilterProxyModel) -> QTableView:
