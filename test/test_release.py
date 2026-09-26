@@ -75,3 +75,16 @@ def test_the_workflow_releases_on_merge_and_attaches_the_exe() -> None:
     assert "python tools/build_nuitka.py --onefile" in text
     assert "FileTree-" in text
     assert ".exe" in text
+
+
+def test_every_install_in_the_release_takes_wheels_only() -> None:
+    # An sdist runs its setup script while installing; in the job that holds the PyPI token that
+    # would be code from the index running with the token around. Nuitka is published only as an
+    # sdist, so it alone is exempt, by name.
+    installs = [line.strip() for line in _WORKFLOW.read_text(encoding="utf-8").splitlines()
+                if "pip install" in line and not line.strip().startswith("#")]
+    assert installs
+    for line in installs:
+        assert "--only-binary :all:" in line, line
+    exempt = [line for line in installs if "--no-binary" in line]
+    assert all("--no-binary nuitka" in line for line in exempt), exempt
