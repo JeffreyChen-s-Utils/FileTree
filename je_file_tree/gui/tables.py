@@ -10,7 +10,15 @@ from typing import Any, Generic, TypeVar
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
 from je_file_tree.core.analysis import AGES, AgeStat, ExtensionStat
-from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
+from je_file_tree.core.compare import FolderChange
+from je_file_tree.core.formatting import (
+    AUTO_UNIT,
+    format_change,
+    format_count,
+    format_share,
+    format_size,
+    format_time,
+)
 from je_file_tree.core.node import Node
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.reasons import problem_text
@@ -130,6 +138,33 @@ class LargestFilesModel(_TableModel[Node]):
         return None
 
 
+class ChangesModel(_TableModel[FolderChange]):
+    """How each folder changed since a saved scan: its size then and now."""
+
+    def build_columns(self) -> Sequence[Column[FolderChange]]:
+        """Folder, before, now, change."""
+        return (
+            Column("column_folder", _change_folder, lambda change: change.path.lower()),
+            Column("column_before", lambda change: self._size_or(change.before, "changes_new"),
+                   lambda change: -1 if change.before is None else change.before, numeric=True),
+            Column("column_now", lambda change: self._size_or(change.after, "changes_gone"),
+                   lambda change: -1 if change.after is None else change.after, numeric=True),
+            Column("column_change", lambda change: format_change(change.change, self.unit),
+                   lambda change: change.change, numeric=True),
+        )
+
+    def extra_data(self, row: FolderChange, role: int) -> Any:
+        """The folder's node (None when it is gone), and its path as the tooltip."""
+        if role == NODE_ROLE:
+            return row.node
+        if role == Qt.ItemDataRole.ToolTipRole:
+            return row.node.path if row.node is not None else row.path
+        return None
+
+    def _size_or(self, size: int | None, missing_key: str) -> str:
+        return tr(missing_key) if size is None else format_size(size, self.unit)
+
+
 class FileTypesModel(_TableModel[ExtensionStat]):
     """Space taken per extension."""
 
@@ -210,6 +245,10 @@ class ProblemsModel(_TableModel[tuple[str, str]]):
     def extra_data(self, row: tuple[str, str], role: int) -> Any:
         """The full path as the tooltip."""
         return row[0] if role == Qt.ItemDataRole.ToolTipRole else None
+
+
+def _change_folder(change: FolderChange) -> str:
+    return change.path.replace("/", os.sep) if change.path else tr("changes_whole_scan")
 
 
 def _folder_of(node: Node) -> str:

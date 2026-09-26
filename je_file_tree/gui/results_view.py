@@ -49,13 +49,21 @@ from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
+from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
 from je_file_tree.gui.search_panel import SearchPanel
-from je_file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
+from je_file_tree.gui.tables import (
+    SORT_ROLE,
+    AgeModel,
+    ChangesModel,
+    FileTypesModel,
+    LargestFilesModel,
+    ProblemsModel,
+)
 from je_file_tree.gui.tree_model import (
     ALLOCATED,
     FILES,
@@ -73,10 +81,11 @@ _LARGEST_SIZE_COLUMN = 1
 _TREE_COLUMN_WIDTHS = {SIZE: 75, ALLOCATED: 75, SHARE: 95, FILES: 55, FOLDERS: 65, MODIFIED: 120}
 _LARGEST_COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _LARGEST_FOLDER_COLUMN = 2
+_CHANGE_COLUMN = 3
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(7)
+TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -105,6 +114,7 @@ class ResultsView(QWidget):
     node_menu_requested = Signal(object, object, QPoint)
     selection_changed = Signal(object)
     elevate_requested = Signal()
+    compare_failed = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -136,6 +146,10 @@ class ResultsView(QWidget):
         self.search_table, _ = self._build_entries_table(self.search_model)
         self.search = SearchPanel(self.search_table, self.search_model)
         self.duplicates = DuplicatesPanel()
+        self.changes_model = ChangesModel(self)
+        self.changes_table, _ = self._build_table(self.changes_model, _CHANGE_COLUMN)
+        self.changes = ChangesPanel(self.changes_table, self.changes_model)
+        self._reveal_changes = False
         self._types_combo = QComboBox()
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
@@ -164,6 +178,7 @@ class ResultsView(QWidget):
         self._outcome = None
         self.search.set_root(None)
         self.duplicates.set_root(None)
+        self.changes.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
@@ -229,6 +244,7 @@ class ResultsView(QWidget):
             self.select_node(root)
         self.search.set_root(root)
         self.duplicates.set_root(root)
+        self.changes.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
 
@@ -251,6 +267,7 @@ class ResultsView(QWidget):
         self.treemap.set_view_root(new if inside_old else view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.changes.refresh()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
         return new
@@ -277,11 +294,12 @@ class ResultsView(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.tree_model.set_unit(unit)
-        for model in (self.largest_model, self.types_model, self.age_model, self.search_model):
+        for model in (self.largest_model, self.types_model, self.age_model, self.search_model, self.changes_model):
             model.unit = unit
             model.refresh()
         self.search.retranslate()
         self.duplicates.set_unit(unit)
+        self.changes.retranslate()
 
     def selected_node(self) -> Node | None:
         """The entry the tree's cursor is on."""
@@ -298,6 +316,11 @@ class ResultsView(QWidget):
             if view.hasFocus():
                 return _selected_in(view)
         return _selected_in(self.tree)
+
+    def compare_with(self, file: str) -> None:
+        """Compare the scan on screen with the saved scan ``file``; the Changes tab comes forward with the result."""
+        self._reveal_changes = True
+        self.changes.open(file)
 
     def show_search(self) -> None:
         """Bring the Search tab forward with the cursor in its box."""
@@ -340,6 +363,7 @@ class ResultsView(QWidget):
         self.treemap.set_view_root(view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.changes.refresh()
         self._update_texts()
 
     def retranslate(self) -> None:
@@ -356,6 +380,7 @@ class ResultsView(QWidget):
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
+        self.changes.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
         self._elevate_button.setToolTip(tr("action_elevate_tip"))
@@ -397,7 +422,7 @@ class ResultsView(QWidget):
         table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         return table, proxy
 
-    def _build_table(self, model: LargestFilesModel | ProblemsModel,
+    def _build_table(self, model: LargestFilesModel | ProblemsModel | ChangesModel,
                      size_column: int) -> tuple[QTableView, QSortFilterProxyModel]:
         proxy = QSortFilterProxyModel(self)
         proxy.setSourceModel(model)
@@ -455,6 +480,10 @@ class ResultsView(QWidget):
         self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
         self._elevate_button.clicked.connect(self.elevate_requested)
+        self.tabs.addTab(self.changes, "")
+        self.tabs.setTabVisible(CHANGES_TAB, False)  # until a saved scan is opened
+        self.changes.shown.connect(self._changes_shown)
+        self.changes.failed.connect(self.compare_failed)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
 
@@ -477,6 +506,12 @@ class ResultsView(QWidget):
         node = self.tree_model.node(current)
         self.treemap.set_selected(node)
         self.selection_changed.emit(node)
+
+    def _changes_shown(self, shown: bool) -> None:
+        self.tabs.setTabVisible(CHANGES_TAB, shown)
+        if shown and self._reveal_changes:
+            self.tabs.setCurrentIndex(CHANGES_TAB)
+        self._reveal_changes = False
 
     def _treemap_clicked(self, node: Node) -> None:
         self.select_node(node)
@@ -564,7 +599,7 @@ class ResultsView(QWidget):
 
     def _update_texts(self) -> None:
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age")
+        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age", "tab_changes")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))

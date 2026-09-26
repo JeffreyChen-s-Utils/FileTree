@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `duplicates_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -80,6 +80,14 @@ hashed on a thread pool, first their first 64 KB, then, for those still alike, t
 (same device and file number) count once. Progress reaches the window at most ten times a second; Stop is
 checked before every file and every 1 MB. The groups are dropped on a new scan and pruned (`Node.is_in`)
 after a move to the Recycle Bin or a folder rescan.
+
+**Compare with a saved scan.** A saved scan is the Folder tree JSON export (`"format": "file-tree/1"`, with
+`"saved"`, the time it was written). *Compare with a saved scan…* hands the file to a `CompareWorker`, which
+reads it (`compare.load_saved` checks every field and raises `SavedScanError` with the reason) and
+matches folders by their path below the scanned folder (`folder_key`, case-insensitive where the file
+system is). The Changes tab, hidden until then, lists changed, new and gone folders; the comparison runs
+again after each scan, move to the Recycle Bin and folder rescan until *Stop comparing*. Reading and
+comparing took 0.68 s and 0.49 s on 86,000 folders, hence the worker.
 
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is

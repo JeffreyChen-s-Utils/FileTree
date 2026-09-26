@@ -390,6 +390,7 @@ class MainWindow(QMainWindow):
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
+        self.results.changes.stop(wait=True)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
@@ -421,6 +422,7 @@ class MainWindow(QMainWindow):
             ("export_json", None, lambda: self.export_results("json")),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("find", QKeySequence.StandardKey.Find, self._find),
+            ("compare", None, self.choose_saved_scan),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -447,6 +449,7 @@ class MainWindow(QMainWindow):
         export_menu = file_menu.addMenu("")
         for key in ("export_folders", "export_largest", "export_json"):
             export_menu.addAction(self._actions[key])
+        file_menu.addAction(self._actions["compare"])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
         file_menu.addAction(self._actions["elevate"])
@@ -499,6 +502,8 @@ class MainWindow(QMainWindow):
         self.welcome.scan_requested.connect(self.start_scan)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
+        self.results.compare_failed.connect(
+            lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)
         self.results.elevate_requested.connect(self.restart_as_admin)
 
@@ -507,7 +512,7 @@ class MainWindow(QMainWindow):
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
-        for key in ("export_folders", "export_largest", "export_json", "trash", "find"):
+        for key in ("export_folders", "export_largest", "export_json", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
 
     # --- dialogs ----------------------------------------------------------
@@ -529,6 +534,15 @@ class MainWindow(QMainWindow):
             self.close()
             return
         self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
+
+    def choose_saved_scan(self) -> None:
+        """Ask for a saved scan (a Folder tree JSON export) and compare the scan on screen with it."""
+        if self.results.outcome is None or self._worker is not None:
+            return
+        start = str(self.settings.value("export_dir", os.path.expanduser("~")))
+        file, _ = QFileDialog.getOpenFileName(self, tr("compare_title"), start, tr("json_filter"))
+        if file:
+            self.results.compare_with(file)
 
     def show_help(self) -> None:
         """Open the how-to-use window."""

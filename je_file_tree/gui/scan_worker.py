@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from PySide6.QtCore import QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
@@ -76,6 +77,34 @@ class SearchWorker(QThread):
         result = search(self._root, self._query, LARGEST_FILES_LIMIT, self._cancel)
         if result is not None:
             self.found.emit(result)
+
+
+class CompareWorker(QThread):
+    """Reads a saved scan (given ``file``) or takes one (``saved``) and compares the tree with it.
+
+    Emits ``done(SavedScan, list[FolderChange])``, or ``failed(reason)`` when the file is not a saved scan.
+    """
+
+    done = Signal(object, object)
+    failed = Signal(str)
+
+    def __init__(self, root: Node, *, saved: SavedScan | None = None, file: str | None = None,
+                 parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._root = root
+        self._saved = saved
+        self._file = file
+
+    def run(self) -> None:
+        """Thread body."""
+        saved = self._saved
+        if saved is None:
+            try:
+                saved = load_saved(self._file or "")
+            except SavedScanError as error:
+                self.failed.emit(str(error))
+                return
+        self.done.emit(saved, compare(self._root, saved))
 
 
 class DuplicatesWorker(QThread):

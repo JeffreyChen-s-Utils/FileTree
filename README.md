@@ -23,6 +23,8 @@ the window.
 - **Search** (Ctrl+F): find files and folders by name, or by a pattern such as `*.mp4`, anywhere in the scan.
 - **Duplicates**: files with the same content, grouped, with the space the extra copies take; select the
   extra copies with one click and move them to the Recycle Bin.
+- **Compare with an earlier scan**: save a scan as JSON, and later see which folders grew, shrank,
+  appeared or disappeared since.
 - **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
   files last changed; double-click a row to list its largest files.
 - **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; the
@@ -89,6 +91,14 @@ its own, or move it to the Recycle Bin (the Trash on macOS and Linux). To move s
 pick them with Ctrl+click or Shift+click in the folder tree, the Largest files list or the search results:
 FileTree asks once, listing them with their total size. It always asks before moving anything and never
 deletes permanently.
+
+### Seeing what grew
+
+Save a scan with **File → Export → Folder tree (JSON)**. Later, after a new scan, choose **File → Compare with a
+saved scan…** and open that file: a **Changes** tab lists every folder that changed, with its size then and
+now, the biggest growth first; new folders say *new* and removed ones *gone*. The comparison follows further
+rescans until you press *Stop comparing*. Folders are matched by their path below the scanned folder, so a
+scan can also be compared with a copy of the same tree elsewhere, such as a backup.
 
 ### Keyboard shortcuts
 

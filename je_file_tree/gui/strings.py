@@ -84,6 +84,23 @@ EN: dict[str, str] = {
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
     "tab_search": "Search",
+    "tab_changes": "Changes",
+    "action_compare": "Compare with a saved scan…",
+    "action_compare_tip": "Open a scan saved with Export → Folder tree (JSON) and see what grew since",
+    "compare_title": "Compare with a saved scan",
+    "compare_failed": "This file is not a scan saved by FileTree:\n{reason}",
+    "column_before": "Before",
+    "column_now": "Now",
+    "column_change": "Change",
+    "changes_new": "new",
+    "changes_gone": "gone",
+    "changes_whole_scan": "(the scanned folder)",
+    "changes_stop": "Stop comparing",
+    "changes_running": "Comparing…",
+    "changes_waiting": "The comparison follows when the scan is done.",
+    "changes_unknown_time": "at an unknown time",
+    "changes_summary": ("Compared with {path}, saved {when}: {before} then, {now} now ({change}); "
+                        "{count} folders changed."),
     "tab_duplicates": "Duplicates",
     "duplicates_min_size": "Compare files from",
     "duplicates_any_size": "any size",
@@ -230,6 +247,11 @@ To move several entries at once, pick them with Ctrl+click or Shift+click in the
 <i>Largest files</i> list or the <i>Search</i> results: FileTree asks once, listing them with their total size.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
 from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
+<h2>Seeing what grew</h2>
+<p>Save a scan with <i>File → Export → Folder tree (JSON)</i>. Later, after a new scan, choose
+<i>File → Compare with a saved scan…</i> and open that file: the <b>Changes</b> tab lists every folder that
+changed, with its size then and now, the biggest growth first (<i>new</i> and <i>gone</i> mark folders that
+appeared or disappeared). It keeps comparing after each rescan until you press <i>Stop comparing</i>.</p>
 <h2>Keyboard shortcuts</h2>
 <table cellpadding="3">
 <tr><td><b>Ctrl+O</b></td><td>Choose a folder</td></tr>
@@ -330,6 +352,23 @@ ZH_TW: dict[str, str] = {
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
     "tab_search": "搜尋",
+    "tab_changes": "變化",
+    "action_compare": "與先前儲存的掃描比較…",
+    "action_compare_tip": "開啟用「匯出 → 資料夾樹（JSON）」儲存的掃描，看看之後哪裡變大了",
+    "compare_title": "與先前儲存的掃描比較",
+    "compare_failed": "這個檔案不是 FileTree 儲存的掃描：\n{reason}",
+    "column_before": "之前",
+    "column_now": "現在",
+    "column_change": "變化",
+    "changes_new": "新增",
+    "changes_gone": "已不存在",
+    "changes_whole_scan": "（掃描的資料夾）",
+    "changes_stop": "結束比較",
+    "changes_running": "比較中…",
+    "changes_waiting": "掃描結束後會再比較。",
+    "changes_unknown_time": "時間不明",
+    "changes_summary": ("與 {path}（儲存於 {when}）比較：之前 {before}，現在 {now}（{change}）；"
+                        "{count} 個資料夾有變化。"),
     "tab_duplicates": "重複檔案",
     "duplicates_min_size": "比對的最小檔案",
     "duplicates_any_size": "任何大小",
@@ -466,6 +505,10 @@ ZH_TW: dict[str, str] = {
 只會詢問一次，並列出它們和總大小。
 FileTree 不會永久刪除任何東西：每次都會先詢問，
 移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
+<h2>看看哪裡變大了</h2>
+<p>用<i>檔案 → 匯出 → 資料夾樹（JSON）</i>把掃描存起來。之後重新掃描，選<i>檔案 → 與先前儲存的掃描比較…</i>
+開啟那個檔案，<b>變化</b>分頁就會列出每個有變化的資料夾之前和現在的大小，變大最多的排在最前面
+（<i>新增</i>與<i>已不存在</i>標示新出現或消失的資料夾）。在按<i>結束比較</i>之前，每次重新掃描都會繼續比較。</p>
 <h2>鍵盤快速鍵</h2>
 <table cellpadding="3">
 <tr><td><b>Ctrl+O</b></td><td>選擇資料夾</td></tr>
@@ -563,6 +606,23 @@ ZH_CN: dict[str, str] = {
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
     "tab_search": "搜索",
+    "tab_changes": "变化",
+    "action_compare": "与之前保存的扫描比较…",
+    "action_compare_tip": "打开用“导出 → 文件夹树（JSON）”保存的扫描，看看之后哪里变大了",
+    "compare_title": "与之前保存的扫描比较",
+    "compare_failed": "这个文件不是 FileTree 保存的扫描：\n{reason}",
+    "column_before": "之前",
+    "column_now": "现在",
+    "column_change": "变化",
+    "changes_new": "新增",
+    "changes_gone": "已不存在",
+    "changes_whole_scan": "（扫描的文件夹）",
+    "changes_stop": "结束比较",
+    "changes_running": "比较中…",
+    "changes_waiting": "扫描结束后会再比较。",
+    "changes_unknown_time": "时间不明",
+    "changes_summary": ("与 {path}（保存于 {when}）比较：之前 {before}，现在 {now}（{change}）；"
+                        "{count} 个文件夹有变化。"),
     "tab_duplicates": "重复文件",
     "duplicates_min_size": "比较的最小文件",
     "duplicates_any_size": "任意大小",
@@ -699,6 +759,10 @@ ZH_CN: dict[str, str] = {
 只会询问一次，并列出它们和总大小。
 FileTree 不会永久删除任何东西：每次都会先询问，
 移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
+<h2>看看哪里变大了</h2>
+<p>用<i>文件 → 导出 → 文件夹树（JSON）</i>把扫描保存起来。之后重新扫描，选<i>文件 → 与之前保存的扫描比较…</i>
+打开那个文件，<b>变化</b>选项卡就会列出每个有变化的文件夹之前和现在的大小，变大最多的排在最前面
+（<i>新增</i>与<i>已不存在</i>标示新出现或消失的文件夹）。在点<i>结束比较</i>之前，每次重新扫描都会继续比较。</p>
 <h2>键盘快捷键</h2>
 <table cellpadding="3">
 <tr><td><b>Ctrl+O</b></td><td>选择文件夹</td></tr>

@@ -33,6 +33,13 @@ def format_size(size: int, unit: str = AUTO_UNIT) -> str:
     return f"{size / _STEP ** power:,.1f} {SIZE_UNITS[power]}"
 
 
+def format_change(change: int, unit: str = AUTO_UNIT) -> str:
+    """A change in size with its sign, e.g. ``"+1.5 GB"`` or ``"−300 B"`` (a true minus sign); ``"0 B"`` for none."""
+    if change == 0:
+        return format_size(0, unit)
+    return ("+" if change > 0 else "−") + format_size(abs(change), unit)
+
+
 def format_count(count: int) -> str:
     """A count with thousands separators, e.g. ``"12,345"``."""
     return f"{count:,}"

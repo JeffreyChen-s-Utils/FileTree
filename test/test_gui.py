@@ -24,7 +24,7 @@ from je_file_tree.gui.app import create_window
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import SEARCH_TAB, _selected_in
+from je_file_tree.gui.results_view import CHANGES_TAB, SEARCH_TAB, _selected_in
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -446,6 +446,41 @@ def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
     panel.start()
     panel.stop()
     assert panel.status.text() == "The search was stopped." and not panel.running
+
+
+def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                       tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    saved = tmp_path / "before.json"
+    _scanned(window, qapp, sample_tree)
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(saved), ""))
+    window.export_results("json")  # the scan saved for later
+    results = window.results
+    assert not results.tabs.isTabVisible(CHANGES_TAB), "no comparison yet"
+    (sample_tree / "photos" / "c.jpg").write_bytes(b"j" * 300)
+    (sample_tree / "big.bin").unlink()
+    window.rescan()
+    _wait(qapp, lambda: results.outcome is not None and results.tree_model.root.size == 800)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_args: (str(saved), ""))
+    window._actions["compare"].trigger()
+    _wait(qapp, lambda: results.tabs.isTabVisible(CHANGES_TAB) and not results.changes.busy)
+    assert results.tabs.currentIndex() == CHANGES_TAB
+    rows = {change.path: (change.before, change.after) for change in results.changes_model.rows()}
+    assert rows == {"": (1000, 800), "photos": (250, 550)}
+    assert "1,000 B then, 800 B now (−200 B); 2 folders changed." in results.changes.summary.text()
+    (sample_tree / "photos" / "c.jpg").unlink()
+    window.rescan()  # the comparison follows the new scan
+    _wait(qapp, lambda: results.outcome is not None and not results.changes.busy
+          and len(results.changes_model.rows()) == 1)
+    assert [change.path for change in results.changes_model.rows()] == [""]
+    results.changes.stop_comparing()
+    assert not results.tabs.isTabVisible(CHANGES_TAB)
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    (tmp_path / "other.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_args: (str(tmp_path / "other.json"), ""))
+    window._actions["compare"].trigger()
+    _wait(qapp, lambda: bool(warnings))
+    assert "not a scan saved by FileTree" in warnings[0] and not results.tabs.isTabVisible(CHANGES_TAB)
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

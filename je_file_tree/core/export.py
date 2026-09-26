@@ -13,6 +13,7 @@ import io
 import json
 import os
 import tempfile
+import time
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from typing import Any
@@ -22,6 +23,7 @@ from je_file_tree.core.node import Node
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
                   "error")
 FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified")
+JSON_FORMAT = "file-tree/1"  # also what a saved scan must say to be compared (core/compare.py)
 
 
 def export_folders_csv(root: Node, target: str | os.PathLike[str],
@@ -40,8 +42,12 @@ def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> i
 
 
 def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | None = None) -> None:
-    """Write the folder tree (files left out) as nested JSON, down to ``max_depth`` levels."""
-    document = {"format": "file-tree/1", "root": _folder_json(root, max_depth)}
+    """Write the folder tree (files left out) as nested JSON, down to ``max_depth`` levels.
+
+    The file doubles as a saved scan to compare a later scan with (``core/compare.py``); ``saved`` is
+    when it was written.
+    """
+    document = {"format": JSON_FORMAT, "saved": _iso_time(time.time()), "root": _folder_json(root, max_depth)}
     _write_atomically(target, json.dumps(document, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
