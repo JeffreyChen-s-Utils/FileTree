@@ -1,0 +1,195 @@
+# Releases FileTree when a pull request is merged into main.
+#
+# Required repository secret:
+#   PYPI_API_TOKEN  A PyPI API token (starts with `pypi-`). The first upload creates the
+#                   je_file_tree project, so that token must be scoped to the whole account;
+#                   afterwards replace it with one scoped to je_file_tree.
+#
+# Bump type comes from the pull request's labels:
+#   release:major  0.1.3 -> 1.0.0
+#   release:minor  0.1.3 -> 0.2.0
+#   release:patch  0.1.3 -> 0.1.4   (also when there is no label)
+#
+# Jobs:
+#   1. release          Stops at once if the token is missing (before anything is pushed), raises
+#                       the version in pyproject.toml and je_file_tree/__init__.py together
+#                       (tools/bump_version.py), commits and tags on main, builds the sdist and
+#                       the wheel, uploads them to PyPI.
+#   2. build-exe        On Windows, compiles FileTree.exe (one file, icon and Qt's translations
+#                       included) from the new tag with tools/build_nuitka.py --onefile.
+#   3. publish-release  Creates the GitHub release with the sdist, the wheel and
+#                       FileTree-<version>.exe, only once both jobs above succeeded.
+
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# Read-only by default; only the jobs that push or publish get write access.
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      new: ${{ steps.version.outputs.new }}
+    steps:
+      - name: Stop when the PyPI token is missing
+        env:
+          TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::The PYPI_API_TOKEN repository secret is not set; nothing was released."
+            exit 1
+          fi
+
+      - name: Check out main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true  # this job pushes the version commit and the tag
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Read the bump type from the labels
+        id: bump
+        env:
+          LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          if echo "$LABELS" | grep -q '"release:major"'; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          elif echo "$LABELS" | grep -q '"release:minor"'; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Raise the version
+        id: version
+        env:
+          BUMP: ${{ steps.bump.outputs.type }}
+        run: |
+          new=$(python tools/bump_version.py "$BUMP")
+          echo "new=$new" >> "$GITHUB_OUTPUT"
+          echo "Version $new ($BUMP)"
+
+      - name: Commit and tag
+        env:
+          NEW: ${{ steps.version.outputs.new }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml je_file_tree/__init__.py
+          git commit -m "Bump version to $NEW [skip ci]"
+          git tag -a "v$NEW" -m "Release v$NEW"
+          git push origin main
+          git push origin "v$NEW"
+
+      - name: Build the sdist and the wheel
+        run: |
+          python -m pip install --upgrade "pip==26.1.2" "build==1.5.0"
+          python -m build
+
+      - name: Upload to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m pip install --upgrade "twine==6.2.0"
+          python -m twine check dist/*
+          python -m twine upload dist/*
+
+      - name: Keep the PyPI files for the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: pypi-dist
+          path: dist/
+
+  build-exe:
+    needs: release
+    runs-on: windows-latest
+    timeout-minutes: 60  # a one-file Nuitka build of PySide6
+    steps:
+      - name: Check out the new tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: v${{ needs.release.outputs.new }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Pinned: an unpinned install would let a new upstream release into the published exe.
+      # Nuitka publishes only an sdist, so it alone is exempt from the wheels-only rule.
+      - name: Install PySide6 and Nuitka
+        shell: bash
+        run: |
+          python -m pip install --upgrade --only-binary :all: "pip==26.1.2" "wheel==0.47.0"
+          pip install --only-binary :all: "PySide6==6.11.2"
+          pip install --only-binary :all: --no-binary nuitka \
+            "nuitka==4.2.2" "ordered-set==4.1.0" "zstandard==0.25.0"
+
+      - name: Compile FileTree.exe
+        run: python tools/build_nuitka.py --onefile
+
+      - name: Name the exe after the version
+        shell: pwsh
+        run: |
+          $name = "FileTree-${{ needs.release.outputs.new }}.exe"
+          Copy-Item build\onefile\FileTree.exe $name
+          echo "EXE_NAME=$name" >> $env:GITHUB_ENV
+
+      - name: Keep the exe for the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: filetree-exe
+          path: ${{ env.EXE_NAME }}
+          if-no-files-found: error
+
+  publish-release:
+    needs: [release, build-exe]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the new tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: v${{ needs.release.outputs.new }}
+          persist-credentials: false
+
+      - name: Fetch the PyPI files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: pypi-dist
+          path: ./dist
+
+      - name: Fetch the exe
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: filetree-exe
+          path: ./release-assets
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW: ${{ needs.release.outputs.new }}
+        run: |
+          gh release create "v$NEW" dist/* release-assets/*.exe \
+            --title "FileTree $NEW" \
+            --generate-notes

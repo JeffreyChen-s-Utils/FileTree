@@ -98,6 +98,14 @@ recent folders.
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.
 
+Outside the workspace it is published as `je_file_tree` on PyPI (command `je-file-tree`): the names
+`file_tree` and `file-tree` belong to FSL's `file-tree`, which installs a module and a command of that
+name, so they must not come back. `.github/workflows/release.yml` releases on every pull request merged
+into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
+`je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
+stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
+with `tools/build_nuitka.py --onefile` for the GitHub release.
+
 ## 7. Design constraints
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with

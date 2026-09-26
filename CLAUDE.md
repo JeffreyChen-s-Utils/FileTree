@@ -48,8 +48,9 @@ Workspace rule shared by every repository under `D:\Codes` (full text: `D:\Codes
   Claim an ID under the lock described there. When a `progress.md` item is done, delete it and add a
   `#done` entry plus its index row in the same commit.
 - **`architecture.md`** is the short architecture overview. Cross-project contracts are in its §6.
-- **Never bump the version by hand.** `je_file_tree/__init__.py` and `pyproject.toml` carry it; a release
-  flow is still to be decided (`progress.md`).
+- **Never bump the version by hand.** `je_file_tree/__init__.py` and `pyproject.toml` carry it; the release
+  workflow (`.github/workflows/release.yml`) raises both with `tools/bump_version.py` when a pull request is
+  merged into `main`, publishes to PyPI and attaches `FileTree-<version>.exe` to a GitHub release.
 
 ## No AI attribution (HARD REQUIREMENT)
 
