@@ -14,7 +14,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
 | Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -62,6 +62,12 @@ it). `FolderTreeModel.remove` detaches each node and subtracts its totals from e
 largest files, per-type and per-age totals and treemap are updated once, without a rescan. Entries the system
 refuses stay and are named in a warning.
 
+**Chart tab.** `ChartStack` holds the treemap and the bar chart (`BarChartWidget`: the `MAX_BARS` largest
+entries of one folder, the rest on one line) and shows one at a time; the mode is saved in the settings
+(`chart_mode`). Both offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
+`node_clicked`, `view_root_changed`, `context_menu_requested`); when one moves to another folder the stack
+moves the others and signals the page once, so the results page drives the stack as a single chart.
+
 **Rescan one folder.** The context menu's *Rescan this folder* runs a `ScanWorker` on that branch alone,
 then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent
 indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes
@@ -107,6 +113,8 @@ recent folders.
   and a `category_<name>` text in every language (tests check all three).
 - **An export format**: a function in `core/export.py` (atomic write) and an action in `main_window.py`.
 - **A result tab**: a widget added in `ResultsView._assemble`, fed from `ScanOutcome`.
+- **A chart view**: a widget with the treemap's interface, added to `charts.MODES` and `ChartStack`, with
+  `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
 

@@ -28,7 +28,8 @@ from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import TREEMAP_TAB, ResultsView
+from je_file_tree.gui.charts import TREEMAP
+from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker
 from je_file_tree.gui.welcome import WelcomePage
 
@@ -176,7 +177,7 @@ class MainWindow(QMainWindow):
             ("menu_copy_path", lambda: file_actions.copy_path(node.path)),
         ]
         if node.is_dir and not node.is_link:
-            entries.append(("menu_show_treemap", lambda: self._show_in_treemap(node)))
+            entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
         for key, handler in entries:
@@ -273,9 +274,9 @@ class MainWindow(QMainWindow):
             lines.append(tr("trash_more", count=format_count(len(ordered) - _LISTED_NAMES)))
         return "\n".join(lines)
 
-    def _show_in_treemap(self, node: Node) -> None:
-        self.results.treemap.set_view_root(node)
-        self.results.tabs.setCurrentIndex(TREEMAP_TAB)
+    def _show_in_chart(self, node: Node) -> None:
+        self.results.charts.set_view_root(node)
+        self.results.tabs.setCurrentIndex(CHART_TAB)
 
     def _find(self) -> None:
         if self.pages.currentIndex() == RESULTS_PAGE and self.results.outcome is not None:
@@ -512,6 +513,8 @@ class MainWindow(QMainWindow):
         self.welcome.scan_requested.connect(self.start_scan)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
+        self.results.set_chart_mode(str(self.settings.value("chart_mode", TREEMAP)))
+        self.results.chart_mode_changed.connect(lambda mode: self.settings.setValue("chart_mode", mode))
         self.results.compare_failed.connect(
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)

@@ -16,6 +16,7 @@ from collections.abc import Callable, Sequence
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QButtonGroup,
     QPushButton,
     QComboBox,
     QHBoxLayout,
@@ -50,6 +51,8 @@ from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
+from je_file_tree.gui.charts import MODES as CHART_MODES
+from je_file_tree.gui.charts import ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
@@ -74,7 +77,7 @@ from je_file_tree.gui.tree_model import (
     SIZE,
     FolderTreeModel,
 )
-from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.
@@ -85,7 +88,7 @@ _CHANGE_COLUMN = 3
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+CHART_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -115,6 +118,7 @@ class ResultsView(QWidget):
     selection_changed = Signal(object)
     elevate_requested = Signal()
     compare_failed = Signal(str)
+    chart_mode_changed = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -133,7 +137,9 @@ class ResultsView(QWidget):
         self.summary = QLabel()
         self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.tree = self._build_tree()
-        self.treemap = TreemapWidget()
+        self.charts = ChartStack()
+        self._chart_buttons = {mode: QToolButton() for mode in CHART_MODES}
+        self._chart_group = QButtonGroup(self)
         self._treemap_up = QToolButton()
         self._treemap_path = QLabel()
         self._legend = QLabel()
@@ -186,7 +192,7 @@ class ResultsView(QWidget):
         self._largest_all = []
         self._focus = None
         self._categories = []
-        self.treemap.set_view_root(None)
+        self.charts.set_view_root(None)
         self.scan_bar.start()
         self._update_texts()
 
@@ -194,7 +200,7 @@ class ResultsView(QWidget):
         """Show the tree a running scan is filling in."""
         self.tree_model.set_root(root, live=True)
         self.tree.expand(self.tree_model.index(0, 0))
-        self.treemap.set_view_root(root)
+        self.charts.set_view_root(root)
         self.select_node(root)
         self._update_texts()
 
@@ -205,7 +211,7 @@ class ResultsView(QWidget):
         self._live_ticks += 1
         self.tree_model.refresh()
         if self._live_ticks % 3 == 0:
-            self.treemap.invalidate()
+            self.charts.invalidate()
         self.selection_changed.emit(self.selected_node())  # its size has grown too
 
     def show_progress(self, progress: ScanProgress) -> None:
@@ -219,7 +225,7 @@ class ResultsView(QWidget):
         self.scan_bar.hide()
         if self._outcome is None:
             self.tree_model.set_root(None)
-            self.treemap.set_view_root(None)
+            self.charts.set_view_root(None)
 
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
@@ -238,8 +244,8 @@ class ResultsView(QWidget):
         self.age_model.set_rows(outcome.ages)
         self.problems_model.set_rows(outcome.result.errors)
         self._categories = outcome.categories
-        view_root = self.treemap.view_root
-        self.treemap.set_view_root(view_root if view_root is not None and view_root.is_in(root) else root)
+        view_root = self.charts.view_root
+        self.charts.set_view_root(view_root if view_root is not None and view_root.is_in(root) else root)
         if self.selected_node() is None:
             self.select_node(root)
         self.search.set_root(root)
@@ -255,7 +261,7 @@ class ResultsView(QWidget):
         lists that need the whole tree follow with ``apply_summary``.
         """
         new = fresh.root
-        view_root = self.treemap.view_root
+        view_root = self.charts.view_root
         inside_old = view_root is not None and _is_within(view_root, old)
         prefix = old.path.rstrip("\\/") + os.sep
         self.tree_model.replace(old, new)
@@ -264,7 +270,7 @@ class ResultsView(QWidget):
             errors[:] = [error for error in errors if error[0] != old.path and not error[0].startswith(prefix)]
             errors.extend(fresh.errors)
             self.problems_model.set_rows(errors)
-        self.treemap.set_view_root(new if inside_old else view_root)
+        self.charts.set_view_root(new if inside_old else view_root)
         self.search.rerun()
         self.duplicates.prune()
         self.changes.refresh()
@@ -299,6 +305,7 @@ class ResultsView(QWidget):
             model.refresh()
         self.search.retranslate()
         self.duplicates.set_unit(unit)
+        self.charts.set_unit(unit)
         self.changes.retranslate()
 
     def selected_node(self) -> Node | None:
@@ -316,6 +323,12 @@ class ResultsView(QWidget):
             if view.hasFocus():
                 return _selected_in(view)
         return _selected_in(self.tree)
+
+    def set_chart_mode(self, mode: str) -> None:
+        """Show the chart view ``mode`` (``"treemap"`` or ``"bars"``; anything else is ignored)."""
+        if mode in self._chart_buttons:
+            self.charts.set_mode(mode)
+            self._chart_buttons[mode].setChecked(True)
 
     def compare_with(self, file: str) -> None:
         """Compare the scan on screen with the saved scan ``file``; the Changes tab comes forward with the result."""
@@ -345,7 +358,7 @@ class ResultsView(QWidget):
         outcome = self._outcome
         if outcome is None:
             return
-        view_root = self.treemap.view_root
+        view_root = self.charts.view_root
         extensions = self.types_model.rows()
         ages = self.age_model.rows()
         for node in nodes:
@@ -360,7 +373,7 @@ class ResultsView(QWidget):
         self._categories = category_stats(extensions)
         if view_root is not None and not view_root.is_in(root):
             view_root = root
-        self.treemap.set_view_root(view_root)
+        self.charts.set_view_root(view_root)
         self.search.rerun()
         self.duplicates.prune()
         self.changes.refresh()
@@ -377,6 +390,9 @@ class ResultsView(QWidget):
         self.scan_bar.retranslate()
         self._treemap_up.setText(tr("treemap_up"))
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
+        for mode, button in self._chart_buttons.items():
+            button.setText(tr(f"chart_{mode}"))
+            button.setToolTip(tr(f"chart_{mode}_tip"))
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
@@ -460,14 +476,23 @@ class ResultsView(QWidget):
     def _assemble(self) -> None:
         self._largest_filter.setClearButtonEnabled(True)
         self._largest_filter.textChanged.connect(self._largest_proxy.setFilterFixedString)
-        self._treemap_up.clicked.connect(self.treemap.zoom_out)
+        self._treemap_up.clicked.connect(self.charts.zoom_out)
         self._treemap_path.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._legend.setWordWrap(True)
-        self.treemap.node_clicked.connect(self._treemap_clicked)
-        self.treemap.view_root_changed.connect(self._treemap_root_changed)
-        self.treemap.context_menu_requested.connect(self._emit_menu)
+        self.charts.node_clicked.connect(self._treemap_clicked)
+        self.charts.view_root_changed.connect(self._treemap_root_changed)
+        self.charts.context_menu_requested.connect(self._emit_menu)
 
-        self.tabs.addTab(_column(_row(self._treemap_up, self._treemap_path), self.treemap, self._legend), "")
+        for mode, button in self._chart_buttons.items():
+            button.setCheckable(True)
+            button.setAutoRaise(True)
+            self._chart_group.addButton(button)
+            button.clicked.connect(lambda _checked=False, chosen=mode: self._choose_chart(chosen))
+        self._chart_buttons[self.charts.mode].setChecked(True)
+        chart_bar = _row(self._treemap_up, self._treemap_path)
+        for button in self._chart_buttons.values():
+            chart_bar.layout().addWidget(button)
+        self.tabs.addTab(_column(chart_bar, self.charts, self._legend), "")
         self._show_all.clicked.connect(self.show_all_largest)
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
@@ -504,8 +529,12 @@ class ResultsView(QWidget):
 
     def _tree_current_changed(self, current: QModelIndex, _previous: QModelIndex) -> None:
         node = self.tree_model.node(current)
-        self.treemap.set_selected(node)
+        self.charts.set_selected(node)
         self.selection_changed.emit(node)
+
+    def _choose_chart(self, mode: str) -> None:
+        self.set_chart_mode(mode)
+        self.chart_mode_changed.emit(mode)
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
@@ -599,7 +628,7 @@ class ResultsView(QWidget):
 
     def _update_texts(self) -> None:
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age", "tab_changes")
+        titles = ("tab_chart", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age", "tab_changes")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
@@ -690,6 +719,6 @@ def _column(*widgets: QWidget) -> QWidget:
     layout = QVBoxLayout(box)
     layout.setContentsMargins(0, 4, 0, 0)
     for widget in widgets:
-        layout.addWidget(widget, 1 if isinstance(widget, (QTableView, TreemapWidget)) else 0)
+        layout.addWidget(widget, 1 if isinstance(widget, (QTableView, ChartStack)) else 0)
     return box
 

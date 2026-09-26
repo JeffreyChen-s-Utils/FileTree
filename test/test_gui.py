@@ -28,6 +28,8 @@ from je_file_tree.gui.results_view import CHANGES_TAB, SEARCH_TAB, _selected_in
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
+from je_file_tree.gui import bar_chart
+from je_file_tree.gui.charts import BARS, TREEMAP, ChartStack
 from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 
@@ -165,6 +167,42 @@ def test_treemap_lays_out_on_paint_and_finds_tiles(qapp: QApplication, sample_tr
     widget.zoom_out()
     assert widget.view_root is root
     widget.deleteLater()
+
+
+def test_the_bar_chart_lists_a_folder_largest_first(qapp: QApplication, sample_tree: Path,
+                                                    monkeypatch: pytest.MonkeyPatch) -> None:
+    root = scan(sample_tree).root
+    chart = bar_chart.BarChartWidget()
+    chart.resize(500, 300)
+    chart.set_view_root(root)
+    line = chart.sizeHint().height() / 4
+    assert [chart.node_at(line * row + 1).name for row in range(4)] == ["big.bin", "photos", "code", "notes.txt"]
+    assert chart.node_at(line * 4 + 1) is None
+    chart.grab()  # paints without error
+    monkeypatch.setattr(bar_chart, "MAX_BARS", 2)
+    chart.invalidate()
+    assert chart.sizeHint().height() == 3 * line, "two bars and one line for the other two entries"
+    chart.set_view_root(next(child for child in root.children if child.name == "code").children[0])
+    assert chart.view_root is not None and chart.view_root.name == "code", "a file shows its folder"
+    chart.deleteLater()
+
+
+def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = next(child for child in root.children if child.name == "photos")
+    charts = ChartStack()
+    charts.resize(500, 300)
+    moves: list[Node | None] = []
+    charts.view_root_changed.connect(moves.append)
+    charts.set_view_root(root)
+    charts.set_mode(BARS)
+    assert charts.mode == BARS
+    charts.bars.set_view_root(photos)  # as a double-click in the bars does
+    assert charts.view_root is photos and charts.treemap.view_root is photos
+    charts.zoom_out()
+    assert charts.bars.view_root is root and charts.treemap.view_root is root
+    assert moves == [root, photos, root], "one signal per move, not one per view"
+    charts.deleteLater()
 
 
 # --- the window -------------------------------------------------------------
@@ -488,6 +526,18 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     window._actions["compare"].trigger()
     _wait(qapp, lambda: bool(warnings))
     assert "not a scan saved by FileTree" in warnings[0] and not results.tabs.isTabVisible(CHANGES_TAB)
+
+
+def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    assert window.results.charts.mode == TREEMAP
+    window.results._chart_buttons[BARS].click()
+    assert window.results.charts.mode == BARS
+    assert window.settings.value("chart_mode") == BARS
+    again = create_window(window.settings)
+    assert again.results.charts.mode == BARS
+    again.close()
+    again.deleteLater()
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

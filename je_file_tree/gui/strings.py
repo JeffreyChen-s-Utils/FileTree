@@ -81,7 +81,13 @@ EN: dict[str, str] = {
     "summary_live": "<b>{path}</b> — {size} ({allocated} on disk) in {files} files and {folders} folders so far",
     "summary_partial": "<b>{path}</b> — {size} ({allocated} on disk) in {files} files and {folders} folders · "
                        "<b>incomplete</b>: the scan was stopped after {time}",
-    "tab_treemap": "Treemap",
+    "tab_chart": "Chart",
+    "chart_treemap": "Treemap",
+    "chart_treemap_tip": "Every file as a rectangle sized by the space it takes",
+    "chart_bars": "Bars",
+    "chart_bars_tip": "One bar per entry of the folder, largest first, with its size and share",
+    "bars_empty_folder": "This folder is empty.",
+    "bars_more": "{count} more: {size}",
     "tab_largest": "Largest files",
     "tab_search": "Search",
     "tab_changes": "Changes",
@@ -178,7 +184,7 @@ EN: dict[str, str] = {
     "menu_open_item": "Open",
     "menu_reveal": "Show in file manager",
     "menu_copy_path": "Copy path",
-    "menu_show_treemap": "Show in treemap",
+    "menu_show_chart": "Show in chart",
     "menu_scan_here": "Scan this folder",
     "menu_rescan_here": "Rescan this folder",
     "rescan_done": "Rescanned {name}: {before} → {after}",
@@ -221,9 +227,11 @@ clusters, so usually a little more; less for compressed files, nothing for files
 <i>% of parent</i> bar (how much of
 the folder above it this entry takes), how many files and folders it holds, and when something in it
 last changed. Click a column title to sort by it.</li>
-<li><b>Treemap</b>: every file is a rectangle, and the bigger the file, the bigger the rectangle.
-Colours show the file type (the legend is under the map). Click a rectangle to find it in the tree,
-double-click to zoom into a folder, and press <i>Up</i> to zoom out again.</li>
+<li><b>Chart</b>: switch between two views of the same folder in the corner of the tab. The
+<i>Treemap</i> draws every file as a rectangle, the bigger the file the bigger the rectangle, coloured by
+file type (the legend is under it). <i>Bars</i> gives each entry of the folder one bar, largest first,
+with its size and share, the easiest to read exactly. Click to find an entry in the tree, double-click a
+folder to go into it, and press <i>Up</i> to go back.</li>
 <li><b>Largest files</b>: the 1,000 biggest files anywhere in the scan. Type in the filter box to
 narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
@@ -350,7 +358,13 @@ ZH_TW: dict[str, str] = {
     "summary_live": "<b>{path}</b> — 目前 {size}（磁碟大小 {allocated}），{files} 個檔案、{folders} 個資料夾",
     "summary_partial": "<b>{path}</b> — {size}（磁碟大小 {allocated}），{files} 個檔案、{folders} 個資料夾 · "
                        "<b>不完整</b>：掃描在 {time} 後停止",
-    "tab_treemap": "方塊圖",
+    "tab_chart": "圖表",
+    "chart_treemap": "方塊圖",
+    "chart_treemap_tip": "每個檔案都是一個方塊，大小代表佔用的空間",
+    "chart_bars": "長條圖",
+    "chart_bars_tip": "資料夾裡每個項目一條長條，由大到小，附大小與比例",
+    "bars_empty_folder": "這個資料夾是空的。",
+    "bars_more": "其餘 {count} 個：{size}",
     "tab_largest": "最大的檔案",
     "tab_search": "搜尋",
     "tab_changes": "變化",
@@ -446,7 +460,7 @@ ZH_TW: dict[str, str] = {
     "menu_open_item": "開啟",
     "menu_reveal": "在檔案總管中顯示",
     "menu_copy_path": "複製路徑",
-    "menu_show_treemap": "在方塊圖中顯示",
+    "menu_show_chart": "在圖表中顯示",
     "menu_scan_here": "只掃描這個資料夾",
     "menu_rescan_here": "重新掃描這個資料夾",
     "rescan_done": "已重新掃描 {name}：{before} → {after}",
@@ -483,8 +497,9 @@ ZH_TW: dict[str, str] = {
 <li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>磁碟大小</i>（實際佔用的磁碟空間：以整個叢集計算，
 通常比大小多一點；壓縮檔案較少，只存在雲端的檔案是 0）、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
 裡面有幾個檔案和資料夾，以及裡面最近一次變動的時間。按欄位標題可以依該欄排序。</li>
-<li><b>方塊圖</b>：每個檔案都是一個方塊，檔案越大、方塊越大；顏色代表檔案類型（圖例在方塊圖下方）。
-按一下方塊可以在資料夾樹中找到它，按兩下可以放大到那個資料夾，按<i>上一層</i>再縮小回來。</li>
+<li><b>圖表</b>：在分頁角落切換同一個資料夾的兩種圖。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
+顏色代表檔案類型（圖例在下方）。<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例，最容易讀出精確的數字。
+按一下可以在資料夾樹中找到它，按兩下資料夾可以進入，按<i>上一層</i>回去。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
 <li><b>搜尋</b>（Ctrl+F）：整個掃描範圍內，名稱含有輸入文字的檔案和資料夾。
@@ -605,7 +620,13 @@ ZH_CN: dict[str, str] = {
     "summary_live": "<b>{path}</b> — 目前 {size}（占用空间 {allocated}），{files} 个文件、{folders} 个文件夹",
     "summary_partial": "<b>{path}</b> — {size}（占用空间 {allocated}），{files} 个文件、{folders} 个文件夹 · "
                        "<b>不完整</b>：扫描在 {time} 后停止",
-    "tab_treemap": "方块图",
+    "tab_chart": "图表",
+    "chart_treemap": "方块图",
+    "chart_treemap_tip": "每个文件都是一个方块，大小代表占用的空间",
+    "chart_bars": "条形图",
+    "chart_bars_tip": "文件夹里每个项目一个条形，从大到小，附大小与比例",
+    "bars_empty_folder": "这个文件夹是空的。",
+    "bars_more": "其余 {count} 个：{size}",
     "tab_largest": "最大的文件",
     "tab_search": "搜索",
     "tab_changes": "变化",
@@ -701,7 +722,7 @@ ZH_CN: dict[str, str] = {
     "menu_open_item": "打开",
     "menu_reveal": "在文件管理器中显示",
     "menu_copy_path": "复制路径",
-    "menu_show_treemap": "在方块图中显示",
+    "menu_show_chart": "在图表中显示",
     "menu_scan_here": "只扫描这个文件夹",
     "menu_rescan_here": "重新扫描这个文件夹",
     "rescan_done": "已重新扫描 {name}：{before} → {after}",
@@ -738,8 +759,9 @@ ZH_CN: dict[str, str] = {
 <li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占用空间</i>（实际占用的磁盘空间：按整个簇计算，
 通常比大小多一点；压缩文件较少，只在云端的文件是 0）、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
 里面有几个文件和文件夹，以及里面最近一次变动的时间。点列标题可以按该列排序。</li>
-<li><b>方块图</b>：每个文件都是一个方块，文件越大、方块越大；颜色代表文件类型（图例在方块图下方）。
-单击方块可以在文件夹树中找到它，双击可以放大到那个文件夹，点<i>上一级</i>再缩小回来。</li>
+<li><b>图表</b>：在选项卡角落切换同一个文件夹的两种图。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
+颜色代表文件类型（图例在下方）。<i>条形图</i>给文件夹里每个项目画一个条形，从大到小，附大小与比例，最容易读出精确的数字。
+单击可以在文件夹树中找到它，双击文件夹可以进入，点<i>上一级</i>回去。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，
 双击某一行就会在文件夹树中找到那个文件。</li>
 <li><b>搜索</b>（Ctrl+F）：整个扫描范围内，名称含有输入文字的文件和文件夹。
