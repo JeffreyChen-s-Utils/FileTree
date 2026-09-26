@@ -53,7 +53,7 @@ from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
-from je_file_tree.gui.charts import TREEMAP, ChartStack
+from je_file_tree.gui.charts import SUNBURST, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
@@ -583,7 +583,8 @@ class ResultsView(QWidget):
         """Treemap options only with the treemap; the file-type legend only where the colours are file types."""
         treemap_on_screen = self.charts.mode == TREEMAP
         self._treemap_options.setVisible(treemap_on_screen)
-        self._legend.setVisible(not (treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER))
+        by_folder = self.charts.mode == SUNBURST or (treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
+        self._legend.setVisible(not by_folder)
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)

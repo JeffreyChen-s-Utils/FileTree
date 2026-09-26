@@ -1,4 +1,4 @@
-"""The Chart tab's views of one folder: the treemap and the bar chart, switched with a button.
+"""The Chart tab's views of one folder: the treemap, the bar chart and the sunburst, switched with buttons.
 
 Every view shows the same folder: opening a folder in one (double-click) or going up moves them
 all. ``ChartStack`` offers the views' own interface (``set_view_root``, ``view_root``, ``zoom_out``,
@@ -12,10 +12,11 @@ from PySide6.QtWidgets import QScrollArea, QStackedWidget, QWidget
 
 from je_file_tree.core.node import Node
 from je_file_tree.gui.bar_chart import BarChartWidget
+from je_file_tree.gui.sunburst_widget import SunburstWidget
 from je_file_tree.gui.treemap_widget import TreemapWidget
 
-TREEMAP, BARS = "treemap", "bars"
-MODES = (TREEMAP, BARS)
+TREEMAP, BARS, SUNBURST = "treemap", "bars", "sunburst"
+MODES = (TREEMAP, BARS, SUNBURST)
 
 
 class ChartStack(QStackedWidget):
@@ -29,11 +30,13 @@ class ChartStack(QStackedWidget):
         super().__init__(parent)
         self.treemap = TreemapWidget()
         self.bars = BarChartWidget()
+        self.sunburst = SunburstWidget()
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.bars)
-        self._charts: dict[str, TreemapWidget | BarChartWidget] = {TREEMAP: self.treemap, BARS: self.bars}
-        self._pages = {TREEMAP: self.treemap, BARS: scroll}
+        self._charts: dict[str, TreemapWidget | BarChartWidget | SunburstWidget] = {
+            TREEMAP: self.treemap, BARS: self.bars, SUNBURST: self.sunburst}
+        self._pages: dict[str, QWidget] = {TREEMAP: self.treemap, BARS: scroll, SUNBURST: self.sunburst}
         for mode in MODES:
             chart = self._charts[mode]
             self.addWidget(self._pages[mode])

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import math
 import os
 import threading
 import time
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
 from je_file_tree.core.analysis import CATEGORIES
@@ -29,7 +31,8 @@ from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from je_file_tree.gui import bar_chart
-from je_file_tree.gui.charts import BARS, TREEMAP, ChartStack
+from je_file_tree.gui.charts import BARS, SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.sunburst_widget import SunburstWidget
 from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, TreemapWidget
 
 
@@ -187,6 +190,32 @@ def test_the_bar_chart_lists_a_folder_largest_first(qapp: QApplication, sample_t
     chart.deleteLater()
 
 
+def test_the_sunburst_finds_arcs_under_the_mouse_and_zooms(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    widget = SunburstWidget()
+    widget.resize(400, 400)
+    widget.set_view_root(root)
+    widget.grab()
+    inner, ring = widget._radii()
+
+    def point(depth: int, fraction: float) -> QPoint:
+        radius = inner + (depth - 0.5) * ring
+        return QPoint(round(200 + radius * math.sin(fraction * 2 * math.pi)),
+                      round(200 - radius * math.cos(fraction * 2 * math.pi)))
+
+    assert widget.hit(200, 200) is root, "the centre is the folder shown"
+    photos = widget.hit(point(1, 0.6).x(), point(1, 0.6).y())
+    assert photos is not None and photos.node.name == "photos"
+    picture = widget.hit(point(2, 0.72).x(), point(2, 0.72).y())
+    assert picture is not None and picture.node.name == "b.png"
+    assert widget.hit(2, 2) is None, "outside the rings"
+    QTest.mouseDClick(widget, Qt.MouseButton.LeftButton, pos=point(1, 0.6))
+    assert widget.view_root is photos.node
+    QTest.mouseClick(widget, Qt.MouseButton.LeftButton, pos=QPoint(200, 200))
+    assert widget.view_root is root, "a click on the centre goes up"
+    widget.deleteLater()
+
+
 def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) -> None:
     root = scan(sample_tree).root
     photos = next(child for child in root.children if child.name == "photos")
@@ -198,7 +227,7 @@ def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) ->
     charts.set_mode(BARS)
     assert charts.mode == BARS
     charts.bars.set_view_root(photos)  # as a double-click in the bars does
-    assert charts.view_root is photos and charts.treemap.view_root is photos
+    assert charts.view_root is photos and charts.treemap.view_root is photos and charts.sunburst.view_root is photos
     charts.zoom_out()
     assert charts.bars.view_root is root and charts.treemap.view_root is root
     assert moves == [root, photos, root], "one signal per move, not one per view"
@@ -573,6 +602,8 @@ def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sa
     assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
     again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
     assert again.results.charts.treemap.levels == 3 and again.results.charts.mode == BARS
+    again.results._chart_buttons[SUNBURST].click()
+    assert again.results._legend.isHidden(), "the sunburst colours by folder"
     again.close()
     again.deleteLater()
 
