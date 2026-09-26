@@ -281,7 +281,8 @@ clusters, so usually a little more; less for compressed files, nothing for files
 <i>% of parent</i> bar (how much of
 the folder above it this entry takes), how many files and folders it holds, and when something in it
 last changed. Click a column title to sort by it.</li>
-<li><b>Chart</b>: switch between three views of the same folder in the corner of the tab. The
+<li><b>Chart</b>: switch between three views of the same folder in the corner of the tab (the bars come
+first, and FileTree remembers the one you chose). The
 <i>Treemap</i> draws every file as a rectangle, the bigger the file the bigger the rectangle; each folder
 has a strip with its name and size. <i>Levels</i> sets how many levels are drawn, <i>Colours</i> colours by
 file type (the legend is under it) or by top-level folder. <i>Bars</i> gives each entry of the folder one
@@ -613,7 +614,7 @@ ZH_TW: dict[str, str] = {
 <li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>磁碟大小</i>（實際佔用的磁碟空間：以整個叢集計算，
 通常比大小多一點；壓縮檔案較少，只存在雲端的檔案是 0）、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
 裡面有幾個檔案和資料夾，以及裡面最近一次變動的時間。按欄位標題可以依該欄排序。</li>
-<li><b>圖表</b>：在分頁角落切換同一個資料夾的三種圖。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
+<li><b>圖表</b>：在分頁角落切換同一個資料夾的三種圖（一開始是長條圖，之後會記住你選的）。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
 每個資料夾頂端有寫著名稱和大小的標題列；<i>層數</i>決定要畫幾層，<i>顏色</i>可以依檔案類型（圖例在下方）或依最上層的資料夾上色。<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例，最容易讀出精確的數字。<i>放射圖</i>把目前資料夾放在中心，每深一層就是外面一圈，按中心回上一層。
 按一下可以在資料夾樹中找到它，按兩下資料夾可以進入，按<i>上一層</i>回去。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
@@ -934,7 +935,7 @@ ZH_CN: dict[str, str] = {
 <li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占用空间</i>（实际占用的磁盘空间：按整个簇计算，
 通常比大小多一点；压缩文件较少，只在云端的文件是 0）、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
 里面有几个文件和文件夹，以及里面最近一次变动的时间。点列标题可以按该列排序。</li>
-<li><b>图表</b>：在选项卡角落切换同一个文件夹的三种图。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
+<li><b>图表</b>：在选项卡角落切换同一个文件夹的三种图（一开始是条形图，之后会记住你选的）。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
 每个文件夹顶部有写着名称和大小的标题栏；<i>层数</i>决定要画几层，<i>颜色</i>可以按文件类型（图例在下方）或按最上层的文件夹上色。<i>条形图</i>给文件夹里每个项目画一个条形，从大到小，附大小与比例，最容易读出精确的数字。<i>旭日图</i>把当前文件夹放在中心，每深一层就是外面一圈，点中心回上一级。
 单击可以在文件夹树中找到它，双击文件夹可以进入，点<i>上一级</i>回去。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，

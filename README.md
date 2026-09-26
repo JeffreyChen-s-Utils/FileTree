@@ -7,7 +7,7 @@ the window.
 
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md)
 
-![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
+![FileTree showing a home folder: the folder tree on the left, the bar chart on the right](docs/images/main_window_en.png)
 
 ## Features
 
@@ -17,7 +17,7 @@ the window.
   what was read so far.
 - **Folder tree** sorted largest first, with the space each entry takes on disk, a bar showing its share of
   its folder, file and folder counts, and the last change inside it.
-- **Chart**, three ways to see a folder, switched in the corner of the tab: the **treemap** (every file a
+- **Chart**, three ways to see a folder, switched in the corner of the tab (the bars first): the **treemap** (every file a
   rectangle sized by the space it takes), **bars** (one bar per entry of the folder, largest first, with
   its size and share: easiest to read exactly) and the **sunburst** (the folder in the centre, each deeper
   level a ring: the whole hierarchy at a glance). Click to find an entry in the tree, double-click to go

@@ -625,11 +625,12 @@ def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -
 
 def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
     _scanned(window, qapp, sample_tree)
-    assert window.results.charts.mode == TREEMAP
-    window.results._chart_buttons[BARS].click()
-    assert window.results.charts.mode == BARS
-    assert window.settings.value("chart_mode") == BARS
+    assert window.results.charts.mode == BARS, "the bars come first"
+    assert window.results._chart_buttons[BARS].isChecked()
+    assert window.results._treemap_options.isHidden()
     window.results._chart_buttons[TREEMAP].click()
+    assert window.results.charts.mode == TREEMAP
+    assert window.settings.value("chart_mode") == TREEMAP
     assert not window.results._treemap_options.isHidden(), "the treemap options come with the treemap"
     window.results._levels_combo.setCurrentIndex(window.results._levels_combo.findData(3))
     window.results._colours_combo.setCurrentIndex(window.results._colours_combo.findData(BY_FOLDER))

@@ -69,7 +69,7 @@ refuses stay and are named in a warning.
 **Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
 entries of one folder, the rest on one line) and the sunburst (`SunburstWidget`: `core.sunburst.layout`
 gives arcs as fractions of the circle, at most `RINGS` rings, arcs thinner than `min_span` and past
-`max_segments` left out, drawn into a cached pixmap) and shows one at a time; the mode is saved in the settings
+`max_segments` left out, drawn into a cached pixmap) and shows one at a time, the bars first (`charts.DEFAULT_MODE`); the mode is saved in the settings
 (`chart_mode`). Both offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
 `node_clicked`, `view_root_changed`, `context_menu_requested`); when one moves to another folder the stack
 moves the others and signals the page once, so the results page drives the stack as a single chart.

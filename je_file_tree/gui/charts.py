@@ -17,6 +17,7 @@ from je_file_tree.gui.treemap_widget import TreemapWidget
 
 TREEMAP, BARS, SUNBURST = "treemap", "bars", "sunburst"
 MODES = (TREEMAP, BARS, SUNBURST)
+DEFAULT_MODE = BARS  # the easiest to read; the owner chose it as the first view
 
 
 class ChartStack(QStackedWidget):
@@ -45,6 +46,7 @@ class ChartStack(QStackedWidget):
             chart.view_root_changed.connect(self._follow)
         self._root: Node | None = None
         self._moving = False
+        self.set_mode(DEFAULT_MODE)
 
     @property
     def mode(self) -> str:
