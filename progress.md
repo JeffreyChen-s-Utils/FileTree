@@ -2,12 +2,18 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #36 (know the limits first), #30, #26, #19 and #20, #39, then the P2 items.
+Suggested order: #36 (know the limits first), #50 (safety before more clean-up), #30, #53, #26, #19 and #20, #39, then the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
 - **#4** [UNVERIFIED] Linux: "Show in file manager" asks the file manager over D-Bus (`org.freedesktop.FileManager1.ShowItems`, `je_file_tree/gui/file_actions.py` `show_items`) and falls back to opening the folder, but has not run against a real session bus: whether PySide6 sends the list of URIs as the `as` the interface expects is unchecked. Also unchecked on Linux: moving to the Trash (`QFile.moveToTrash`, freedesktop trash spec), a real drag from a file manager, CJK text under X11. The Docker check described in U-20260926-23 (Debian, Xvfb, `dbus-run-session`, a stand-in file manager with the strict `(as, s)` signature, a logging `xdg-open`) was stopped when the machine ran low on memory; rebuild it under `tools/` and run it when memory allows. macOS [BLOCKED]: no Mac or macOS VM on this machine.
+
+### Safety
+
+- **#50** (P1) Protected places: ask twice, naming the reason, before moving system or program folders to the Recycle Bin: the Windows folder, Program Files, ProgramData, a user profile's root and its AppData, a drive root, and on Linux and macOS `/usr`, `/etc`, `/opt`, `/System`, `/Library`, and anything inside them ("Programs may stop working if this is moved"). The list lives in a Qt-free `je_file_tree/core/protected.py` with per-platform entries resolved from the environment (`%WINDIR%`, `%ProgramFiles%`, `%APPDATA%`, `Path.home()`); the check goes in `MainWindow.move_to_trash` / `_movable` (`je_file_tree/gui/main_window.py:237`). Tests per platform with patched environment variables.
+- **#51** (P2) Why a move failed: when the Recycle Bin refuses an entry, find which program holds it open (Windows Restart Manager `RmStartSession` / `RmRegisterResources` / `RmGetList`; Linux `/proc/*/fd`) and name it in the warning (`trash_failed`), so the user knows what to close.
+- **#52** (P3) Undo a move: after a move to the Recycle Bin, an *Undo* in the status bar for a few seconds puts the entries back (Windows: the Recycle Bin shell folder's items and their `undelete` verb; freedesktop: move back from `Trash/files` to the path in the `.trashinfo`) and rescans their folders (`MainWindow.rescan_folder`).
 
 ### Freeing space
 
@@ -26,6 +32,23 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#28** (P2) Space per owner: a Users tab with the size owned by each user. On POSIX `st_uid` comes with the stat the scan already makes; Windows needs `GetNamedSecurityInfoW` per file, an extra call: measure it as #2 was measured and make it an option if it slows the scan.
 - **#29** (P2) Cloud-only and special files: list OneDrive/Dropbox placeholders (the recall attributes `je_file_tree/core/allocation.py` already reads), compressed, sparse and offline files, with what they would take once downloaded; today they only count as 0 on disk without a word.
 
+- **#53** (P1) Lists for the selected folder: let *Largest files*, *File types* and *Age* cover the folder selected in the tree instead of always the whole scan (a *Whole scan / This folder* switch above each list), computed with `analysis.summarise(folder)` on an `AnalyseWorker` (`je_file_tree/gui/scan_worker.py`) when the selection settles.
+- **#54** (P2) Where a type lives: from *File types*, list the folders that hold most of an extension ("where are my .mp4 files"), each with its total of that type, next to today's list of the largest files of the type (`results_view.show_largest_of_type`).
+- **#55** (P2) Treemap and sunburst coloured by age: a third colour mode (`treemap_widget.COLOUR_MODES`, and the same for `SunburstWidget`) shading files from new to old with a legend of `analysis.AGES`, so data nobody touched for years stands out.
+- **#56** (P3) Inside archives: show the contents and uncompressed sizes of a `.zip` (stdlib `zipfile`, read on demand when the entry is expanded) as a virtual subtree marked as such; `.7z` and `.rar` need a dependency: [DECIDE].
+- **#57** (P3) [DECIDE] Similar photos: near-duplicate images (resized, re-encoded, lightly edited) found by a perceptual hash; needs Pillow and reading every image, so decide whether it belongs in a disk tool.
+
+### Windows space explained
+
+- **#58** (P2) System files explained: recognise `hiberfil.sys`, `pagefile.sys`, `swapfile.sys`, `Windows.old`, `$Recycle.Bin`, `System Volume Information` (restore points and shadow copies), `C:\Windows\WinSxS`, `SoftwareDistribution\Download` and the Delivery Optimization cache, and explain in a tooltip or side panel what each is and the safe way to shrink it (turning hibernation off, Disk Cleanup's system files, Storage Sense, the restore-point size), with a button that opens that tool. FileTree never touches them itself. WinSxS looks larger than it is because most of it is hard links to Windows' own files (see #32).
+- **#59** (P2) Virtual disks: find `.vhdx`, `.vhd`, `.vmdk`, `.vdi` and `.qcow2` files, WSL distributions' `ext4.vhdx` and Docker Desktop's disk image, show how much each takes against how much its contents use, and explain how to compact them (`Optimize-VHD`, `diskpart compact vdisk`, `wsl --manage <distro> --set-sparse`). [DECIDE] whether FileTree should run the compaction itself: it needs the VM stopped and often administrator rights.
+- **#60** (P3) Installed programs: a view of installed programs with their size (the Windows uninstall registry's `EstimatedSize`, checked against their install folder in the scan) and a button to the system's uninstall page; Steam and Epic libraries named by their game manifests instead of folder ids.
+
+### Developer machines
+
+- **#61** (P2) Projects and their rebuildable parts: recognise Git working trees, Python virtual environments (`pyvenv.cfg`), conda environments, `node_modules`, Rust `target`, `.gradle` and `.m2` caches and Docker's data, and show per project its source, its `.git` and what can be rebuilt (environments, build output), which can go to the Recycle Bin and be recreated. Shares its rules with #19 (a *rebuildable* flag per rule).
+- **#62** (P3) Big Git histories: in a working tree whose `.git` is larger than its files, list the largest objects in the history (`git rev-list --objects --all` and `git cat-file --batch-check`, run as fixed programs without a shell) and say whether `git gc` would help.
+
 ### Scanning
 
 - **#30** (P1) Exclusions: folders and name patterns to skip while scanning (`node_modules`, a backup drive mounted inside a folder, `$Recycle.Bin`), set in a View → Options dialog and kept in the settings. `ScanOptions` (`je_file_tree/core/scanner.py:71`) gets `exclude`, checked in `_read_folder` (`:264`) before a subfolder is queued; an excluded folder is listed like a link (size 0, marked, with a tooltip saying why).
@@ -35,6 +58,10 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#34** (P2) Follow changes: watch the scanned tree and rescan only the folders that changed, so the numbers stay true without a full rescan. `QFileSystemWatcher` watches each folder separately and does not scale to a whole drive; the USN change journal (Windows) or inotify/fanotify (Linux) do. Reuses the branch rescan (`FolderTreeModel.replace`).
 - **#35** (P2) Network shares: check scans of UNC paths (`\\server\share`) and mapped drives: the worker count (`ScanOptions.workers`) may want to be higher on slow links, `allocation.cluster_size` on a share root, access-denied folders, a share that disconnects halfway. Add a hint for UNC paths on the welcome page.
 - **#36** (P1) Scale check: scan a full system drive (a few million entries) and record the time and memory in `docs/updates/`; set a budget and fix what breaks: memory per `Node`, the live refresh, the treemap and sunburst limits, search and duplicate times, the JSON export size. Should come before #31 and #33.
+
+- **#63** (P2) Gentle scanning: an option that lowers the scan threads' CPU and I/O priority (Windows `SetThreadPriority` with `THREAD_MODE_BACKGROUND_BEGIN`; Linux `ioprio_set` and `nice`), so a whole-drive scan does not slow other programs (this machine also runs a Discord bot that stalls under load); measure how much longer a scan takes with it.
+- **#64** (P3) Pause and resume a scan: the crawler's workers (`je_file_tree/core/scanner.py` `_take`) wait on a pause event; the scan bar (`je_file_tree/gui/scan_bar.py`) gets *Pause* / *Resume* and the live view keeps refreshing what was read.
+- **#65** (P3) NTFS alternate data streams: data attached to files under another stream name (`FindFirstStreamW`) that no size shows; measure how common and costly reading them is before adding anything.
 
 ### Over time
 
@@ -46,6 +73,9 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#39** (P1) Command line without a window: `je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json` (and `--compare old.json` printing the biggest changes), for scheduled tasks and scripts. Uses only `je_file_tree.core`, so it runs without a display; a console entry in `pyproject.toml` `[project.scripts]` and a new `je_file_tree/cli.py`; documented exit codes; README section in the three languages.
 - **#40** (P2) Report: one self-contained HTML file with the summary, the top folders, the largest files, types, ages and the three charts as images (the chart widgets' `grab()`), to send to someone. [DECIDE] whether to add an Excel (.xlsx) export, which needs a dependency such as `openpyxl`.
 - **#41** (P3) Print and PDF of the view on screen (`QPrinter`).
+- **#70** (P2) Export any list, copy rows: Search results, Duplicates, Changes, File types and Age to CSV like the existing exports (`je_file_tree/core/export.py`, written on the `ExportWorker`), and Ctrl+C in any list copies the selected rows as tab-separated text for a spreadsheet.
+- **#71** (P2) Save a chart as a picture: PNG of the chart on screen, and SVG for the bars and the sunburst (`QSvgGenerator`), from the chart's context menu and File → Export.
+- **#72** (P2) Use as a library: `je_file_tree` is on PyPI, so document `je_file_tree.core` as a Python API (scan, analysis, search, duplicates, compare, allocation) with what counts as public and stable, in a short page linked from the README; `je_file_tree.core` stays free of Qt (`test/test_layers.py`).
 
 ### Everyday use
 
@@ -55,8 +85,15 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#45** (P3) Light theme: check the charts and the bar chart's text on a light system theme (every screenshot so far is dark) and offer a light/dark switch.
 - **#46** (P3) Accessibility: the chart widgets are painted, so screen readers see nothing: give them accessible names and descriptions, and keyboard navigation (arrow keys between entries, Enter to open a folder, Backspace to go up).
 
+- **#66** (P2) Breadcrumb and history in the Chart tab: the path above the charts becomes clickable folder buttons, with *Back* / *Forward* (Alt+Left / Alt+Right) over the folders visited (`je_file_tree/gui/results_view.py` chart bar, `ChartStack.set_view_root`).
+- **#67** (P2) Details pane: for the selected entry, its size, size on disk, files, folders and dates, and for a folder a small breakdown by type and by age (the lists of #53 in miniature), under the tree or as a side panel that can be folded away.
+- **#68** (P2) Quick filter in the tree: type to show only the rows whose name matches, within the folders already expanded; a proxy model over `FolderTreeModel` that respects the live model and its persistent indexes (`je_file_tree/gui/tree_model.py` `_relayout`).
+- **#69** (P3) Several scans at once: result tabs, each its own scan, to look at two drives side by side; the window's single `ResultsView` becomes one per tab, with the scan worker per tab.
+
 ### Distribution
 
 - **#47** (P2) [DECIDE] Sign `FileTree.exe`: an unsigned one-file executable triggers SmartScreen and some antivirus programs. Needs a code-signing certificate (a yearly cost) or Azure Trusted Signing; the release workflow (`.github/workflows/release.yml` `build-exe`) would sign before uploading. Decide.
 - **#48** (P3) [DECIDE] Store listings and updates: winget, Scoop or Chocolatey manifests (or an MSI), and an update check that asks GitHub or PyPI for the latest version, a network call FileTree does not make today. Decide.
 - **#49** (P2) Linux and macOS builds: an AppImage (or Flatpak) and a macOS `.app` from `tools/build_nuitka.py --app` built on CI runners and attached to the release, after #4 is verified.
+- **#73** (P2) A faster-starting Windows download: the one-file exe unpacks itself to a temporary folder on every start; attach the standalone folder as a zip to each release too (`tools/build_nuitka.py` without `--onefile`, one more step in `.github/workflows/release.yml` `build-exe`), and say in the README which to pick.
+- **#74** (P3) More languages: Japanese and Korean, each a table in `je_file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in `qt_translation.CATALOGUES`, a README translation and screenshots, if there are readers for them.
