@@ -9,6 +9,7 @@ from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QFileDialog,
     QLineEdit,
     QMainWindow,
@@ -26,6 +27,7 @@ from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
+from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
@@ -41,6 +43,7 @@ _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
+EXCLUSIONS_KEY = "exclusions"
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours")
 
 
@@ -99,8 +102,7 @@ class MainWindow(QMainWindow):
         self.stop_scan(wait=True)
         self._last_path = path
         self.path_edit.setText(path)
-        include_hidden = self._actions["hidden"].isChecked()
-        worker = ScanWorker(path, ScanOptions(include_hidden=include_hidden), self)
+        worker = ScanWorker(path, self._scan_options(), self)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -199,8 +201,7 @@ class MainWindow(QMainWindow):
         if node.parent is None:
             self.rescan()
             return
-        include_hidden = self._actions["hidden"].isChecked()
-        worker = ScanWorker(node.path, ScanOptions(include_hidden=include_hidden), self)
+        worker = ScanWorker(node.path, self._scan_options(), self)
         before = node.size
         worker.progressed.connect(
             lambda progress: self._is_current(worker) and self.results.scan_bar.show_progress(progress))
@@ -453,6 +454,7 @@ class MainWindow(QMainWindow):
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
+            ("exclusions", None, self.edit_exclusions),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
@@ -501,6 +503,7 @@ class MainWindow(QMainWindow):
             self._language_actions[code] = action
         view_menu.addSeparator()
         view_menu.addAction(self._actions["hidden"])
+        view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -564,6 +567,25 @@ class MainWindow(QMainWindow):
             self.close()
             return
         self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
+
+    def edit_exclusions(self) -> None:
+        """Edit the folders to skip while scanning; they apply from the next scan."""
+        dialog = ExclusionsDialog(self.exclusions(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.settings.setValue(EXCLUSIONS_KEY, dialog.patterns())
+        self.statusBar().showMessage(tr("exclusions_saved", count=format_count(len(dialog.patterns()))),
+                                     _STATUS_TIMEOUT_MS)
+
+    def exclusions(self) -> list[str]:
+        """The folder name patterns and folder paths that scans skip (the ``exclusions`` setting)."""
+        value = self.settings.value(EXCLUSIONS_KEY, [])
+        if isinstance(value, str):  # an INI file keeps a one-item list as a plain string
+            return [value] if value else []
+        return [str(pattern) for pattern in value or []]
+
+    def _scan_options(self) -> ScanOptions:
+        return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()))
 
     def choose_saved_scan(self) -> None:
         """Ask for a saved scan (a Folder tree JSON export) and compare the scan on screen with it."""

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox
 
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
@@ -647,6 +647,39 @@ def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sa
     assert again.results._legend.isHidden(), "the sunburst colours by folder"
     again.close()
     again.deleteLater()
+
+
+def test_exclusions_are_skipped_greyed_out_and_saved(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    window.settings.setValue("exclusions", "photos")  # what an INI file gives back for a one-item list
+    assert window.exclusions() == ["photos"]
+    _scanned(window, qapp, sample_tree)
+    model = window.results.tree_model
+    root = model.root
+    assert root is not None
+    photos = _child(root, "photos")
+    assert photos.error == scanner.EXCLUDED
+    assert root.size == 750
+    index = model.index_for(photos)
+    assert "Skipped: it is in View → Skip while scanning" in index.data(Qt.ItemDataRole.ToolTipRole)
+    assert index.data(Qt.ItemDataRole.ForegroundRole) is not None, "greyed out"
+    assert window.results.problems_model.rowCount() == 0, "skipping is not a problem"
+
+    class Editing(main_window_module.ExclusionsDialog):
+        def exec(self) -> int:
+            self.add("node_modules")
+            self.add("NODE_MODULES")  # already listed, whatever the case
+            self.add("   ")
+            self.list.item(0).setSelected(True)
+            self.remove_selected()  # photos goes
+            return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(main_window_module, "ExclusionsDialog", Editing)
+    window.edit_exclusions()
+    assert window.exclusions() == ["node_modules"]
+    assert "1 exclusions saved" in window.statusBar().currentMessage()
+    window.rescan()
+    _wait(qapp, lambda: window.results.outcome is not None and window.results.tree_model.root.size == 1000)
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

@@ -20,12 +20,12 @@ from collections.abc import Callable
 from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QColor, QIcon, QPalette
 from PySide6.QtWidgets import QApplication, QStyle
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from je_file_tree.core.node import Node
-from je_file_tree.core.scanner import NOT_SCANNED
+from je_file_tree.core.scanner import EXCLUDED, NOT_SCANNED
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.reasons import problem_text
 
@@ -82,6 +82,7 @@ class FolderTreeModel(QAbstractItemModel):
             Qt.ItemDataRole.ToolTipRole: lambda node, _column: self._tooltip(node),
             NODE_ROLE: lambda node, _column: node,
             SHARE_ROLE: lambda node, _column: node.share_of_parent(),
+            Qt.ItemDataRole.ForegroundRole: lambda node, _column: _muted() if node.error == EXCLUDED else None,
         }
 
     # --- public API -------------------------------------------------------
@@ -322,6 +323,8 @@ class FolderTreeModel(QAbstractItemModel):
     def _tooltip(self, node: Node) -> str:
         if node.error == NOT_SCANNED:
             return tr("tooltip_not_scanned", path=node.path)
+        if node.error == EXCLUDED:
+            return tr("tooltip_excluded", path=node.path)
         if node.error:
             return tr("tooltip_unreadable", path=node.path, reason=problem_text(node.error))
         if node.is_link:
@@ -329,7 +332,9 @@ class FolderTreeModel(QAbstractItemModel):
         return node.path
 
     def _icon(self, node: Node) -> QIcon:
-        if node.error:
+        if node.error == EXCLUDED:
+            key = "folder"  # skipped on purpose: not a problem, only greyed out
+        elif node.error:
             key = "error"
         elif node.is_link:
             key = "link_folder" if node.is_dir else "link_file"
@@ -347,3 +352,8 @@ class FolderTreeModel(QAbstractItemModel):
             icon = QApplication.style().standardIcon(pixmaps[key])
             self._icons[key] = icon
         return icon
+
+
+def _muted() -> QColor:
+    """The greyed-out text colour of the current style (for skipped folders)."""
+    return QApplication.palette().color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text)

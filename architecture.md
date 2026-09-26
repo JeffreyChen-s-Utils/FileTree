@@ -13,7 +13,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
 | GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
@@ -37,6 +37,8 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 **Scan.** `MainWindow.start_scan` opens the results page with its `ScanBar` and starts a `ScanWorker` (a
 `QThread`) running `scan()`: worker threads (default 4, measured) share one stack of folders; each lists a
 folder with `os.scandir`, turns entries into `Node`s without following links, and pushes subfolders back.
+Folders matching `ScanOptions.exclude` (`exclusions.exclusion_test`: name patterns, or one folder by path;
+the setting `exclusions`) are listed with `error == EXCLUDED`, size 0, and never read or counted as folders.
 A file's size on disk (`Node.allocated`) comes from `allocation.allocation_for(root)`: `st_blocks` on POSIX;
 on Windows the size rounded up to the volume's clusters, the system asked only for compressed or sparse
 files, 0 for files whose data is elsewhere (cloud placeholders, offline), never opening those.

@@ -38,6 +38,18 @@ EN: dict[str, str] = {
     "action_quit": "Quit",
     "action_quit_tip": "Close FileTree",
     "action_hidden": "Include hidden files",
+    "action_exclusions": "Skip while scanning…",
+    "action_exclusions_tip": "Folders and folder names that scans leave out, such as node_modules",
+    "exclusions_title": "Skip while scanning",
+    "exclusions_hint": ("Scans leave these folders out: they are listed, greyed out, with size 0. A name such as "
+                        "node_modules or *.cache skips every folder of that name; a folder path skips that one "
+                        "folder. The list applies from the next scan."),
+    "exclusions_add_name": "Add a name…",
+    "exclusions_add_folder": "Add a folder…",
+    "exclusions_remove": "Remove",
+    "exclusions_name_prompt": "Folder name, * and ? allowed:",
+    "exclusions_saved": "{count} exclusions saved; they apply from the next scan.",
+    "tooltip_excluded": "{path}\nSkipped: it is in View → Skip while scanning",
     "action_hidden_tip": "Count hidden files and folders (applies to the next scan)",
     "action_help": "How to use",
     "action_help_tip": "Short guide to FileTree",
@@ -301,6 +313,9 @@ protected folders too. Say no and it runs normally; folders it could not read ar
 <i>View → Ask for administrator rights at start</i>.</li>
 <li>Hidden files are counted. Turn off <i>View → Include hidden files</i> to leave them out of the
 next scan.</li>
+<li>To leave folders out of every scan, list them in <i>View → Skip while scanning</i>: a name such as
+<code>node_modules</code> skips every folder of that name, a path skips one folder. Skipped folders are
+listed greyed out, with size 0.</li>
 <li>Save the results with <i>File → Export</i>: CSV opens in Excel, JSON is for scripts.</li>
 </ul>
 """,
@@ -335,6 +350,18 @@ ZH_TW: dict[str, str] = {
     "action_quit": "結束",
     "action_quit_tip": "關閉 FileTree",
     "action_hidden": "包含隱藏檔案",
+    "action_exclusions": "掃描時略過…",
+    "action_exclusions_tip": "掃描時要略過的資料夾與資料夾名稱，例如 node_modules",
+    "exclusions_title": "掃描時略過",
+    "exclusions_hint": ("掃描會略過這些資料夾：它們仍會列出來，以灰字顯示、大小為 0。"
+                        "像 node_modules 或 *.cache 這樣的名稱會略過所有同名的資料夾；"
+                        "資料夾路徑只略過那一個資料夾。下一次掃描開始生效。"),
+    "exclusions_add_name": "新增名稱…",
+    "exclusions_add_folder": "新增資料夾…",
+    "exclusions_remove": "移除",
+    "exclusions_name_prompt": "資料夾名稱，可用 * 和 ?：",
+    "exclusions_saved": "已儲存 {count} 項排除；下一次掃描開始生效。",
+    "tooltip_excluded": "{path}\n已略過：它在「檢視 → 掃描時略過」的清單中",
     "action_hidden_tip": "把隱藏的檔案和資料夾也算進去（下次掃描時生效）",
     "action_help": "使用說明",
     "action_help_tip": "FileTree 的簡短使用說明",
@@ -578,6 +605,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 拒絕的話它照常以一般權限執行，讀不到的資料夾列在<i>無法讀取</i>分頁，那裡有<i>以系統管理員身分重新啟動</i>按鈕。
 不想每次被問，可以關掉<i>檢視 → 啟動時要求系統管理員權限</i>。</li>
 <li>預設會計算隱藏檔案；關掉<i>檢視 → 包含隱藏檔案</i>，下次掃描就不會算進去。</li>
+<li>要讓某些資料夾每次都不掃描，把它們加進<i>檢視 → 掃描時略過</i>：
+像 <code>node_modules</code> 這樣的名稱會略過所有同名的資料夾，路徑只略過那一個資料夾。
+略過的資料夾會以灰字列出，大小為 0。</li>
 <li>用<i>檔案 → 匯出</i>儲存結果：CSV 可用 Excel 開啟，JSON 給程式使用。</li>
 </ul>
 """),
@@ -612,6 +642,18 @@ ZH_CN: dict[str, str] = {
     "action_quit": "退出",
     "action_quit_tip": "关闭 FileTree",
     "action_hidden": "包含隐藏文件",
+    "action_exclusions": "扫描时跳过…",
+    "action_exclusions_tip": "扫描时要跳过的文件夹与文件夹名称，例如 node_modules",
+    "exclusions_title": "扫描时跳过",
+    "exclusions_hint": ("扫描会跳过这些文件夹：它们仍会列出来，以灰字显示、大小为 0。"
+                        "像 node_modules 或 *.cache 这样的名称会跳过所有同名的文件夹；"
+                        "文件夹路径只跳过那一个文件夹。下一次扫描开始生效。"),
+    "exclusions_add_name": "添加名称…",
+    "exclusions_add_folder": "添加文件夹…",
+    "exclusions_remove": "删除",
+    "exclusions_name_prompt": "文件夹名称，可用 * 和 ?：",
+    "exclusions_saved": "已保存 {count} 项排除；下一次扫描开始生效。",
+    "tooltip_excluded": "{path}\n已跳过：它在“视图 → 扫描时跳过”的列表中",
     "action_hidden_tip": "把隐藏的文件和文件夹也算进去（下次扫描时生效）",
     "action_help": "使用说明",
     "action_help_tip": "FileTree 的简短使用说明",
@@ -855,6 +897,9 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 拒绝的话它照常以普通权限运行，读不到的文件夹列在<i>无法读取</i>标签页，那里有<i>以管理员身份重新启动</i>按钮。
 不想每次被问，可以关掉<i>视图 → 启动时请求管理员权限</i>。</li>
 <li>默认会计算隐藏文件；关掉<i>视图 → 包含隐藏文件</i>，下次扫描就不会算进去。</li>
+<li>要让某些文件夹每次都不扫描，把它们加进<i>视图 → 扫描时跳过</i>：
+像 <code>node_modules</code> 这样的名称会跳过所有同名的文件夹，路径只跳过那一个文件夹。
+跳过的文件夹会以灰字列出，大小为 0。</li>
 <li>用<i>文件 → 导出</i>保存结果：CSV 可用 Excel 打开，JSON 供脚本使用。</li>
 </ul>
 """),

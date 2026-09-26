@@ -133,6 +133,9 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
   *Restart as administrator* button (also in the *File* menu). Turn the question off under
   *View → Ask for administrator rights at start*.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
+- To leave folders out of every scan, list them in *View → Skip while scanning*: a name such as
+  `node_modules` or `*.cache` skips every folder of that name, a path skips one folder. Skipped folders are
+  listed greyed out, with size 0.
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
 
