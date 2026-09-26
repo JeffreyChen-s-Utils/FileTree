@@ -18,6 +18,7 @@ from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.node import Node
+from je_file_tree.core.protected import PROGRAMS, Protection
 from je_file_tree.core import scanner
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from je_file_tree.gui import file_actions, i18n, scan_worker
@@ -386,6 +387,36 @@ def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: Q
     assert [node.name for node in window.results.largest_model.rows()][0] == "a.jpg"
     assert all(stat.extension != ".bin" for stat in window.results.types_model.rows())
     assert "500 B" in window.statusBar().currentMessage()
+
+
+def test_system_and_program_folders_are_asked_about_twice(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                         monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    root = window.results.tree_model.root
+    assert root is not None
+    photos, big = _child(root, "photos"), _child(root, "big.bin")
+    window._protected = [Protection(str(sample_tree / "photos"), PROGRAMS)]
+    asked: list[str] = []
+    warnings: list[str] = []
+    trashed: list[str] = []
+    answers = iter([QMessageBox.StandardButton.No])
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text, *_buttons: warnings.append(text)
+                        or next(answers))
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda _parent, _title, text: asked.append(text) or QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
+    window.move_to_trash([photos, big])
+    assert len(warnings) == 1
+    assert f"• {sample_tree / 'photos'} — installed programs" in warnings[0]
+    assert "big.bin" not in warnings[0], "only the protected entries are named"
+    assert asked == [], "No to the first question: the usual question is not even asked"
+    assert trashed == []
+    answers = iter([QMessageBox.StandardButton.Yes])
+    window.move_to_trash([photos, big])
+    assert len(asked) == 1, "Yes: then the usual question"
+    assert sorted(trashed) == sorted([str(sample_tree / "photos"), str(sample_tree / "big.bin")])
+    window.move_to_trash([_child(root, "notes.txt")])
+    assert len(warnings) == 2, "nothing protected: no extra question"
 
 
 def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(

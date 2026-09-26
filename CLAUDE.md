@@ -72,7 +72,9 @@ tool default.
 - **The scanner never follows links** (symlinks, junctions, mount points) and never stops on an
   unreadable folder: it records it in `ScanResult.errors`.
 - **Nothing is ever deleted permanently.** The only removal is `QFile.moveToTrash`, always after a
-  confirmation. Do not add a permanent delete.
+  confirmation. Do not add a permanent delete. Everything that moves entries to the Recycle Bin goes through
+  `MainWindow.move_to_trash`, so system and program folders (`je_file_tree/core/protected.py`) always get
+  their second question.
 - **Every text goes through `tr()`**; add a key to all three tables in `je_file_tree/gui/strings.py`
   (`test/test_i18n.py` checks keys and placeholders). Traditional Chinese uses Taiwanese wording
   (檔案、資料夾、設定、預設、資源回收筒); Simplified Chinese uses Mainland wording and characters.

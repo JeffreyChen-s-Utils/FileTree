@@ -23,6 +23,7 @@ from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.help_dialog import HelpDialog
@@ -58,6 +59,7 @@ class MainWindow(QMainWindow):
         self._worker: ScanWorker | None = None
         self._analyser: AnalyseWorker | None = None
         self._exports: set[ExportWorker] = set()
+        self._protected = protected_places()  # system and program folders: ask twice before moving them
         self._last_path = ""
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
@@ -241,7 +243,7 @@ class MainWindow(QMainWindow):
         never moved. Entries the system refuses to move stay, and are named in a warning.
         """
         chosen = _movable(nodes)
-        if not chosen or self._worker is not None:
+        if not chosen or self._worker is not None or not self._confirm_protected(chosen):
             return
         answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
@@ -259,6 +261,20 @@ class MainWindow(QMainWindow):
         done = (tr("trash_done", name=moved[0].name, size=freed) if len(moved) == 1 else
                 tr("trash_done_many", count=format_count(len(moved)), size=freed))
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+
+    def _confirm_protected(self, nodes: list[Node]) -> bool:
+        """The first of two questions when system or program folders are among ``nodes``: True to go on."""
+        guarded = [(node, found) for node in nodes if (found := protection_of(node.path, self._protected)) is not None]
+        if not guarded:
+            return True
+        lines = [f"• {node.path} — {tr(f'protected_{found.reason}')}" for node, found in guarded[:_LISTED_NAMES]]
+        if len(guarded) > _LISTED_NAMES:
+            lines.append(tr("trash_more", count=format_count(len(guarded) - _LISTED_NAMES)))
+        question = tr("protected_question", count=format_count(len(guarded)), names="\n".join(lines))
+        answer = QMessageBox.warning(self, tr("protected_title"), question,
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                     QMessageBox.StandardButton.No)
+        return answer == QMessageBox.StandardButton.Yes
 
     def _trash_question(self, nodes: list[Node]) -> str:
         size = format_size(sum(node.size for node in nodes), self._unit)

@@ -196,6 +196,13 @@ EN: dict[str, str] = {
     "menu_rescan_here": "Rescan this folder",
     "rescan_done": "Rescanned {name}: {before} → {after}",
     "trash_confirm_title": "Move to Recycle Bin",
+    "protected_title": "System or program folder",
+    "protected_question": ("{count} of the entries are system or program folders. Moving them can make the "
+                           "system or programs stop working:\n\n{names}\n\nMove them anyway?"),
+    "protected_system": "part of the operating system",
+    "protected_programs": "installed programs",
+    "protected_settings": "programs' settings and data",
+    "protected_profile": "a user's profile folder",
     "trash_confirm": "Move “{name}” ({size}) to the Recycle Bin?\n\nYou can restore it from there.",
     "trash_failed": "“{name}” could not be moved to the Recycle Bin. It may be in use or read-only.",
     "trash_done": "Moved “{name}” to the Recycle Bin: {size} freed.",
@@ -264,7 +271,8 @@ results stay), <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>
 To move several entries at once, pick them with Ctrl+click or Shift+click in the folder tree, the
 <i>Largest files</i> list or the <i>Search</i> results: FileTree asks once, listing them with their total size.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
-from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
+from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.
+System and program folders are asked about twice, with the reason; temporary folders and caches are not.</p>
 <h2>Seeing what grew</h2>
 <p>Save a scan with <i>File → Export → Folder tree (JSON)</i>. Later, after a new scan, choose
 <i>File → Compare with a saved scan…</i> and open that file: the <b>Changes</b> tab lists every folder that
@@ -481,6 +489,13 @@ ZH_TW: dict[str, str] = {
     "menu_rescan_here": "重新掃描這個資料夾",
     "rescan_done": "已重新掃描 {name}：{before} → {after}",
     "trash_confirm_title": "移到資源回收筒",
+    "protected_title": "系統或程式資料夾",
+    "protected_question": ("其中 {count} 個是系統或程式的資料夾，移走可能讓系統或程式無法正常運作："
+                           "\n\n{names}\n\n仍要移走嗎？"),
+    "protected_system": "作業系統的一部分",
+    "protected_programs": "已安裝的程式",
+    "protected_settings": "程式的設定與資料",
+    "protected_profile": "使用者的個人資料夾",
     "trash_confirm": "要把「{name}」（{size}）移到資源回收筒嗎？\n\n之後仍可以從資源回收筒還原。",
     "trash_failed": "無法把「{name}」移到資源回收筒，可能正在使用中或是唯讀。",
     "trash_done": "已把「{name}」移到資源回收筒，釋出 {size}。",
@@ -537,7 +552,8 @@ ZH_TW: dict[str, str] = {
 要一次移走好幾個項目，在資料夾樹、<i>最大的檔案</i>或<i>搜尋</i>清單裡用 Ctrl+按一下或 Shift+按一下選取，
 只會詢問一次，並列出它們和總大小。
 FileTree 不會永久刪除任何東西：每次都會先詢問，
-移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
+移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。
+系統與程式的資料夾會說明原因並多問一次；暫存資料夾與快取不會。</p>
 <h2>看看哪裡變大了</h2>
 <p>用<i>檔案 → 匯出 → 資料夾樹（JSON）</i>把掃描存起來。之後重新掃描，選<i>檔案 → 與先前儲存的掃描比較…</i>
 開啟那個檔案，<b>變化</b>分頁就會列出每個有變化的資料夾之前和現在的大小，變大最多的排在最前面
@@ -750,6 +766,13 @@ ZH_CN: dict[str, str] = {
     "menu_rescan_here": "重新扫描这个文件夹",
     "rescan_done": "已重新扫描 {name}：{before} → {after}",
     "trash_confirm_title": "移到回收站",
+    "protected_title": "系统或程序文件夹",
+    "protected_question": ("其中 {count} 个是系统或程序的文件夹，移走可能让系统或程序无法正常运行："
+                           "\n\n{names}\n\n仍要移走吗？"),
+    "protected_system": "操作系统的一部分",
+    "protected_programs": "已安装的程序",
+    "protected_settings": "程序的设置与数据",
+    "protected_profile": "用户的个人文件夹",
     "trash_confirm": "要把“{name}”（{size}）移到回收站吗？\n\n之后仍可以从回收站还原。",
     "trash_failed": "无法把“{name}”移到回收站，可能正在使用或是只读。",
     "trash_done": "已把“{name}”移到回收站，释放 {size}。",
@@ -806,7 +829,8 @@ ZH_CN: dict[str, str] = {
 要一次移走好几个项目，在文件夹树、<i>最大的文件</i>或<i>搜索</i>列表里用 Ctrl+单击或 Shift+单击选中，
 只会询问一次，并列出它们和总大小。
 FileTree 不会永久删除任何东西：每次都会先询问，
-移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
+移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。
+系统与程序的文件夹会说明原因并多问一次；临时文件夹与缓存不会。</p>
 <h2>看看哪里变大了</h2>
 <p>用<i>文件 → 导出 → 文件夹树（JSON）</i>把扫描保存起来。之后重新扫描，选<i>文件 → 与之前保存的扫描比较…</i>
 打开那个文件，<b>变化</b>选项卡就会列出每个有变化的文件夹之前和现在的大小，变大最多的排在最前面

@@ -13,7 +13,7 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
 | GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
@@ -55,7 +55,9 @@ per folder lazily, and never copies), the tables to their models, and the root t
 and drawing cached in a pixmap, recomputed on resize or zoom). Selecting anything selects it in the tree and
 outlines it in the treemap.
 
-**Free space.** Context menu or Delete → one confirmation → `QFile.moveToTrash` per entry →
+**Free space.** Context menu or Delete → a first question when system or program folders are among the entries
+(`protected.protection_of` against `protected_places()`, read once from the environment; the most specific
+place decides, temporary folders are free) → one confirmation → `QFile.moveToTrash` per entry →
 `ResultsView.forget`. The tree and the largest-files list allow several rows to be selected; the entries acted
 on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
 it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the

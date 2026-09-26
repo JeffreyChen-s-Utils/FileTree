@@ -11,7 +11,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#50** (P1) Protected places: ask twice, naming the reason, before moving system or program folders to the Recycle Bin: the Windows folder, Program Files, ProgramData, a user profile's root and its AppData, a drive root, and on Linux and macOS `/usr`, `/etc`, `/opt`, `/System`, `/Library`, and anything inside them ("Programs may stop working if this is moved"). The list lives in a Qt-free `je_file_tree/core/protected.py` with per-platform entries resolved from the environment (`%WINDIR%`, `%ProgramFiles%`, `%APPDATA%`, `Path.home()`); the check goes in `MainWindow.move_to_trash` / `_movable` (`je_file_tree/gui/main_window.py:237`). Tests per platform with patched environment variables.
 - **#51** (P2) Why a move failed: when the Recycle Bin refuses an entry, find which program holds it open (Windows Restart Manager `RmStartSession` / `RmRegisterResources` / `RmGetList`; Linux `/proc/*/fd`) and name it in the warning (`trash_failed`), so the user knows what to close.
 - **#52** (P3) Undo a move: after a move to the Recycle Bin, an *Undo* in the status bar for a few seconds puts the entries back (Windows: the Recycle Bin shell folder's items and their `undelete` verb; freedesktop: move back from `Trash/files` to the path in the `.trashinfo`) and rescans their folders (`MainWindow.rescan_folder`).
 

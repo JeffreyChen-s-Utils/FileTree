@@ -98,7 +98,9 @@ rescan that folder after changes made outside FileTree (the rest of the results 
 its own, or move it to the Recycle Bin (the Trash on macOS and Linux). To move several entries at once,
 pick them with Ctrl+click or Shift+click in the folder tree, the Largest files list or the search results:
 FileTree asks once, listing them with their total size. It always asks before moving anything and never
-deletes permanently.
+deletes permanently. System and program folders (the Windows folder, Program Files, programs' settings in
+AppData, a user's profile folder, and their counterparts on macOS and Linux) are asked about twice, with the
+reason; temporary folders and caches are not, since they are what a clean-up is for.
 
 ### Seeing what grew
 
