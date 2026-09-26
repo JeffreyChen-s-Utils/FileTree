@@ -7,13 +7,18 @@ stays smooth however many rectangles there are.
 To stay readable it draws ``levels`` levels below the folder shown (2 unless
 chosen otherwise; a folder at the last level is one tile), gives each opened
 folder a header strip with its name and size, prints sizes in the tiles that
-have room, and can colour by file type or by top-level folder.
+have room, and can colour by file type or by top-level folder. No tile is
+smaller than ``MIN_SIDE``: the entries of a folder too small for that share one
+grey, hatched tile ("12 more"), instead of a mass of specks.
 """
 
 from __future__ import annotations
 
+import html
+
 from PySide6.QtCore import QEvent, QPoint, QRectF, Qt, Signal
 from PySide6.QtGui import (
+    QBrush,
     QColor,
     QContextMenuEvent,
     QLinearGradient,
@@ -27,7 +32,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QToolTip, QWidget
 
 from je_file_tree.core.analysis import category_of, extension_of
-from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
+from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.core.treemap import Rect, Tile, layout
 from je_file_tree.gui.i18n import tr
@@ -50,6 +55,9 @@ DEFAULT_LEVELS = 2
 BY_TYPE, BY_FOLDER = "type", "folder"
 COLOUR_MODES = (BY_TYPE, BY_FOLDER)
 _GOLDEN = 0.618033988749895  # hue step that keeps neighbouring folders apart
+MIN_SIDE = 14  # px: a tile smaller than this is hard to see or point at, so it joins its folder's group
+_GROUP_COLOUR = "#c9ccc4"
+_GROUP_HATCH = QColor(0, 0, 0, 40)
 _LABEL_MIN_WIDTH = 48
 _LABEL_MIN_HEIGHT = 16
 _SHADE_MIN_SIDE = 12
@@ -159,10 +167,10 @@ class TreemapWidget(QWidget):
             self._render()
         if self._pixmap is not None:
             painter.drawPixmap(0, 0, self._pixmap)
-        self._outline(painter, self._selected, QColor("#ffffff"), 3)
-        self._outline(painter, self._selected, QColor("#000000"), 1)
-        if self._hover is not None:
-            self._outline(painter, self._hover.node, QColor(self.palette().highlight().color()), 2)
+        selected = self._tile_of(self._selected)
+        self._outline(painter, selected, QColor("#ffffff"), 3)
+        self._outline(painter, selected, QColor("#000000"), 1)
+        self._outline(painter, self._hover, QColor(self.palette().highlight().color()), 2)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         """Qt: highlight the tile under the mouse and describe it in a tooltip."""
@@ -174,7 +182,7 @@ class TreemapWidget(QWidget):
             if tile is None:
                 QToolTip.hideText()
             else:
-                QToolTip.showText(event.globalPosition().toPoint(), self._describe(tile.node), self)
+                QToolTip.showText(event.globalPosition().toPoint(), self._describe(tile), self)
         super().mouseMoveEvent(event)
 
     def leaveEvent(self, event: QEvent) -> None:
@@ -213,7 +221,7 @@ class TreemapWidget(QWidget):
         pixmap.setDevicePixelRatio(ratio)
         pixmap.fill(self.palette().base().color())
         self._tiles = layout(self._view_root, Rect(0, 0, self.width(), self.height()), max_depth=self._levels,
-                             header=self._line_height() + 2)
+                             min_side=MIN_SIDE, header=self._line_height() + 2)
         self._hues = {id(child): (index * _GOLDEN) % 1.0 for index, child in enumerate(self._view_root.children)}
         painter = QPainter(pixmap)
         border = QPen(QColor(0, 0, 0, 90))
@@ -225,6 +233,9 @@ class TreemapWidget(QWidget):
 
     def _draw_tile(self, painter: QPainter, tile: Tile, border: QPen) -> None:
         rect = QRectF(tile.rect.x, tile.rect.y, tile.rect.width, tile.rect.height)
+        if tile.grouped:
+            self._draw_group(painter, tile, rect, border)
+            return
         node = tile.node
         colour = self._colour(node, tile.depth)
         if min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir:
@@ -251,6 +262,26 @@ class TreemapWidget(QWidget):
         if label.height() >= 2 * self._line_height():
             self._draw_label(painter, label.adjusted(0, self._line_height(), 0, 0), size, Qt.AlignmentFlag.AlignTop)
 
+    def _draw_group(self, painter: QPainter, tile: Tile, rect: QRectF, border: QPen) -> None:
+        """A folder's entries too small for tiles of their own: one grey, hatched tile saying how many."""
+        painter.setPen(border)
+        painter.setBrush(QColor(_GROUP_COLOUR))
+        painter.drawRect(rect)
+        painter.setBrush(QBrush(_GROUP_HATCH, Qt.BrushStyle.BDiagPattern))
+        painter.drawRect(rect)
+        if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
+            return
+        painter.setPen(QColor("#000000"))
+        label = rect.adjusted(3, 1, -3, -1)
+        count = format_count(tile.grouped)
+        text = tr("treemap_more", count=count)
+        if painter.fontMetrics().horizontalAdvance(text) > label.width():
+            text = f"+{count}"  # "+39" reads better than "39 m…"
+        self._draw_label(painter, label, text, Qt.AlignmentFlag.AlignTop)
+        if label.height() >= 2 * self._line_height():
+            self._draw_label(painter, label.adjusted(0, self._line_height(), 0, 0),
+                             format_size(tile.grouped_size, self.unit), Qt.AlignmentFlag.AlignTop)
+
     def _draw_label(self, painter: QPainter, area: QRectF, text: str, vertical: Qt.AlignmentFlag) -> None:
         elided = painter.fontMetrics().elidedText(text, Qt.TextElideMode.ElideRight, int(area.width()))
         painter.drawText(area, Qt.AlignmentFlag.AlignLeft | vertical, elided)
@@ -270,10 +301,13 @@ class TreemapWidget(QWidget):
             return QColor.fromHsvF(hue, 0.28, max(0.95 - 0.07 * depth, 0.6))
         return QColor.fromHsvF(hue, 0.62, 0.82)
 
-    def _outline(self, painter: QPainter, node: Node | None, colour: QColor, width: float) -> None:
+    def _tile_of(self, node: Node | None) -> Tile | None:
+        """The tile of ``node`` itself (never a group tile of its entries), if it has one."""
         if node is None:
-            return
-        tile = next((tile for tile in self._tiles if tile.node is node), None)
+            return None
+        return next((tile for tile in self._tiles if tile.node is node and not tile.grouped), None)
+
+    def _outline(self, painter: QPainter, tile: Tile | None, colour: QColor, width: float) -> None:
         if tile is None:
             return
         pen = QPen(colour)
@@ -282,7 +316,13 @@ class TreemapWidget(QWidget):
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRect(QRectF(tile.rect.x, tile.rect.y, tile.rect.width, tile.rect.height))
 
-    def _describe(self, node: Node) -> str:
-        share = node.size / self._view_root.size if self._view_root and self._view_root.size else 0.0
-        return tr("treemap_tooltip", name=node.name, size=format_size(node.size, self.unit),
-                  share=format_share(share), path=node.path)
+    def _describe(self, tile: Tile) -> str:
+        node = tile.node
+        size = tile.grouped_size if tile.grouped else node.size
+        share = format_share(size / self._view_root.size if self._view_root and self._view_root.size else 0.0)
+        if not tile.grouped:
+            return tr("treemap_tooltip", name=html.escape(node.name), size=format_size(size, self.unit),
+                      share=share, path=html.escape(node.path))
+        text = tr("treemap_more_tooltip", count=format_count(tile.grouped), name=html.escape(node.name),
+                  size=format_size(size, self.unit), share=share)
+        return text if node is self._view_root else f"{text}<br>{tr('treemap_more_open')}"

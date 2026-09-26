@@ -244,6 +244,10 @@ EN: dict[str, str] = {
     "treemap_up": "↑ Up",
     "treemap_up_tip": "Show the folder above",
     "treemap_tooltip": "<b>{name}</b><br>{size} ({share} of this view)<br>{path}",
+    "treemap_more": "{count} more",
+    "treemap_more_tooltip": "<b>{count} smaller entries</b> of {name}, each too small to draw<br>"
+                            "{size} ({share} of this view)",
+    "treemap_more_open": "Double-click to show this folder on its own",
     "largest_filter": "Filter by name or folder…",
     "types_all": "All types",
     "category_images": "Pictures",
@@ -310,14 +314,16 @@ clusters, so usually a little more; less for compressed files, nothing for files
 <i>% of parent</i> bar (how much of
 the folder above it this entry takes), how many files and folders it holds, and when something in it
 last changed. Click a column title to sort by it.</li>
-<li><b>Chart</b>: switch between three views of the same folder in the corner of the tab (the bars come
-first, and FileTree remembers the one you chose). The
+<li><b>Chart</b>: switch between three views of the same folder in the corner of the tab (the treemap
+comes first, and FileTree remembers the one you chose). The
 <i>Treemap</i> draws every file as a rectangle, the bigger the file the bigger the rectangle; each folder
-has a strip with its name and size. <i>Levels</i> sets how many levels are drawn, <i>Colours</i> colours by
-file type (the legend is under it) or by top-level folder. <i>Bars</i> gives each entry of the folder one
-bar, largest first, with its size and share, the easiest to read exactly. The <i>Sunburst</i> puts the
-folder in the centre and each deeper level in a ring around it; click the centre to go up. Click to find an entry in the
-tree, double-click a folder to go into it, and press <i>Up</i> to go back.</li>
+has a strip with its name and size, and the files of a folder too small to see share one grey, hatched
+tile (<i>12 more</i>): double-click it to show that folder on its own. <i>Levels</i> sets how many levels
+are drawn, <i>Colours</i> colours by file type (the legend is under it) or by top-level folder.
+<i>Bars</i> gives each entry of the folder one bar, largest first, with its size and share, the easiest
+to read exactly. The <i>Sunburst</i> puts the folder in the centre and each deeper level in a ring around
+it; click the centre to go up. Click to find an entry in the tree, double-click a folder to go into it,
+and press <i>Up</i> to go back.</li>
 <li><b>Largest files</b>: the 1,000 biggest files anywhere in the scan. Type in the filter box to
 narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
@@ -614,6 +620,10 @@ ZH_TW: dict[str, str] = {
     "treemap_up": "↑ 上一層",
     "treemap_up_tip": "顯示上一層資料夾",
     "treemap_tooltip": "<b>{name}</b><br>{size}（佔目前畫面的 {share}）<br>{path}",
+    "treemap_more": "其餘 {count} 個",
+    "treemap_more_tooltip": "<b>{name} 裡其餘 {count} 個較小的項目</b>，每個都小到畫不出來<br>"
+                            "{size}（佔目前畫面的 {share}）",
+    "treemap_more_open": "按兩下可以單獨顯示這個資料夾",
     "largest_filter": "依名稱或資料夾篩選…",
     "types_all": "所有類型",
     "category_images": "圖片",
@@ -673,8 +683,10 @@ ZH_TW: dict[str, str] = {
 <li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>磁碟大小</i>（實際佔用的磁碟空間：以整個叢集計算，
 通常比大小多一點；壓縮檔案較少，只存在雲端的檔案是 0）、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
 裡面有幾個檔案和資料夾，以及裡面最近一次變動的時間。按欄位標題可以依該欄排序。</li>
-<li><b>圖表</b>：在分頁角落切換同一個資料夾的三種圖（一開始是長條圖，之後會記住你選的）。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
-每個資料夾頂端有寫著名稱和大小的標題列；<i>層數</i>決定要畫幾層，<i>顏色</i>可以依檔案類型（圖例在下方）或依最上層的資料夾上色。<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例，最容易讀出精確的數字。<i>放射圖</i>把目前資料夾放在中心，每深一層就是外面一圈，按中心回上一層。
+<li><b>圖表</b>：在分頁角落切換同一個資料夾的三種圖（一開始是方塊圖，之後會記住你選的）。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
+每個資料夾頂端有寫著名稱和大小的標題列；
+資料夾裡小到看不見的檔案會合成一個灰色斜線方塊（<i>其餘 12 個</i>），按兩下它可以單獨顯示那個資料夾。
+<i>層數</i>決定要畫幾層，<i>顏色</i>可以依檔案類型（圖例在下方）或依最上層的資料夾上色。<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例，最容易讀出精確的數字。<i>放射圖</i>把目前資料夾放在中心，每深一層就是外面一圈，按中心回上一層。
 按一下可以在資料夾樹中找到它，按兩下資料夾可以進入，按<i>上一層</i>回去。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
@@ -964,6 +976,10 @@ ZH_CN: dict[str, str] = {
     "treemap_up": "↑ 上一级",
     "treemap_up_tip": "显示上一级文件夹",
     "treemap_tooltip": "<b>{name}</b><br>{size}（占当前画面的 {share}）<br>{path}",
+    "treemap_more": "其余 {count} 个",
+    "treemap_more_tooltip": "<b>{name} 里其余 {count} 个较小的项目</b>，每个都小到画不出来<br>"
+                            "{size}（占当前画面的 {share}）",
+    "treemap_more_open": "双击可以单独显示这个文件夹",
     "largest_filter": "按名称或文件夹筛选…",
     "types_all": "所有类型",
     "category_images": "图片",
@@ -1023,8 +1039,10 @@ ZH_CN: dict[str, str] = {
 <li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占用空间</i>（实际占用的磁盘空间：按整个簇计算，
 通常比大小多一点；压缩文件较少，只在云端的文件是 0）、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
 里面有几个文件和文件夹，以及里面最近一次变动的时间。点列标题可以按该列排序。</li>
-<li><b>图表</b>：在选项卡角落切换同一个文件夹的三种图（一开始是条形图，之后会记住你选的）。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
-每个文件夹顶部有写着名称和大小的标题栏；<i>层数</i>决定要画几层，<i>颜色</i>可以按文件类型（图例在下方）或按最上层的文件夹上色。<i>条形图</i>给文件夹里每个项目画一个条形，从大到小，附大小与比例，最容易读出精确的数字。<i>旭日图</i>把当前文件夹放在中心，每深一层就是外面一圈，点中心回上一级。
+<li><b>图表</b>：在选项卡角落切换同一个文件夹的三种图（一开始是方块图，之后会记住你选的）。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
+每个文件夹顶部有写着名称和大小的标题栏；
+文件夹里小到看不见的文件会合成一个灰色斜线方块（<i>其余 12 个</i>），双击它可以单独显示那个文件夹。
+<i>层数</i>决定要画几层，<i>颜色</i>可以按文件类型（图例在下方）或按最上层的文件夹上色。<i>条形图</i>给文件夹里每个项目画一个条形，从大到小，附大小与比例，最容易读出精确的数字。<i>旭日图</i>把当前文件夹放在中心，每深一层就是外面一圈，点中心回上一级。
 单击可以在文件夹树中找到它，双击文件夹可以进入，点<i>上一级</i>回去。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，
 双击某一行就会在文件夹树中找到那个文件。</li>

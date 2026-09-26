@@ -17,7 +17,7 @@ from je_file_tree.gui.treemap_widget import TreemapWidget
 
 TREEMAP, BARS, SUNBURST = "treemap", "bars", "sunburst"
 MODES = (TREEMAP, BARS, SUNBURST)
-DEFAULT_MODE = BARS  # the easiest to read; the owner chose it as the first view
+DEFAULT_MODE = TREEMAP  # the owner chose it as the first view
 
 
 class ChartStack(QStackedWidget):

@@ -44,7 +44,7 @@ from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, 
 from je_file_tree.gui import bar_chart
 from je_file_tree.gui.charts import BARS, SUNBURST, TREEMAP, ChartStack
 from je_file_tree.gui.sunburst_widget import SunburstWidget
-from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, MIN_SIDE, TreemapWidget
 
 
 def _wait(app: QApplication, done: Callable[[], bool], timeout: float = 10.0) -> None:
@@ -607,6 +607,35 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     assert not results.tabs.isTabVisible(CHANGES_TAB)
 
 
+def test_the_treemap_draws_a_folder_s_specks_as_one_group_tile(qapp: QApplication) -> None:
+    root = Node("root", True, children=[])
+    many = Node("many", True, children=[], parent=root)
+    many.children.extend(Node(f"f{index}.txt", False, size=1, parent=many) for index in range(300))
+    many.children.append(Node("big.bin", False, size=5000, parent=many))
+    many.size = 5300
+    root.children.extend([many, Node("other.bin", False, size=5300, parent=root)])
+    root.size = 10600
+    widget = TreemapWidget()
+    widget.resize(400, 300)
+    widget.set_view_root(root)
+    widget.grab()
+    assert all(min(tile.rect.width, tile.rect.height) >= MIN_SIDE for tile in widget._tiles)
+    group = next(tile for tile in widget._tiles if tile.grouped)
+    assert (group.node, group.grouped, group.grouped_size) == (many, 300, 300)
+    assert "300" in widget._describe(group) and i18n.tr("treemap_more_open") in widget._describe(group)
+    centre = QPoint(int(group.rect.x + group.rect.width / 2), int(group.rect.y + group.rect.height / 2))
+    assert widget.tile_at(centre.x(), centre.y()) is group
+    widget.set_selected(many)
+    assert widget._tile_of(many) is not group, "selecting the folder outlines the folder, not its group"
+    QTest.mouseDClick(widget, Qt.MouseButton.LeftButton, pos=centre)
+    assert widget.view_root is many, "double-clicking the group shows its folder on its own"
+    widget.grab()
+    inside = next(tile for tile in widget._tiles if tile.grouped)
+    assert inside.node is many
+    assert i18n.tr("treemap_more_open") not in widget._describe(inside), "already shown on its own"
+    widget.deleteLater()
+
+
 def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -> None:
     root = scan(sample_tree).root
     widget = TreemapWidget()
@@ -634,22 +663,20 @@ def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -
 
 def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
     _scanned(window, qapp, sample_tree)
-    assert window.results.charts.mode == BARS, "the bars come first"
-    assert window.results._chart_buttons[BARS].isChecked()
-    assert window.results._treemap_options.isHidden()
-    window.results._chart_buttons[TREEMAP].click()
-    assert window.results.charts.mode == TREEMAP
-    assert window.settings.value("chart_mode") == TREEMAP
+    assert window.results.charts.mode == TREEMAP, "the treemap comes first"
+    assert window.results._chart_buttons[TREEMAP].isChecked()
     assert not window.results._treemap_options.isHidden(), "the treemap options come with the treemap"
     window.results._levels_combo.setCurrentIndex(window.results._levels_combo.findData(3))
     window.results._colours_combo.setCurrentIndex(window.results._colours_combo.findData(BY_FOLDER))
     assert (window.settings.value("treemap_levels"), window.settings.value("treemap_colours")) == (3, BY_FOLDER)
     assert window.results._legend.isHidden(), "no file-type legend when colouring by folder"
     window.results._chart_buttons[BARS].click()
+    assert window.results.charts.mode == BARS
+    assert window.settings.value("chart_mode") == BARS
     assert not window.results._legend.isHidden(), "the bars keep the file-type colours"
     assert window.results._treemap_options.isHidden()
     again = create_window(window.settings)
-    assert again.results.charts.mode == BARS
+    assert again.results.charts.mode == BARS, "the view chosen last comes back"
     assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
     again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
     assert again.results.charts.treemap.levels == 3

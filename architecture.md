@@ -69,14 +69,17 @@ refuses stay and are named in a warning.
 **Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
 entries of one folder, the rest on one line) and the sunburst (`SunburstWidget`: `core.sunburst.layout`
 gives arcs as fractions of the circle, at most `RINGS` rings, arcs thinner than `min_span` and past
-`max_segments` left out, drawn into a cached pixmap) and shows one at a time, the bars first (`charts.DEFAULT_MODE`); the mode is saved in the settings
+`max_segments` left out, drawn into a cached pixmap) and shows one at a time, the treemap first (`charts.DEFAULT_MODE`); the mode is saved in the settings
 (`chart_mode`). Both offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
 `node_clicked`, `view_root_changed`, `context_menu_requested`); when one moves to another folder the stack
 moves the others and signals the page once, so the results page drives the stack as a single chart.
 The treemap draws `levels` levels (2 unless chosen, saved as `treemap_levels`); `treemap.layout(header=…)`
 keeps a strip at the top of every opened folder that is at least three strips wide and tall, where the
 widget prints the folder's name and size; colours come from the file type or, with `treemap_colours` =
-`folder`, from a hue per top-level folder (the legend is hidden then).
+`folder`, from a hue per top-level folder (the legend is hidden then). No tile is narrower than `min_side`
+(the widget passes `MIN_SIDE`, 14 px): a folder's entries too small for that share one *group* tile
+(`Tile.grouped` entries, `Tile.grouped_size` bytes, its node the folder), drawn grey and hatched, and a
+folder opens only when at least one entry in it gets a tile of its own.
 
 **Lists for one folder.** *Largest files*, *File types* and *Age* show the outcome's whole-scan lists, or,
 with *Selected folder only* (the tab bar's corner), `analysis.summarise` of the folder selected in the tree,

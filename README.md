@@ -7,7 +7,7 @@ the window.
 
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md)
 
-![FileTree showing a home folder: the folder tree on the left, the bar chart on the right](docs/images/main_window_en.png)
+![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
 
 ## Features
 
@@ -17,8 +17,8 @@ the window.
   what was read so far.
 - **Folder tree** sorted largest first, with the space each entry takes on disk, a bar showing its share of
   its folder, file and folder counts, and the last change inside it.
-- **Chart**, three ways to see a folder, switched in the corner of the tab (the bars first): the **treemap** (every file a
-  rectangle sized by the space it takes), **bars** (one bar per entry of the folder, largest first, with
+- **Chart**, three ways to see a folder, switched in the corner of the tab (the treemap first): the **treemap** (every file
+  a rectangle sized by the space it takes; a folder's files too small to see share one hatched tile), **bars** (one bar per entry of the folder, largest first, with
   its size and share: easiest to read exactly) and the **sunburst** (the folder in the centre, each deeper
   level a ring: the whole hierarchy at a glance). Click to find an entry in the tree, double-click to go
   into a folder; all three follow.
@@ -86,7 +86,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Where | What it tells you |
 |---|---|
 | Folder tree | Size, *On disk* (the space really taken: whole clusters, so usually a little more; less for compressed files, nothing for files kept only online), *% of parent* (the share of the folder above), number of files and folders inside, last change |
-| Chart | *Treemap*: one rectangle per file, sized by space used; each folder has a strip with its name and size, and tiles show their size. *Levels* sets how many levels are drawn (2 at first, up to all), *Colours* colours by file type (the legend is under it) or by top-level folder. *Bars*: one bar per entry of the folder shown, largest first, with its size and share of the folder. *Sunburst*: the folder in the centre and each deeper level as a ring, the angles by size, each top-level folder in its own colour; click the centre to go up. Double-click a folder to go into it and *Up* to go back; the three views always show the same folder, and FileTree remembers which one you chose |
+| Chart | *Treemap*: one rectangle per file, sized by space used; each folder has a strip with its name and size, and tiles show their size. The files of a folder too small to see or point at share one grey, hatched tile (*12 more*, with their size); double-click it to show that folder on its own. *Levels* sets how many levels are drawn (2 at first, up to all), *Colours* colours by file type (the legend is under it) or by top-level folder. *Bars*: one bar per entry of the folder shown, largest first, with its size and share of the folder. *Sunburst*: the folder in the centre and each deeper level as a ring, the angles by size, each top-level folder in its own colour; click the centre to go up. Double-click a folder to go into it and *Up* to go back; the three views always show the same folder, and FileTree remembers which one you chose |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); conditions under the box narrow it down or search on their own: larger or smaller than a size, changed within a week / month / year or not for one, two or five years, a file type, files only or folders only; a search can be saved under a name and chosen again later; the 1,000 largest matches are listed with the count and total size of all |
 | Clean up → Suggestions | Found after every scan: temporary files, browser caches, thumbnail caches, crash dumps, package caches (pip, npm, Gradle…), build output that can be rebuilt (`node_modules`, `__pycache__`, `target` beside `Cargo.toml`…), installers in Downloads untouched for 90 days, and empty folders; one group per kind, the largest first, with a tooltip on what deleting it does. *Select this group* or *Select all*, then Delete |
