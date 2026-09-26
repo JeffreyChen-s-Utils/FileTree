@@ -30,7 +30,7 @@ from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from je_file_tree.gui import bar_chart
 from je_file_tree.gui.charts import BARS, TREEMAP, ChartStack
-from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, TreemapWidget
 
 
 def _wait(app: QApplication, done: Callable[[], bool], timeout: float = 10.0) -> None:
@@ -528,14 +528,51 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     assert "not a scan saved by FileTree" in warnings[0] and not results.tabs.isTabVisible(CHANGES_TAB)
 
 
+def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    widget = TreemapWidget()
+    widget.resize(400, 300)
+    widget.set_view_root(root)
+    assert widget.levels == 2
+    widget.grab()
+    assert {tile.depth for tile in widget._tiles} == {1, 2}
+    widget.set_levels(1)
+    widget.grab()
+    assert {tile.depth for tile in widget._tiles} == {1}
+    widget.set_levels(5)  # not offered: ignored
+    assert widget.levels == 1
+    widget.set_levels(2)
+    widget.set_colour_mode(BY_FOLDER)
+    widget.grab()
+    photos, code = (next(child for child in root.children if child.name == name) for name in ("photos", "code"))
+    assert widget._colour(photos.children[0], 2).hue() != widget._colour(code.children[0], 2).hue(), (
+        "files take the hue of their top-level folder")
+    assert widget._colour(photos.children[0], 2).hue() == widget._colour(photos.children[1], 2).hue()
+    widget.set_colour_mode("rainbow")  # not offered: ignored
+    assert widget.colour_mode == BY_FOLDER
+    widget.deleteLater()
+
+
 def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
     _scanned(window, qapp, sample_tree)
     assert window.results.charts.mode == TREEMAP
     window.results._chart_buttons[BARS].click()
     assert window.results.charts.mode == BARS
     assert window.settings.value("chart_mode") == BARS
+    window.results._chart_buttons[TREEMAP].click()
+    assert not window.results._treemap_options.isHidden(), "the treemap options come with the treemap"
+    window.results._levels_combo.setCurrentIndex(window.results._levels_combo.findData(3))
+    window.results._colours_combo.setCurrentIndex(window.results._colours_combo.findData(BY_FOLDER))
+    assert (window.settings.value("treemap_levels"), window.settings.value("treemap_colours")) == (3, BY_FOLDER)
+    assert window.results._legend.isHidden(), "no file-type legend when colouring by folder"
+    window.results._chart_buttons[BARS].click()
+    assert not window.results._legend.isHidden(), "the bars keep the file-type colours"
+    assert window.results._treemap_options.isHidden()
     again = create_window(window.settings)
     assert again.results.charts.mode == BARS
+    assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
+    again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
+    assert again.results.charts.treemap.levels == 3 and again.results.charts.mode == BARS
     again.close()
     again.deleteLater()
 

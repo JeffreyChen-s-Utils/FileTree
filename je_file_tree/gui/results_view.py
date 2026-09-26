@@ -9,9 +9,10 @@ tree (largest files, file types) fill in when the scan ends.
 
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import os
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtWidgets import (
@@ -52,7 +53,7 @@ from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
-from je_file_tree.gui.charts import ChartStack
+from je_file_tree.gui.charts import TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
@@ -77,7 +78,7 @@ from je_file_tree.gui.tree_model import (
     SIZE,
     FolderTreeModel,
 )
-from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS
+from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.
@@ -118,7 +119,7 @@ class ResultsView(QWidget):
     selection_changed = Signal(object)
     elevate_requested = Signal()
     compare_failed = Signal(str)
-    chart_mode_changed = Signal(str)
+    chart_setting_changed = Signal(str, object)  # a setting key and its new value
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -137,9 +138,7 @@ class ResultsView(QWidget):
         self.summary = QLabel()
         self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.tree = self._build_tree()
-        self.charts = ChartStack()
-        self._chart_buttons = {mode: QToolButton() for mode in CHART_MODES}
-        self._chart_group = QButtonGroup(self)
+        self._build_chart_controls()
         self._treemap_up = QToolButton()
         self._treemap_path = QLabel()
         self._legend = QLabel()
@@ -329,6 +328,18 @@ class ResultsView(QWidget):
         if mode in self._chart_buttons:
             self.charts.set_mode(mode)
             self._chart_buttons[mode].setChecked(True)
+            self._update_chart_controls()
+
+    def apply_chart_settings(self, values: Mapping[str, object]) -> None:
+        """Restore the saved ``chart_mode``, ``treemap_levels`` and ``treemap_colours``; bad values are ignored."""
+        self.set_chart_mode(str(values.get("chart_mode", "")))
+        treemap = self.charts.treemap
+        with contextlib.suppress(ValueError):  # a hand-edited setting that is not a number: keep the default
+            treemap.set_levels(int(str(values.get("treemap_levels", treemap.levels))))
+        treemap.set_colour_mode(str(values.get("treemap_colours", treemap.colour_mode)))
+        _select_data(self._levels_combo, treemap.levels)
+        _select_data(self._colours_combo, treemap.colour_mode)
+        self._update_chart_controls()
 
     def compare_with(self, file: str) -> None:
         """Compare the scan on screen with the saved scan ``file``; the Changes tab comes forward with the result."""
@@ -393,6 +404,12 @@ class ResultsView(QWidget):
         for mode, button in self._chart_buttons.items():
             button.setText(tr(f"chart_{mode}"))
             button.setToolTip(tr(f"chart_{mode}_tip"))
+        self._levels_label.setText(tr("treemap_levels"))
+        self._colours_label.setText(tr("treemap_colours"))
+        _fill_combo(self._levels_combo, [(tr("treemap_levels_all") if levels == LEVELS[-1] else str(levels), levels)
+                                         for levels in LEVELS], self.charts.treemap.levels)
+        _fill_combo(self._colours_combo, [(tr(f"treemap_colours_{mode}"), mode) for mode in COLOUR_MODES],
+                    self.charts.treemap.colour_mode)
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
@@ -404,6 +421,15 @@ class ResultsView(QWidget):
         self._update_texts()
 
     # --- building ---------------------------------------------------------
+
+    def _build_chart_controls(self) -> None:
+        self.charts = ChartStack()
+        self._chart_buttons = {mode: QToolButton() for mode in CHART_MODES}
+        self._chart_group = QButtonGroup(self)
+        self._levels_label = QLabel()
+        self._levels_combo = QComboBox()
+        self._colours_label = QLabel()
+        self._colours_combo = QComboBox()
 
     def _build_tree(self) -> QTreeView:
         tree = QTreeView()
@@ -492,7 +518,11 @@ class ResultsView(QWidget):
         chart_bar = _row(self._treemap_up, self._treemap_path)
         for button in self._chart_buttons.values():
             chart_bar.layout().addWidget(button)
-        self.tabs.addTab(_column(chart_bar, self.charts, self._legend), "")
+        self._treemap_options = _row(self._levels_label, self._levels_combo, self._colours_label, self._colours_combo)
+        self._levels_combo.currentIndexChanged.connect(lambda _index: self._choose_levels())
+        self._colours_combo.currentIndexChanged.connect(lambda _index: self._choose_colours())
+        self.tabs.addTab(_column(chart_bar, self._treemap_options, self.charts, self._legend), "")
+        self._update_chart_controls()
         self._show_all.clicked.connect(self.show_all_largest)
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
@@ -534,7 +564,26 @@ class ResultsView(QWidget):
 
     def _choose_chart(self, mode: str) -> None:
         self.set_chart_mode(mode)
-        self.chart_mode_changed.emit(mode)
+        self.chart_setting_changed.emit("chart_mode", mode)
+
+    def _choose_levels(self) -> None:
+        levels = self._levels_combo.currentData()
+        if levels is not None and levels != self.charts.treemap.levels:
+            self.charts.treemap.set_levels(int(levels))
+            self.chart_setting_changed.emit("treemap_levels", int(levels))
+
+    def _choose_colours(self) -> None:
+        mode = self._colours_combo.currentData()
+        if mode is not None and mode != self.charts.treemap.colour_mode:
+            self.charts.treemap.set_colour_mode(str(mode))
+            self.chart_setting_changed.emit("treemap_colours", str(mode))
+            self._update_chart_controls()
+
+    def _update_chart_controls(self) -> None:
+        """Treemap options only with the treemap; the file-type legend only where the colours are file types."""
+        treemap_on_screen = self.charts.mode == TREEMAP
+        self._treemap_options.setVisible(treemap_on_screen)
+        self._legend.setVisible(not (treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER))
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
@@ -702,6 +751,22 @@ def _table(model: QSortFilterProxyModel) -> QTableView:
     table.horizontalHeader().setStretchLastSection(True)
     table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     return table
+
+
+def _fill_combo(combo: QComboBox, items: list[tuple[str, object]], current: object) -> None:
+    """Replace a combo box's items (text, data) without signalling, keeping ``current`` selected."""
+    combo.blockSignals(True)
+    combo.clear()
+    for text, data in items:
+        combo.addItem(text, data)
+    combo.blockSignals(False)
+    _select_data(combo, current)
+
+
+def _select_data(combo: QComboBox, data: object) -> None:
+    combo.blockSignals(True)
+    combo.setCurrentIndex(max(0, combo.findData(data)))
+    combo.blockSignals(False)
 
 
 def _row(*widgets: QWidget) -> QWidget:

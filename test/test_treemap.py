@@ -80,3 +80,17 @@ def test_layout_stops_at_max_depth(sample_tree: Path) -> None:
 
 def test_an_empty_folder_gives_no_tiles() -> None:
     assert layout(Node("empty", True, children=[]), Rect(0, 0, 100, 100)) == []
+
+
+def test_a_header_strip_keeps_each_opened_folder_s_name_clear(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    tiles = layout(root, Rect(0, 0, 400, 300), padding=2.0, header=16.0)
+    by_name = {tile.node.name: tile for tile in tiles}
+    photos = by_name["photos"]
+    assert photos.header == 16.0
+    for name in ("a.jpg", "b.png"):
+        assert by_name[name].rect.y >= photos.rect.y + 2.0 + 16.0 - 1e-9, "children start below the strip"
+    assert by_name["big.bin"].header == 0.0, "files have no strip"
+    assert all(tile.header == 0.0 for tile in layout(root, Rect(0, 0, 400, 300), max_depth=1, header=16.0)), (
+        "a folder that is not opened has no strip")
+    assert all(tile.header == 0.0 for tile in layout(root, Rect(0, 0, 400, 300)))

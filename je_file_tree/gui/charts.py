@@ -80,8 +80,9 @@ class ChartStack(QStackedWidget):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit`` where a view prints them."""
-        self.bars.unit = unit
-        self.bars.update()
+        for chart in self._charts.values():
+            chart.unit = unit
+            chart.invalidate()
 
     def _follow(self, node: Node | None) -> None:
         """One view moved to ``node``: move the others along, then tell the page once."""

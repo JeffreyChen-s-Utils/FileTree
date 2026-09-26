@@ -28,7 +28,6 @@ from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.charts import TREEMAP
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker
 from je_file_tree.gui.welcome import WelcomePage
@@ -41,6 +40,7 @@ _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
+_CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours")
 
 
 def read_flag(settings: QSettings, key: str, default: bool) -> bool:
@@ -513,8 +513,9 @@ class MainWindow(QMainWindow):
         self.welcome.scan_requested.connect(self.start_scan)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
-        self.results.set_chart_mode(str(self.settings.value("chart_mode", TREEMAP)))
-        self.results.chart_mode_changed.connect(lambda mode: self.settings.setValue("chart_mode", mode))
+        self.results.apply_chart_settings({key: self.settings.value(key) for key in _CHART_SETTINGS
+                                           if self.settings.contains(key)})
+        self.results.chart_setting_changed.connect(self.settings.setValue)
         self.results.compare_failed.connect(
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)

@@ -41,11 +41,16 @@ class Rect:
 
 @dataclass(frozen=True, slots=True)
 class Tile:
-    """One laid-out entry: its node, its rectangle, and how deep below the laid-out root it is."""
+    """One laid-out entry: its node, its rectangle, and how deep below the laid-out root it is.
+
+    ``header`` is the height of the strip at the top of a folder's tile kept free for its name
+    (0 when the folder got none); its children are laid out below it.
+    """
 
     node: Node
     rect: Rect
     depth: int
+    header: float = 0.0
 
 
 def squarify(values: Sequence[float], rect: Rect) -> list[Rect]:
@@ -112,28 +117,31 @@ def _worst_ratio(total: float, largest: float, smallest: float, side: float) -> 
     return max(side_squared * largest / total_squared, total_squared / (side_squared * smallest))
 
 
-def layout(root: Node, rect: Rect, *, max_depth: int | None = None, min_side: float = 3.0,
-           padding: float = 2.0, max_tiles: int = 20000) -> list[Tile]:
+def layout(root: Node, rect: Rect, *, max_depth: int | None = None, min_side: float = 3.0,  # noqa: PLR0913
+           padding: float = 2.0, max_tiles: int = 20000, header: float = 0.0) -> list[Tile]:
     """Tiles for everything beneath ``root`` inside ``rect``, parents before their children.
 
     Entries whose rectangle would be narrower than ``min_side`` are left out
     (their space stays empty), folders are nested ``padding`` inside their own
     tile, and layout stops at ``max_depth`` levels or ``max_tiles`` tiles, so the
-    cost stays bounded however large the tree is.
+    cost stays bounded however large the tree is. With ``header``, a folder whose
+    children are laid out keeps a strip that high at its top for its name, when
+    its tile is at least three strips wide and tall.
     """
     tiles: list[Tile] = []
     queue: deque[tuple[Node, Rect, int]] = deque([(root, rect, 1)])
     while queue and len(tiles) < max_tiles:
         folder, area, depth = queue.popleft()
         for child, child_rect in _place_children(folder, area, min_side):
-            tile = Tile(child, child_rect, depth)
-            tiles.append(tile)
+            inner = child_rect.inset(padding)
+            opens = (child.is_dir and bool(child.children) and (max_depth is None or depth < max_depth)
+                     and min(inner.width, inner.height) >= min_side)
+            strip = header if opens and header > 0 and min(inner.width, inner.height) >= 3 * header else 0.0
+            tiles.append(Tile(child, child_rect, depth, strip))
             if len(tiles) >= max_tiles:
                 break
-            inner = child_rect.inset(padding)
-            if (child.is_dir and child.children and (max_depth is None or depth < max_depth)
-                    and min(inner.width, inner.height) >= min_side):
-                queue.append((child, inner, depth + 1))
+            if opens:
+                queue.append((child, Rect(inner.x, inner.y + strip, inner.width, inner.height - strip), depth + 1))
     return tiles
 
 
