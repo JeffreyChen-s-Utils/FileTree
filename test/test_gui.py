@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import threading
 import time
 from collections.abc import Callable
@@ -23,7 +24,7 @@ from je_file_tree.gui.app import create_window
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import SEARCH_TAB
+from je_file_tree.gui.results_view import SEARCH_TAB, _selected_in
 from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
@@ -411,6 +412,40 @@ def test_the_tree_and_the_summary_show_the_space_taken_on_disk(window: MainWindo
     assert model.headerData(ALLOCATED, Qt.Orientation.Horizontal) == "On disk"
     assert model.index(0, ALLOCATED).data() == format_size(root.allocated)
     assert f"({format_size(root.allocated)} on disk)" in window.results.summary.text()
+
+
+def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = tmp_path / "copies"
+    folder.mkdir()
+    for name in ("photo.jpg", "photo (1).jpg", "photo (2).jpg"):
+        (folder / name).write_bytes(b"p" * 5000)
+    (folder / "notes.txt").write_bytes(b"n" * 300)
+    (folder / "notes-old.txt").write_bytes(b"n" * 300)
+    for oldest in ("photo.jpg", "notes-old.txt"):  # the oldest copy of each is the one kept
+        os.utime(folder / oldest, (1_600_000_000, 1_600_000_000))
+    _scanned(window, qapp, folder)
+    panel = window.results.duplicates
+    assert panel.start_button.isEnabled() and not panel.groups
+    assert panel.status.text().startswith("Finds files with the same content")
+    panel.min_size.setCurrentIndex(0)  # any size: these files are small
+    panel.start()
+    _wait(qapp, lambda: not panel.running)
+    assert [len(group.files) for group in panel.groups] == [3, 2]
+    assert panel.status.text() == "2 groups of duplicates: 10.1 KB in extra copies."
+    assert panel.model.index(0, 0).data() == "3 copies of 4.9 KB — 9.8 KB in extra copies"
+    assert panel.model.index(0, 0, panel.model.index(0, 0)).data() == "photo.jpg", "oldest first"
+    panel.select_extra_copies()
+    picked = _selected_in(panel.view)
+    assert sorted(node.name for node in picked) == ["notes.txt", "photo (1).jpg", "photo (2).jpg"]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash(picked)
+    assert panel.groups == [], "every group is down to one file"
+    assert panel.status.text() == "No duplicate files found."
+    panel.start()
+    panel.stop()
+    assert panel.status.text() == "The search was stopped." and not panel.running
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

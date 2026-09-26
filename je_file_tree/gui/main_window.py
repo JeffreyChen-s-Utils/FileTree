@@ -389,6 +389,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
+        self.results.duplicates.stop(wait=True)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())

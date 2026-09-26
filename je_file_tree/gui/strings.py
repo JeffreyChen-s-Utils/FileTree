@@ -84,6 +84,23 @@ EN: dict[str, str] = {
     "tab_treemap": "Treemap",
     "tab_largest": "Largest files",
     "tab_search": "Search",
+    "tab_duplicates": "Duplicates",
+    "duplicates_min_size": "Compare files from",
+    "duplicates_any_size": "any size",
+    "duplicates_find": "Find duplicates",
+    "duplicates_stop": "Stop",
+    "duplicates_select_extra": "Select extra copies",
+    "duplicates_select_extra_tip": "Select every copy but the oldest in each group; then press Delete",
+    "duplicates_hint": ("Finds files with the same content anywhere in the scan. Only files of the same size are "
+                        "read, but reading takes time, so small files are left out unless you choose a smaller size."),
+    "duplicates_starting": "Looking for files of the same size…",
+    "duplicates_running": "Read {files} of {total} files ({read} of {bytes})…",
+    "duplicates_stopped": "The search was stopped.",
+    "duplicates_none": "No duplicate files found.",
+    "duplicates_summary": "{groups} groups of duplicates: {extra} in extra copies.",
+    "duplicates_limited": "The {shown} groups with the most extra space are listed.",
+    "duplicates_skipped": "{count} files could not be read.",
+    "duplicates_group": "{count} copies of {size} — {extra} in extra copies",
     "search_placeholder": "Part of a name, or a pattern: backup, *.mp4, *.iso;*.zip",
     "search_hint": "Type part of a name, or a pattern with * and ?, to find files and folders anywhere in the scan.",
     "search_running": "Searching…",
@@ -194,6 +211,10 @@ narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
 A pattern such as <code>*.mp4</code> must match the whole name; separate several with <code>;</code>
 (<code>*.iso;*.zip</code>). The 1,000 largest matches are listed, with the count and total size of all.</li>
+<li><b>Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
+same size are read; files under 1 MB are left out unless you choose a smaller size, because reading takes
+time. Each group lists its copies oldest first; <i>Select extra copies</i> selects all but the oldest, and
+Delete moves them to the Recycle Bin.</li>
 <li><b>File types</b>: how much space each kind of file takes, per extension. Pick a type in the list
 above the table to see only that kind; double-click a row to list the largest files of that type.</li>
 <li><b>Age</b>: how much space was last changed within a month, 1–6 months ago, and so on up to over two
@@ -309,6 +330,23 @@ ZH_TW: dict[str, str] = {
     "tab_treemap": "方塊圖",
     "tab_largest": "最大的檔案",
     "tab_search": "搜尋",
+    "tab_duplicates": "重複檔案",
+    "duplicates_min_size": "比對的最小檔案",
+    "duplicates_any_size": "任何大小",
+    "duplicates_find": "尋找重複檔案",
+    "duplicates_stop": "停止",
+    "duplicates_select_extra": "選取多餘的副本",
+    "duplicates_select_extra_tip": "選取每一組中最舊那份以外的副本，再按 Delete",
+    "duplicates_hint": ("在整個掃描範圍內找內容相同的檔案。只會讀取大小相同的檔案，"
+                        "但讀取需要時間，所以除非選了較小的大小，否則會略過小檔案。"),
+    "duplicates_starting": "正在找大小相同的檔案…",
+    "duplicates_running": "已讀取 {files} / {total} 個檔案（{read} / {bytes}）…",
+    "duplicates_stopped": "搜尋已停止。",
+    "duplicates_none": "沒有找到重複的檔案。",
+    "duplicates_summary": "{groups} 組重複檔案：多餘的副本共佔 {extra}。",
+    "duplicates_limited": "只列出多餘空間最大的 {shown} 組。",
+    "duplicates_skipped": "有 {count} 個檔案無法讀取。",
+    "duplicates_group": "{count} 份相同的 {size} 檔案，多餘的副本佔 {extra}",
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "輸入名稱的一部分，或含 * 和 ? 的樣式，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
@@ -411,6 +449,9 @@ ZH_TW: dict[str, str] = {
 <li><b>搜尋</b>（Ctrl+F）：整個掃描範圍內，名稱含有輸入文字的檔案和資料夾。
 <code>*.mp4</code> 這類樣式要符合完整名稱；好幾個樣式用 <code>;</code> 分開（<code>*.iso;*.zip</code>）。
 會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
+<li><b>重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
+除非選了較小的大小，否則會略過 1 MB 以下的檔案。每一組由舊到新列出副本；<i>選取多餘的副本</i>會選取最舊那份以外的全部，
+再按 Delete 就會移到資源回收筒。</li>
 <li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類；
 按兩下一列，會列出那種檔案裡最大的幾個。</li>
 <li><b>檔案新舊</b>：一個月內、1–6 個月前……一直到超過 2 年前最後修改的檔案各佔多少空間。
@@ -522,6 +563,23 @@ ZH_CN: dict[str, str] = {
     "tab_treemap": "方块图",
     "tab_largest": "最大的文件",
     "tab_search": "搜索",
+    "tab_duplicates": "重复文件",
+    "duplicates_min_size": "比较的最小文件",
+    "duplicates_any_size": "任意大小",
+    "duplicates_find": "查找重复文件",
+    "duplicates_stop": "停止",
+    "duplicates_select_extra": "选中多余的副本",
+    "duplicates_select_extra_tip": "选中每一组中最旧那份以外的副本，再按 Delete",
+    "duplicates_hint": ("在整个扫描范围内查找内容相同的文件。只会读取大小相同的文件，"
+                        "但读取需要时间，所以除非选了较小的大小，否则会跳过小文件。"),
+    "duplicates_starting": "正在查找大小相同的文件…",
+    "duplicates_running": "已读取 {files} / {total} 个文件（{read} / {bytes}）…",
+    "duplicates_stopped": "搜索已停止。",
+    "duplicates_none": "没有找到重复的文件。",
+    "duplicates_summary": "{groups} 组重复文件：多余的副本共占 {extra}。",
+    "duplicates_limited": "只列出多余空间最大的 {shown} 组。",
+    "duplicates_skipped": "有 {count} 个文件无法读取。",
+    "duplicates_group": "{count} 份相同的 {size} 文件，多余的副本占 {extra}",
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "输入名称的一部分，或含 * 和 ? 的模式，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",
@@ -624,6 +682,9 @@ ZH_CN: dict[str, str] = {
 <li><b>搜索</b>（Ctrl+F）：整个扫描范围内，名称含有输入文字的文件和文件夹。
 <code>*.mp4</code> 这类模式要匹配完整名称；多个模式用 <code>;</code> 分开（<code>*.iso;*.zip</code>）。
 会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
+<li><b>重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
+除非选了较小的大小，否则会跳过 1 MB 以下的文件。每一组从旧到新列出副本；<i>选中多余的副本</i>会选中最旧那份以外的全部，
+再按 Delete 就会移到回收站。</li>
 <li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类；
 双击一行，会列出那种文件里最大的几个。</li>
 <li><b>文件新旧</b>：一个月内、1–6 个月前……一直到超过 2 年前最后修改的文件各占多少空间。

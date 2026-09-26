@@ -21,6 +21,8 @@ the window.
   find it in the tree, double-click to zoom into a folder.
 - **Largest files**: the 1,000 biggest files anywhere in the scan, with a filter box.
 - **Search** (Ctrl+F): find files and folders by name, or by a pattern such as `*.mp4`, anywhere in the scan.
+- **Duplicates**: files with the same content, grouped, with the space the extra copies take; select the
+  extra copies with one click and move them to the Recycle Bin.
 - **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
   files last changed; double-click a row to list its largest files.
 - **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; the
@@ -74,6 +76,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Treemap | One rectangle per file, sized by space used and coloured by file type; the legend is under the map |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); the 1,000 largest matches are listed with the count and total size of all |
+| Duplicates | Press *Find duplicates*: files of the same size are compared, first by their first 64 KB, then by their whole content (hard links count once). Files under 1 MB are left out unless you choose a smaller size, because reading takes time. Each group lists its copies oldest first; *Select extra copies* selects all but the oldest, ready for Delete |
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |

@@ -50,6 +50,7 @@ from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
@@ -75,7 +76,7 @@ _LARGEST_FOLDER_COLUMN = 2
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(6)
+TREEMAP_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, PROBLEMS_TAB = range(7)
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -134,6 +135,7 @@ class ResultsView(QWidget):
         self.search_model = LargestFilesModel(self)
         self.search_table, _ = self._build_entries_table(self.search_model)
         self.search = SearchPanel(self.search_table, self.search_model)
+        self.duplicates = DuplicatesPanel()
         self._types_combo = QComboBox()
         self._types_proxy = _FileTypesProxy(self)
         self.types_table = self._build_types_table()
@@ -161,6 +163,7 @@ class ResultsView(QWidget):
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
         self.search.set_root(None)
+        self.duplicates.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
@@ -225,6 +228,7 @@ class ResultsView(QWidget):
         if self.selected_node() is None:
             self.select_node(root)
         self.search.set_root(root)
+        self.duplicates.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
 
@@ -246,6 +250,7 @@ class ResultsView(QWidget):
             self.problems_model.set_rows(errors)
         self.treemap.set_view_root(new if inside_old else view_root)
         self.search.rerun()
+        self.duplicates.prune()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
         return new
@@ -276,6 +281,7 @@ class ResultsView(QWidget):
             model.unit = unit
             model.refresh()
         self.search.retranslate()
+        self.duplicates.set_unit(unit)
 
     def selected_node(self) -> Node | None:
         """The entry the tree's cursor is on."""
@@ -287,10 +293,10 @@ class ResultsView(QWidget):
         return _selected_in(self.tree)
 
     def focused_selection(self) -> list[Node]:
-        """The entries selected where the keyboard is: the largest-files or search list if focused, else the tree."""
-        for table in (self.largest_table, self.search_table):
-            if table.hasFocus():
-                return _selected_in(table)
+        """The entries selected where the keyboard is: the largest-files, search or duplicates list, else the tree."""
+        for view in (self.largest_table, self.search_table, self.duplicates.view):
+            if view.hasFocus():
+                return _selected_in(view)
         return _selected_in(self.tree)
 
     def show_search(self) -> None:
@@ -333,6 +339,7 @@ class ResultsView(QWidget):
             view_root = root
         self.treemap.set_view_root(view_root)
         self.search.rerun()
+        self.duplicates.prune()
         self._update_texts()
 
     def retranslate(self) -> None:
@@ -348,6 +355,7 @@ class ResultsView(QWidget):
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
+        self.duplicates.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
         self._elevate_button.setToolTip(tr("action_elevate_tip"))
@@ -439,6 +447,10 @@ class ResultsView(QWidget):
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
         self.tabs.addTab(self.search, "")
+        self.tabs.addTab(self.duplicates, "")
+        view = self.duplicates.view
+        view.customContextMenuRequested.connect(lambda point: self._menu_for(view, point))
+        view.doubleClicked.connect(lambda index: self._table_activated(view, index))
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
         self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
@@ -473,7 +485,7 @@ class ResultsView(QWidget):
         self._treemap_path.setText(node.path if node is not None else "")
         self._treemap_up.setEnabled(node is not None and node.parent is not None)
 
-    def _table_activated(self, table: QTableView, index: QModelIndex) -> None:
+    def _table_activated(self, table: QAbstractItemView, index: QModelIndex) -> None:
         node = index.data(NODE_ROLE)
         if isinstance(node, Node):
             self.select_node(node)
@@ -552,7 +564,7 @@ class ResultsView(QWidget):
 
     def _update_texts(self) -> None:
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_types", "tab_age")
+        titles = ("tab_treemap", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))

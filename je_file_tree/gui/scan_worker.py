@@ -7,11 +7,13 @@ window can show the tree while it fills in (see ``FolderTreeModel.live``).
 from __future__ import annotations
 
 import threading
+import time
 from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
 from je_file_tree.core.search import search
@@ -74,6 +76,46 @@ class SearchWorker(QThread):
         result = search(self._root, self._query, LARGEST_FILES_LIMIT, self._cancel)
         if result is not None:
             self.found.emit(result)
+
+
+class DuplicatesWorker(QThread):
+    """Looks for duplicate files off the GUI thread: ``progressed``, then ``succeeded`` or ``cancelled``."""
+
+    progressed = Signal(object)
+    succeeded = Signal(object)
+    cancelled = Signal()
+
+    PROGRESS_INTERVAL = 0.1  # seconds between two progress signals
+
+    def __init__(self, root: Node, min_size: int, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._root = root
+        self._min_size = min_size
+        self._cancel = threading.Event()
+        self._lock = threading.Lock()
+        self._last_report = 0.0
+
+    def stop(self) -> None:
+        """Ask the search to give up; ``cancelled`` follows."""
+        self._cancel.set()
+
+    def run(self) -> None:
+        """Thread body."""
+        try:
+            result = find_duplicates(self._root, min_size=self._min_size, progress=self._report, cancel=self._cancel)
+        except DuplicateSearchCancelledError:
+            self.cancelled.emit()
+            return
+        self.succeeded.emit(result)
+
+    def _report(self, progress: DuplicateProgress) -> None:
+        """Called from the reading threads: passes on at most one progress per ``PROGRESS_INTERVAL``."""
+        now = time.monotonic()
+        with self._lock:
+            if now - self._last_report < self.PROGRESS_INTERVAL:
+                return
+            self._last_report = now
+        self.progressed.emit(progress)
 
 
 class ScanWorker(QThread):

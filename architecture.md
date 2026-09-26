@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `duplicates_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -73,6 +73,13 @@ patterns against the whole name, several separated by `;`) and the 1,000 largest
 count and size of all. A new search stops the one before (it checks once per folder) and only the latest
 result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
 move to the Recycle Bin or a folder rescan.
+
+**Duplicates.** The Duplicates tab (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
+`DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are
+hashed on a thread pool, first their first 64 KB, then, for those still alike, the whole file; hard links
+(same device and file number) count once. Progress reaches the window at most ten times a second; Stop is
+checked before every file and every 1 MB. The groups are dropped on a new scan and pruned (`Node.is_in`)
+after a move to the Recycle Bin or a folder rescan.
 
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is
