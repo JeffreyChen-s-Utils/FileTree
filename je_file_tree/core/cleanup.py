@@ -39,7 +39,8 @@ class Rule:
 
 
 RULES: tuple[Rule, ...] = (
-    Rule("temp", folders=("AppData/Local/Temp", "Windows/Temp", "/tmp", "/var/tmp",  # noqa: S108 - patterns, not files
+    # The temporary folders are patterns that paths are compared with; nothing is written to them.
+    Rule("temp", folders=("AppData/Local/Temp", "Windows/Temp", "/tmp", "/var/tmp",  # noqa: S108  # NOSONAR
                           "/private/var/folders/*/*/T")),
     Rule("browser_cache", folders=(
         "Google/Chrome/User Data/*/Cache", "Google/Chrome/User Data/*/Code Cache",
@@ -80,27 +81,9 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
     None when ``cancel`` is set before the walk is done (checked once per folder).
     """
     matcher = _Matcher(rules, time.time() if now is None else now)
-    found: dict[str, list[Node]] = defaultdict(list)
-    stack: list[tuple[Node, tuple[str, ...]]] = [(root, _parts(root.path))]
-    while stack:
-        if cancel is not None and cancel.is_set():
-            return None
-        folder, parts = stack.pop()
-        names = {child.name.casefold() for child in folder.children}
-        for child in folder.children:
-            if child.is_link:
-                continue
-            if not child.is_dir:
-                key = matcher.file_key(child, parts[-1] if parts else "")
-                if key is not None:
-                    found[key].append(child)
-                continue
-            child_parts = (*parts, child.name.casefold())
-            key = matcher.folder_key(child_parts, names)
-            if key is not None:
-                found[key].append(child)
-            elif child.children:
-                stack.append((child, child_parts))
+    found = _walk(root, matcher, cancel)
+    if found is None:
+        return None
     claimed = {id(node) for nodes in found.values() for node in nodes}
     empty = [folder for folder in empty_folders(root) if not _inside(folder, claimed)]  # listed once, in its group
     if empty:
@@ -109,6 +92,38 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
               for key, nodes in found.items()]
     groups.sort(key=lambda group: (-group.size, group.key))
     return groups
+
+
+def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None) -> dict[str, list[Node]] | None:
+    """Every entry beneath ``root`` a rule matches, by group; None when cancelled."""
+    found: dict[str, list[Node]] = defaultdict(list)
+    stack: list[tuple[Node, tuple[str, ...]]] = [(root, _parts(root.path))]
+    while stack:
+        if cancel is not None and cancel.is_set():
+            return None
+        folder, parts = stack.pop()
+        stack.extend(_visit(folder, parts, matcher, found))
+    return found
+
+
+def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
+           found: dict[str, list[Node]]) -> list[tuple[Node, tuple[str, ...]]]:
+    """Put ``folder``'s matching entries in ``found``; returns the subfolders still to look into."""
+    names = {child.name.casefold() for child in folder.children}
+    deeper: list[tuple[Node, tuple[str, ...]]] = []
+    for child in folder.children:
+        if child.is_link:
+            continue
+        if child.is_dir:
+            child_parts = (*parts, child.name.casefold())
+            key = matcher.folder_key(child_parts, names)
+            if key is None and child.children:
+                deeper.append((child, child_parts))  # a matching folder is suggested whole, not entered
+        else:
+            key = matcher.file_key(child, parts[-1] if parts else "")
+        if key is not None:
+            found[key].append(child)
+    return deeper
 
 
 def empty_folders(root: Node) -> list[Node]:

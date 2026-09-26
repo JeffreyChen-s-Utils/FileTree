@@ -64,6 +64,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20260926-33 | 2026-09-26 | Refactor: SonarCloud findings of pull request #8 | #refactor #core | [2026-09](2026-09.md) |
 | U-20260926-32 | 2026-09-26 | Long paths no longer widen the window; the summary escapes the path | #fix #gui | [2026-09](2026-09.md) |
 | U-20260926-31 | 2026-09-26 | Clean up tab: suggestions (temporary files, caches, build output, old installers, empty folders) | #done #core #gui | [2026-09](2026-09.md) |
 | U-20260926-30 | 2026-09-26 | The Chart tab opens on the bar chart | #change #gui | [2026-09](2026-09.md) |

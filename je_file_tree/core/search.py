@@ -105,23 +105,33 @@ def _collect(root: Node, test: Callable[..., object], cancel: threading.Event | 
 def accepts(query: Query, now: float) -> Callable[[Node], bool] | None:
     """The test of an entry against every condition of ``query``; None when it has no condition at all."""
     name = name_matcher(query.text)
-    files_only = query.kind == FILES or query.category is not None
-    folders_only = query.kind == FOLDERS  # with a file type too, nothing can match: every condition holds
+    kind = _kind_test(query)
     kept = _kept_by_size_and_age(query, now)
-    category = query.category
-    if name is None and not files_only and not folders_only and kept is None:
+    if name is None and kind is None and kept is None:
         return None
 
     def test(node: Node) -> bool:
         if name is not None and name(node.name) is None:
             return False
-        if (files_only and node.is_dir) or (folders_only and (not node.is_dir or node.is_link)):
-            return False
-        if category is not None and category_of(extension_of(node.name)) != category:
+        if kind is not None and not kind(node):
             return False
         return kept is None or kept(node)
 
     return test
+
+
+def _kind_test(query: Query) -> Callable[[Node], bool] | None:
+    """One test for the kind and the file type of ``query`` (None when it asks for neither)."""
+    category = query.category
+    if category is not None:
+        if query.kind == FOLDERS:
+            return lambda node: False  # a file type with folders only: every condition must hold, none can
+        return lambda node: not node.is_dir and category_of(extension_of(node.name)) == category
+    if query.kind == FILES:
+        return lambda node: not node.is_dir
+    if query.kind == FOLDERS:
+        return lambda node: node.is_dir and not node.is_link
+    return None
 
 
 def _kept_by_size_and_age(query: Query, now: float) -> Callable[[Node], bool] | None:

@@ -56,13 +56,15 @@ def protected_places(platform: str = sys.platform, environ: Mapping[str, str] | 
         return _windows_places(environ)
     home = home if home is not None else os.path.expanduser("~")
     if platform == "darwin":
+        # The temporary folders below are paths that entries are compared with; nothing is written to them.
         return [*(Protection(place, SYSTEM) for place in _MAC_SYSTEM), Protection("/Applications", PROGRAMS),
                 Protection(_under(home, "Library"), SETTINGS), Protection(_under(home, "Library/Caches"), FREE),
-                Protection("/private/tmp", FREE), Protection("/private/var/folders", FREE),
+                Protection("/private/tmp", FREE), Protection("/private/var/folders", FREE),  # noqa: S108  # NOSONAR
                 Protection(home, PROFILE, inside=False), Protection("/Users", PROFILE, inside=False)]
+    # The temporary folders below are paths that entries are compared with; nothing is written to them.
     return [*(Protection(place, SYSTEM) for place in _LINUX_SYSTEM), Protection("/opt", PROGRAMS),
             Protection(_under(home, ".config"), SETTINGS), Protection(_under(home, ".local/share"), SETTINGS, False),
-            Protection("/tmp", FREE), Protection("/var/tmp", FREE),  # noqa: S108 - paths compared, never written
+            Protection("/tmp", FREE), Protection("/var/tmp", FREE),  # noqa: S108  # NOSONAR
             Protection(home, PROFILE, inside=False), Protection("/home", PROFILE, inside=False)]
 
 
