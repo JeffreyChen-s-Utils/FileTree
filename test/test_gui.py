@@ -617,6 +617,23 @@ def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path)
     dialog.deleteLater()
 
 
+def test_linux_asks_the_file_manager_to_select_before_opening_the_folder(monkeypatch: pytest.MonkeyPatch) -> None:
+    opened: list[str] = []
+    monkeypatch.setattr(file_actions.sys, "platform", "linux")
+    monkeypatch.setattr(file_actions, "open_path", lambda path: opened.append(path) or True)
+    monkeypatch.setattr(file_actions, "show_items", lambda _path: True)
+    assert file_actions.reveal_in_file_manager("/home/me/photos/a.jpg")
+    assert opened == [], "the file manager showed it selected"
+    monkeypatch.setattr(file_actions, "show_items", lambda _path: False)
+    assert file_actions.reveal_in_file_manager("/home/me/photos/a.jpg")
+    assert opened == ["/home/me/photos"], "no file manager answered: its folder is opened"
+
+
+def test_show_items_needs_a_session_bus(qapp: QApplication, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(file_actions, "QDBusConnection", None)
+    assert file_actions.show_items("/home/me/x") is False
+
+
 def test_explorer_command_always_quotes_the_path() -> None:
     assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
 
