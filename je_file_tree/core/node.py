@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 class Node:
     """One entry of a scanned tree.
 
-    ``allocated`` is the space taken on disk (see ``file_tree.core.allocation``).
+    ``allocated`` is the space taken on disk (see ``je_file_tree.core.allocation``).
     For a folder, ``size``, ``allocated``, ``file_count``, ``dir_count`` and ``modified`` are
     totals over everything beneath it (filled in by the scanner once the whole
     tree is read), and ``children`` is a list sorted largest first. A file keeps

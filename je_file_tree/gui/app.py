@@ -1,4 +1,4 @@
-"""Start the application: ``python -m file_tree [folder]`` or the ``file-tree`` command."""
+"""Start the application: ``python -m je_file_tree [folder]`` or the ``file-tree`` command."""
 
 from __future__ import annotations
 
@@ -8,12 +8,12 @@ from collections.abc import Sequence
 from PySide6.QtCore import QLocale, QSettings
 from PySide6.QtWidgets import QApplication
 
-from file_tree import __version__
-from file_tree.gui.i18n import LANGUAGES, match_language, set_language
-from file_tree.gui.icon import app_icon
-from file_tree.gui import elevation
-from file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
-from file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree import __version__
+from je_file_tree.gui.i18n import LANGUAGES, match_language, set_language
+from je_file_tree.gui.icon import app_icon
+from je_file_tree.gui import elevation
+from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
+from je_file_tree.gui.qt_translation import apply_qt_translation
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"

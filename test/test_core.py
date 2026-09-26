@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.core import export
-from file_tree.core.analysis import (
+from je_file_tree.core import export
+from je_file_tree.core.analysis import (
     AGES,
     CATEGORIES,
     AgeStat,
@@ -27,9 +27,9 @@ from file_tree.core.analysis import (
     subtract_stats,
     summarise,
 )
-from file_tree.core.formatting import format_count, format_share, format_size, format_time
-from file_tree.core.node import Node, outermost
-from file_tree.core.scanner import scan
+from je_file_tree.core.formatting import format_count, format_share, format_size, format_time
+from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.scanner import scan
 
 
 def _child(node: Node, name: str) -> Node:

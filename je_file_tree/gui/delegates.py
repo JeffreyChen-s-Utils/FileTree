@@ -6,7 +6,7 @@ from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QPainter
 from PySide6.QtWidgets import QApplication, QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
-from file_tree.gui.tree_model import SHARE_ROLE
+from je_file_tree.gui.tree_model import SHARE_ROLE
 
 _BAR_MARGIN = 3
 

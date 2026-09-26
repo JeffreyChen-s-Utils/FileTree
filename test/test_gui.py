@@ -12,22 +12,22 @@ import pytest
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
 from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
-from file_tree.core.analysis import CATEGORIES
-from file_tree.core.formatting import format_size
-from file_tree.core.node import Node
-from file_tree.core import scanner
-from file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
-from file_tree.gui import file_actions, i18n, scan_worker
-from file_tree.gui import main_window as main_window_module
-from file_tree.gui.app import create_window
-from file_tree.gui.help_dialog import HelpDialog
-from file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
-from file_tree.gui.qt_translation import apply_qt_translation
-from file_tree.gui.results_view import SEARCH_TAB
-from file_tree.gui.scan_worker import analyse
-from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
-from file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
-from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.core.analysis import CATEGORIES
+from je_file_tree.core.formatting import format_size
+from je_file_tree.core.node import Node
+from je_file_tree.core import scanner
+from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
+from je_file_tree.gui import file_actions, i18n, scan_worker
+from je_file_tree.gui import main_window as main_window_module
+from je_file_tree.gui.app import create_window
+from je_file_tree.gui.help_dialog import HelpDialog
+from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
+from je_file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree.gui.results_view import SEARCH_TAB
+from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
+from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
+from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 
 def _wait(app: QApplication, done: Callable[[], bool], timeout: float = 10.0) -> None:

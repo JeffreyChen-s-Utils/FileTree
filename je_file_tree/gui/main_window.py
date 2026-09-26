@@ -18,19 +18,19 @@ from PySide6.QtWidgets import (
     QToolBar,
 )
 
-from file_tree import __version__
-from file_tree.core import export
-from file_tree.core.analysis import Summary
-from file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
-from file_tree.core.node import Node, outermost
-from file_tree.core.scanner import ScanOptions
-from file_tree.gui import elevation, file_actions
-from file_tree.gui.help_dialog import HelpDialog
-from file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
-from file_tree.gui.qt_translation import apply_qt_translation
-from file_tree.gui.results_view import TREEMAP_TAB, ResultsView
-from file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
-from file_tree.gui.welcome import WelcomePage
+from je_file_tree import __version__
+from je_file_tree.core import export
+from je_file_tree.core.analysis import Summary
+from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
+from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.gui import elevation, file_actions
+from je_file_tree.gui.help_dialog import HelpDialog
+from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
+from je_file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree.gui.results_view import TREEMAP_TAB, ResultsView
+from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
+from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
 # How often the tree of a running scan is refreshed.

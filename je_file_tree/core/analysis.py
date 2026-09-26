@@ -8,7 +8,7 @@ import time
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
-from file_tree.core.node import Node
+from je_file_tree.core.node import Node
 
 # File-type groups shown in the "File types" view and used to colour the
 # treemap. Keys are stable identifiers (the GUI translates them).

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.gui.qt_translation import CATALOGUES
+from je_file_tree.gui.qt_translation import CATALOGUES
 
 _SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "build_nuitka.py"
 

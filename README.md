@@ -36,7 +36,7 @@ FileTree needs Python 3.10 or newer. It runs on Windows, macOS and Linux.
 
 ```bash
 pip install git+https://github.com/JeffreyChen-s-Utils/FileTree.git
-file-tree
+je-file-tree
 ```
 
 Or run it from a copy of the source:
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 python start_file_tree.py
 ```
 
-`python -m file_tree` does the same.
+`python -m je_file_tree` does the same.
 
 ### Build a stand-alone program
 
@@ -59,7 +59,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 
 1. **Choose what to scan**: click *Choose a folder…* or one of the drives on the start page, drag a
    folder onto the window, or type a path in the box at the top and press Enter. You can also start a
-   scan from the command line: `file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
+   scan from the command line: `je-file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
 2. **Watch it fill in**: the tree appears right away and the biggest folders move to the top while
    FileTree works; the largest files and file types follow when the scan ends. *Stop* (or Esc) ends the
    scan at any time and keeps what was read so far, marked as incomplete.

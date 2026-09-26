@@ -1,14 +1,14 @@
 """Translations: English, Traditional Chinese (Taiwan) and Simplified Chinese.
 
 Every text the window shows goes through ``tr(key, **values)``. The string
-tables live in ``file_tree.gui.strings``; a key missing from a language falls
+tables live in ``je_file_tree.gui.strings``; a key missing from a language falls
 back to English, and every language must define exactly the English keys
 (``test_i18n`` checks this, and that the ``{placeholders}`` match).
 """
 
 from __future__ import annotations
 
-from file_tree.gui.strings import STRINGS
+from je_file_tree.gui.strings import STRINGS
 
 LANGUAGES: dict[str, str] = {"en": "English", "zh-TW": "繁體中文", "zh-CN": "简体中文"}
 DEFAULT_LANGUAGE = "en"

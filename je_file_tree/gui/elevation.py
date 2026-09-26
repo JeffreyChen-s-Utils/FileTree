@@ -15,7 +15,7 @@ import os
 import subprocess  # nosec B404 - only list2cmdline, to quote the arguments
 import sys
 
-import file_tree
+import je_file_tree
 
 _SHOW_NORMAL = 1
 # ShellExecute returns a value above 32 when it started the program.
@@ -53,7 +53,7 @@ def relaunch_command(arguments: list[str], *, is_compiled: bool, executable: str
 
     A built program starts itself (``program_path``, which a one-file build
     keeps pointing at the file the user started). From Python it is
-    ``-m file_tree`` run by the windowless interpreter next to ``executable``
+    ``-m je_file_tree`` run by the windowless interpreter next to ``executable``
     when there is one, from the folder that holds the package so the import
     works from a source copy too.
     """
@@ -61,8 +61,8 @@ def relaunch_command(arguments: list[str], *, is_compiled: bool, executable: str
         return os.path.abspath(program_path), subprocess.list2cmdline(arguments), os.getcwd()
     windowless = os.path.join(os.path.dirname(executable), "pythonw.exe")
     program = windowless if os.path.isfile(windowless) else executable
-    package_parent = os.path.dirname(os.path.dirname(os.path.abspath(file_tree.__file__)))
-    return program, subprocess.list2cmdline(["-m", "file_tree", *arguments]), package_parent
+    package_parent = os.path.dirname(os.path.dirname(os.path.abspath(je_file_tree.__file__)))
+    return program, subprocess.list2cmdline(["-m", "je_file_tree", *arguments]), package_parent
 
 
 def relaunch_elevated(arguments: list[str]) -> bool:

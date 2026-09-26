@@ -11,7 +11,7 @@ from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from file_tree.core.node import Node
+from je_file_tree.core.node import Node
 
 
 @dataclass(frozen=True, slots=True)

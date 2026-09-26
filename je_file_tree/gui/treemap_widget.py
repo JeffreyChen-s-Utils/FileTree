@@ -21,11 +21,11 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QToolTip, QWidget
 
-from file_tree.core.analysis import category_of, extension_of
-from file_tree.core.formatting import format_share, format_size
-from file_tree.core.node import Node
-from file_tree.core.treemap import Rect, Tile, layout
-from file_tree.gui.i18n import tr
+from je_file_tree.core.analysis import category_of, extension_of
+from je_file_tree.core.formatting import format_share, format_size
+from je_file_tree.core.node import Node
+from je_file_tree.core.treemap import Rect, Tile, layout
+from je_file_tree.gui.i18n import tr
 
 # One colour per file-type group (every key of analysis.CATEGORIES), readable on
 # light and dark themes alike.

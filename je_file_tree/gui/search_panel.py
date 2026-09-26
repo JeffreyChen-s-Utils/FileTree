@@ -5,12 +5,12 @@ from __future__ import annotations
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QTableView, QVBoxLayout, QWidget
 
-from file_tree.core.formatting import format_count, format_size
-from file_tree.core.node import Node
-from file_tree.core.search import SearchResult, name_matcher
-from file_tree.gui.i18n import tr
-from file_tree.gui.scan_worker import SearchWorker
-from file_tree.gui.tables import LargestFilesModel
+from je_file_tree.core.formatting import format_count, format_size
+from je_file_tree.core.node import Node
+from je_file_tree.core.search import SearchResult, name_matcher
+from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.scan_worker import SearchWorker
+from je_file_tree.gui.tables import LargestFilesModel
 
 # Typing has to pause this long before a search starts. Searching a scan of 765,000 entries took
 # 0.4-1.2 s (measured 2026-09-26), so it runs on a worker thread and a new search stops the one before.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QTextBrowser, QVBoxLayout, QWidget
 
-from file_tree.gui.i18n import tr
+from je_file_tree.gui.i18n import tr
 
 
 class HelpDialog(QDialog):

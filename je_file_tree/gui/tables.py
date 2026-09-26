@@ -9,12 +9,12 @@ from typing import Any, Generic, TypeVar
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
-from file_tree.core.analysis import AGES, AgeStat, ExtensionStat
-from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
-from file_tree.core.node import Node
-from file_tree.gui.i18n import tr
-from file_tree.gui.reasons import problem_text
-from file_tree.gui.tree_model import NODE_ROLE, SHARE_ROLE
+from je_file_tree.core.analysis import AGES, AgeStat, ExtensionStat
+from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
+from je_file_tree.core.node import Node
+from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.reasons import problem_text
+from je_file_tree.gui.tree_model import NODE_ROLE, SHARE_ROLE
 
 SORT_ROLE = Qt.ItemDataRole.UserRole + 10
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter

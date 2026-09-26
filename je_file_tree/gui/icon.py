@@ -11,7 +11,7 @@ import struct
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QImage, QPainter, QPixmap
 
-from file_tree.gui.treemap_widget import CATEGORY_COLOURS
+from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS
 
 SIZES = (16, 24, 32, 48, 64, 128, 256)
 

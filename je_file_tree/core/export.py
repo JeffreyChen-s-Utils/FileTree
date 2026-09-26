@@ -17,7 +17,7 @@ from collections.abc import Iterable
 from datetime import datetime, timezone
 from typing import Any
 
-from file_tree.core.node import Node
+from je_file_tree.core.node import Node
 
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
                   "error")

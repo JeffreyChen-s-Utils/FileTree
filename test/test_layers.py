@@ -1,11 +1,11 @@
-"""``file_tree.core`` stays free of Qt, so it can be used and tested without a GUI."""
+"""``je_file_tree.core`` stays free of Qt, so it can be used and tested without a GUI."""
 
 from __future__ import annotations
 
 import ast
 from pathlib import Path
 
-_CORE = Path(__file__).resolve().parents[1] / "file_tree" / "core"
+_CORE = Path(__file__).resolve().parents[1] / "je_file_tree" / "core"
 
 
 def _imports(path: Path) -> set[str]:
@@ -23,6 +23,6 @@ def test_the_core_imports_neither_qt_nor_the_gui() -> None:
     modules = sorted(_CORE.glob("*.py"))
     assert len(modules) >= 6
     bad = {path.name: sorted(name for name in _imports(path)
-                             if name.split(".")[0] == "PySide6" or name.startswith("file_tree.gui"))
+                             if name.split(".")[0] == "PySide6" or name.startswith("je_file_tree.gui"))
            for path in modules}
     assert {name: found for name, found in bad.items() if found} == {}

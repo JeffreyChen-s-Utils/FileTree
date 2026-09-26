@@ -23,11 +23,11 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistent
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QStyle
 
-from file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
-from file_tree.core.node import Node
-from file_tree.core.scanner import NOT_SCANNED
-from file_tree.gui.i18n import tr
-from file_tree.gui.reasons import problem_text
+from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
+from je_file_tree.core.node import Node
+from je_file_tree.core.scanner import NOT_SCANNED
+from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.reasons import problem_text
 
 NAME, SIZE, ALLOCATED, SHARE, FILES, FOLDERS, MODIFIED = range(7)
 COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_files", "column_folders",

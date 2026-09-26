@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.core.node import Node
-from file_tree.core.scanner import scan
-from file_tree.core.treemap import Rect, layout, squarify
+from je_file_tree.core.node import Node
+from je_file_tree.core.scanner import scan
+from je_file_tree.core.treemap import Rect, layout, squarify
 
 
 def _inside(inner: Rect, outer: Rect, slack: float = 1e-6) -> bool:

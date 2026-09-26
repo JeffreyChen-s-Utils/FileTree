@@ -11,10 +11,10 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, QThread, Signal
 
-from file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
-from file_tree.core.node import Node
-from file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
-from file_tree.core.search import search
+from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.node import Node
+from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
+from je_file_tree.core.search import search
 
 LARGEST_FILES_LIMIT = 1000
 

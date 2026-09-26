@@ -24,8 +24,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import cast
 
-from file_tree.core.allocation import Allocation, allocation_for
-from file_tree.core.node import Node
+from je_file_tree.core.allocation import Allocation, allocation_for
+from je_file_tree.core.node import Node
 
 # Windows reparse tags of links that must not be followed. A junction (and a
 # volume mounted into a folder) is a mount point; ``is_symlink()`` is False for

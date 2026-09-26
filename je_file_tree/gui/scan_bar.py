@@ -7,9 +7,9 @@ import time
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
-from file_tree.core.formatting import format_count, format_size
-from file_tree.core.scanner import ScanProgress
-from file_tree.gui.i18n import format_duration, tr
+from je_file_tree.core.formatting import format_count, format_size
+from je_file_tree.core.scanner import ScanProgress
+from je_file_tree.gui.i18n import format_duration, tr
 
 _BUSY_BAR_WIDTH = 120
 

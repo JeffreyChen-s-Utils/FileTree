@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from file_tree.core.analysis import (
+from je_file_tree.core.analysis import (
     CATEGORIES,
     CategoryStat,
     Summary,
@@ -45,17 +45,17 @@ from file_tree.core.analysis import (
     subtract_ages,
     subtract_stats,
 )
-from file_tree.core.formatting import format_count, format_size
-from file_tree.core.node import Node
-from file_tree.core.scanner import ScanProgress, ScanResult
-from file_tree.gui import elevation
-from file_tree.gui.delegates import ShareBarDelegate
-from file_tree.gui.i18n import format_duration, tr
-from file_tree.gui.scan_bar import ScanBar
-from file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
-from file_tree.gui.search_panel import SearchPanel
-from file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
-from file_tree.gui.tree_model import (
+from je_file_tree.core.formatting import format_count, format_size
+from je_file_tree.core.node import Node
+from je_file_tree.core.scanner import ScanProgress, ScanResult
+from je_file_tree.gui import elevation
+from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.i18n import format_duration, tr
+from je_file_tree.gui.scan_bar import ScanBar
+from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
+from je_file_tree.gui.search_panel import SearchPanel
+from je_file_tree.gui.tables import SORT_ROLE, AgeModel, FileTypesModel, LargestFilesModel, ProblemsModel
+from je_file_tree.gui.tree_model import (
     ALLOCATED,
     FILES,
     FOLDERS,
@@ -65,7 +65,7 @@ from file_tree.gui.tree_model import (
     SIZE,
     FolderTreeModel,
 )
-from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.

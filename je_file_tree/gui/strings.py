@@ -1,4 +1,4 @@
-"""Every text the window shows, per language (see ``file_tree.gui.i18n``)."""
+"""Every text the window shows, per language (see ``je_file_tree.gui.i18n``)."""
 
 from __future__ import annotations
 

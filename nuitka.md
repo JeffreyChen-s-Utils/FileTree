@@ -83,7 +83,7 @@ option is passed on to Nuitka unchanged, for example a different icon:
 | `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
 | `--macos-app-name=FileTree` (with `--app` only) | The name shown in Finder and the Dock |
 
-The entry point is `start_file_tree.py`, the same program as `python -m file_tree`.
+The entry point is `start_file_tree.py`, the same program as `python -m je_file_tree`.
 
 ## 4. Check the build
 

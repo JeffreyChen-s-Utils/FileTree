@@ -9,7 +9,7 @@ import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from file_tree.core.node import Node, outermost
+from je_file_tree.core.node import Node, outermost
 
 WILDCARDS = frozenset("*?[")
 

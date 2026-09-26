@@ -13,8 +13,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from file_tree.core.formatting import format_size
-from file_tree.gui.i18n import tr
+from je_file_tree.core.formatting import format_size
+from je_file_tree.gui.i18n import tr
 
 _MAX_RECENT = 6
 

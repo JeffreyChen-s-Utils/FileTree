@@ -5,8 +5,8 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
-from file_tree.core.scanner import scan
-from file_tree.core.search import SearchResult, name_matcher, search
+from je_file_tree.core.scanner import scan
+from je_file_tree.core.search import SearchResult, name_matcher, search
 
 
 def _names(result: SearchResult | None) -> list[str]:

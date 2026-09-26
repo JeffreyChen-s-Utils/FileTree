@@ -7,9 +7,9 @@ import string
 
 import pytest
 
-from file_tree.core.analysis import CATEGORIES
-from file_tree.gui import i18n
-from file_tree.gui.strings import STRINGS
+from je_file_tree.core.analysis import CATEGORIES
+from je_file_tree.gui import i18n
+from je_file_tree.gui.strings import STRINGS
 
 _PLACEHOLDER = string.Formatter()
 
@@ -89,8 +89,8 @@ def test_simplified_chinese_uses_simplified_characters() -> None:
 
 
 def test_the_scanners_worded_reasons_are_translated_and_other_text_passes_through() -> None:
-    from file_tree.core import scanner
-    from file_tree.gui.reasons import problem_text
+    from je_file_tree.core import scanner
+    from je_file_tree.gui.reasons import problem_text
 
     assert problem_text(scanner.ACCESS_DENIED) == "Access denied"
     i18n.set_language("zh-TW")

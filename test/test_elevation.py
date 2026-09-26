@@ -10,12 +10,12 @@ import pytest
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
-import file_tree
-from file_tree.core import scanner
-from file_tree.gui import app, elevation, i18n
-from file_tree.gui.app import create_window, wants_admin_prompt
-from file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow
-from file_tree.gui.qt_translation import apply_qt_translation
+import je_file_tree
+from je_file_tree.core import scanner
+from je_file_tree.gui import app, elevation, i18n
+from je_file_tree.gui.app import create_window, wants_admin_prompt
+from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow
+from je_file_tree.gui.qt_translation import apply_qt_translation
 
 
 def test_a_built_program_restarts_itself_with_the_same_arguments(tmp_path: Path) -> None:
@@ -32,8 +32,8 @@ def test_from_python_it_runs_the_package_with_the_windowless_interpreter(tmp_pat
     program, parameters, folder = elevation.relaunch_command(
         ["C:\\data"], is_compiled=False, executable=str(tmp_path / "python.exe"), program_path="start_file_tree.py")
     assert program == str(tmp_path / "pythonw.exe")
-    assert parameters == "-m file_tree C:\\data"
-    assert Path(folder) == Path(file_tree.__file__).resolve().parents[1]
+    assert parameters == "-m je_file_tree C:\\data"
+    assert Path(folder) == Path(je_file_tree.__file__).resolve().parents[1]
 
 
 def test_without_a_windowless_interpreter_it_uses_the_one_it_has(tmp_path: Path) -> None:

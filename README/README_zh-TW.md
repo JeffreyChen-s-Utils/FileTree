@@ -26,7 +26,7 @@ FileTree 需要 Python 3.10 以上，可在 Windows、macOS 與 Linux 上執行�
 
 ```bash
 pip install git+https://github.com/JeffreyChen-s-Utils/FileTree.git
-file-tree
+je-file-tree
 ```
 
 或從原始碼執行：
@@ -38,7 +38,7 @@ pip install -r requirements.txt
 python start_file_tree.py
 ```
 
-`python -m file_tree` 的效果相同。
+`python -m je_file_tree` 的效果相同。
 
 ### 編譯成獨立程式
 
@@ -46,7 +46,7 @@ python start_file_tree.py
 
 ## 使用方式
 
-1. **選擇要掃描的地方**：在起始頁按「選擇資料夾…」或其中一顆磁碟、把資料夾拖曳到視窗上，或在上方的方框輸入路徑後按 Enter。也可以從命令列直接開始掃描：`file-tree D:\Projects`（或 `python start_file_tree.py D:\Projects`）。
+1. **選擇要掃描的地方**：在起始頁按「選擇資料夾…」或其中一顆磁碟、把資料夾拖曳到視窗上，或在上方的方框輸入路徑後按 Enter。也可以從命令列直接開始掃描：`je-file-tree D:\Projects`（或 `python start_file_tree.py D:\Projects`）。
 2. **邊掃邊看**：資料夾樹會立刻出現，FileTree 一邊加總，最大的資料夾一邊往上排；最大的檔案與檔案類型在掃描結束時補上。隨時可以按「停止」（或 Esc）結束掃描，已經讀到的部分會留下來並標示為不完整。
 3. **找出佔空間的東西**：最大的資料夾排在最上面。按資料夾旁的箭頭看裡面的內容，或在右邊的方塊圖裡瀏覽。
 
