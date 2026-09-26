@@ -48,8 +48,9 @@ Workspace rule shared by every repository under `D:\Codes` (full text: `D:\Codes
   Claim an ID under the lock described there. When a `progress.md` item is done, delete it and add a
   `#done` entry plus its index row in the same commit.
 - **`architecture.md`** is the short architecture overview. Cross-project contracts are in its §6.
-- **Never bump the version by hand.** `file_tree/__init__.py` and `pyproject.toml` carry it; a release
-  flow is still to be decided (`progress.md`).
+- **Never bump the version by hand.** `je_file_tree/__init__.py` and `pyproject.toml` carry it; the release
+  workflow (`.github/workflows/release.yml`) raises both with `tools/bump_version.py` when a pull request is
+  merged into `main`, publishes to PyPI and attaches `FileTree-<version>.exe` to a GitHub release.
 
 ## No AI attribution (HARD REQUIREMENT)
 
@@ -59,7 +60,7 @@ tool default.
 
 ## Code rules
 
-- **`file_tree.core` never imports Qt or `file_tree.gui`** (`test/test_layers.py`). Scanning, analysis,
+- **`je_file_tree.core` never imports Qt or `je_file_tree.gui`** (`test/test_layers.py`). Scanning, analysis,
   layout and export stay usable and testable without a window; the GUI only wraps them.
 - **Measure before optimising, and write the measurement down** next to the code it justifies (the
   scanner's worker count, the single-pass analysis). Performance rules that exist for a reason:
@@ -72,13 +73,13 @@ tool default.
   unreadable folder: it records it in `ScanResult.errors`.
 - **Nothing is ever deleted permanently.** The only removal is `QFile.moveToTrash`, always after a
   confirmation. Do not add a permanent delete.
-- **Every text goes through `tr()`**; add a key to all three tables in `file_tree/gui/strings.py`
+- **Every text goes through `tr()`**; add a key to all three tables in `je_file_tree/gui/strings.py`
   (`test/test_i18n.py` checks keys and placeholders). Traditional Chinese uses Taiwanese wording
   (檔案、資料夾、設定、預設、資源回收筒); Simplified Chinese uses Mainland wording and characters.
 - Files are read and written with an explicit `encoding=`; exports are written to a temporary sibling and
   moved into place.
 - Subprocesses: no shell, fixed programs only. `explorer /select,` needs the path in quotes (see
-  `file_tree/gui/file_actions.py`).
+  `je_file_tree/gui/file_actions.py`).
 - Workspace limits apply: functions ≤ 80 lines, cyclomatic complexity ≤ 15 (ruff), ≤ 7 parameters, no
   bare or silent `except`, no `print()` in the package, `assert` only in tests, public functions and
   classes typed and documented.

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import functools
+import math
+import os
 import threading
 import time
 from collections.abc import Callable
@@ -10,24 +12,28 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
 
-from file_tree.core.analysis import CATEGORIES
-from file_tree.core.formatting import format_size
-from file_tree.core.node import Node
-from file_tree.core import scanner
-from file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
-from file_tree.gui import file_actions, i18n, scan_worker
-from file_tree.gui import main_window as main_window_module
-from file_tree.gui.app import create_window
-from file_tree.gui.help_dialog import HelpDialog
-from file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
-from file_tree.gui.qt_translation import apply_qt_translation
-from file_tree.gui.results_view import SEARCH_TAB
-from file_tree.gui.scan_worker import analyse
-from file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
-from file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
-from file_tree.gui.treemap_widget import CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.core.analysis import CATEGORIES
+from je_file_tree.core.formatting import format_size
+from je_file_tree.core.node import Node
+from je_file_tree.core import scanner
+from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
+from je_file_tree.gui import file_actions, i18n, scan_worker
+from je_file_tree.gui import main_window as main_window_module
+from je_file_tree.gui.app import create_window
+from je_file_tree.gui.help_dialog import HelpDialog
+from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
+from je_file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree.gui.results_view import CHANGES_TAB, SEARCH_TAB, _selected_in
+from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
+from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
+from je_file_tree.gui import bar_chart
+from je_file_tree.gui.charts import BARS, SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.sunburst_widget import SunburstWidget
+from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, TreemapWidget
 
 
 def _wait(app: QApplication, done: Callable[[], bool], timeout: float = 10.0) -> None:
@@ -166,6 +172,74 @@ def test_treemap_lays_out_on_paint_and_finds_tiles(qapp: QApplication, sample_tr
     widget.deleteLater()
 
 
+def test_the_bar_chart_lists_a_folder_largest_first(qapp: QApplication, sample_tree: Path,
+                                                    monkeypatch: pytest.MonkeyPatch) -> None:
+    root = scan(sample_tree).root
+    chart = bar_chart.BarChartWidget()
+    chart.resize(500, 300)
+    chart.set_view_root(root)
+    line = chart.sizeHint().height() / 4
+    assert [chart.node_at(line * row + 1).name for row in range(4)] == ["big.bin", "photos", "code", "notes.txt"]
+    assert chart.node_at(line * 4 + 1) is None
+    chart.grab()  # paints without error
+    monkeypatch.setattr(bar_chart, "MAX_BARS", 2)
+    chart.invalidate()
+    assert chart.sizeHint().height() == 3 * line, "two bars and one line for the other two entries"
+    chart.set_view_root(next(child for child in root.children if child.name == "code").children[0])
+    assert chart.view_root is not None
+    assert chart.view_root.name == "code", "a file shows its folder"
+    chart.deleteLater()
+
+
+def test_the_sunburst_finds_arcs_under_the_mouse_and_zooms(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    widget = SunburstWidget()
+    widget.resize(400, 400)
+    widget.set_view_root(root)
+    widget.grab()
+    inner, ring = widget._radii()
+
+    def point(depth: int, fraction: float) -> QPoint:
+        radius = inner + (depth - 0.5) * ring
+        return QPoint(round(200 + radius * math.sin(fraction * 2 * math.pi)),
+                      round(200 - radius * math.cos(fraction * 2 * math.pi)))
+
+    assert widget.hit(200, 200) is root, "the centre is the folder shown"
+    photos = widget.hit(point(1, 0.6).x(), point(1, 0.6).y())
+    assert photos is not None
+    assert photos.node.name == "photos"
+    picture = widget.hit(point(2, 0.72).x(), point(2, 0.72).y())
+    assert picture is not None
+    assert picture.node.name == "b.png"
+    assert widget.hit(2, 2) is None, "outside the rings"
+    QTest.mouseDClick(widget, Qt.MouseButton.LeftButton, pos=point(1, 0.6))
+    assert widget.view_root is photos.node
+    QTest.mouseClick(widget, Qt.MouseButton.LeftButton, pos=QPoint(200, 200))
+    assert widget.view_root is root, "a click on the centre goes up"
+    widget.deleteLater()
+
+
+def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = next(child for child in root.children if child.name == "photos")
+    charts = ChartStack()
+    charts.resize(500, 300)
+    moves: list[Node | None] = []
+    charts.view_root_changed.connect(moves.append)
+    charts.set_view_root(root)
+    charts.set_mode(BARS)
+    assert charts.mode == BARS
+    charts.bars.set_view_root(photos)  # as a double-click in the bars does
+    assert charts.view_root is photos
+    assert charts.treemap.view_root is photos
+    assert charts.sunburst.view_root is photos
+    charts.zoom_out()
+    assert charts.bars.view_root is root
+    assert charts.treemap.view_root is root
+    assert moves == [root, photos, root], "one signal per move, not one per view"
+    charts.deleteLater()
+
+
 # --- the window -------------------------------------------------------------
 
 
@@ -283,9 +357,15 @@ def test_export_writes_the_chosen_file(window: MainWindow, qapp: QApplication, s
     _scanned(window, qapp, sample_tree)
     target = tmp_path / "out.csv"
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(target), ""))
-    window.export_results("folders")
+    window.export_results("folders")  # written on a worker thread
+    _wait(qapp, lambda: "4 rows" in window.statusBar().currentMessage())
     assert target.read_text(encoding="utf-8-sig").startswith("path,size_bytes")
-    assert "4 rows" in window.statusBar().currentMessage()
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(tmp_path / "missing" / "x.csv"), ""))
+    window.export_results("largest")
+    _wait(qapp, lambda: bool(warnings))
+    assert warnings[0].startswith("The file could not be saved.")
 
 
 def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: QApplication, sample_tree: Path,
@@ -413,6 +493,131 @@ def test_the_tree_and_the_summary_show_the_space_taken_on_disk(window: MainWindo
     assert f"({format_size(root.allocated)} on disk)" in window.results.summary.text()
 
 
+def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = tmp_path / "copies"
+    folder.mkdir()
+    for name in ("photo.jpg", "photo (1).jpg", "photo (2).jpg"):
+        (folder / name).write_bytes(b"p" * 5000)
+    (folder / "notes.txt").write_bytes(b"n" * 300)
+    (folder / "notes-old.txt").write_bytes(b"n" * 300)
+    for oldest in ("photo.jpg", "notes-old.txt"):  # the oldest copy of each is the one kept
+        os.utime(folder / oldest, (1_600_000_000, 1_600_000_000))
+    _scanned(window, qapp, folder)
+    panel = window.results.duplicates
+    assert panel.start_button.isEnabled()
+    assert not panel.groups
+    assert panel.status.text().startswith("Finds files with the same content")
+    panel.min_size.setCurrentIndex(0)  # any size: these files are small
+    panel.start()
+    _wait(qapp, lambda: not panel.running)
+    assert [len(group.files) for group in panel.groups] == [3, 2]
+    assert panel.status.text() == "2 groups of duplicates: 10.1 KB in extra copies."
+    assert panel.model.index(0, 0).data() == "3 copies of 4.9 KB — 9.8 KB in extra copies"
+    assert panel.model.index(0, 0, panel.model.index(0, 0)).data() == "photo.jpg", "oldest first"
+    panel.select_extra_copies()
+    picked = _selected_in(panel.view)
+    assert sorted(node.name for node in picked) == ["notes.txt", "photo (1).jpg", "photo (2).jpg"]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash(picked)
+    assert panel.groups == [], "every group is down to one file"
+    assert panel.status.text() == "No duplicate files found."
+    panel.start()
+    panel.stop()
+    assert panel.status.text() == "The search was stopped."
+    assert not panel.running
+
+
+def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                       tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    saved = tmp_path / "before.json"
+    _scanned(window, qapp, sample_tree)
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(saved), ""))
+    window.export_results("json")  # the scan saved for later
+    _wait(qapp, lambda: "Saved" in window.statusBar().currentMessage())
+    results = window.results
+    assert not results.tabs.isTabVisible(CHANGES_TAB), "no comparison yet"
+    (sample_tree / "photos" / "c.jpg").write_bytes(b"j" * 300)
+    (sample_tree / "big.bin").unlink()
+    window.rescan()
+    _wait(qapp, lambda: results.outcome is not None and results.tree_model.root.size == 800)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_args: (str(saved), ""))
+    window._actions["compare"].trigger()
+    _wait(qapp, lambda: results.tabs.isTabVisible(CHANGES_TAB) and not results.changes.busy)
+    assert results.tabs.currentIndex() == CHANGES_TAB
+    rows = {change.path: (change.before, change.after) for change in results.changes_model.rows()}
+    assert rows == {"": (1000, 800), "photos": (250, 550)}
+    assert "1,000 B then, 800 B now (−200 B); 2 folders changed." in results.changes.summary.text()
+    (sample_tree / "photos" / "c.jpg").unlink()
+    window.rescan()  # the comparison follows the new scan
+    _wait(qapp, lambda: results.outcome is not None and not results.changes.busy
+          and len(results.changes_model.rows()) == 1)
+    assert [change.path for change in results.changes_model.rows()] == [""]
+    results.changes.stop_comparing()
+    assert not results.tabs.isTabVisible(CHANGES_TAB)
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    (tmp_path / "other.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_args: (str(tmp_path / "other.json"), ""))
+    window._actions["compare"].trigger()
+    _wait(qapp, lambda: bool(warnings))
+    assert "not a scan saved by FileTree" in warnings[0]
+    assert not results.tabs.isTabVisible(CHANGES_TAB)
+
+
+def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    widget = TreemapWidget()
+    widget.resize(400, 300)
+    widget.set_view_root(root)
+    assert widget.levels == 2
+    widget.grab()
+    assert {tile.depth for tile in widget._tiles} == {1, 2}
+    widget.set_levels(1)
+    widget.grab()
+    assert {tile.depth for tile in widget._tiles} == {1}
+    widget.set_levels(5)  # not offered: ignored
+    assert widget.levels == 1
+    widget.set_levels(2)
+    widget.set_colour_mode(BY_FOLDER)
+    widget.grab()
+    photos, code = (next(child for child in root.children if child.name == name) for name in ("photos", "code"))
+    assert widget._colour(photos.children[0], 2).hue() != widget._colour(code.children[0], 2).hue(), (
+        "files take the hue of their top-level folder")
+    assert widget._colour(photos.children[0], 2).hue() == widget._colour(photos.children[1], 2).hue()
+    widget.set_colour_mode("rainbow")  # not offered: ignored
+    assert widget.colour_mode == BY_FOLDER
+    widget.deleteLater()
+
+
+def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    assert window.results.charts.mode == TREEMAP
+    window.results._chart_buttons[BARS].click()
+    assert window.results.charts.mode == BARS
+    assert window.settings.value("chart_mode") == BARS
+    window.results._chart_buttons[TREEMAP].click()
+    assert not window.results._treemap_options.isHidden(), "the treemap options come with the treemap"
+    window.results._levels_combo.setCurrentIndex(window.results._levels_combo.findData(3))
+    window.results._colours_combo.setCurrentIndex(window.results._colours_combo.findData(BY_FOLDER))
+    assert (window.settings.value("treemap_levels"), window.settings.value("treemap_colours")) == (3, BY_FOLDER)
+    assert window.results._legend.isHidden(), "no file-type legend when colouring by folder"
+    window.results._chart_buttons[BARS].click()
+    assert not window.results._legend.isHidden(), "the bars keep the file-type colours"
+    assert window.results._treemap_options.isHidden()
+    again = create_window(window.settings)
+    assert again.results.charts.mode == BARS
+    assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
+    again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
+    assert again.results.charts.treemap.levels == 3
+    assert again.results.charts.mode == BARS
+    again.results._chart_buttons[SUNBURST].click()
+    assert again.results._legend.isHidden(), "the sunburst colours by folder"
+    again.close()
+    again.deleteLater()
+
+
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:
     urls = [QUrl.fromLocalFile(str(sample_tree / "big.bin")), QUrl.fromLocalFile(str(sample_tree / "code"))]
     assert _dropped_folder(urls) == str(sample_tree / "code")
@@ -420,6 +625,23 @@ def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path)
     dialog = HelpDialog(window)
     assert "FileTree" in dialog.browser.toPlainText()
     dialog.deleteLater()
+
+
+def test_linux_asks_the_file_manager_to_select_before_opening_the_folder(monkeypatch: pytest.MonkeyPatch) -> None:
+    opened: list[str] = []
+    monkeypatch.setattr(file_actions.sys, "platform", "linux")
+    monkeypatch.setattr(file_actions, "open_path", lambda path: opened.append(path) or True)
+    monkeypatch.setattr(file_actions, "show_items", lambda _path: True)
+    assert file_actions.reveal_in_file_manager("/home/me/photos/a.jpg")
+    assert opened == [], "the file manager showed it selected"
+    monkeypatch.setattr(file_actions, "show_items", lambda _path: False)
+    assert file_actions.reveal_in_file_manager("/home/me/photos/a.jpg")
+    assert opened == ["/home/me/photos"], "no file manager answered: its folder is opened"
+
+
+def test_show_items_needs_a_session_bus(qapp: QApplication, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(file_actions, "QDBusConnection", None)
+    assert file_actions.show_items("/home/me/x") is False
 
 
 def test_explorer_command_always_quotes_the_path() -> None:

@@ -9,9 +9,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from file_tree.core import allocation
-from file_tree.core.allocation import allocation_for, blocks_allocation, windows_allocation
-from file_tree.core.scanner import scan
+from je_file_tree.core import allocation
+from je_file_tree.core.allocation import allocation_for, blocks_allocation, windows_allocation
+from je_file_tree.core.scanner import scan
 
 ENTRY = SimpleNamespace(path="C:\\x\\file")
 

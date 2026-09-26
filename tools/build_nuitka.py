@@ -29,8 +29,8 @@ sys.path.insert(0, str(ROOT))
 import PySide6  # noqa: E402
 from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
-from file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
-from file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
+from je_file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
+from je_file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
 
 ENTRY_POINT = ROOT / "start_file_tree.py"
 PROGRAM_NAME = "FileTree"

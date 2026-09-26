@@ -73,7 +73,7 @@ python tools/build_nuitka.py --app
 | `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
 | `--macos-app-name=FileTree`（只在 `--app` 时） | 在 Finder 与 Dock 显示的名称 |
 
-入口是 `start_file_tree.py`，和 `python -m file_tree` 是同一个程序。
+入口是 `start_file_tree.py`，和 `python -m je_file_tree` 是同一个程序。
 
 ## 4. 检查编译结果
 

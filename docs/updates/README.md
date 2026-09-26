@@ -64,6 +64,15 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20260926-23 | 2026-09-26 | Linux: ask the file manager to select the entry (D-Bus), else open its folder | #progress #linux #gui | [2026-09](2026-09.md) |
+| U-20260926-22 | 2026-09-26 | Sunburst: the third view of the Chart tab | #done #core #gui | [2026-09](2026-09.md) |
+| U-20260926-21 | 2026-09-26 | Treemap: folder name strips, sizes, levels and colours by folder | #done #gui #treemap | [2026-09](2026-09.md) |
+| U-20260926-20 | 2026-09-26 | Chart tab: bars as a second view next to the treemap | #done #gui | [2026-09](2026-09.md) |
+| U-20260926-19 | 2026-09-26 | Export on a worker thread | #done #gui #perf | [2026-09](2026-09.md) |
+| U-20260926-18 | 2026-09-26 | Compare with a scan saved as JSON: a Changes tab | #done #core #gui | [2026-09](2026-09.md) |
+| U-20260926-17 | 2026-09-26 | Find duplicate files and move the extra copies to the Recycle Bin | #done #core #gui #perf | [2026-09](2026-09.md) |
+| U-20260926-16 | 2026-09-26 | Release workflow: PyPI and FileTree.exe on every merge into main | #progress #release #ci | [2026-09](2026-09.md) |
+| U-20260926-15 | 2026-09-26 | Package renamed je_file_tree (PyPI name file_tree is taken) | #done #refactor #release | [2026-09](2026-09.md) |
 | U-20260926-14 | 2026-09-26 | Size on disk for every entry | #done #core #gui #perf | [2026-09](2026-09.md) |
 | U-20260926-13 | 2026-09-26 | Search the whole scan by name or pattern | #done #gui #core | [2026-09](2026-09.md) |
 | U-20260926-12 | 2026-09-26 | Tests no longer bring up the real administrator prompt | #fix #test | [2026-09](2026-09.md) |

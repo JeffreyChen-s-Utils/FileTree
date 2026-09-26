@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `treemap.py` (layout), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `search_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `compare.py` (against a saved scan), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `duplicates_panel.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -23,14 +23,14 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 
 ## 3. Entry points and public interfaces
 
-- `file-tree [folder]` (the `gui-scripts` entry `file_tree.gui.app:run`), `python start_file_tree.py [folder]`
-  and `python -m file_tree [folder]`: all three call `app.run()`, which opens the window and scans `folder`
+- `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`
+  and `python -m je_file_tree [folder]`: all three call `app.run()`, which opens the window and scans `folder`
   right away if given (`test/test_start_script.py`).
 - `python tools/build_nuitka.py [--onefile | --app] [Nuitka options]`: compiles `start_file_tree.py` into
   `build/<mode>/`, copying Qt's translation catalogues listed in `qt_translation.CATALOGUES`.
-- `file_tree.core.scanner.scan(path, *, options, progress, cancel)` → `ScanResult(root, errors, elapsed)`.
-- `file_tree.core.analysis.summarise(root, limit)` → largest files and per-extension totals in one pass.
-- `file_tree.core.treemap.layout(root, rect, ...)` → `Tile`s; `export.export_*` write CSV / JSON.
+- `je_file_tree.core.scanner.scan(path, *, options, progress, cancel)` → `ScanResult(root, errors, elapsed)`.
+- `je_file_tree.core.analysis.summarise(root, limit)` → largest files and per-extension totals in one pass.
+- `je_file_tree.core.treemap.layout(root, rect, ...)` → `Tile`s; `export.export_*` write CSV / JSON.
 
 ## 4. Main flows
 
@@ -62,6 +62,18 @@ it). `FolderTreeModel.remove` detaches each node and subtracts its totals from e
 largest files, per-type and per-age totals and treemap are updated once, without a rescan. Entries the system
 refuses stay and are named in a warning.
 
+**Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
+entries of one folder, the rest on one line) and the sunburst (`SunburstWidget`: `core.sunburst.layout`
+gives arcs as fractions of the circle, at most `RINGS` rings, arcs thinner than `min_span` and past
+`max_segments` left out, drawn into a cached pixmap) and shows one at a time; the mode is saved in the settings
+(`chart_mode`). Both offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
+`node_clicked`, `view_root_changed`, `context_menu_requested`); when one moves to another folder the stack
+moves the others and signals the page once, so the results page drives the stack as a single chart.
+The treemap draws `levels` levels (2 unless chosen, saved as `treemap_levels`); `treemap.layout(header=…)`
+keeps a strip at the top of every opened folder that is at least three strips wide and tall, where the
+widget prints the folder's name and size; colours come from the file type or, with `treemap_colours` =
+`folder`, from a hue per top-level folder (the legend is hidden then).
+
 **Rescan one folder.** The context menu's *Rescan this folder* runs a `ScanWorker` on that branch alone,
 then `FolderTreeModel.replace` swaps it in (`Node.replace_with` corrects every total above it; persistent
 indexes inside the old branch are dropped, the rest follow their nodes) and an `AnalyseWorker` recomputes
@@ -74,11 +86,26 @@ count and size of all. A new search stops the one before (it checks once per fol
 result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
 move to the Recycle Bin or a folder rescan.
 
+**Duplicates.** The Duplicates tab (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
+`DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are
+hashed on a thread pool, first their first 64 KB, then, for those still alike, the whole file; hard links
+(same device and file number) count once. Progress reaches the window at most ten times a second; Stop is
+checked before every file and every 1 MB. The groups are dropped on a new scan and pruned (`Node.is_in`)
+after a move to the Recycle Bin or a folder rescan.
+
+**Compare with a saved scan.** A saved scan is the Folder tree JSON export (`"format": "file-tree/1"`, with
+`"saved"`, the time it was written). *Compare with a saved scan…* hands the file to a `CompareWorker`, which
+reads it (`compare.load_saved` checks every field and raises `SavedScanError` with the reason) and
+matches folders by their path below the scanned folder (`folder_key`, case-insensitive where the file
+system is). The Changes tab, hidden until then, lists changed, new and gone folders; the comparison runs
+again after each scan, move to the Recycle Bin and folder rescan until *Stop comparing*. Reading and
+comparing took 0.68 s and 0.49 s on 86,000 folders, hence the worker.
+
 **Administrator rights (Windows).** Before the window opens, `app.main` asks `elevation.relaunch_elevated`
 to start a second copy through the "runas" verb (the UAC prompt) unless the `ask_admin_at_start` setting is
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
 continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
-the scanned folder as its argument. A built program restarts itself; from Python it is `-m file_tree`.
+the scanned folder as its argument. A built program restarts itself; from Python it is `-m je_file_tree`.
 
 **Language.** `i18n.set_language` + `qt_translation.apply_qt_translation` (Qt's own buttons and dialogs),
 then every widget's `retranslate()`. The choice is stored in `QSettings` with the unit, window layout and
@@ -86,17 +113,27 @@ recent folders.
 
 ## 5. Extension points
 
-- **A language**: a table in `file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in
+- **A language**: a table in `je_file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in
   `qt_translation.CATALOGUES`, a README translation and a screenshot (`tools/make_screenshots.py`).
 - **A file-type group**: `analysis.CATEGORY_EXTENSIONS`, a colour in `treemap_widget.CATEGORY_COLOURS`
   and a `category_<name>` text in every language (tests check all three).
 - **An export format**: a function in `core/export.py` (atomic write) and an action in `main_window.py`.
 - **A result tab**: a widget added in `ResultsView._assemble`, fed from `ScanOutcome`.
+- **A chart view**: a widget with the treemap's interface, added to `charts.MODES` and `ChartStack`, with
+  `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.
+
+Outside the workspace it is published as `je_file_tree` on PyPI (command `je-file-tree`): the names
+`file_tree` and `file-tree` belong to FSL's `file-tree`, which installs a module and a command of that
+name, so they must not come back. `.github/workflows/release.yml` releases on every pull request merged
+into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
+`je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
+stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
+with `tools/build_nuitka.py --onefile` for the GitHub release.
 
 ## 7. Design constraints
 

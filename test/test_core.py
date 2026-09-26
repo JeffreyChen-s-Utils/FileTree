@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.core import export
-from file_tree.core.analysis import (
+from je_file_tree.core import export
+from je_file_tree.core.analysis import (
     AGES,
     CATEGORIES,
     AgeStat,
@@ -27,9 +27,9 @@ from file_tree.core.analysis import (
     subtract_stats,
     summarise,
 )
-from file_tree.core.formatting import format_count, format_share, format_size, format_time
-from file_tree.core.node import Node, outermost
-from file_tree.core.scanner import scan
+from je_file_tree.core.formatting import format_count, format_share, format_size, format_time
+from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.scanner import scan
 
 
 def _child(node: Node, name: str) -> Node:
@@ -53,6 +53,20 @@ def test_iter_files_skips_folders_and_links(sample_tree: Path) -> None:
     root.children.append(Node("link", False, is_link=True, parent=root))
     assert sorted(node.name for node in root.iter_files()) == [
         "Makefile", "a.jpg", "b.png", "big.bin", "main.py", "notes.txt"]
+
+
+def test_is_in_follows_the_parents_up_to_the_root(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    photos = _child(root, "photos")
+    picture = _child(photos, "a.jpg")
+    assert root.is_in(root)
+    assert photos.is_in(root)
+    assert picture.is_in(root)
+    assert not root.is_in(photos)
+    photos.detach()
+    assert not photos.is_in(root)
+    assert not picture.is_in(root), "a detached branch is out, with everything in it"
+    assert picture.is_in(photos)
 
 
 def test_detach_subtracts_from_every_folder_above(sample_tree: Path) -> None:

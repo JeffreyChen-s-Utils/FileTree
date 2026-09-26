@@ -12,8 +12,8 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QImageReader
 from PySide6.QtWidgets import QApplication
 
-from file_tree.gui import icon
-from file_tree.gui.app import create_window
+from je_file_tree.gui import icon
+from je_file_tree.gui.app import create_window
 
 _SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "build_nuitka.py"
 

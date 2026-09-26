@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.gui import elevation
+from je_file_tree.gui import elevation
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 

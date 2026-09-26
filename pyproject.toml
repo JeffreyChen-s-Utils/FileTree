@@ -3,7 +3,7 @@ requires = ["setuptools>=82.0.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "file_tree"
+name = "je_file_tree"
 version = "0.1.0"
 authors = [
     { name = "JE-Chen", email = "jechenmailman@gmail.com" },
@@ -42,10 +42,10 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.gui-scripts]
-file-tree = "file_tree.gui.app:run"
+je-file-tree = "je_file_tree.gui.app:run"
 
 [tool.setuptools.packages.find]
-include = ["file_tree*"]
+include = ["je_file_tree*"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
@@ -70,4 +70,4 @@ max-args = 7
 # to keep Qt out of the pure-core test modules.
 "test/*" = ["S101", "PLR2004", "PLC0415"]
 # Qt's virtual methods keep Qt's camelCase names.
-"file_tree/gui/*" = ["N802"]
+"je_file_tree/gui/*" = ["N802"]

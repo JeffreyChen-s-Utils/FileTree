@@ -10,9 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from file_tree.core import scanner
-from file_tree.core.node import Node
-from file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanProgress, scan
+from je_file_tree.core import scanner
+from je_file_tree.core.node import Node
+from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanProgress, scan
 
 
 def _child(node: Node, name: str) -> Node:
