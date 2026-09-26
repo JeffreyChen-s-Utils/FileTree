@@ -29,7 +29,7 @@ from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import TREEMAP_TAB, ResultsView
-from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, ScanWorker
+from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker
 from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
         self.settings = settings if settings is not None else QSettings()
         self._worker: ScanWorker | None = None
         self._analyser: AnalyseWorker | None = None
+        self._exports: set[ExportWorker] = set()
         self._last_path = ""
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
@@ -314,17 +315,24 @@ class MainWindow(QMainWindow):
                                                 tr("json_filter") if is_json else tr("csv_filter"))
         if not target:
             return
-        try:
-            if kind == "folders":
-                count = export.export_folders_csv(outcome.result.root, target)
-            elif kind == "largest":
-                count = export.export_files_csv(self.results.largest_model.rows(), target)
-            else:
-                export.export_json(outcome.result.root, target)
-                count = outcome.result.root.dir_count + 1
-        except OSError as error:
-            QMessageBox.warning(self, tr("export_title"), tr("export_failed", reason=error.strerror or str(error)))
-            return
+        root = outcome.result.root
+        largest = self.results.largest_model.rows()
+        writers: dict[str, Callable[[], int]] = {
+            "folders": lambda: export.export_folders_csv(root, target),
+            "largest": lambda: export.export_files_csv(largest, target),
+            "json": lambda: _write_json(root, target),
+        }
+        worker = ExportWorker(writers[kind], self)
+        worker.done.connect(lambda count: self._export_done(target, count))
+        worker.failed.connect(lambda reason: QMessageBox.warning(self, tr("export_title"),
+                                                                 tr("export_failed", reason=reason)))
+        worker.finished.connect(lambda: self._exports.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._exports.add(worker)
+        self.statusBar().showMessage(tr("export_running", path=target))
+        worker.start()
+
+    def _export_done(self, target: str, count: int) -> None:
         self.settings.setValue("export_dir", os.path.dirname(target))
         self.statusBar().showMessage(tr("export_done", count=count, path=target), _STATUS_TIMEOUT_MS)
 
@@ -391,6 +399,8 @@ class MainWindow(QMainWindow):
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
         self.results.changes.stop(wait=True)
+        for worker in list(self._exports):  # a file being written is finished, never left half-written
+            worker.wait()
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
@@ -558,6 +568,12 @@ def _dropped_folder(urls: list) -> str | None:
         if url.isLocalFile() and os.path.isdir(url.toLocalFile()):
             return os.path.normpath(url.toLocalFile())
     return None
+
+
+def _write_json(root: Node, target: str) -> int:
+    """Write the folder tree as JSON; returns the number of folders written."""
+    export.export_json(root, target)
+    return root.dir_count + 1
 
 
 def _movable(nodes: Sequence[Node]) -> list[Node]:

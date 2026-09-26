@@ -196,6 +196,7 @@ EN: dict[str, str] = {
     "status_selected_many": "{count} items selected: {size}",
     # export
     "export_title": "Export",
+    "export_running": "Saving to {path}…",
     "csv_filter": "CSV files (*.csv)",
     "json_filter": "JSON files (*.json)",
     "export_done": "Saved {count} rows to {path}",
@@ -461,6 +462,7 @@ ZH_TW: dict[str, str] = {
     "trash_done_many": "已把 {count} 個項目移到資源回收筒，釋出 {size}。",
     "status_selected_many": "已選取 {count} 個項目：{size}",
     "export_title": "匯出",
+    "export_running": "正在儲存到 {path}…",
     "csv_filter": "CSV 檔案 (*.csv)",
     "json_filter": "JSON 檔案 (*.json)",
     "export_done": "已把 {count} 列存到 {path}",
@@ -715,6 +717,7 @@ ZH_CN: dict[str, str] = {
     "trash_done_many": "已把 {count} 个项目移到回收站，释放 {size}。",
     "status_selected_many": "已选中 {count} 个项目：{size}",
     "export_title": "导出",
+    "export_running": "正在保存到 {path}…",
     "csv_filter": "CSV 文件 (*.csv)",
     "json_filter": "JSON 文件 (*.json)",
     "export_done": "已把 {count} 行保存到 {path}",

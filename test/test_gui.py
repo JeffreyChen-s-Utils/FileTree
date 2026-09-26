@@ -284,9 +284,15 @@ def test_export_writes_the_chosen_file(window: MainWindow, qapp: QApplication, s
     _scanned(window, qapp, sample_tree)
     target = tmp_path / "out.csv"
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(target), ""))
-    window.export_results("folders")
+    window.export_results("folders")  # written on a worker thread
+    _wait(qapp, lambda: "4 rows" in window.statusBar().currentMessage())
     assert target.read_text(encoding="utf-8-sig").startswith("path,size_bytes")
-    assert "4 rows" in window.statusBar().currentMessage()
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(tmp_path / "missing" / "x.csv"), ""))
+    window.export_results("largest")
+    _wait(qapp, lambda: bool(warnings))
+    assert warnings[0].startswith("The file could not be saved.")
 
 
 def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: QApplication, sample_tree: Path,
@@ -454,6 +460,7 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     _scanned(window, qapp, sample_tree)
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_args: (str(saved), ""))
     window.export_results("json")  # the scan saved for later
+    _wait(qapp, lambda: "Saved" in window.statusBar().currentMessage())
     results = window.results
     assert not results.tabs.isTabVisible(CHANGES_TAB), "no comparison yet"
     (sample_tree / "photos" / "c.jpg").write_bytes(b"j" * 300)
