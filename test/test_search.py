@@ -6,7 +6,7 @@ import threading
 from pathlib import Path
 
 from je_file_tree.core.scanner import scan
-from je_file_tree.core.search import SearchResult, name_matcher, search
+from je_file_tree.core.search import Query, SearchResult, name_matcher, search
 
 
 def _names(result: SearchResult | None) -> list[str]:
@@ -48,3 +48,31 @@ def test_nothing_to_look_for_and_a_stopped_search(sample_tree: Path) -> None:
     stopped = threading.Event()
     stopped.set()
     assert search(root, "*", cancel=stopped) is None
+
+
+def test_conditions_on_size_age_type_and_kind(sample_tree: Path) -> None:
+    # big.bin 500, notes.txt 100, photos/{a.jpg 200, b.png 50}, code/{main.py 100, Makefile 50, empty/}
+    root = scan(sample_tree).root
+    for node in root.iter_nodes():
+        node.modified = 1_000_000.0  # every entry last changed at the same time
+    by_name = {node.name: node for node in root.iter_nodes()}
+    by_name["a.jpg"].modified = 1_990_000.0  # changed recently
+    now = 2_000_000.0
+
+    def names(**conditions: object) -> list[str]:
+        return sorted(_names(search(root, Query(**conditions), now=now)))  # type: ignore[arg-type]
+
+    assert names(min_size=200) == ["a.jpg", "big.bin", "photos"]
+    assert names(min_size=100, max_size=200) == ["a.jpg", "code", "main.py", "notes.txt"]
+    assert names(min_size=100, kind="files") == ["a.jpg", "big.bin", "main.py", "notes.txt"]
+    assert names(kind="folders") == ["code", "empty", "photos"]
+    assert names(category="images") == ["a.jpg", "b.png"]
+    assert names(changed_within=100_000.0) == ["a.jpg"]
+    assert "a.jpg" not in names(unchanged_for=100_000.0)
+    assert names(text="*.p*", min_size=60) == ["main.py"], "the name and the size together"
+    assert search(root, Query(), now=now) == SearchResult([], 0, 0), "no condition finds nothing"
+
+
+def test_a_name_alone_is_the_same_as_a_plain_string(sample_tree: Path) -> None:
+    root = scan(sample_tree).root
+    assert _names(search(root, Query(text="*.jpg"))) == _names(search(root, "*.jpg")) == ["a.jpg"]

@@ -18,7 +18,7 @@ from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_s
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
-from je_file_tree.core.search import search
+from je_file_tree.core.search import Query, search
 
 LARGEST_FILES_LIMIT = 1000
 
@@ -63,7 +63,7 @@ class SearchWorker(QThread):
 
     found = Signal(object)
 
-    def __init__(self, root: Node, query: str, parent: QObject | None = None) -> None:
+    def __init__(self, root: Node, query: Query | str, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._root = root
         self._query = query
