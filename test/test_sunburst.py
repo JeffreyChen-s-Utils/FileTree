@@ -19,8 +19,10 @@ def test_each_ring_shares_its_parent_s_arc_by_size(sample_tree: Path) -> None:
     assert [span for _, _, span in first] == pytest.approx([0.5, 0.25, 0.15, 0.1])
     assert first[1][1] == pytest.approx(0.5), "arcs follow one another clockwise"
     inside = {segment.node.name: segment for segment in segments if segment.depth == 2}
-    assert inside["a.jpg"].start == pytest.approx(0.5) and inside["a.jpg"].span == pytest.approx(0.2)
-    assert inside["b.png"].start == pytest.approx(0.7) and inside["b.png"].span == pytest.approx(0.05)
+    assert inside["a.jpg"].start == pytest.approx(0.5)
+    assert inside["a.jpg"].span == pytest.approx(0.2)
+    assert inside["b.png"].start == pytest.approx(0.7)
+    assert inside["b.png"].span == pytest.approx(0.05)
 
 
 def test_limits_keep_the_layout_small(sample_tree: Path) -> None:
@@ -34,8 +36,10 @@ def test_limits_keep_the_layout_small(sample_tree: Path) -> None:
 def test_segment_at_finds_the_arc_under_an_angle(sample_tree: Path) -> None:
     segments = layout(scan(sample_tree).root)
     hit = segment_at(segments, 1, 0.6)
-    assert hit is not None and hit.node.name == "photos"
+    assert hit is not None
+    assert hit.node.name == "photos"
     below = segment_at(segments, 2, 0.72)
-    assert below is not None and below.node.name == "b.png"
+    assert below is not None
+    assert below.node.name == "b.png"
     assert segment_at(segments, 2, 0.1) is None, "big.bin is a file: nothing beneath it"
     assert segment_at(segments, 5, 0.1) is None

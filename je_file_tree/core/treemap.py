@@ -134,15 +134,24 @@ def layout(root: Node, rect: Rect, *, max_depth: int | None = None, min_side: fl
         folder, area, depth = queue.popleft()
         for child, child_rect in _place_children(folder, area, min_side):
             inner = child_rect.inset(padding)
-            opens = (child.is_dir and bool(child.children) and (max_depth is None or depth < max_depth)
-                     and min(inner.width, inner.height) >= min_side)
-            strip = header if opens and header > 0 and min(inner.width, inner.height) >= 3 * header else 0.0
+            opens = _opens(child, inner, depth < max_depth if max_depth is not None else True, min_side)
+            strip = _strip(inner, header) if opens else 0.0
             tiles.append(Tile(child, child_rect, depth, strip))
             if len(tiles) >= max_tiles:
                 break
             if opens:
                 queue.append((child, Rect(inner.x, inner.y + strip, inner.width, inner.height - strip), depth + 1))
     return tiles
+
+
+def _opens(node: Node, inner: Rect, deeper_allowed: bool, min_side: float) -> bool:
+    """Whether ``node``'s children are laid out inside ``inner`` (a non-empty folder, depth left, room enough)."""
+    return node.is_dir and bool(node.children) and deeper_allowed and min(inner.width, inner.height) >= min_side
+
+
+def _strip(inner: Rect, header: float) -> float:
+    """The header strip an opened folder keeps: ``header`` when the folder is at least three strips wide and tall."""
+    return header if header > 0 and min(inner.width, inner.height) >= 3 * header else 0.0
 
 
 def _place_children(folder: Node, area: Rect, min_side: float) -> list[tuple[Node, Rect]]:

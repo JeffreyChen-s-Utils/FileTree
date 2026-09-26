@@ -90,7 +90,7 @@ class ChangesPanel(QWidget):
         """Ignore the comparisons still running; with ``wait``, until their threads have ended."""
         self._current = None
         if wait:
-            for worker in list(self._running):
+            for worker in self._running.copy():
                 worker.wait()
 
     def retranslate(self) -> None:

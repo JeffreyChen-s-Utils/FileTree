@@ -186,7 +186,8 @@ def test_the_bar_chart_lists_a_folder_largest_first(qapp: QApplication, sample_t
     chart.invalidate()
     assert chart.sizeHint().height() == 3 * line, "two bars and one line for the other two entries"
     chart.set_view_root(next(child for child in root.children if child.name == "code").children[0])
-    assert chart.view_root is not None and chart.view_root.name == "code", "a file shows its folder"
+    assert chart.view_root is not None
+    assert chart.view_root.name == "code", "a file shows its folder"
     chart.deleteLater()
 
 
@@ -205,9 +206,11 @@ def test_the_sunburst_finds_arcs_under_the_mouse_and_zooms(qapp: QApplication, s
 
     assert widget.hit(200, 200) is root, "the centre is the folder shown"
     photos = widget.hit(point(1, 0.6).x(), point(1, 0.6).y())
-    assert photos is not None and photos.node.name == "photos"
+    assert photos is not None
+    assert photos.node.name == "photos"
     picture = widget.hit(point(2, 0.72).x(), point(2, 0.72).y())
-    assert picture is not None and picture.node.name == "b.png"
+    assert picture is not None
+    assert picture.node.name == "b.png"
     assert widget.hit(2, 2) is None, "outside the rings"
     QTest.mouseDClick(widget, Qt.MouseButton.LeftButton, pos=point(1, 0.6))
     assert widget.view_root is photos.node
@@ -227,9 +230,12 @@ def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) ->
     charts.set_mode(BARS)
     assert charts.mode == BARS
     charts.bars.set_view_root(photos)  # as a double-click in the bars does
-    assert charts.view_root is photos and charts.treemap.view_root is photos and charts.sunburst.view_root is photos
+    assert charts.view_root is photos
+    assert charts.treemap.view_root is photos
+    assert charts.sunburst.view_root is photos
     charts.zoom_out()
-    assert charts.bars.view_root is root and charts.treemap.view_root is root
+    assert charts.bars.view_root is root
+    assert charts.treemap.view_root is root
     assert moves == [root, photos, root], "one signal per move, not one per view"
     charts.deleteLater()
 
@@ -499,7 +505,8 @@ def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
         os.utime(folder / oldest, (1_600_000_000, 1_600_000_000))
     _scanned(window, qapp, folder)
     panel = window.results.duplicates
-    assert panel.start_button.isEnabled() and not panel.groups
+    assert panel.start_button.isEnabled()
+    assert not panel.groups
     assert panel.status.text().startswith("Finds files with the same content")
     panel.min_size.setCurrentIndex(0)  # any size: these files are small
     panel.start()
@@ -518,7 +525,8 @@ def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
     assert panel.status.text() == "No duplicate files found."
     panel.start()
     panel.stop()
-    assert panel.status.text() == "The search was stopped." and not panel.running
+    assert panel.status.text() == "The search was stopped."
+    assert not panel.running
 
 
 def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp: QApplication, sample_tree: Path,
@@ -554,7 +562,8 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_args: (str(tmp_path / "other.json"), ""))
     window._actions["compare"].trigger()
     _wait(qapp, lambda: bool(warnings))
-    assert "not a scan saved by FileTree" in warnings[0] and not results.tabs.isTabVisible(CHANGES_TAB)
+    assert "not a scan saved by FileTree" in warnings[0]
+    assert not results.tabs.isTabVisible(CHANGES_TAB)
 
 
 def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -> None:
@@ -601,7 +610,8 @@ def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sa
     assert again.results.charts.mode == BARS
     assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
     again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
-    assert again.results.charts.treemap.levels == 3 and again.results.charts.mode == BARS
+    assert again.results.charts.treemap.levels == 3
+    assert again.results.charts.mode == BARS
     again.results._chart_buttons[SUNBURST].click()
     assert again.results._legend.isHidden(), "the sunburst colours by folder"
     again.close()

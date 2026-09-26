@@ -14,7 +14,8 @@ import je_file_tree
 _ROOT = Path(__file__).resolve().parent.parent
 _WORKFLOW = _ROOT / ".github" / "workflows" / "release.yml"
 _spec = importlib.util.spec_from_file_location("bump_version", _ROOT / "tools" / "bump_version.py")
-assert _spec is not None and _spec.loader is not None
+assert _spec is not None
+assert _spec.loader is not None
 bump_version = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(bump_version)
 
@@ -28,7 +29,8 @@ def _copy_version_files(target: Path) -> None:
 def _versions(root: Path) -> tuple[str, str]:
     project = re.search(r'^version = "([^"]+)"', (root / "pyproject.toml").read_text(encoding="utf-8"), re.MULTILINE)
     package = re.search(r'__version__ = "([^"]+)"', (root / "je_file_tree" / "__init__.py").read_text(encoding="utf-8"))
-    assert project is not None and package is not None
+    assert project is not None
+    assert package is not None
     return project.group(1), package.group(1)
 
 
@@ -64,10 +66,12 @@ def test_bump_changes_nothing_when_the_files_disagree(tmp_path: Path) -> None:
 
 def test_the_workflow_releases_on_merge_and_attaches_the_exe() -> None:
     text = _WORKFLOW.read_text(encoding="utf-8")
-    assert "types: [closed]" in text and "github.event.pull_request.merged == true" in text
+    assert "types: [closed]" in text
+    assert "github.event.pull_request.merged == true" in text
     assert "python tools/bump_version.py" in text, "the tested script, not an inline copy"
     assert "git add pyproject.toml je_file_tree/__init__.py" in text
     assert text.index("PYPI_API_TOKEN repository secret is not set") < text.index("python tools/bump_version.py"), (
         "a missing token stops the release before anything is pushed")
     assert "python tools/build_nuitka.py --onefile" in text
-    assert "FileTree-" in text and ".exe" in text
+    assert "FileTree-" in text
+    assert ".exe" in text

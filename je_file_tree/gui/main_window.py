@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
         self.results.changes.stop(wait=True)
-        for worker in list(self._exports):  # a file being written is finished, never left half-written
+        for worker in self._exports.copy():  # a file being written is finished, never left half-written
             worker.wait()
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())

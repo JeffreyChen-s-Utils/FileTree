@@ -85,18 +85,30 @@ def _folders_of(top: dict[str, Any]) -> dict[str, SavedFolder]:
     stack: list[tuple[dict[str, Any], str]] = [(top, "")]
     while stack:
         entry, path = stack.pop()
-        size = entry.get("size")
-        if not isinstance(size, int) or isinstance(size, bool) or size < 0:
-            raise SavedScanError(f"folder {path or top['name']!r} has no valid size")
-        folders[folder_key(path)] = SavedFolder(path, size)
-        children = entry.get("children", [])
-        if not isinstance(children, list):
-            raise SavedScanError(f"folder {path or top['name']!r} has invalid children")
-        for child in children:
-            if not isinstance(child, dict) or not isinstance(child.get("name"), str) or not child["name"]:
-                raise SavedScanError(f"folder {path or top['name']!r} has a child without a name")
-            stack.append((child, f"{path}/{child['name']}" if path else child["name"]))
+        where = path or top["name"]
+        folders[folder_key(path)] = SavedFolder(path, _size_of(entry, where))
+        stack.extend((child, f"{path}/{child['name']}" if path else child["name"])
+                     for child in _children_of(entry, where))
     return folders
+
+
+def _size_of(entry: dict[str, Any], where: str) -> int:
+    """A saved folder's size: a whole number of bytes, not negative (JSON ``true`` is not a size)."""
+    size = entry.get("size")
+    if not isinstance(size, int) or isinstance(size, bool) or size < 0:
+        raise SavedScanError(f"folder {where!r} has no valid size")
+    return size
+
+
+def _children_of(entry: dict[str, Any], where: str) -> list[dict[str, Any]]:
+    """A saved folder's subfolders: a list of objects that each have a name."""
+    children = entry.get("children", [])
+    if not isinstance(children, list):
+        raise SavedScanError(f"folder {where!r} has invalid children")
+    for child in children:
+        if not isinstance(child, dict) or not isinstance(child.get("name"), str) or not child["name"]:
+            raise SavedScanError(f"folder {where!r} has a child without a name")
+    return children
 
 
 def compare(root: Node, saved: SavedScan) -> list[FolderChange]:

@@ -44,7 +44,8 @@ def test_growth_new_and_gone_folders(sample_tree: Path, tmp_path: Path) -> None:
         ("code/empty", 0, None),   # gone
     ]
     assert [change.change for change in changes] == [900, 700, 300, 0]
-    assert changes[1].node is not None and changes[1].node.name == "music"
+    assert changes[1].node is not None
+    assert changes[1].node.name == "music"
     assert changes[3].node is None
 
 
