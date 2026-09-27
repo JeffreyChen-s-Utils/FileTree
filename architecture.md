@@ -13,8 +13,8 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
-| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `pacing.py` (background work gives way to the window), `treemap.py` (layout), `sunburst.py` (rings), `formatting.py`, `export.py` (CSV / JSON) |
-| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py`, `search_panel.py`, `cleanup_panel.py`, `duplicates_panel.py`, `grouped_list.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
+| Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `pacing.py` (background work gives way to the window), `treemap.py` (layout), `sunburst.py` (rings), `tree_layout.py` (bounded hierarchy rows), `formatting.py`, `export.py` (CSV / JSON) |
+| GUI | `je_file_tree/gui/` | PySide6, core | `app.py` (start-up), `main_window.py`, `welcome.py`, `scan_bar.py`, `results_view.py`, `charts.py` + `bar_chart.py` + `sunburst_widget.py` + `tree_diagram.py`, `search_panel.py`, `cleanup_panel.py`, `duplicates_panel.py`, `grouped_list.py`, `changes_panel.py`, `tree_model.py`, `tables.py`, `treemap_widget.py`, `delegates.py`, `scan_worker.py`, `file_actions.py`, `help_dialog.py`, `i18n.py` + `strings.py`, `qt_translation.py`, `elevation.py`, `icon.py` (drawn in code) |
 | Entry script | `start_file_tree.py` | GUI | Starts the window from a source copy; the file Nuitka compiles |
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
@@ -77,10 +77,13 @@ largest files, per-type and per-age totals and treemap are updated once, without
 refuses stay and are named in a warning.
 
 **Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
-entries of one folder, the rest on one line) and the sunburst (`SunburstWidget`: `core.sunburst.layout`
+entries of one folder, the rest on one line), the sunburst (`SunburstWidget`: `core.sunburst.layout`
 gives arcs as fractions of the circle, at most `RINGS` rings, arcs thinner than `min_span` and past
-`max_segments` left out, drawn into a cached pixmap) and shows one at a time, the treemap first (`charts.DEFAULT_MODE`); the mode is saved in the settings
-(`chart_mode`). Both offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
+`max_segments` left out, drawn into a cached pixmap), and the hierarchy tree (`TreeDiagramWidget`:
+`core.tree_layout.layout` returns at most 240 folder cards, expands branches and pages wide sibling lists;
+the GUI caches that layout and scrolls/zooms it). It shows one at a time, the treemap first
+(`charts.DEFAULT_MODE`); the mode and tree direction are saved in `chart_mode` / `tree_orientation`.
+All views offer the same interface (`set_view_root`, `zoom_out`, `set_selected`, `invalidate`,
 `node_clicked`, `view_root_changed`, `context_menu_requested`); when one moves to another folder the stack
 moves the others and signals the page once, so the results page drives the stack as a single chart.
 The treemap draws `levels` levels (2 unless chosen, saved as `treemap_levels`); `treemap.layout(header=…)`

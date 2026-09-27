@@ -54,7 +54,7 @@ from je_file_tree.gui.scan_worker import analyse, pace_workers, wait_for
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from je_file_tree.gui import bar_chart
-from je_file_tree.gui.charts import BARS, SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.charts import BARS, SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.sunburst_widget import SunburstWidget
 from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, MIN_SIDE, TreemapWidget
 
@@ -306,9 +306,11 @@ def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) ->
     assert charts.view_root is photos
     assert charts.treemap.view_root is photos
     assert charts.sunburst.view_root is photos
+    assert charts.tree.view_root is photos
     charts.zoom_out()
     assert charts.bars.view_root is root
     assert charts.treemap.view_root is root
+    assert charts.tree.view_root is root
     assert moves == [root, photos, root], "one signal per move, not one per view"
     charts.deleteLater()
 
@@ -745,6 +747,17 @@ def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sa
     assert again.results.charts.mode == BARS
     again.results._chart_buttons[SUNBURST].click()
     assert again.results._legend.isHidden(), "the sunburst colours by folder"
+    again.results._chart_buttons[TREE].click()
+    assert again.results.charts.mode == TREE
+    assert not again.results._tree_options.isHidden()
+    again.results._tree_orientation_combo.setCurrentIndex(
+        again.results._tree_orientation_combo.findData("vertical"))
+    assert again.settings.value("tree_orientation") == "vertical"
+    restored = create_window(again.settings)
+    assert restored.results.charts.mode == TREE
+    assert restored.results.charts.tree.orientation == "vertical"
+    restored.close()
+    restored.deleteLater()
     again.close()
     again.deleteLater()
 

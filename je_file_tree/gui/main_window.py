@@ -46,7 +46,7 @@ _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
 SEARCHES_KEY = "saved_searches"
-_CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours")
+_CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
 def read_flag(settings: QSettings, key: str, default: bool) -> bool:
@@ -655,4 +655,3 @@ def _trash_each(nodes: list[Node]) -> tuple[list[Node], list[Node]]:
 def _safe_name(name: str) -> str:
     cleaned = "".join(character if character.isalnum() or character in "-_" else "_" for character in name)
     return cleaned.strip("_") or "scan"
-

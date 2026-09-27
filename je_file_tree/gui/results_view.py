@@ -58,7 +58,7 @@ from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
-from je_file_tree.gui.charts import SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.cleanup_panel import CleanupPanel
@@ -86,6 +86,7 @@ from je_file_tree.gui.tree_model import (
     FolderTreeModel,
 )
 from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
+from je_file_tree.gui.tree_diagram import ORIENTATIONS
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.
@@ -333,21 +334,23 @@ class ResultsView(QWidget):
         return _selected_in(self.tree)
 
     def set_chart_mode(self, mode: str) -> None:
-        """Show the chart view ``mode`` (``"treemap"`` or ``"bars"``; anything else is ignored)."""
+        """Show a chart mode; ignore unknown values."""
         if mode in self._chart_buttons:
             self.charts.set_mode(mode)
             self._chart_buttons[mode].setChecked(True)
             self._update_chart_controls()
 
     def apply_chart_settings(self, values: Mapping[str, object]) -> None:
-        """Restore the saved ``chart_mode``, ``treemap_levels`` and ``treemap_colours``; bad values are ignored."""
+        """Restore chart settings; ignore invalid saved values."""
         self.set_chart_mode(str(values.get("chart_mode", "")))
         treemap = self.charts.treemap
         with contextlib.suppress(ValueError):  # a hand-edited setting that is not a number: keep the default
             treemap.set_levels(int(str(values.get("treemap_levels", treemap.levels))))
         treemap.set_colour_mode(str(values.get("treemap_colours", treemap.colour_mode)))
+        self.charts.tree.set_orientation(str(values.get("tree_orientation", self.charts.tree.orientation)))
         _select_data(self._levels_combo, treemap.levels)
         _select_data(self._colours_combo, treemap.colour_mode)
+        _select_data(self._tree_orientation_combo, self.charts.tree.orientation)
         self._update_chart_controls()
 
     def compare_with(self, file: str) -> None:
@@ -426,6 +429,10 @@ class ResultsView(QWidget):
                                          for levels in LEVELS], self.charts.treemap.levels)
         _fill_combo(self._colours_combo, [(tr(f"treemap_colours_{mode}"), mode) for mode in COLOUR_MODES],
                     self.charts.treemap.colour_mode)
+        self._tree_orientation_label.setText(tr("tree_orientation"))
+        _fill_combo(self._tree_orientation_combo,
+                    [(tr(f"tree_orientation_{mode}"), mode) for mode in ORIENTATIONS],
+                    self.charts.tree.orientation)
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
@@ -454,6 +461,8 @@ class ResultsView(QWidget):
         self._levels_combo = QComboBox()
         self._colours_label = QLabel()
         self._colours_combo = QComboBox()
+        self._tree_orientation_label = QLabel()
+        self._tree_orientation_combo = QComboBox()
 
     def _build_tree(self) -> QTreeView:
         tree = QTreeView()
@@ -553,9 +562,11 @@ class ResultsView(QWidget):
         for button in self._chart_buttons.values():
             chart_bar.layout().addWidget(button)
         self._treemap_options = _row(self._levels_label, self._levels_combo, self._colours_label, self._colours_combo)
+        self._tree_options = _row(self._tree_orientation_label, self._tree_orientation_combo)
         self._levels_combo.currentIndexChanged.connect(lambda _index: self._choose_levels())
         self._colours_combo.currentIndexChanged.connect(lambda _index: self._choose_colours())
-        self.tabs.addTab(_column(chart_bar, self._treemap_options, self.charts, self._legend), "")
+        self._tree_orientation_combo.currentIndexChanged.connect(lambda _index: self._choose_tree_orientation())
+        self.tabs.addTab(_column(chart_bar, self._treemap_options, self._tree_options, self.charts, self._legend), "")
         self._update_chart_controls()
 
     def _assemble(self) -> None:
@@ -623,11 +634,19 @@ class ResultsView(QWidget):
             self.chart_setting_changed.emit("treemap_colours", str(mode))
             self._update_chart_controls()
 
+    def _choose_tree_orientation(self) -> None:
+        orientation = self._tree_orientation_combo.currentData()
+        if orientation is not None and orientation != self.charts.tree.orientation:
+            self.charts.tree.set_orientation(str(orientation))
+            self.chart_setting_changed.emit("tree_orientation", str(orientation))
+
     def _update_chart_controls(self) -> None:
         """Treemap options only with the treemap; the file-type legend only where the colours are file types."""
         treemap_on_screen = self.charts.mode == TREEMAP
         self._treemap_options.setVisible(treemap_on_screen)
-        by_folder = self.charts.mode == SUNBURST or (treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
+        self._tree_options.setVisible(self.charts.mode == TREE)
+        by_folder = self.charts.mode in (SUNBURST, TREE) or (
+            treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
         self._legend.setVisible(not by_folder)
 
     def _changes_shown(self, shown: bool) -> None:
@@ -929,4 +948,3 @@ def _column(*widgets: QWidget) -> QWidget:
     for widget in widgets:
         layout.addWidget(widget, 1 if isinstance(widget, (QTableView, ChartStack)) else 0)
     return box
-

@@ -1,4 +1,4 @@
-"""The Chart tab's views of one folder: the treemap, the bar chart and the sunburst, switched with buttons.
+"""The Chart tab's four coordinated views of one folder, switched with buttons.
 
 Every view shows the same folder: opening a folder in one (double-click) or going up moves them
 all. ``ChartStack`` offers the views' own interface (``set_view_root``, ``view_root``, ``zoom_out``,
@@ -14,9 +14,10 @@ from je_file_tree.core.node import Node
 from je_file_tree.gui.bar_chart import BarChartWidget
 from je_file_tree.gui.sunburst_widget import SunburstWidget
 from je_file_tree.gui.treemap_widget import TreemapWidget
+from je_file_tree.gui.tree_diagram import TreeDiagramWidget
 
-TREEMAP, BARS, SUNBURST = "treemap", "bars", "sunburst"
-MODES = (TREEMAP, BARS, SUNBURST)
+TREEMAP, BARS, SUNBURST, TREE = "treemap", "bars", "sunburst", "tree"
+MODES = (TREEMAP, BARS, SUNBURST, TREE)
 DEFAULT_MODE = TREEMAP  # the owner chose it as the first view
 
 
@@ -32,12 +33,17 @@ class ChartStack(QStackedWidget):
         self.treemap = TreemapWidget()
         self.bars = BarChartWidget()
         self.sunburst = SunburstWidget()
+        self.tree = TreeDiagramWidget()
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.bars)
-        self._charts: dict[str, TreemapWidget | BarChartWidget | SunburstWidget] = {
-            TREEMAP: self.treemap, BARS: self.bars, SUNBURST: self.sunburst}
-        self._pages: dict[str, QWidget] = {TREEMAP: self.treemap, BARS: scroll, SUNBURST: self.sunburst}
+        tree_scroll = QScrollArea()
+        tree_scroll.setWidgetResizable(False)
+        tree_scroll.setWidget(self.tree)
+        self._charts: dict[str, TreemapWidget | BarChartWidget | SunburstWidget | TreeDiagramWidget] = {
+            TREEMAP: self.treemap, BARS: self.bars, SUNBURST: self.sunburst, TREE: self.tree}
+        self._pages: dict[str, QWidget] = {TREEMAP: self.treemap, BARS: scroll,
+                                           SUNBURST: self.sunburst, TREE: tree_scroll}
         for mode in MODES:
             chart = self._charts[mode]
             self.addWidget(self._pages[mode])
