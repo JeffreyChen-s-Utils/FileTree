@@ -11,8 +11,9 @@
 #   release:patch  0.1.3 -> 0.1.4   (also when there is no label)
 #
 # Jobs:
-#   1. release          Stops at once if the token is missing (before anything is pushed), raises
-#                       the version in pyproject.toml and je_file_tree/__init__.py together
+#   1. release          Stops at once if the token is missing (before anything is pushed), installs
+#                       its build tools from the hash-locked .github/requirements/publish.txt,
+#                       raises the version in pyproject.toml and je_file_tree/__init__.py together
 #                       (tools/bump_version.py), commits and tags on main, builds the sdist and
 #                       the wheel, uploads them to PyPI.
 #   2. build-exe        On Windows, compiles FileTree.exe (one file, icon and Qt's translations
@@ -63,6 +64,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # This job holds the PyPI token, so its tools are wheels only at locked hashes and nothing
+      # else is installed. It comes before the version is pushed: a lock that does not install
+      # releases nothing. The command that regenerates publish.txt is in publish.in.
+      - name: Install build tooling (hash-locked, from .github/requirements/publish.in)
+        run: |
+          python -m pip install --require-hashes --only-binary :all: -r .github/requirements/publish.txt
+
       - name: Read the bump type from the labels
         id: bump
         env:
@@ -98,16 +106,13 @@ jobs:
           git push origin "v$NEW"
 
       - name: Build the sdist and the wheel
-        run: |
-          python -m pip install --upgrade --only-binary :all: "pip==26.1.2" "build==1.5.0"
-          python -m build
+        run: python -m build
 
       - name: Upload to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          python -m pip install --upgrade --only-binary :all: "twine==6.2.0"
           python -m twine check dist/*
           python -m twine upload dist/*
 

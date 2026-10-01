@@ -169,7 +169,11 @@ name, so they must not come back. `.github/workflows/release.yml` releases on ev
 into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
 `je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
 stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
-with `tools/build_nuitka.py --onefile` for the GitHub release.
+with `tools/build_nuitka.py --onefile` for the GitHub release. The job that holds the token installs
+nothing but `.github/requirements/publish.txt` (`build`, `twine` and what they need): wheels only, at
+locked hashes, generated from `publish.in` beside it, before the version is pushed.
+`test/test_workflow_actions.py` fails when that job runs any other `pip install`. The source
+distribution carries no tests (`MANIFEST.in`, `test/test_sdist_manifest.py`).
 
 ## 7. Design constraints
 
