@@ -15,7 +15,7 @@
 #                       its build tools from the hash-locked .github/requirements/publish.txt,
 #                       raises the version in pyproject.toml and je_file_tree/__init__.py together
 #                       (tools/bump_version.py), commits and tags on main, builds the sdist and
-#                       the wheel, uploads them to PyPI.
+#                       the wheel with the setuptools of that lock, uploads them to PyPI.
 #   2. build-exe        On Windows, compiles FileTree.exe (one file, icon and Qt's translations
 #                       included) from the new tag with tools/build_nuitka.py --onefile.
 #   3. publish-release  Creates the GitHub release with the sdist, the wheel and
@@ -105,8 +105,9 @@ jobs:
           git push origin main
           git push origin "v$NEW"
 
+      # --no-isolation: the backend is the setuptools locked in publish.txt, not a fresh download.
       - name: Build the sdist and the wheel
-        run: python -m build
+        run: python -m build --no-isolation
 
       - name: Upload to PyPI
         env:

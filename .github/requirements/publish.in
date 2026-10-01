@@ -1,7 +1,11 @@
-# The release job of release.yml holds the PyPI token and builds and uploads with these two; its version
-# bump (tools/bump_version.py) needs only the standard library. publish.txt is generated from this file:
+# The release job of release.yml holds the PyPI token and builds and uploads with build and twine; its
+# version bump (tools/bump_version.py) needs only the standard library. publish.txt is generated from this file:
 # uv pip compile .github/requirements/publish.in --generate-hashes --python-version 3.12 --python-platform x86_64-manylinux_2_28 --only-binary :all: --exclude-newer <7 days ago> -o .github/requirements/publish.txt
 # (--python-version and --python-platform are the Python that job sets up and its ubuntu runner.
 # --exclude-newer keeps the 7-day wait Dependabot uses: nothing uploaded in the last week.)
 build
 twine
+# The build backend. The job runs `python -m build --no-isolation`, so the backend is this locked one and
+# not whatever is newest on PyPI when the job runs. It must satisfy `build-system.requires` in
+# pyproject.toml (test/test_workflow_actions.py).
+setuptools

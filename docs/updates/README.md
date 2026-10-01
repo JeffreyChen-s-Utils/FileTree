@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261001-03 | 2026-10-01 | The release job builds with the locked setuptools | #done #ci #security #X-13 | [2026-10](2026-10.md) |
 | U-20261001-02 | 2026-10-01 | The release job installs hash-locked build tooling | #done #ci #security #X-13 | [2026-10](2026-10.md) |
 | U-20261001-01 | 2026-10-01 | The source distribution carries no tests | #done #packaging #X-13 | [2026-10](2026-10.md) |
 | U-20260927-01 | 2026-09-27 | Expandable folder hierarchy in the Chart tab | #done #gui #core | [2026-09](2026-09.md) |
