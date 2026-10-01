@@ -58,12 +58,29 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10](2026-10.md) | 2026-10 |
 | [2026-09](2026-09.md) | 2026-09 |
 
 ## Index (newest first)
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261001-03 | 2026-10-01 | The release job builds with the locked setuptools | #done #ci #security #X-13 | [2026-10](2026-10.md) |
+| U-20261001-02 | 2026-10-01 | The release job installs hash-locked build tooling | #done #ci #security #X-13 | [2026-10](2026-10.md) |
+| U-20261001-01 | 2026-10-01 | The source distribution carries no tests | #done #packaging #X-13 | [2026-10](2026-10.md) |
+| U-20260927-01 | 2026-09-27 | Expandable folder hierarchy in the Chart tab | #done #gui #core | [2026-09](2026-09.md) |
+| U-20260926-35 | 2026-09-26 | The window stays responsive while background work runs | #fix #gui #core #performance | [2026-09](2026-09.md) |
+| U-20260926-34 | 2026-09-26 | The treemap comes first again; a folder's specks share one group tile | #change #gui #core | [2026-09](2026-09.md) |
+| U-20260926-33 | 2026-09-26 | Refactor: SonarCloud findings of pull request #8 | #refactor #core | [2026-09](2026-09.md) |
+| U-20260926-32 | 2026-09-26 | Long paths no longer widen the window; the summary escapes the path | #fix #gui | [2026-09](2026-09.md) |
+| U-20260926-31 | 2026-09-26 | Clean up tab: suggestions (temporary files, caches, build output, old installers, empty folders) | #done #core #gui | [2026-09](2026-09.md) |
+| U-20260926-30 | 2026-09-26 | The Chart tab opens on the bar chart | #change #gui | [2026-09](2026-09.md) |
+| U-20260926-29 | 2026-09-26 | Search conditions (size, age, type, kind) and saved searches | #done #gui #core | [2026-09](2026-09.md) |
+| U-20260926-28 | 2026-09-26 | Taskbar: FileTree's own button and icon when run from Python | #fix #windows #gui | [2026-09](2026-09.md) |
+| U-20260926-27 | 2026-09-26 | Largest files, types and ages for the selected folder | #done #gui | [2026-09](2026-09.md) |
+| U-20260926-26 | 2026-09-26 | Skip folders while scanning (names or paths) | #done #scanner #gui | [2026-09](2026-09.md) |
+| U-20260926-25 | 2026-09-26 | System and program folders are asked about twice before the Recycle Bin | #done #safety #gui | [2026-09](2026-09.md) |
+| U-20260926-24 | 2026-09-26 | First release 0.1.1: je_file_tree on PyPI, FileTree.exe on GitHub | #done #release | [2026-09](2026-09.md) |
 | U-20260926-23 | 2026-09-26 | Linux: ask the file manager to select the entry (D-Bus), else open its folder | #progress #linux #gui | [2026-09](2026-09.md) |
 | U-20260926-22 | 2026-09-26 | Sunburst: the third view of the Chart tab | #done #core #gui | [2026-09](2026-09.md) |
 | U-20260926-21 | 2026-09-26 | Treemap: folder name strips, sizes, levels and colours by folder | #done #gui #treemap | [2026-09](2026-09.md) |

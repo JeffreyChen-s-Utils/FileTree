@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from typing import BinaryIO
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 HEAD_BYTES = 64 * 1024
 DEFAULT_MIN_SIZE = 1024 * 1024
@@ -134,6 +135,7 @@ class _Reader:
     def _hash(self, node: Node, whole: bool) -> tuple[tuple[int, int], bytes] | None:
         """``(file identity, hash)`` of ``node``'s head or whole content; None when it cannot be read."""
         self._check()
+        give_way()
         hasher = hashlib.blake2b(digest_size=16)
         try:
             with open(node.path, "rb") as stream:

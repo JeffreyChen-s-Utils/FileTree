@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import contextlib
 import dataclasses
+import html
 import os
 from collections.abc import Callable, Mapping, Sequence
 
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
+from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, QTimer, Signal
+from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QButtonGroup,
@@ -24,6 +26,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
+    QSizePolicy,
     QSplitter,
     QTableView,
     QTabWidget,
@@ -35,7 +38,9 @@ from PySide6.QtWidgets import (
 
 from je_file_tree.core.analysis import (
     CATEGORIES,
+    AgeStat,
     CategoryStat,
+    ExtensionStat,
     Summary,
     age_of,
     age_stats,
@@ -53,12 +58,14 @@ from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
-from je_file_tree.gui.charts import SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.elided_label import ElidedLabel
+from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
-from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, ScanOutcome
+from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.search_panel import SearchPanel
 from je_file_tree.gui.tables import (
     SORT_ROLE,
@@ -79,6 +86,7 @@ from je_file_tree.gui.tree_model import (
     FolderTreeModel,
 )
 from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
+from je_file_tree.gui.tree_diagram import ORIENTATIONS
 
 _LARGEST_SIZE_COLUMN = 1
 # Name takes the remaining width; these are the other columns, in order.
@@ -89,7 +97,8 @@ _CHANGE_COLUMN = 3
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
-CHART_TAB, LARGEST_TAB, SEARCH_TAB, DUPLICATES_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
 class _FileTypesProxy(QSortFilterProxyModel):
@@ -135,12 +144,11 @@ class ResultsView(QWidget):
 
         self.scan_bar = ScanBar()
         self._live_ticks = 0
-        self.summary = QLabel()
-        self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.summary = _summary_label()
         self.tree = self._build_tree()
         self._build_chart_controls()
         self._treemap_up = QToolButton()
-        self._treemap_path = QLabel()
+        self._treemap_path = ElidedLabel()
         self._legend = QLabel()
         self._largest_filter = QLineEdit()
         self._focus_label = QLabel()
@@ -151,6 +159,8 @@ class ResultsView(QWidget):
         self.search_table, _ = self._build_entries_table(self.search_model)
         self.search = SearchPanel(self.search_table, self.search_model)
         self.duplicates = DuplicatesPanel()
+        self.cleanup = CleanupPanel()
+        self.cleanup_pages = QTabWidget()
         self.changes_model = ChangesModel(self)
         self.changes_table, _ = self._build_table(self.changes_model, _CHANGE_COLUMN)
         self.changes = ChangesPanel(self.changes_table, self.changes_model)
@@ -168,6 +178,7 @@ class ResultsView(QWidget):
         self._problems_hint = QLabel()
         self._elevate_button = QPushButton()
         self.tabs = QTabWidget()
+        self._build_scope_switch()
         self._assemble()
         self.retranslate()
 
@@ -183,6 +194,7 @@ class ResultsView(QWidget):
         self._outcome = None
         self.search.set_root(None)
         self.duplicates.set_root(None)
+        self.cleanup.set_root(None)
         self.changes.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
@@ -236,11 +248,9 @@ class ResultsView(QWidget):
         else:
             self.tree_model.set_root(root)
             self.tree.expand(self.tree_model.index(0, 0))
-        self._largest_all = list(outcome.largest)
-        self._focus = None
-        self.largest_model.set_rows(self._largest_all)
-        self.types_model.set_rows(outcome.extensions)
-        self.age_model.set_rows(outcome.ages)
+        self._scope = None
+        self._scope_button.setChecked(False)
+        self._show_lists(outcome.largest, outcome.extensions, outcome.ages)
         self.problems_model.set_rows(outcome.result.errors)
         self._categories = outcome.categories
         view_root = self.charts.view_root
@@ -249,6 +259,7 @@ class ResultsView(QWidget):
             self.select_node(root)
         self.search.set_root(root)
         self.duplicates.set_root(root)
+        self.cleanup.set_root(root)
         self.changes.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
@@ -272,6 +283,7 @@ class ResultsView(QWidget):
         self.charts.set_view_root(new if inside_old else view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.cleanup.refresh()
         self.changes.refresh()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
@@ -287,14 +299,11 @@ class ResultsView(QWidget):
         self._outcome = dataclasses.replace(outcome, largest=largest, extensions=summary.extensions,
                                             categories=category_stats(summary.extensions), ages=summary.ages,
                                             now=summary.now)
-        self._largest_all = list(largest)
-        self._focus = None
-        self._focus_bar.hide()
-        self.largest_model.set_rows(self._largest_all)
-        self.types_model.set_rows(summary.extensions)
-        self.age_model.set_rows(summary.ages)
         self._categories = self._outcome.categories
-        self._update_texts()
+        if self._scope is None:
+            self._show_lists(largest, summary.extensions, summary.ages)
+        else:
+            self._rescope(force=True)
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
@@ -304,6 +313,7 @@ class ResultsView(QWidget):
             model.refresh()
         self.search.retranslate()
         self.duplicates.set_unit(unit)
+        self.cleanup.set_unit(unit)
         self.charts.set_unit(unit)
         self.changes.retranslate()
 
@@ -318,27 +328,29 @@ class ResultsView(QWidget):
 
     def focused_selection(self) -> list[Node]:
         """The entries selected where the keyboard is: the largest-files, search or duplicates list, else the tree."""
-        for view in (self.largest_table, self.search_table, self.duplicates.view):
+        for view in (self.largest_table, self.search_table, self.duplicates.view, self.cleanup.view):
             if view.hasFocus():
                 return _selected_in(view)
         return _selected_in(self.tree)
 
     def set_chart_mode(self, mode: str) -> None:
-        """Show the chart view ``mode`` (``"treemap"`` or ``"bars"``; anything else is ignored)."""
+        """Show a chart mode; ignore unknown values."""
         if mode in self._chart_buttons:
             self.charts.set_mode(mode)
             self._chart_buttons[mode].setChecked(True)
             self._update_chart_controls()
 
     def apply_chart_settings(self, values: Mapping[str, object]) -> None:
-        """Restore the saved ``chart_mode``, ``treemap_levels`` and ``treemap_colours``; bad values are ignored."""
+        """Restore chart settings; ignore invalid saved values."""
         self.set_chart_mode(str(values.get("chart_mode", "")))
         treemap = self.charts.treemap
         with contextlib.suppress(ValueError):  # a hand-edited setting that is not a number: keep the default
             treemap.set_levels(int(str(values.get("treemap_levels", treemap.levels))))
         treemap.set_colour_mode(str(values.get("treemap_colours", treemap.colour_mode)))
+        self.charts.tree.set_orientation(str(values.get("tree_orientation", self.charts.tree.orientation)))
         _select_data(self._levels_combo, treemap.levels)
         _select_data(self._colours_combo, treemap.colour_mode)
+        _select_data(self._tree_orientation_combo, self.charts.tree.orientation)
         self._update_chart_controls()
 
     def compare_with(self, file: str) -> None:
@@ -370,23 +382,30 @@ class ResultsView(QWidget):
         if outcome is None:
             return
         view_root = self.charts.view_root
-        extensions = self.types_model.rows()
-        ages = self.age_model.rows()
+        extensions = outcome.extensions
+        ages = outcome.ages
         for node in nodes:
             extensions = subtract_stats(extensions, extension_stats(node))
             ages = subtract_ages(ages, age_stats(files_beneath(node), outcome.now))
             self.tree_model.remove(node)
         root = outcome.result.root
-        self._largest_all = [file for file in self._largest_all if file.is_in(root)]
-        self.largest_model.set_rows([file for file in self.largest_model.rows() if file.is_in(root)])
-        self.types_model.set_rows(extensions)
-        self.age_model.set_rows(ages)
-        self._categories = category_stats(extensions)
+        self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,
+                                            categories=category_stats(extensions),
+                                            largest=[file for file in outcome.largest if file.is_in(root)])
+        self._categories = self._outcome.categories
+        if self._scope is None:
+            self._largest_all = [file for file in self._largest_all if file.is_in(root)]
+            self.largest_model.set_rows([file for file in self.largest_model.rows() if file.is_in(root)])
+            self.types_model.set_rows(extensions)
+            self.age_model.set_rows(ages)
+        else:
+            self._rescope(force=True)
         if view_root is not None and not view_root.is_in(root):
             view_root = root
         self.charts.set_view_root(view_root)
         self.search.rerun()
         self.duplicates.prune()
+        self.cleanup.refresh()
         self.changes.refresh()
         self._update_texts()
 
@@ -410,9 +429,14 @@ class ResultsView(QWidget):
                                          for levels in LEVELS], self.charts.treemap.levels)
         _fill_combo(self._colours_combo, [(tr(f"treemap_colours_{mode}"), mode) for mode in COLOUR_MODES],
                     self.charts.treemap.colour_mode)
+        self._tree_orientation_label.setText(tr("tree_orientation"))
+        _fill_combo(self._tree_orientation_combo,
+                    [(tr(f"tree_orientation_{mode}"), mode) for mode in ORIENTATIONS],
+                    self.charts.tree.orientation)
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
         self.search.retranslate()
         self.duplicates.retranslate()
+        self.cleanup.retranslate()
         self.changes.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
@@ -422,6 +446,13 @@ class ResultsView(QWidget):
 
     # --- building ---------------------------------------------------------
 
+    def _build_scope_switch(self) -> None:
+        self._scope: Node | None = None  # the folder the three lists cover; None: the whole scan
+        self._scope_button = QToolButton()
+        self._scope_timer = QTimer(self)
+        self._scope_worker: AnalyseWorker | None = None
+        self._list_workers: set[AnalyseWorker] = set()
+
     def _build_chart_controls(self) -> None:
         self.charts = ChartStack()
         self._chart_buttons = {mode: QToolButton() for mode in CHART_MODES}
@@ -430,6 +461,8 @@ class ResultsView(QWidget):
         self._levels_combo = QComboBox()
         self._colours_label = QLabel()
         self._colours_combo = QComboBox()
+        self._tree_orientation_label = QLabel()
+        self._tree_orientation_combo = QComboBox()
 
     def _build_tree(self) -> QTreeView:
         tree = QTreeView()
@@ -499,9 +532,19 @@ class ResultsView(QWidget):
         self._types_combo.currentIndexChanged.connect(self._types_category_changed)
         return table
 
-    def _assemble(self) -> None:
-        self._largest_filter.setClearButtonEnabled(True)
-        self._largest_filter.textChanged.connect(self._largest_proxy.setFilterFixedString)
+    def _assemble_scope_switch(self) -> None:
+        """*Selected folder only*, in the tab bar's corner: the three lists follow the tree's selection."""
+        self._scope_button.setCheckable(True)
+        self._scope_button.toggled.connect(self._scope_toggled)
+        self._scope_button.toggled.connect(lambda _on: self._update_scope_button())
+        self.tabs.setCornerWidget(self._scope_button, Qt.Corner.TopRightCorner)
+        self.tabs.currentChanged.connect(lambda _index: self._update_scope_button())
+        self._scope_timer.setSingleShot(True)
+        self._scope_timer.setInterval(250)
+        self._scope_timer.timeout.connect(self._rescope)
+
+    def _assemble_chart_tab(self) -> None:
+        """The Chart tab: the path and view buttons, the treemap options, the charts and the legend."""
         self._treemap_up.clicked.connect(self.charts.zoom_out)
         self._treemap_path.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._legend.setWordWrap(True)
@@ -519,23 +562,33 @@ class ResultsView(QWidget):
         for button in self._chart_buttons.values():
             chart_bar.layout().addWidget(button)
         self._treemap_options = _row(self._levels_label, self._levels_combo, self._colours_label, self._colours_combo)
+        self._tree_options = _row(self._tree_orientation_label, self._tree_orientation_combo)
         self._levels_combo.currentIndexChanged.connect(lambda _index: self._choose_levels())
         self._colours_combo.currentIndexChanged.connect(lambda _index: self._choose_colours())
-        self.tabs.addTab(_column(chart_bar, self._treemap_options, self.charts, self._legend), "")
+        self._tree_orientation_combo.currentIndexChanged.connect(lambda _index: self._choose_tree_orientation())
+        self.tabs.addTab(_column(chart_bar, self._treemap_options, self._tree_options, self.charts, self._legend), "")
         self._update_chart_controls()
+
+    def _assemble(self) -> None:
+        self._largest_filter.setClearButtonEnabled(True)
+        self._largest_filter.textChanged.connect(self._largest_proxy.setFilterFixedString)
+        self._assemble_chart_tab()
         self._show_all.clicked.connect(self.show_all_largest)
         self._focus_bar.hide()
         self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
         self.tabs.addTab(self.search, "")
-        self.tabs.addTab(self.duplicates, "")
-        view = self.duplicates.view
-        view.customContextMenuRequested.connect(lambda point: self._menu_for(view, point))
-        view.doubleClicked.connect(lambda index: self._table_activated(view, index))
+        self.cleanup_pages.addTab(self.cleanup, "")
+        self.cleanup_pages.addTab(self.duplicates, "")
+        self.tabs.addTab(self.cleanup_pages, "")
+        for view in (self.cleanup.view, self.duplicates.view):
+            view.customContextMenuRequested.connect(lambda point, view=view: self._menu_for(view, point))
+            view.doubleClicked.connect(lambda index, view=view: self._table_activated(view, index))
         self.tabs.addTab(_column(self._types_combo, self.types_table), "")
         self.tabs.addTab(self.age_table, "")
         self._problems_hint.setWordWrap(True)
         self._elevate_button.clicked.connect(self.elevate_requested)
         self.tabs.addTab(self.changes, "")
+        self._assemble_scope_switch()
         self.tabs.setTabVisible(CHANGES_TAB, False)  # until a saved scan is opened
         self.changes.shown.connect(self._changes_shown)
         self.changes.failed.connect(self.compare_failed)
@@ -561,6 +614,8 @@ class ResultsView(QWidget):
         node = self.tree_model.node(current)
         self.charts.set_selected(node)
         self.selection_changed.emit(node)
+        if self._scope_button.isChecked():
+            self._scope_timer.start()  # moving through the tree with the arrow keys recomputes once, at the end
 
     def _choose_chart(self, mode: str) -> None:
         self.set_chart_mode(mode)
@@ -579,11 +634,19 @@ class ResultsView(QWidget):
             self.chart_setting_changed.emit("treemap_colours", str(mode))
             self._update_chart_controls()
 
+    def _choose_tree_orientation(self) -> None:
+        orientation = self._tree_orientation_combo.currentData()
+        if orientation is not None and orientation != self.charts.tree.orientation:
+            self.charts.tree.set_orientation(str(orientation))
+            self.chart_setting_changed.emit("tree_orientation", str(orientation))
+
     def _update_chart_controls(self) -> None:
         """Treemap options only with the treemap; the file-type legend only where the colours are file types."""
         treemap_on_screen = self.charts.mode == TREEMAP
         self._treemap_options.setVisible(treemap_on_screen)
-        by_folder = self.charts.mode == SUNBURST or (treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
+        self._tree_options.setVisible(self.charts.mode == TREE)
+        by_folder = self.charts.mode in (SUNBURST, TREE) or (
+            treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
         self._legend.setVisible(not by_folder)
 
     def _changes_shown(self, shown: bool) -> None:
@@ -618,6 +681,77 @@ class ResultsView(QWidget):
         if node is not None:
             self.node_menu_requested.emit(node, [node], point)
 
+    def wait_for_lists(self) -> None:
+        """Wait for list computations still running (before the window closes)."""
+        for worker in self._list_workers.copy():
+            wait_for(worker)
+
+    def _show_lists(self, largest: Sequence[Node], extensions: Sequence[ExtensionStat],
+                    ages: Sequence[AgeStat]) -> None:
+        """Fill the three lists (largest files, types, ages), dropping a type or age focus."""
+        self._largest_all = list(largest)
+        self._focus = None
+        self._focus_bar.hide()
+        self.largest_model.set_rows(self._largest_all)
+        self.types_model.set_rows(extensions)
+        self.age_model.set_rows(ages)
+        self._update_texts()
+
+    def _lists_root(self) -> Node | None:
+        """The folder the three lists cover (None before the first scan)."""
+        if self._scope is not None:
+            return self._scope
+        return self._outcome.result.root if self._outcome is not None else None
+
+    def _selected_folder(self) -> Node | None:
+        node = self.selected_node()
+        if node is not None and (not node.is_dir or node.is_link):
+            node = node.parent
+        return node
+
+    def _scope_toggled(self, on: bool) -> None:
+        if on:
+            self._rescope(force=True)
+            return
+        self._scope = None
+        self._scope_worker = None
+        self._scope_timer.stop()
+        if self._outcome is not None:
+            self._show_lists(self._outcome.largest, self._outcome.extensions, self._outcome.ages)
+
+    def _rescope(self, *, force: bool = False) -> None:
+        """Compute the three lists for the selected folder on a worker (with *Selected folder only* on)."""
+        self._scope_timer.stop()
+        outcome = self._outcome
+        if outcome is None or not self._scope_button.isChecked():
+            return
+        folder = self._selected_folder() or outcome.result.root
+        if folder is self._scope and not force:
+            return
+        self._scope = folder
+        worker = AnalyseWorker(folder, self)
+        worker.done.connect(lambda summary: worker is self._scope_worker and self._scope_ready(folder, summary))
+        worker.finished.connect(lambda: self._list_workers.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._scope_worker = worker
+        self._list_workers.add(worker)
+        self._update_scope_button()
+        worker.start()
+
+    def _scope_ready(self, folder: Node, summary: Summary) -> None:
+        self._scope_worker = None
+        if folder is self._scope:
+            self._show_lists(summary.largest, summary.extensions, summary.ages)
+
+    def _update_scope_button(self) -> None:
+        """Shown on the three list tabs once there is a scan; names the folder while it is on."""
+        tab = self.tabs.currentIndex()
+        self._scope_button.setVisible(self._outcome is not None and tab in (LARGEST_TAB, TYPES_TAB, AGE_TAB))
+        scope = self._scope
+        on = self._scope_button.isChecked() and scope is not None
+        self._scope_button.setText(tr("scope_folder_named", name=scope.name) if on else tr("scope_folder"))
+        self._scope_button.setToolTip(scope.path if on else tr("scope_folder_tip"))
+
     def show_largest_of_type(self, extension: str) -> None:
         """List the largest files with this extension (an empty one: files without) on Largest files."""
         self._show_focused(("type", extension), lambda node: extension_of(node.name) == extension)
@@ -628,16 +762,17 @@ class ResultsView(QWidget):
         self._show_focused(("age", age), lambda node: age_of(node.modified, now) == age)
 
     def show_all_largest(self) -> None:
-        """Go back to the largest files of the whole scan."""
+        """Go back to the largest files of all types and ages (in the scope the lists cover)."""
         self._focus = None
         self._focus_bar.hide()
         self.largest_model.set_rows(self._largest_all)
 
     def _show_focused(self, focus: tuple[str, str], keep: Callable[[Node], bool]) -> None:
-        if self._outcome is None:
+        root = self._lists_root()
+        if root is None:
             return
         self._focus = focus
-        self.largest_model.set_rows(largest_matching(self._outcome.result.root, keep, LARGEST_FILES_LIMIT))
+        self.largest_model.set_rows(largest_matching(root, keep, LARGEST_FILES_LIMIT))
         self._largest_filter.clear()
         self._focus_bar.show()
         self._update_texts()
@@ -677,10 +812,13 @@ class ResultsView(QWidget):
         self._types_combo.blockSignals(False)
 
     def _update_texts(self) -> None:
+        self._update_scope_button()
         errors = len(self._outcome.result.errors) if self._outcome else 0
-        titles = ("tab_chart", "tab_largest", "tab_search", "tab_duplicates", "tab_types", "tab_age", "tab_changes")
+        titles = ("tab_chart", "tab_largest", "tab_search", "tab_cleanup", "tab_types", "tab_age", "tab_changes")
         for position, key in enumerate(titles):
             self.tabs.setTabText(position, tr(key))
+        self.cleanup_pages.setTabText(SUGGESTIONS_PAGE, tr("cleanup_suggestions"))
+        self.cleanup_pages.setTabText(DUPLICATES_PAGE, tr("tab_duplicates"))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
@@ -692,12 +830,26 @@ class ResultsView(QWidget):
         root = outcome.result.root if outcome is not None else self.tree_model.root
         if root is None:
             return ""
-        values = {"path": root.path, "size": format_size(root.size), "allocated": format_size(root.allocated),
-                  "files": format_count(root.file_count), "folders": format_count(root.dir_count)}
+        self.summary.setToolTip(root.path)
+        values = {"path": html.escape(self._fitting_path(root.path)), "size": format_size(root.size),
+                  "allocated": format_size(root.allocated), "files": format_count(root.file_count),
+                  "folders": format_count(root.dir_count)}
         if outcome is None:
             return tr("summary_live", **values)
         key = "summary_partial" if outcome.partial else "summary"
         return tr(key, time=format_duration(outcome.result.elapsed), **values)
+
+    def _fitting_path(self, path: str) -> str:
+        """``path`` shortened in the middle to half the summary line's width (it is shown in bold)."""
+        font = QFont(self.summary.font())
+        font.setBold(True)
+        room = max(self.summary.width() // 2, 160)
+        return QFontMetrics(font).elidedText(path, Qt.TextElideMode.ElideMiddle, room)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        """Qt: fit the scanned path in the summary line again."""
+        super().resizeEvent(event)
+        self.summary.setText(self._summary_text())
 
     def _legend_html(self) -> str:
         sizes = {stat.category: stat.size for stat in self._categories}
@@ -754,6 +906,15 @@ def _table(model: QSortFilterProxyModel) -> QTableView:
     return table
 
 
+def _summary_label() -> QLabel:
+    """The line over the tree; the scanned path in it is shortened to fit (``_summary_text``), so a long
+    one never widens the window."""
+    label = QLabel()
+    label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+    label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+    return label
+
+
 def _fill_combo(combo: QComboBox, items: list[tuple[str, object]], current: object) -> None:
     """Replace a combo box's items (text, data) without signalling, keeping ``current`` selected."""
     combo.blockSignals(True)
@@ -787,4 +948,3 @@ def _column(*widgets: QWidget) -> QWidget:
     for widget in widgets:
         layout.addWidget(widget, 1 if isinstance(widget, (QTableView, ChartStack)) else 0)
     return box
-

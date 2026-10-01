@@ -25,7 +25,9 @@ from dataclasses import dataclass, field
 from typing import cast
 
 from je_file_tree.core.allocation import Allocation, allocation_for
+from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 # Windows reparse tags of links that must not be followed. A junction (and a
 # volume mounted into a folder) is a mount point; ``is_symlink()`` is False for
@@ -52,6 +54,7 @@ _WINDOWS_PATH_TOO_LONG = 206  # ERROR_FILENAME_EXCED_RANGE
 
 # ``Node.error`` of a folder the scan never got to because it was stopped.
 NOT_SCANNED = "not scanned: the scan was stopped first"
+EXCLUDED = "excluded: skipped by the exclusions"
 
 
 class ScanCancelledError(Exception):
@@ -73,6 +76,7 @@ class ScanOptions:
 
     include_hidden: bool = True
     workers: int = DEFAULT_WORKERS
+    exclude: tuple[str, ...] = ()  # folder name patterns and folder paths to skip (see core/exclusions.py)
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,6 +155,7 @@ class _Crawler:
                  cancel: threading.Event | None = None) -> None:
         self._options = options
         self._allocation = allocation_for(root_path)
+        self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
@@ -211,8 +216,9 @@ class _Crawler:
 
     def _work(self) -> None:
         while (task := self._take()) is not None:
+            give_way()
             try:
-                read = _read_folder(task[0], task[1], self._options, self._allocation)
+                read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
                 with self._condition:
                     self._failure = error
@@ -261,7 +267,8 @@ def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
         node = node.parent
 
 
-def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation) -> _FolderRead:
+def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation,
+                 excluded: Excluded | None = None) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
@@ -273,18 +280,18 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
         return read
     children = cast(list[Node], folder.children)  # folders are always created with a list
     for entry in listing:
-        child = _entry_node(entry, options, read, allocation)
+        child = _entry_node(entry, options, read, allocation, excluded)
         if child is None:
             continue
         child.parent = folder
         children.append(child)
-        if child.is_dir and not child.is_link:
+        if child.is_dir and not child.is_link and child.error is None:
             read.subfolders.append((child, entry.path))
     return read
 
 
 def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead,
-                allocation: Allocation) -> Node | None:
+                allocation: Allocation, excluded: Excluded | None = None) -> Node | None:
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
@@ -299,13 +306,19 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
         return Node(name=entry.name, is_dir=_points_to_folder(entry), modified=info.st_mtime,
                     is_link=True)
     if entry.is_dir(follow_symlinks=False):
-        return Node(name=entry.name, is_dir=True, modified=info.st_mtime, children=[])
+        return _folder_node(entry, info.st_mtime, excluded)
     allocated = allocation(entry, info)
     read.files += 1
     read.size += info.st_size
     read.allocated += allocated
     return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
                 modified=info.st_mtime)
+
+
+def _folder_node(entry: os.DirEntry[str], modified: float, excluded: Excluded | None) -> Node:
+    """A folder to read, or, when the exclusions match it, one that is listed but never read."""
+    skipped = excluded is not None and excluded(entry.name, entry.path)
+    return Node(name=entry.name, is_dir=True, modified=modified, error=EXCLUDED if skipped else None, children=[])
 
 
 def _is_hidden(name: str, info: os.stat_result) -> bool:
@@ -337,6 +350,7 @@ def _add_up(folders: list[Node]) -> None:
     ``folders`` must list every folder after its parent.
     """
     for folder in reversed(folders):
+        give_way()
         size = allocated = files = subfolders = 0
         newest = folder.modified
         children = folder.children
@@ -344,7 +358,7 @@ def _add_up(folders: list[Node]) -> None:
             size += child.size
             allocated += child.allocated
             files += child.file_count
-            if child.is_dir and not child.is_link:
+            if child.is_dir and not child.is_link and child.error != EXCLUDED:
                 subfolders += 1 + child.dir_count
             newest = max(newest, child.modified)
         folder.size = size

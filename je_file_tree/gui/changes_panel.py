@@ -11,7 +11,7 @@ from je_file_tree.core.compare import FolderChange, SavedScan
 from je_file_tree.core.formatting import format_change, format_count, format_size, format_time
 from je_file_tree.core.node import Node
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.scan_worker import CompareWorker
+from je_file_tree.gui.scan_worker import CompareWorker, wait_for
 from je_file_tree.gui.tables import ChangesModel
 
 
@@ -91,7 +91,7 @@ class ChangesPanel(QWidget):
         self._current = None
         if wait:
             for worker in self._running.copy():
-                worker.wait()
+                wait_for(worker)
 
     def retranslate(self) -> None:
         """Re-read every translated text (and the sizes, after a change of unit)."""

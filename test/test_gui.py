@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import json
 import math
 import os
 import threading
@@ -11,29 +12,51 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPersistentModelIndex, QPoint, QSettings, Qt, QUrl
+from PySide6.QtCore import (
+    QEventLoop,
+    QItemSelectionModel,
+    QModelIndex,
+    QPersistentModelIndex,
+    QPoint,
+    QSettings,
+    Qt,
+    QThread,
+    QTimer,
+    QUrl,
+)
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox, QSizePolicy
 
+from conftest import make_tree
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
+from je_file_tree.core import pacing
 from je_file_tree.core.node import Node
+from je_file_tree.core.protected import PROGRAMS, Protection
 from je_file_tree.core import scanner
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from je_file_tree.gui import file_actions, i18n, scan_worker
 from je_file_tree.gui import main_window as main_window_module
 from je_file_tree.gui.app import create_window
+from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
 from je_file_tree.gui.qt_translation import apply_qt_translation
-from je_file_tree.gui.results_view import CHANGES_TAB, SEARCH_TAB, _selected_in
-from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.results_view import (
+    CHANGES_TAB,
+    CHART_TAB,
+    CLEANUP_TAB,
+    LARGEST_TAB,
+    SEARCH_TAB,
+    _selected_in,
+)
+from je_file_tree.gui.scan_worker import analyse, pace_workers, wait_for
 from je_file_tree.gui.tables import SORT_ROLE, FileTypesModel, LargestFilesModel
 from je_file_tree.gui.tree_model import ALLOCATED, NAME, NODE_ROLE, SHARE_ROLE, SIZE, FolderTreeModel
 from je_file_tree.gui import bar_chart
-from je_file_tree.gui.charts import BARS, SUNBURST, TREEMAP, ChartStack
+from je_file_tree.gui.charts import BARS, SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.sunburst_widget import SunburstWidget
-from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, TreemapWidget
+from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, MIN_SIDE, TreemapWidget
 
 
 def _wait(app: QApplication, done: Callable[[], bool], timeout: float = 10.0) -> None:
@@ -146,6 +169,56 @@ def test_table_models(qapp: QApplication, sample_tree: Path) -> None:
     assert types.headerData(3, Qt.Orientation.Horizontal) == "% of total"
 
 
+# --- background work gives way ------------------------------------------------
+
+
+def test_workers_wait_while_the_window_handles_something(qapp: QApplication) -> None:
+    pace_workers()
+    try:
+        seen: list[bool] = []
+        QTimer.singleShot(0, lambda: seen.append(pacing.WINDOW.is_open))
+        _wait(qapp, lambda: bool(seen))
+        assert seen == [False], "the gate is closed while the window handles an event"
+        opened = threading.Event()
+        watcher = threading.Thread(target=lambda: opened.set() if _opens_within(1.0) else None)
+        watcher.start()
+        loop = QEventLoop()
+        QTimer.singleShot(300, loop.quit)
+        loop.exec()  # the window waits for the timer: the gate opens meanwhile
+        watcher.join()
+        assert opened.is_set()
+    finally:
+        pace_workers(connect=False)
+    assert pacing.WINDOW.is_open
+
+
+def _opens_within(seconds: float) -> bool:
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if pacing.WINDOW.is_open:
+            return True
+        time.sleep(0.001)
+    return False
+
+
+class _GivingWay(QThread):
+    def run(self) -> None:
+        pacing.give_way()
+
+
+def test_waiting_for_a_worker_opens_the_gate_first(qapp: QApplication, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pacing, "PAUSE_LIMIT", 10.0)
+    pacing.WINDOW.close()
+    worker = _GivingWay()
+    try:
+        worker.start()
+        started = time.monotonic()
+        wait_for(worker)  # the window blocks on the worker: holding the gate shut would only stall it
+        assert time.monotonic() - started < 2.0
+    finally:
+        pacing.WINDOW.open()
+
+
 # --- treemap ----------------------------------------------------------------
 
 
@@ -233,9 +306,11 @@ def test_the_chart_views_move_together(qapp: QApplication, sample_tree: Path) ->
     assert charts.view_root is photos
     assert charts.treemap.view_root is photos
     assert charts.sunburst.view_root is photos
+    assert charts.tree.view_root is photos
     charts.zoom_out()
     assert charts.bars.view_root is root
     assert charts.treemap.view_root is root
+    assert charts.tree.view_root is root
     assert moves == [root, photos, root], "one signal per move, not one per view"
     charts.deleteLater()
 
@@ -386,6 +461,36 @@ def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: Q
     assert [node.name for node in window.results.largest_model.rows()][0] == "a.jpg"
     assert all(stat.extension != ".bin" for stat in window.results.types_model.rows())
     assert "500 B" in window.statusBar().currentMessage()
+
+
+def test_system_and_program_folders_are_asked_about_twice(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                         monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    root = window.results.tree_model.root
+    assert root is not None
+    photos, big = _child(root, "photos"), _child(root, "big.bin")
+    window._protected = [Protection(str(sample_tree / "photos"), PROGRAMS)]
+    asked: list[str] = []
+    warnings: list[str] = []
+    trashed: list[str] = []
+    answers = iter([QMessageBox.StandardButton.No])
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text, *_buttons: warnings.append(text)
+                        or next(answers))
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda _parent, _title, text: asked.append(text) or QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
+    window.move_to_trash([photos, big])
+    assert len(warnings) == 1
+    assert f"• {sample_tree / 'photos'} — installed programs" in warnings[0]
+    assert "big.bin" not in warnings[0], "only the protected entries are named"
+    assert asked == [], "No to the first question: the usual question is not even asked"
+    assert trashed == []
+    answers = iter([QMessageBox.StandardButton.Yes])
+    window.move_to_trash([photos, big])
+    assert len(asked) == 1, "Yes: then the usual question"
+    assert sorted(trashed) == sorted([str(sample_tree / "photos"), str(sample_tree / "big.bin")])
+    window.move_to_trash([_child(root, "notes.txt")])
+    assert len(warnings) == 2, "nothing protected: no extra question"
 
 
 def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
@@ -566,6 +671,35 @@ def test_comparing_with_a_saved_scan_shows_what_changed(window: MainWindow, qapp
     assert not results.tabs.isTabVisible(CHANGES_TAB)
 
 
+def test_the_treemap_draws_a_folder_s_specks_as_one_group_tile(qapp: QApplication) -> None:
+    root = Node("root", True, children=[])
+    many = Node("many", True, children=[], parent=root)
+    many.children.extend(Node(f"f{index}.txt", False, size=1, parent=many) for index in range(300))
+    many.children.append(Node("big.bin", False, size=5000, parent=many))
+    many.size = 5300
+    root.children.extend([many, Node("other.bin", False, size=5300, parent=root)])
+    root.size = 10600
+    widget = TreemapWidget()
+    widget.resize(400, 300)
+    widget.set_view_root(root)
+    widget.grab()
+    assert all(min(tile.rect.width, tile.rect.height) >= MIN_SIDE for tile in widget._tiles)
+    group = next(tile for tile in widget._tiles if tile.grouped)
+    assert (group.node, group.grouped, group.grouped_size) == (many, 300, 300)
+    assert "300" in widget._describe(group) and i18n.tr("treemap_more_open") in widget._describe(group)
+    centre = QPoint(int(group.rect.x + group.rect.width / 2), int(group.rect.y + group.rect.height / 2))
+    assert widget.tile_at(centre.x(), centre.y()) is group
+    widget.set_selected(many)
+    assert widget._tile_of(many) is not group, "selecting the folder outlines the folder, not its group"
+    QTest.mouseDClick(widget, Qt.MouseButton.LeftButton, pos=centre)
+    assert widget.view_root is many, "double-clicking the group shows its folder on its own"
+    widget.grab()
+    inside = next(tile for tile in widget._tiles if tile.grouped)
+    assert inside.node is many
+    assert i18n.tr("treemap_more_open") not in widget._describe(inside), "already shown on its own"
+    widget.deleteLater()
+
+
 def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -> None:
     root = scan(sample_tree).root
     widget = TreemapWidget()
@@ -593,29 +727,210 @@ def test_the_treemap_levels_and_colours(qapp: QApplication, sample_tree: Path) -
 
 def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
     _scanned(window, qapp, sample_tree)
-    assert window.results.charts.mode == TREEMAP
-    window.results._chart_buttons[BARS].click()
-    assert window.results.charts.mode == BARS
-    assert window.settings.value("chart_mode") == BARS
-    window.results._chart_buttons[TREEMAP].click()
+    assert window.results.charts.mode == TREEMAP, "the treemap comes first"
+    assert window.results._chart_buttons[TREEMAP].isChecked()
     assert not window.results._treemap_options.isHidden(), "the treemap options come with the treemap"
     window.results._levels_combo.setCurrentIndex(window.results._levels_combo.findData(3))
     window.results._colours_combo.setCurrentIndex(window.results._colours_combo.findData(BY_FOLDER))
     assert (window.settings.value("treemap_levels"), window.settings.value("treemap_colours")) == (3, BY_FOLDER)
     assert window.results._legend.isHidden(), "no file-type legend when colouring by folder"
     window.results._chart_buttons[BARS].click()
+    assert window.results.charts.mode == BARS
+    assert window.settings.value("chart_mode") == BARS
     assert not window.results._legend.isHidden(), "the bars keep the file-type colours"
     assert window.results._treemap_options.isHidden()
     again = create_window(window.settings)
-    assert again.results.charts.mode == BARS
+    assert again.results.charts.mode == BARS, "the view chosen last comes back"
     assert (again.results.charts.treemap.levels, again.results.charts.treemap.colour_mode) == (3, BY_FOLDER)
     again.results.apply_chart_settings({"treemap_levels": "many", "chart_mode": "pie"})  # hand-edited: ignored
     assert again.results.charts.treemap.levels == 3
     assert again.results.charts.mode == BARS
     again.results._chart_buttons[SUNBURST].click()
     assert again.results._legend.isHidden(), "the sunburst colours by folder"
+    again.results._chart_buttons[TREE].click()
+    assert again.results.charts.mode == TREE
+    assert not again.results._tree_options.isHidden()
+    again.results._tree_orientation_combo.setCurrentIndex(
+        again.results._tree_orientation_combo.findData("vertical"))
+    assert again.settings.value("tree_orientation") == "vertical"
+    restored = create_window(again.settings)
+    assert restored.results.charts.mode == TREE
+    assert restored.results.charts.tree.orientation == "vertical"
+    restored.close()
+    restored.deleteLater()
     again.close()
     again.deleteLater()
+
+
+def test_exclusions_are_skipped_greyed_out_and_saved(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    window.settings.setValue("exclusions", "photos")  # what an INI file gives back for a one-item list
+    assert window.exclusions() == ["photos"]
+    _scanned(window, qapp, sample_tree)
+    model = window.results.tree_model
+    root = model.root
+    assert root is not None
+    photos = _child(root, "photos")
+    assert photos.error == scanner.EXCLUDED
+    assert root.size == 750
+    index = model.index_for(photos)
+    assert "Skipped: it is in View → Skip while scanning" in index.data(Qt.ItemDataRole.ToolTipRole)
+    assert index.data(Qt.ItemDataRole.ForegroundRole) is not None, "greyed out"
+    assert window.results.problems_model.rowCount() == 0, "skipping is not a problem"
+
+    class Editing(main_window_module.ExclusionsDialog):
+        def exec(self) -> int:
+            self.add("node_modules")
+            self.add("NODE_MODULES")  # already listed, whatever the case
+            self.add("   ")
+            self.list.item(0).setSelected(True)
+            self.remove_selected()  # photos goes
+            return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(main_window_module, "ExclusionsDialog", Editing)
+    window.edit_exclusions()
+    assert window.exclusions() == ["node_modules"]
+    assert "1 exclusions saved" in window.statusBar().currentMessage()
+    window.rescan()
+    _wait(qapp, lambda: window.results.outcome is not None and window.results.tree_model.root.size == 1000)
+
+
+def test_the_lists_can_cover_the_selected_folder_only(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    _scanned(window, qapp, sample_tree)
+    results = window.results
+    root = results.tree_model.root
+    assert root is not None
+    button = results._scope_button
+    assert button.isHidden(), "not on the Chart tab"
+    results.tabs.setCurrentIndex(LARGEST_TAB)
+    assert not button.isHidden()
+
+    def largest() -> list[str]:
+        return [node.name for node in results.largest_model.rows()]
+
+    photos, code = _child(root, "photos"), _child(root, "code")
+    results.select_node(photos)
+    button.click()
+    _wait(qapp, lambda: largest() == ["a.jpg", "b.png"])
+    assert {stat.extension for stat in results.types_model.rows()} == {".jpg", ".png"}
+    assert button.text() == "Only in photos"
+    results.select_node(code)  # the lists follow the selection, once it settles
+    _wait(qapp, lambda: largest() == ["main.py", "Makefile"])
+    results.select_node(_child(code, "main.py"))  # a file: its folder
+    qapp.processEvents()
+    _wait(qapp, lambda: not results._scope_timer.isActive() and results._scope_worker is None)
+    assert largest() == ["main.py", "Makefile"]
+    results.show_largest_of_type(".jpg")
+    assert largest() == [], "a type's largest files within the folder shown"
+    results.show_all_largest()
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash([_child(code, "Makefile")])
+    _wait(qapp, lambda: largest() == ["main.py"])
+    assert sum(stat.size for stat in results.types_model.rows()) == 100, "the folder's types after the move"
+    button.click()  # back to the whole scan, whose totals followed the move too
+    assert sorted(largest()) == ["a.jpg", "b.png", "big.bin", "main.py", "notes.txt"], "Makefile is gone"
+    assert largest()[:2] == ["big.bin", "a.jpg"]
+    assert sum(stat.size for stat in results.types_model.rows()) == 950
+
+
+def test_search_conditions_and_saved_searches(window: MainWindow, qapp: QApplication, sample_tree: Path) -> None:
+    _scanned(window, qapp, sample_tree)
+    panel = window.results.search
+
+    def found() -> list[str]:
+        _wait(qapp, lambda: not panel.busy)
+        return sorted(node.name for node in window.results.search_model.rows())
+
+    filters = panel.filters
+    filters.category.setCurrentIndex(filters.category.findData("images"))  # a condition alone searches
+    assert found() == ["a.jpg", "b.png"]
+    filters.kind.setCurrentIndex(filters.kind.findData("folders"))
+    assert found() == [], "a file type means files"
+    filters.apply({})  # back to any
+    filters.kind.setCurrentIndex(filters.kind.findData("folders"))
+    assert found() == ["code", "empty", "photos"]
+    filters.min_size.setCurrentIndex(filters.min_size.findData(10 << 30))  # 10 GB: nothing that big here
+    assert found() == []
+    assert filters.min_size.currentData() == 10 << 30, "sizes beyond 32 bits survive the list"
+    filters.apply({"kind": "files"})
+    panel.box.setText("*.p*")
+    panel.rerun()
+    assert found() == ["b.png", "main.py"]
+    panel.save("Pictures and code")
+    saved = json.loads(window.settings.value("saved_searches"))
+    assert saved == {"Pictures and code": {"text": "*.p*", "min_size": None, "max_size": None, "changed": "any",
+                                           "category": None, "kind": "files"}}
+    again = create_window(window.settings)  # a new window finds it in the settings
+    assert again.results.search.saved.findData("Pictures and code") > 0
+    again.close()
+    again.deleteLater()
+    panel.box.setText("")
+    filters.apply({})
+    panel.saved.setCurrentIndex(panel.saved.findData("Pictures and code"))
+    panel._load_saved()
+    assert panel.box.text() == "*.p*"
+    assert filters.kind.currentData() == "files"
+    assert found() == ["b.png", "main.py"]
+    panel.delete_saved()
+    assert json.loads(window.settings.value("saved_searches")) == {}
+    window.settings.setValue("saved_searches", "not json")
+    assert main_window_module._saved_searches(window.settings) == {}, "a damaged setting counts as none"
+
+
+def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = tmp_path / "work"
+    folder.mkdir()
+    make_tree(folder, {"site": {"package.json": b"{}", "node_modules": {"lib.js": b"j" * 400}},
+                       "old": {"nothing": {}}, "memory.dmp": b"d" * 50, "keep.txt": b"k"})
+    _scanned(window, qapp, folder)
+    results = window.results
+    assert results.tabs.tabText(CLEANUP_TAB) == "Clean up"
+    assert results.cleanup_pages.tabText(0) == "Suggestions"
+    assert results.cleanup_pages.tabText(1) == "Duplicates"
+    panel = results.cleanup
+    _wait(qapp, lambda: not panel.busy and bool(panel.groups))
+    assert [(group.key, [node.name for node in group.nodes]) for group in panel.groups] == [
+        ("build_output", ["node_modules"]), ("crash_dumps", ["memory.dmp"]), ("empty_folders", ["old"])]
+    assert panel.model.index(0, 0).data() == "Build output (can be rebuilt) — 400 B (1)"
+    assert "building the project again" in panel.model.index(0, 0).data(Qt.ItemDataRole.ToolTipRole)
+    assert panel.status.text().startswith("450 B could be freed in 3 groups.")
+    panel.view.setCurrentIndex(panel.model.index(0, 0, panel.model.index(0, 0)))
+    panel.select_current_group()
+    picked = _selected_in(panel.view)
+    assert [node.name for node in picked] == ["node_modules"]
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    window.move_to_trash(picked)
+    _wait(qapp, lambda: not panel.busy and [group.key for group in panel.groups] == ["crash_dumps", "empty_folders"])
+    panel.select_all_entries()
+    assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
+
+
+def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qapp: QApplication,
+                                                          tmp_path: Path) -> None:
+    label = ElidedLabel()
+    label.resize(300, 20)
+    long_path = "C:\\" + "\\".join(["a-rather-long-folder-name"] * 8) + "\\photos"
+    label.setText(long_path)
+    assert label.full_text() == long_path
+    assert label.toolTip() == long_path
+    assert "…" in label.text()
+    assert label.text().endswith("photos"), "shortened in the middle: the end of a path says the most"
+    assert label.minimumSizeHint().width() < 300
+    label.deleteLater()
+    deep = tmp_path.joinpath(*["a-rather-long-folder-name"] * 6, "R&D")
+    deep.mkdir(parents=True)
+    (deep / "x.txt").write_bytes(b"x")
+    _scanned(window, qapp, deep)
+    results = window.results
+    path_width = results._treemap_path.fontMetrics().horizontalAdvance(str(deep))
+    assert results.tabs.widget(CHART_TAB).minimumSizeHint().width() < path_width, "the path label asks for no width"
+    assert results.summary.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Ignored
+    assert "R&amp;D" in results.summary.text(), "the path is escaped in the rich-text summary"
+    assert results.summary.toolTip() == str(deep)
 
 
 def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:

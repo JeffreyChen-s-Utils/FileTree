@@ -38,6 +38,18 @@ EN: dict[str, str] = {
     "action_quit": "Quit",
     "action_quit_tip": "Close FileTree",
     "action_hidden": "Include hidden files",
+    "action_exclusions": "Skip while scanning…",
+    "action_exclusions_tip": "Folders and folder names that scans leave out, such as node_modules",
+    "exclusions_title": "Skip while scanning",
+    "exclusions_hint": ("Scans leave these folders out: they are listed, greyed out, with size 0. A name such as "
+                        "node_modules or *.cache skips every folder of that name; a folder path skips that one "
+                        "folder. The list applies from the next scan."),
+    "exclusions_add_name": "Add a name…",
+    "exclusions_add_folder": "Add a folder…",
+    "exclusions_remove": "Remove",
+    "exclusions_name_prompt": "Folder name, * and ? allowed:",
+    "exclusions_saved": "{count} exclusions saved; they apply from the next scan.",
+    "tooltip_excluded": "{path}\nSkipped: it is in View → Skip while scanning",
     "action_hidden_tip": "Count hidden files and folders (applies to the next scan)",
     "action_help": "How to use",
     "action_help_tip": "Short guide to FileTree",
@@ -91,11 +103,22 @@ EN: dict[str, str] = {
     "chart_treemap_tip": "Every file as a rectangle sized by the space it takes",
     "chart_bars": "Bars",
     "chart_sunburst": "Sunburst",
+    "chart_tree": "Tree",
+    "chart_tree_tip": "Folder hierarchy: expand branches, Ctrl+wheel to zoom, double-click to focus",
+    "tree_orientation": "Direction",
+    "tree_orientation_horizontal": "Left to right",
+    "tree_orientation_vertical": "Top to bottom",
+    "tree_more": "{count} more folders · {size}",
+    "tree_unavailable": "Not scanned",
     "chart_sunburst_tip": "The folder in the centre, each deeper level a ring; click the centre to go up",
     "chart_bars_tip": "One bar per entry of the folder, largest first, with its size and share",
     "bars_empty_folder": "This folder is empty.",
     "bars_more": "{count} more: {size}",
     "tab_largest": "Largest files",
+    "scope_folder": "Selected folder only",
+    "scope_folder_named": "Only in {name}",
+    "scope_folder_tip": ("Show the largest files, types and ages of the folder selected in the tree instead of "
+                         "the whole scan"),
     "tab_search": "Search",
     "tab_changes": "Changes",
     "action_compare": "Compare with a saved scan…",
@@ -115,6 +138,35 @@ EN: dict[str, str] = {
     "changes_summary": ("Compared with {path}, saved {when}: {before} then, {now} now ({change}); "
                         "{count} folders changed."),
     "tab_duplicates": "Duplicates",
+    "tab_cleanup": "Clean up",
+    "cleanup_suggestions": "Suggestions",
+    "cleanup_select_all": "Select all",
+    "cleanup_select_group": "Select this group",
+    "cleanup_running": "Looking for things to clean up…",
+    "cleanup_hint": "Places whose contents can usually go appear here after a scan.",
+    "cleanup_none": "Nothing to suggest in this scan.",
+    "cleanup_summary": ("{size} could be freed in {groups} groups. Select entries and press Delete to move them to "
+                        "the Recycle Bin; hover over a group to see what deleting it does."),
+    "cleanup_group": "{title} — {size} ({count})",
+    "cleanup_temp": "Temporary files",
+    "cleanup_temp_tip": "Files programs left behind for a while; a program that is still running may need some.",
+    "cleanup_browser_cache": "Browser caches",
+    "cleanup_browser_cache_tip": "Copies of web pages and pictures; browsers download them again as needed.",
+    "cleanup_thumbnails": "Thumbnail caches",
+    "cleanup_thumbnails_tip": "Small previews of pictures; they are made again when folders are opened.",
+    "cleanup_crash_dumps": "Crash dumps",
+    "cleanup_crash_dumps_tip": "Memory saved when a program crashed, only useful to report the crash.",
+    "cleanup_package_caches": "Package caches (pip, npm, Gradle…)",
+    "cleanup_package_caches_tip": ("Downloaded packages kept for the next install; they are downloaded again when "
+                                   "needed."),
+    "cleanup_build_output": "Build output (can be rebuilt)",
+    "cleanup_build_output_tip": ("Installed dependencies and compiled files of projects; building the project again "
+                                 "recreates them."),
+    "cleanup_old_installers": "Installers in Downloads, untouched for 90 days",
+    "cleanup_old_installers_tip": ("Setup files that were most likely run long ago; keep the ones you install from "
+                                   "again."),
+    "cleanup_empty_folders": "Empty folders",
+    "cleanup_empty_folders_tip": "Folders with nothing in them, or only other empty folders.",
     "duplicates_min_size": "Compare files from",
     "duplicates_any_size": "any size",
     "duplicates_find": "Find duplicates",
@@ -132,8 +184,32 @@ EN: dict[str, str] = {
     "duplicates_skipped": "{count} files could not be read.",
     "duplicates_group": "{count} copies of {size} — {extra} in extra copies",
     "search_placeholder": "Part of a name, or a pattern: backup, *.mp4, *.iso;*.zip",
-    "search_hint": "Type part of a name, or a pattern with * and ?, to find files and folders anywhere in the scan.",
+    "search_hint": ("Type part of a name or a pattern with * and ?, choose conditions, or both, to find files "
+                    "and folders anywhere in the scan."),
     "search_running": "Searching…",
+    "search_larger": "Larger than",
+    "search_smaller": "Smaller than",
+    "search_no_limit": "no limit",
+    "search_changed": "Changed",
+    "search_changed_any": "any time",
+    "search_changed_week": "in the last week",
+    "search_changed_month": "in the last month",
+    "search_changed_year": "in the last year",
+    "search_changed_stale_year": "not for a year",
+    "search_changed_stale_2y": "not for 2 years",
+    "search_changed_stale_5y": "not for 5 years",
+    "search_type": "Type",
+    "search_type_any": "any type",
+    "search_show": "Show",
+    "search_kind_any": "files and folders",
+    "search_kind_files": "files only",
+    "search_kind_folders": "folders only",
+    "search_saved": "Saved searches",
+    "search_saved_none": "(none)",
+    "search_save": "Save…",
+    "search_delete": "Delete",
+    "search_save_title": "Save this search",
+    "search_save_prompt": "Name:",
     "search_none": "Nothing matches.",
     "search_summary": "{count} matches, {size} in total.",
     "search_limited": "The {shown} largest are listed.",
@@ -175,6 +251,10 @@ EN: dict[str, str] = {
     "treemap_up": "↑ Up",
     "treemap_up_tip": "Show the folder above",
     "treemap_tooltip": "<b>{name}</b><br>{size} ({share} of this view)<br>{path}",
+    "treemap_more": "{count} more",
+    "treemap_more_tooltip": "<b>{count} smaller entries</b> of {name}, each too small to draw<br>"
+                            "{size} ({share} of this view)",
+    "treemap_more_open": "Double-click to show this folder on its own",
     "largest_filter": "Filter by name or folder…",
     "types_all": "All types",
     "category_images": "Pictures",
@@ -196,6 +276,13 @@ EN: dict[str, str] = {
     "menu_rescan_here": "Rescan this folder",
     "rescan_done": "Rescanned {name}: {before} → {after}",
     "trash_confirm_title": "Move to Recycle Bin",
+    "protected_title": "System or program folder",
+    "protected_question": ("{count} of the entries are system or program folders. Moving them can make the "
+                           "system or programs stop working:\n\n{names}\n\nMove them anyway?"),
+    "protected_system": "part of the operating system",
+    "protected_programs": "installed programs",
+    "protected_settings": "programs' settings and data",
+    "protected_profile": "a user's profile folder",
     "trash_confirm": "Move “{name}” ({size}) to the Recycle Bin?\n\nYou can restore it from there.",
     "trash_failed": "“{name}” could not be moved to the Recycle Bin. It may be in use or read-only.",
     "trash_done": "Moved “{name}” to the Recycle Bin: {size} freed.",
@@ -234,19 +321,30 @@ clusters, so usually a little more; less for compressed files, nothing for files
 <i>% of parent</i> bar (how much of
 the folder above it this entry takes), how many files and folders it holds, and when something in it
 last changed. Click a column title to sort by it.</li>
-<li><b>Chart</b>: switch between three views of the same folder in the corner of the tab. The
+<li><b>Chart</b>: switch between four views of the same folder in the corner of the tab (the treemap
+comes first, and FileTree remembers the one you chose). The
 <i>Treemap</i> draws every file as a rectangle, the bigger the file the bigger the rectangle; each folder
-has a strip with its name and size. <i>Levels</i> sets how many levels are drawn, <i>Colours</i> colours by
-file type (the legend is under it) or by top-level folder. <i>Bars</i> gives each entry of the folder one
-bar, largest first, with its size and share, the easiest to read exactly. The <i>Sunburst</i> puts the
-folder in the centre and each deeper level in a ring around it; click the centre to go up. Click to find an entry in the
-tree, double-click a folder to go into it, and press <i>Up</i> to go back.</li>
+has a strip with its name and size, and the files of a folder too small to see share one grey, hatched
+tile (<i>12 more</i>): double-click it to show that folder on its own. <i>Levels</i> sets how many levels
+are drawn, <i>Colours</i> colours by file type (the legend is under it) or by top-level folder.
+<i>Bars</i> gives each entry of the folder one bar, largest first, with its size and share, the easiest
+to read exactly. The <i>Sunburst</i> puts the folder in the centre and each deeper level in a ring around
+it; click the centre to go up. The <i>Tree</i> shows expandable folder cards; click + or an “other folders”
+card to reveal more, choose the direction, Ctrl+wheel to zoom and scroll to pan. Click to find an entry in
+the folder tree, double-click a folder to go into it,
+and press <i>Up</i> to go back.</li>
 <li><b>Largest files</b>: the 1,000 biggest files anywhere in the scan. Type in the filter box to
 narrow the list; double-click a row to find the file in the tree.</li>
 <li><b>Search</b> (Ctrl+F): files and folders whose name contains what you type, anywhere in the scan.
 A pattern such as <code>*.mp4</code> must match the whole name; separate several with <code>;</code>
-(<code>*.iso;*.zip</code>). The 1,000 largest matches are listed, with the count and total size of all.</li>
-<li><b>Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
+(<code>*.iso;*.zip</code>). The conditions under the box (size, when last changed, file type, files or
+folders) narrow the search or make one on their own, and <i>Save…</i> keeps a search under a name. The
+1,000 largest matches are listed, with the count and total size of all.</li>
+<li><b>Clean up → Suggestions</b>: after every scan, the places whose contents can usually go, one group per
+kind (temporary files, caches, crash dumps, build output that can be rebuilt, old installers in Downloads,
+empty folders); hover over a group to see what deleting it does, then <i>Select this group</i> or
+<i>Select all</i> and press Delete.</li>
+<li><b>Clean up → Duplicates</b>: press <i>Find duplicates</i> to group files with the same content. Only files of the
 same size are read; files under 1 MB are left out unless you choose a smaller size, because reading takes
 time. Each group lists its copies oldest first; <i>Select extra copies</i> selects all but the oldest, and
 Delete moves them to the Recycle Bin.</li>
@@ -264,7 +362,8 @@ results stay), <i>Scan this folder</i> on its own, or <i>Move to Recycle Bin</i>
 To move several entries at once, pick them with Ctrl+click or Shift+click in the folder tree, the
 <i>Largest files</i> list or the <i>Search</i> results: FileTree asks once, listing them with their total size.
 FileTree never deletes anything for good: it always asks first, and whatever it moves can be restored
-from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.</p>
+from the Recycle Bin (the Trash on macOS and Linux). The numbers update right away, without a rescan.
+System and program folders are asked about twice, with the reason; temporary folders and caches are not.</p>
 <h2>Seeing what grew</h2>
 <p>Save a scan with <i>File → Export → Folder tree (JSON)</i>. Later, after a new scan, choose
 <i>File → Compare with a saved scan…</i> and open that file: the <b>Changes</b> tab lists every folder that
@@ -291,8 +390,13 @@ counted twice.</li>
 protected folders too. Say no and it runs normally; folders it could not read are listed under
 <i>Problems</i>, with a <i>Restart as administrator</i> button. Turn the question off under
 <i>View → Ask for administrator rights at start</i>.</li>
+<li><i>Largest files</i>, <i>File types</i> and <i>Age</i> cover the whole scan; <i>Selected folder only</i>,
+at the top right of those tabs, makes them follow the folder selected in the tree.</li>
 <li>Hidden files are counted. Turn off <i>View → Include hidden files</i> to leave them out of the
 next scan.</li>
+<li>To leave folders out of every scan, list them in <i>View → Skip while scanning</i>: a name such as
+<code>node_modules</code> skips every folder of that name, a path skips one folder. Skipped folders are
+listed greyed out, with size 0.</li>
 <li>Save the results with <i>File → Export</i>: CSV opens in Excel, JSON is for scripts.</li>
 </ul>
 """,
@@ -327,6 +431,18 @@ ZH_TW: dict[str, str] = {
     "action_quit": "結束",
     "action_quit_tip": "關閉 FileTree",
     "action_hidden": "包含隱藏檔案",
+    "action_exclusions": "掃描時略過…",
+    "action_exclusions_tip": "掃描時要略過的資料夾與資料夾名稱，例如 node_modules",
+    "exclusions_title": "掃描時略過",
+    "exclusions_hint": ("掃描會略過這些資料夾：它們仍會列出來，以灰字顯示、大小為 0。"
+                        "像 node_modules 或 *.cache 這樣的名稱會略過所有同名的資料夾；"
+                        "資料夾路徑只略過那一個資料夾。下一次掃描開始生效。"),
+    "exclusions_add_name": "新增名稱…",
+    "exclusions_add_folder": "新增資料夾…",
+    "exclusions_remove": "移除",
+    "exclusions_name_prompt": "資料夾名稱，可用 * 和 ?：",
+    "exclusions_saved": "已儲存 {count} 項排除；下一次掃描開始生效。",
+    "tooltip_excluded": "{path}\n已略過：它在「檢視 → 掃描時略過」的清單中",
     "action_hidden_tip": "把隱藏的檔案和資料夾也算進去（下次掃描時生效）",
     "action_help": "使用說明",
     "action_help_tip": "FileTree 的簡短使用說明",
@@ -377,11 +493,21 @@ ZH_TW: dict[str, str] = {
     "chart_treemap_tip": "每個檔案都是一個方塊，大小代表佔用的空間",
     "chart_bars": "長條圖",
     "chart_sunburst": "放射圖",
+    "chart_tree": "樹狀圖",
+    "chart_tree_tip": "資料夾階層：展開分支、Ctrl＋滾輪縮放、連按兩下聚焦",
+    "tree_orientation": "方向",
+    "tree_orientation_horizontal": "由左到右",
+    "tree_orientation_vertical": "由上到下",
+    "tree_more": "其餘 {count} 個資料夾 · {size}",
+    "tree_unavailable": "未掃描",
     "chart_sunburst_tip": "目前資料夾在中心，每深一層就是外面一圈；按中心回上一層",
     "chart_bars_tip": "資料夾裡每個項目一條長條，由大到小，附大小與比例",
     "bars_empty_folder": "這個資料夾是空的。",
     "bars_more": "其餘 {count} 個：{size}",
     "tab_largest": "最大的檔案",
+    "scope_folder": "只看選取的資料夾",
+    "scope_folder_named": "只看 {name}",
+    "scope_folder_tip": "改為列出資料夾樹中選取的資料夾（而不是整個掃描範圍）的最大檔案、類型與新舊",
     "tab_search": "搜尋",
     "tab_changes": "變化",
     "action_compare": "與先前儲存的掃描比較…",
@@ -401,6 +527,32 @@ ZH_TW: dict[str, str] = {
     "changes_summary": ("與 {path}（儲存於 {when}）比較：之前 {before}，現在 {now}（{change}）；"
                         "{count} 個資料夾有變化。"),
     "tab_duplicates": "重複檔案",
+    "tab_cleanup": "清理",
+    "cleanup_suggestions": "建議",
+    "cleanup_select_all": "全部選取",
+    "cleanup_select_group": "選取這一組",
+    "cleanup_running": "正在找可以清理的東西…",
+    "cleanup_hint": "掃描完成後，這裡會列出內容通常可以刪掉的位置。",
+    "cleanup_none": "這次掃描沒有可以建議清理的東西。",
+    "cleanup_summary": ("共 {groups} 組，可以釋出 {size}。選取項目後按 Delete 會移到資源回收筒；"
+                        "滑鼠停在組名上可以看刪掉它的影響。"),
+    "cleanup_group": "{title}：{count} 項，共 {size}",
+    "cleanup_temp": "暫存檔",
+    "cleanup_temp_tip": "程式暫時留下的檔案；仍在執行的程式可能還在使用其中一些。",
+    "cleanup_browser_cache": "瀏覽器快取",
+    "cleanup_browser_cache_tip": "網頁與圖片的副本；瀏覽器需要時會重新下載。",
+    "cleanup_thumbnails": "縮圖快取",
+    "cleanup_thumbnails_tip": "圖片的小型預覽；開啟資料夾時會重新產生。",
+    "cleanup_crash_dumps": "當機傾印檔",
+    "cleanup_crash_dumps_tip": "程式當機時存下的記憶體內容，只有回報當機時才用得到。",
+    "cleanup_package_caches": "套件快取（pip、npm、Gradle…）",
+    "cleanup_package_caches_tip": "為下次安裝保留的已下載套件；需要時會重新下載。",
+    "cleanup_build_output": "編譯產物（可以重新建置）",
+    "cleanup_build_output_tip": "專案安裝的相依套件與編譯出來的檔案；重新建置專案就會再產生。",
+    "cleanup_old_installers": "下載資料夾裡 90 天沒動的安裝檔",
+    "cleanup_old_installers_tip": "多半很久以前就執行過的安裝程式；之後還要拿來安裝的請留著。",
+    "cleanup_empty_folders": "空資料夾",
+    "cleanup_empty_folders_tip": "裡面什麼都沒有，或只有其他空資料夾的資料夾。",
     "duplicates_min_size": "比對的最小檔案",
     "duplicates_any_size": "任何大小",
     "duplicates_find": "尋找重複檔案",
@@ -418,8 +570,31 @@ ZH_TW: dict[str, str] = {
     "duplicates_skipped": "有 {count} 個檔案無法讀取。",
     "duplicates_group": "{count} 份相同的 {size} 檔案，多餘的副本佔 {extra}",
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
-    "search_hint": "輸入名稱的一部分，或含 * 和 ? 的樣式，在整個掃描結果裡找檔案和資料夾。",
+    "search_hint": "輸入名稱的一部分或含 * 和 ? 的樣式、選擇條件，或兩者一起，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
+    "search_larger": "大於",
+    "search_smaller": "小於",
+    "search_no_limit": "不限",
+    "search_changed": "修改時間",
+    "search_changed_any": "不限",
+    "search_changed_week": "最近一週內",
+    "search_changed_month": "最近一個月內",
+    "search_changed_year": "最近一年內",
+    "search_changed_stale_year": "超過一年沒動",
+    "search_changed_stale_2y": "超過兩年沒動",
+    "search_changed_stale_5y": "超過五年沒動",
+    "search_type": "類型",
+    "search_type_any": "不限類型",
+    "search_show": "顯示",
+    "search_kind_any": "檔案和資料夾",
+    "search_kind_files": "只有檔案",
+    "search_kind_folders": "只有資料夾",
+    "search_saved": "已存的搜尋",
+    "search_saved_none": "（無）",
+    "search_save": "儲存…",
+    "search_delete": "刪除",
+    "search_save_title": "儲存這個搜尋",
+    "search_save_prompt": "名稱：",
     "search_none": "沒有符合的項目。",
     "search_summary": "{count} 個符合，共 {size}。",
     "search_limited": "只列出最大的 {shown} 個。",
@@ -461,6 +636,10 @@ ZH_TW: dict[str, str] = {
     "treemap_up": "↑ 上一層",
     "treemap_up_tip": "顯示上一層資料夾",
     "treemap_tooltip": "<b>{name}</b><br>{size}（佔目前畫面的 {share}）<br>{path}",
+    "treemap_more": "其餘 {count} 個",
+    "treemap_more_tooltip": "<b>{name} 裡其餘 {count} 個較小的項目</b>，每個都小到畫不出來<br>"
+                            "{size}（佔目前畫面的 {share}）",
+    "treemap_more_open": "按兩下可以單獨顯示這個資料夾",
     "largest_filter": "依名稱或資料夾篩選…",
     "types_all": "所有類型",
     "category_images": "圖片",
@@ -481,6 +660,13 @@ ZH_TW: dict[str, str] = {
     "menu_rescan_here": "重新掃描這個資料夾",
     "rescan_done": "已重新掃描 {name}：{before} → {after}",
     "trash_confirm_title": "移到資源回收筒",
+    "protected_title": "系統或程式資料夾",
+    "protected_question": ("其中 {count} 個是系統或程式的資料夾，移走可能讓系統或程式無法正常運作："
+                           "\n\n{names}\n\n仍要移走嗎？"),
+    "protected_system": "作業系統的一部分",
+    "protected_programs": "已安裝的程式",
+    "protected_settings": "程式的設定與資料",
+    "protected_profile": "使用者的個人資料夾",
     "trash_confirm": "要把「{name}」（{size}）移到資源回收筒嗎？\n\n之後仍可以從資源回收筒還原。",
     "trash_failed": "無法把「{name}」移到資源回收筒，可能正在使用中或是唯讀。",
     "trash_done": "已把「{name}」移到資源回收筒，釋出 {size}。",
@@ -513,15 +699,25 @@ ZH_TW: dict[str, str] = {
 <li><b>資料夾樹</b>（左邊）：每個資料夾或檔案的大小、<i>磁碟大小</i>（實際佔用的磁碟空間：以整個叢集計算，
 通常比大小多一點；壓縮檔案較少，只存在雲端的檔案是 0）、<i>佔上層比例</i>長條（它佔上一層資料夾多少空間）、
 裡面有幾個檔案和資料夾，以及裡面最近一次變動的時間。按欄位標題可以依該欄排序。</li>
-<li><b>圖表</b>：在分頁角落切換同一個資料夾的三種圖。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
-每個資料夾頂端有寫著名稱和大小的標題列；<i>層數</i>決定要畫幾層，<i>顏色</i>可以依檔案類型（圖例在下方）或依最上層的資料夾上色。<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例，最容易讀出精確的數字。<i>放射圖</i>把目前資料夾放在中心，每深一層就是外面一圈，按中心回上一層。
+<li><b>圖表</b>：在分頁角落切換同一個資料夾的四種圖（一開始是方塊圖，之後會記住你選的）。<i>方塊圖</i>把每個檔案畫成一個方塊，檔案越大、方塊越大，
+每個資料夾頂端有寫著名稱和大小的標題列；
+資料夾裡小到看不見的檔案會合成一個灰色斜線方塊（<i>其餘 12 個</i>），按兩下它可以單獨顯示那個資料夾。
+<i>層數</i>決定要畫幾層，<i>顏色</i>可以依檔案類型（圖例在下方）或依最上層的資料夾上色。
+<i>長條圖</i>替資料夾裡每個項目畫一條長條，由大到小，附大小與比例。
+<i>放射圖</i>把目前資料夾放在中心，每深一層就是外面一圈，按中心回上一層。
+<i>樹狀圖</i>畫出可展開的資料夾卡片，按加號或「其餘資料夾」顯示更多；可切換方向、
+按 Ctrl＋滾輪縮放並用捲軸移動。
 按一下可以在資料夾樹中找到它，按兩下資料夾可以進入，按<i>上一層</i>回去。</li>
 <li><b>最大的檔案</b>：整個掃描範圍內最大的 1,000 個檔案。在篩選框輸入文字可以縮小清單，
 按兩下某一列就會在資料夾樹中找到那個檔案。</li>
 <li><b>搜尋</b>（Ctrl+F）：整個掃描範圍內，名稱含有輸入文字的檔案和資料夾。
 <code>*.mp4</code> 這類樣式要符合完整名稱；好幾個樣式用 <code>;</code> 分開（<code>*.iso;*.zip</code>）。
-會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
-<li><b>重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
+搜尋框下方的條件（大小、修改時間、檔案類型、檔案或資料夾）可以縮小範圍，也可以單獨搜尋；
+<i>儲存…</i>可以把搜尋取名存起來。會列出最大的 1,000 個符合項目，並顯示全部符合項目的數量和總大小。</li>
+<li><b>清理 → 建議</b>：每次掃描後列出內容通常可以刪掉的位置，每種一組
+（暫存檔、快取、當機傾印檔、可以重新建置的編譯產物、下載資料夾裡的舊安裝檔、空資料夾）；
+滑鼠停在組名上可以看刪掉它的影響，再按<i>選取這一組</i>或<i>全部選取</i>，然後按 Delete。</li>
+<li><b>清理 → 重複檔案</b>：按<i>尋找重複檔案</i>，把內容相同的檔案分組。只會讀取大小相同的檔案；因為讀取需要時間，
 除非選了較小的大小，否則會略過 1 MB 以下的檔案。每一組由舊到新列出副本；<i>選取多餘的副本</i>會選取最舊那份以外的全部，
 再按 Delete 就會移到資源回收筒。</li>
 <li><b>檔案類型</b>：各種檔案依副檔名各佔多少空間；在表格上方的清單選一種類型，就只顯示那一類；
@@ -537,7 +733,8 @@ ZH_TW: dict[str, str] = {
 要一次移走好幾個項目，在資料夾樹、<i>最大的檔案</i>或<i>搜尋</i>清單裡用 Ctrl+按一下或 Shift+按一下選取，
 只會詢問一次，並列出它們和總大小。
 FileTree 不會永久刪除任何東西：每次都會先詢問，
-移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。</p>
+移走的東西都能從資源回收筒（macOS 與 Linux 是「垃圾桶」）還原。數字會立刻更新，不必重新掃描。
+系統與程式的資料夾會說明原因並多問一次；暫存資料夾與快取不會。</p>
 <h2>看看哪裡變大了</h2>
 <p>用<i>檔案 → 匯出 → 資料夾樹（JSON）</i>把掃描存起來。之後重新掃描，選<i>檔案 → 與先前儲存的掃描比較…</i>
 開啟那個檔案，<b>變化</b>分頁就會列出每個有變化的資料夾之前和現在的大小，變大最多的排在最前面
@@ -561,7 +758,12 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 <li>在 Windows 上，FileTree 啟動時會像 TreeSize 一樣要求系統管理員權限，受保護的資料夾也能讀取。
 拒絕的話它照常以一般權限執行，讀不到的資料夾列在<i>無法讀取</i>分頁，那裡有<i>以系統管理員身分重新啟動</i>按鈕。
 不想每次被問，可以關掉<i>檢視 → 啟動時要求系統管理員權限</i>。</li>
+<li><i>最大的檔案</i>、<i>檔案類型</i>與<i>檔案新舊</i>預設統計整個掃描範圍；
+按這幾個分頁右上角的<i>只看選取的資料夾</i>，就會改為跟著資料夾樹中選取的資料夾。</li>
 <li>預設會計算隱藏檔案；關掉<i>檢視 → 包含隱藏檔案</i>，下次掃描就不會算進去。</li>
+<li>要讓某些資料夾每次都不掃描，把它們加進<i>檢視 → 掃描時略過</i>：
+像 <code>node_modules</code> 這樣的名稱會略過所有同名的資料夾，路徑只略過那一個資料夾。
+略過的資料夾會以灰字列出，大小為 0。</li>
 <li>用<i>檔案 → 匯出</i>儲存結果：CSV 可用 Excel 開啟，JSON 給程式使用。</li>
 </ul>
 """),
@@ -596,6 +798,18 @@ ZH_CN: dict[str, str] = {
     "action_quit": "退出",
     "action_quit_tip": "关闭 FileTree",
     "action_hidden": "包含隐藏文件",
+    "action_exclusions": "扫描时跳过…",
+    "action_exclusions_tip": "扫描时要跳过的文件夹与文件夹名称，例如 node_modules",
+    "exclusions_title": "扫描时跳过",
+    "exclusions_hint": ("扫描会跳过这些文件夹：它们仍会列出来，以灰字显示、大小为 0。"
+                        "像 node_modules 或 *.cache 这样的名称会跳过所有同名的文件夹；"
+                        "文件夹路径只跳过那一个文件夹。下一次扫描开始生效。"),
+    "exclusions_add_name": "添加名称…",
+    "exclusions_add_folder": "添加文件夹…",
+    "exclusions_remove": "删除",
+    "exclusions_name_prompt": "文件夹名称，可用 * 和 ?：",
+    "exclusions_saved": "已保存 {count} 项排除；下一次扫描开始生效。",
+    "tooltip_excluded": "{path}\n已跳过：它在“视图 → 扫描时跳过”的列表中",
     "action_hidden_tip": "把隐藏的文件和文件夹也算进去（下次扫描时生效）",
     "action_help": "使用说明",
     "action_help_tip": "FileTree 的简短使用说明",
@@ -646,11 +860,21 @@ ZH_CN: dict[str, str] = {
     "chart_treemap_tip": "每个文件都是一个方块，大小代表占用的空间",
     "chart_bars": "条形图",
     "chart_sunburst": "旭日图",
+    "chart_tree": "树状图",
+    "chart_tree_tip": "文件夹层级：展开分支、Ctrl＋滚轮缩放、双击聚焦",
+    "tree_orientation": "方向",
+    "tree_orientation_horizontal": "从左到右",
+    "tree_orientation_vertical": "从上到下",
+    "tree_more": "其余 {count} 个文件夹 · {size}",
+    "tree_unavailable": "未扫描",
     "chart_sunburst_tip": "当前文件夹在中心，每深一层就是外面一圈；点中心回上一级",
     "chart_bars_tip": "文件夹里每个项目一个条形，从大到小，附大小与比例",
     "bars_empty_folder": "这个文件夹是空的。",
     "bars_more": "其余 {count} 个：{size}",
     "tab_largest": "最大的文件",
+    "scope_folder": "只看选中的文件夹",
+    "scope_folder_named": "只看 {name}",
+    "scope_folder_tip": "改为列出文件夹树中选中的文件夹（而不是整个扫描范围）的最大文件、类型与新旧",
     "tab_search": "搜索",
     "tab_changes": "变化",
     "action_compare": "与之前保存的扫描比较…",
@@ -670,6 +894,32 @@ ZH_CN: dict[str, str] = {
     "changes_summary": ("与 {path}（保存于 {when}）比较：之前 {before}，现在 {now}（{change}）；"
                         "{count} 个文件夹有变化。"),
     "tab_duplicates": "重复文件",
+    "tab_cleanup": "清理",
+    "cleanup_suggestions": "建议",
+    "cleanup_select_all": "全部选中",
+    "cleanup_select_group": "选中这一组",
+    "cleanup_running": "正在查找可以清理的东西…",
+    "cleanup_hint": "扫描完成后，这里会列出内容通常可以删掉的位置。",
+    "cleanup_none": "这次扫描没有可以建议清理的东西。",
+    "cleanup_summary": ("共 {groups} 组，可以释放 {size}。选中项目后按 Delete 会移到回收站；"
+                        "鼠标停在组名上可以看删掉它的影响。"),
+    "cleanup_group": "{title}：{count} 项，共 {size}",
+    "cleanup_temp": "临时文件",
+    "cleanup_temp_tip": "程序暂时留下的文件；仍在运行的程序可能还在使用其中一些。",
+    "cleanup_browser_cache": "浏览器缓存",
+    "cleanup_browser_cache_tip": "网页与图片的副本；浏览器需要时会重新下载。",
+    "cleanup_thumbnails": "缩略图缓存",
+    "cleanup_thumbnails_tip": "图片的小型预览；打开文件夹时会重新生成。",
+    "cleanup_crash_dumps": "崩溃转储",
+    "cleanup_crash_dumps_tip": "程序崩溃时保存的内存内容，只有报告崩溃时才用得到。",
+    "cleanup_package_caches": "包缓存（pip、npm、Gradle…）",
+    "cleanup_package_caches_tip": "为下次安装保留的已下载包；需要时会重新下载。",
+    "cleanup_build_output": "构建产物（可以重新构建）",
+    "cleanup_build_output_tip": "项目安装的依赖与编译出来的文件；重新构建项目就会再生成。",
+    "cleanup_old_installers": "下载文件夹里 90 天没动的安装包",
+    "cleanup_old_installers_tip": "多半很久以前就运行过的安装程序；之后还要拿来安装的请留着。",
+    "cleanup_empty_folders": "空文件夹",
+    "cleanup_empty_folders_tip": "里面什么都没有，或只有其他空文件夹的文件夹。",
     "duplicates_min_size": "比较的最小文件",
     "duplicates_any_size": "任意大小",
     "duplicates_find": "查找重复文件",
@@ -687,8 +937,31 @@ ZH_CN: dict[str, str] = {
     "duplicates_skipped": "有 {count} 个文件无法读取。",
     "duplicates_group": "{count} 份相同的 {size} 文件，多余的副本占 {extra}",
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
-    "search_hint": "输入名称的一部分，或含 * 和 ? 的模式，在整个扫描结果里找文件和文件夹。",
+    "search_hint": "输入名称的一部分或含 * 和 ? 的模式、选择条件，或两者一起，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",
+    "search_larger": "大于",
+    "search_smaller": "小于",
+    "search_no_limit": "不限",
+    "search_changed": "修改时间",
+    "search_changed_any": "不限",
+    "search_changed_week": "最近一周内",
+    "search_changed_month": "最近一个月内",
+    "search_changed_year": "最近一年内",
+    "search_changed_stale_year": "超过一年没动",
+    "search_changed_stale_2y": "超过两年没动",
+    "search_changed_stale_5y": "超过五年没动",
+    "search_type": "类型",
+    "search_type_any": "不限类型",
+    "search_show": "显示",
+    "search_kind_any": "文件和文件夹",
+    "search_kind_files": "只有文件",
+    "search_kind_folders": "只有文件夹",
+    "search_saved": "已保存的搜索",
+    "search_saved_none": "（无）",
+    "search_save": "保存…",
+    "search_delete": "删除",
+    "search_save_title": "保存这个搜索",
+    "search_save_prompt": "名称：",
     "search_none": "没有匹配的项目。",
     "search_summary": "{count} 个匹配，共 {size}。",
     "search_limited": "只列出最大的 {shown} 个。",
@@ -730,6 +1003,10 @@ ZH_CN: dict[str, str] = {
     "treemap_up": "↑ 上一级",
     "treemap_up_tip": "显示上一级文件夹",
     "treemap_tooltip": "<b>{name}</b><br>{size}（占当前画面的 {share}）<br>{path}",
+    "treemap_more": "其余 {count} 个",
+    "treemap_more_tooltip": "<b>{name} 里其余 {count} 个较小的项目</b>，每个都小到画不出来<br>"
+                            "{size}（占当前画面的 {share}）",
+    "treemap_more_open": "双击可以单独显示这个文件夹",
     "largest_filter": "按名称或文件夹筛选…",
     "types_all": "所有类型",
     "category_images": "图片",
@@ -750,6 +1027,13 @@ ZH_CN: dict[str, str] = {
     "menu_rescan_here": "重新扫描这个文件夹",
     "rescan_done": "已重新扫描 {name}：{before} → {after}",
     "trash_confirm_title": "移到回收站",
+    "protected_title": "系统或程序文件夹",
+    "protected_question": ("其中 {count} 个是系统或程序的文件夹，移走可能让系统或程序无法正常运行："
+                           "\n\n{names}\n\n仍要移走吗？"),
+    "protected_system": "操作系统的一部分",
+    "protected_programs": "已安装的程序",
+    "protected_settings": "程序的设置与数据",
+    "protected_profile": "用户的个人文件夹",
     "trash_confirm": "要把“{name}”（{size}）移到回收站吗？\n\n之后仍可以从回收站还原。",
     "trash_failed": "无法把“{name}”移到回收站，可能正在使用或是只读。",
     "trash_done": "已把“{name}”移到回收站，释放 {size}。",
@@ -782,15 +1066,25 @@ ZH_CN: dict[str, str] = {
 <li><b>文件夹树</b>（左边）：每个文件夹或文件的大小、<i>占用空间</i>（实际占用的磁盘空间：按整个簇计算，
 通常比大小多一点；压缩文件较少，只在云端的文件是 0）、<i>占上级比例</i>条（它占上一级文件夹多少空间）、
 里面有几个文件和文件夹，以及里面最近一次变动的时间。点列标题可以按该列排序。</li>
-<li><b>图表</b>：在选项卡角落切换同一个文件夹的三种图。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
-每个文件夹顶部有写着名称和大小的标题栏；<i>层数</i>决定要画几层，<i>颜色</i>可以按文件类型（图例在下方）或按最上层的文件夹上色。<i>条形图</i>给文件夹里每个项目画一个条形，从大到小，附大小与比例，最容易读出精确的数字。<i>旭日图</i>把当前文件夹放在中心，每深一层就是外面一圈，点中心回上一级。
+<li><b>图表</b>：在选项卡角落切换同一个文件夹的四种图（一开始是方块图，之后会记住你选的）。<i>方块图</i>把每个文件画成一个方块，文件越大、方块越大，
+每个文件夹顶部有写着名称和大小的标题栏；
+文件夹里小到看不见的文件会合成一个灰色斜线方块（<i>其余 12 个</i>），双击它可以单独显示那个文件夹。
+<i>层数</i>决定要画几层，<i>颜色</i>可以按文件类型（图例在下方）或按最上层的文件夹上色。
+<i>条形图</i>给文件夹里每个项目画一个条形，由大到小，附大小与比例。
+<i>旭日图</i>把当前文件夹放在中心，每深一层就是外面一圈，点中心回上一级。
+<i>树状图</i>画出可展开的文件夹卡片，点加号或“其余文件夹”显示更多；可切换方向、
+按 Ctrl＋滚轮缩放并用滚动条移动。
 单击可以在文件夹树中找到它，双击文件夹可以进入，点<i>上一级</i>回去。</li>
 <li><b>最大的文件</b>：整个扫描范围内最大的 1,000 个文件。在筛选框输入文字可以缩小列表，
 双击某一行就会在文件夹树中找到那个文件。</li>
 <li><b>搜索</b>（Ctrl+F）：整个扫描范围内，名称含有输入文字的文件和文件夹。
 <code>*.mp4</code> 这类模式要匹配完整名称；多个模式用 <code>;</code> 分开（<code>*.iso;*.zip</code>）。
-会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
-<li><b>重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
+搜索框下方的条件（大小、修改时间、文件类型、文件或文件夹）可以缩小范围，也可以单独搜索；
+<i>保存…</i>可以把搜索取名保存起来。会列出最大的 1,000 个匹配项目，并显示全部匹配项目的数量和总大小。</li>
+<li><b>清理 → 建议</b>：每次扫描后列出内容通常可以删掉的位置，每种一组
+（临时文件、缓存、崩溃转储、可以重新构建的构建产物、下载文件夹里的旧安装包、空文件夹）；
+鼠标停在组名上可以看删掉它的影响，再点<i>选中这一组</i>或<i>全部选中</i>，然后按 Delete。</li>
+<li><b>清理 → 重复文件</b>：点<i>查找重复文件</i>，把内容相同的文件分组。只会读取大小相同的文件；因为读取需要时间，
 除非选了较小的大小，否则会跳过 1 MB 以下的文件。每一组从旧到新列出副本；<i>选中多余的副本</i>会选中最旧那份以外的全部，
 再按 Delete 就会移到回收站。</li>
 <li><b>文件类型</b>：各种文件按扩展名各占多少空间；在表格上方的列表选一种类型，就只显示那一类；
@@ -806,7 +1100,8 @@ ZH_CN: dict[str, str] = {
 要一次移走好几个项目，在文件夹树、<i>最大的文件</i>或<i>搜索</i>列表里用 Ctrl+单击或 Shift+单击选中，
 只会询问一次，并列出它们和总大小。
 FileTree 不会永久删除任何东西：每次都会先询问，
-移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。</p>
+移走的东西都能从回收站（macOS 与 Linux 是“废纸篓”）还原。数字会立刻更新，不必重新扫描。
+系统与程序的文件夹会说明原因并多问一次；临时文件夹与缓存不会。</p>
 <h2>看看哪里变大了</h2>
 <p>用<i>文件 → 导出 → 文件夹树（JSON）</i>把扫描保存起来。之后重新扫描，选<i>文件 → 与之前保存的扫描比较…</i>
 打开那个文件，<b>变化</b>选项卡就会列出每个有变化的文件夹之前和现在的大小，变大最多的排在最前面
@@ -830,7 +1125,12 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 <li>在 Windows 上，FileTree 启动时会像 TreeSize 一样请求管理员权限，受保护的文件夹也能读取。
 拒绝的话它照常以普通权限运行，读不到的文件夹列在<i>无法读取</i>标签页，那里有<i>以管理员身份重新启动</i>按钮。
 不想每次被问，可以关掉<i>视图 → 启动时请求管理员权限</i>。</li>
+<li><i>最大的文件</i>、<i>文件类型</i>与<i>文件新旧</i>默认统计整个扫描范围；
+点这几个选项卡右上角的<i>只看选中的文件夹</i>，就会改为跟着文件夹树中选中的文件夹。</li>
 <li>默认会计算隐藏文件；关掉<i>视图 → 包含隐藏文件</i>，下次扫描就不会算进去。</li>
+<li>要让某些文件夹每次都不扫描，把它们加进<i>视图 → 扫描时跳过</i>：
+像 <code>node_modules</code> 这样的名称会跳过所有同名的文件夹，路径只跳过那一个文件夹。
+跳过的文件夹会以灰字列出，大小为 0。</li>
 <li>用<i>文件 → 导出</i>保存结果：CSV 可用 Excel 打开，JSON 供脚本使用。</li>
 </ul>
 """),

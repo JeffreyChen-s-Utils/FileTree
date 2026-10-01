@@ -63,14 +63,44 @@ def test_layout_nests_children_inside_their_folder(sample_tree: Path) -> None:
     assert top_area == pytest.approx(area.area)
 
 
-def test_layout_leaves_out_what_is_too_small_and_respects_the_limits() -> None:
-    root = Node("root", True, children=[])
-    for index in range(1000):
-        root.children.append(Node(f"f{index}", False, size=1000 if index == 0 else 1, parent=root))
-    root.size = sum(child.size for child in root.children)
+def _folder(name: str, sizes: list[int], parent: Node | None = None) -> Node:
+    folder = Node(name, True, children=[], parent=parent)
+    folder.children.extend(Node(f"f{index}", False, size=size, parent=folder) for index, size in enumerate(sizes))
+    folder.size = sum(sizes)
+    return folder
+
+
+def test_small_entries_share_one_group_tile_and_the_limits_hold() -> None:
+    root = _folder("root", [1000] + [1] * 999 + [0] * 5)
     tiles = layout(root, Rect(0, 0, 100, 100), min_side=5)
-    assert [tile.node.name for tile in tiles] == ["f0"]
+    found = [(tile.node.name, tile.grouped, tile.grouped_size) for tile in tiles]
+    assert found == [("f0", 0, 0), ("root", 999, 999)], (
+        "the 999 specks are one group tile of their folder; empty files count for nothing")
+    assert tiles[1].rect.area == pytest.approx(10000 * 999 / 1999)
+    assert all(min(tile.rect.width, tile.rect.height) >= 5 for tile in tiles), "no tile narrower than min_side"
     assert len(layout(root, Rect(0, 0, 2000, 2000), min_side=1, max_tiles=10)) == 10
+
+
+def test_a_lone_small_entry_or_a_thin_group_is_left_out() -> None:
+    lone = _folder("root", [1000, 1])
+    assert [tile.node.name for tile in layout(lone, Rect(0, 0, 100, 100), min_side=5)] == ["f0"], (
+        "one small entry is no group: its space stays empty")
+    thin = _folder("root", [100000, 1, 1])
+    assert [tile.node.name for tile in layout(thin, Rect(0, 0, 100, 100), min_side=5)] == ["f0"]
+
+
+def test_a_folder_opens_only_when_an_entry_in_it_gets_a_tile_of_its_own() -> None:
+    root = Node("root", True, children=[])
+    crowded = _folder("crowded", [1] * 400, parent=root)
+    mixed = _folder("mixed", [300] + [1] * 100, parent=root)
+    root.children.extend([crowded, mixed])
+    root.size = crowded.size + mixed.size
+    tiles = layout(root, Rect(0, 0, 100, 100), min_side=8, padding=0)
+    by_depth = {(tile.depth, tile.node.name, tile.grouped) for tile in tiles}
+    assert (1, "crowded", 0) in by_depth
+    assert not any(tile.node is crowded and tile.depth == 2 for tile in tiles), (
+        "400 specks: the folder stays one tile instead of holding a single group tile")
+    assert {(2, "f0", 0), (2, "mixed", 100)} <= by_depth
 
 
 def test_layout_stops_at_max_depth(sample_tree: Path) -> None:

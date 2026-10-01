@@ -11,14 +11,16 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import WINDOW
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
-from je_file_tree.core.search import search
+from je_file_tree.core.search import Query, search
 
 LARGEST_FILES_LIMIT = 1000
 
@@ -34,6 +36,30 @@ class ScanOutcome:
     ages: list[AgeStat]
     now: float
     partial: bool = False
+
+
+def pace_workers(connect: bool = True) -> None:
+    """Close ``core.pacing.WINDOW`` while this thread's event loop handles something, open it while it waits.
+
+    Called once by ``app.main`` (``connect=False`` undoes it, for tests). The workers then pause at their
+    ``give_way()`` steps whenever the window has work to do, so clicks and painting are not held up.
+    """
+    dispatcher = QAbstractEventDispatcher.instance()
+    if dispatcher is None:
+        return
+    if connect:
+        dispatcher.awake.connect(WINDOW.close)
+        dispatcher.aboutToBlock.connect(WINDOW.open)
+    else:
+        dispatcher.awake.disconnect(WINDOW.close)
+        dispatcher.aboutToBlock.disconnect(WINDOW.open)
+        WINDOW.open()
+
+
+def wait_for(worker: QThread) -> None:
+    """Block until ``worker`` has ended, the workers' gate open meanwhile so that they finish at full speed."""
+    WINDOW.open()
+    worker.wait()
 
 
 def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
@@ -63,7 +89,7 @@ class SearchWorker(QThread):
 
     found = Signal(object)
 
-    def __init__(self, root: Node, query: str, parent: QObject | None = None) -> None:
+    def __init__(self, root: Node, query: Query | str, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._root = root
         self._query = query
@@ -102,6 +128,27 @@ class ExportWorker(QThread):
             self.failed.emit(error.strerror or str(error))
             return
         self.done.emit(count)
+
+
+class CleanupWorker(QThread):
+    """Looks for clean-up suggestions off the GUI thread; emits ``done(list[CleanupGroup])`` unless stopped."""
+
+    done = Signal(object)
+
+    def __init__(self, root: Node, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._root = root
+        self._cancel = threading.Event()
+
+    def stop(self) -> None:
+        """Ask the search to give up (checked once per folder); ``done`` is then not emitted."""
+        self._cancel.set()
+
+    def run(self) -> None:
+        """Thread body."""
+        groups = find_cleanup(self._root, cancel=self._cancel)
+        if groups is not None:
+            self.done.emit(groups)
 
 
 class CompareWorker(QThread):

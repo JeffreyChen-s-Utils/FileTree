@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 # File-type groups shown in the "File types" view and used to colour the
 # treemap. Keys are stable identifiers (the GUI translates them).
@@ -186,6 +187,7 @@ def _files_and_extensions(root: Node) -> tuple[list[Node], dict[str, int], dict[
         if node.is_link:
             continue
         if node.is_dir:
+            give_way()
             stack.extend(node.children)
             continue
         files.append(node)

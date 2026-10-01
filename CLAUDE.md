@@ -67,12 +67,15 @@ tool default.
   - the tree model wraps the scanned `Node` objects and never copies the tree; rows are created lazily;
   - the treemap layout is bounded (`max_tiles`, `min_side`) and drawn once into a cached pixmap;
   - anything that walks the whole tree runs on a worker thread (`ScanWorker`, `AnalyseWorker`,
-    `SearchWorker`), not the GUI thread;
+    `SearchWorker`), not the GUI thread, and calls `core.pacing.give_way()` once per folder so the window
+    goes first while it is busy; the window waits for a worker only through `scan_worker.wait_for`;
   - no recursion over the tree: deep folders must not hit the recursion limit.
 - **The scanner never follows links** (symlinks, junctions, mount points) and never stops on an
   unreadable folder: it records it in `ScanResult.errors`.
 - **Nothing is ever deleted permanently.** The only removal is `QFile.moveToTrash`, always after a
-  confirmation. Do not add a permanent delete.
+  confirmation. Do not add a permanent delete. Everything that moves entries to the Recycle Bin goes through
+  `MainWindow.move_to_trash`, so system and program folders (`je_file_tree/core/protected.py`) always get
+  their second question.
 - **Every text goes through `tr()`**; add a key to all three tables in `je_file_tree/gui/strings.py`
   (`test/test_i18n.py` checks keys and placeholders). Traditional Chinese uses Taiwanese wording
   (檔案、資料夾、設定、預設、資源回收筒); Simplified Chinese uses Mainland wording and characters.

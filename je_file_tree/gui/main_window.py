@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Callable, Sequence
 
@@ -9,6 +10,7 @@ from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QFileDialog,
     QLineEdit,
     QMainWindow,
@@ -23,13 +25,15 @@ from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
+from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
-from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker
+from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -40,7 +44,9 @@ _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
-_CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours")
+EXCLUSIONS_KEY = "exclusions"
+SEARCHES_KEY = "saved_searches"
+_CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
 def read_flag(settings: QSettings, key: str, default: bool) -> bool:
@@ -58,6 +64,7 @@ class MainWindow(QMainWindow):
         self._worker: ScanWorker | None = None
         self._analyser: AnalyseWorker | None = None
         self._exports: set[ExportWorker] = set()
+        self._protected = protected_places()  # system and program folders: ask twice before moving them
         self._last_path = ""
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
@@ -97,8 +104,7 @@ class MainWindow(QMainWindow):
         self.stop_scan(wait=True)
         self._last_path = path
         self.path_edit.setText(path)
-        include_hidden = self._actions["hidden"].isChecked()
-        worker = ScanWorker(path, ScanOptions(include_hidden=include_hidden), self)
+        worker = ScanWorker(path, self._scan_options(), self)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -123,7 +129,7 @@ class MainWindow(QMainWindow):
         worker.cancel()
         self.results.scan_bar.stopping()
         if wait:
-            worker.wait()
+            wait_for(worker)
             self._worker = None
             self._live_timer.stop()
 
@@ -197,8 +203,7 @@ class MainWindow(QMainWindow):
         if node.parent is None:
             self.rescan()
             return
-        include_hidden = self._actions["hidden"].isChecked()
-        worker = ScanWorker(node.path, ScanOptions(include_hidden=include_hidden), self)
+        worker = ScanWorker(node.path, self._scan_options(), self)
         before = node.size
         worker.progressed.connect(
             lambda progress: self._is_current(worker) and self.results.scan_bar.show_progress(progress))
@@ -241,7 +246,7 @@ class MainWindow(QMainWindow):
         never moved. Entries the system refuses to move stay, and are named in a warning.
         """
         chosen = _movable(nodes)
-        if not chosen or self._worker is not None:
+        if not chosen or self._worker is not None or not self._confirm_protected(chosen):
             return
         answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
@@ -259,6 +264,20 @@ class MainWindow(QMainWindow):
         done = (tr("trash_done", name=moved[0].name, size=freed) if len(moved) == 1 else
                 tr("trash_done_many", count=format_count(len(moved)), size=freed))
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+
+    def _confirm_protected(self, nodes: list[Node]) -> bool:
+        """The first of two questions when system or program folders are among ``nodes``: True to go on."""
+        guarded = [(node, found) for node in nodes if (found := protection_of(node.path, self._protected)) is not None]
+        if not guarded:
+            return True
+        lines = [f"• {node.path} — {tr(f'protected_{found.reason}')}" for node, found in guarded[:_LISTED_NAMES]]
+        if len(guarded) > _LISTED_NAMES:
+            lines.append(tr("trash_more", count=format_count(len(guarded) - _LISTED_NAMES)))
+        question = tr("protected_question", count=format_count(len(guarded)), names="\n".join(lines))
+        answer = QMessageBox.warning(self, tr("protected_title"), question,
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                     QMessageBox.StandardButton.No)
+        return answer == QMessageBox.StandardButton.Yes
 
     def _trash_question(self, nodes: list[Node]) -> str:
         size = format_size(sum(node.size for node in nodes), self._unit)
@@ -399,9 +418,11 @@ class MainWindow(QMainWindow):
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
+        self.results.cleanup.stop(wait=True)
         self.results.changes.stop(wait=True)
+        self.results.wait_for_lists()
         for worker in self._exports.copy():  # a file being written is finished, never left half-written
-            worker.wait()
+            wait_for(worker)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
@@ -437,6 +458,7 @@ class MainWindow(QMainWindow):
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
+            ("exclusions", None, self.edit_exclusions),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
@@ -485,6 +507,7 @@ class MainWindow(QMainWindow):
             self._language_actions[code] = action
         view_menu.addSeparator()
         view_menu.addAction(self._actions["hidden"])
+        view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -516,6 +539,9 @@ class MainWindow(QMainWindow):
         self.results.apply_chart_settings({key: self.settings.value(key) for key in _CHART_SETTINGS
                                            if self.settings.contains(key)})
         self.results.chart_setting_changed.connect(self.settings.setValue)
+        self.results.search.set_saved(_saved_searches(self.settings))
+        self.results.search.saved_changed.connect(
+            lambda searches: self.settings.setValue(SEARCHES_KEY, json.dumps(searches, ensure_ascii=False)))
         self.results.compare_failed.connect(
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)
@@ -549,6 +575,25 @@ class MainWindow(QMainWindow):
             return
         self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
 
+    def edit_exclusions(self) -> None:
+        """Edit the folders to skip while scanning; they apply from the next scan."""
+        dialog = ExclusionsDialog(self.exclusions(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.settings.setValue(EXCLUSIONS_KEY, dialog.patterns())
+        self.statusBar().showMessage(tr("exclusions_saved", count=format_count(len(dialog.patterns()))),
+                                     _STATUS_TIMEOUT_MS)
+
+    def exclusions(self) -> list[str]:
+        """The folder name patterns and folder paths that scans skip (the ``exclusions`` setting)."""
+        value = self.settings.value(EXCLUSIONS_KEY, [])
+        if isinstance(value, str):  # an INI file keeps a one-item list as a plain string
+            return [value] if value else []
+        return [str(pattern) for pattern in value or []]
+
+    def _scan_options(self) -> ScanOptions:
+        return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()))
+
     def choose_saved_scan(self) -> None:
         """Ask for a saved scan (a Folder tree JSON export) and compare the scan on screen with it."""
         if self.results.outcome is None or self._worker is not None:
@@ -580,6 +625,15 @@ def _write_json(root: Node, target: str) -> int:
     return root.dir_count + 1
 
 
+def _saved_searches(settings: QSettings) -> dict[str, object]:
+    """The saved searches kept in the settings as JSON; anything unreadable counts as none."""
+    try:
+        searches = json.loads(str(settings.value(SEARCHES_KEY, "{}")))
+    except ValueError:
+        return {}
+    return searches if isinstance(searches, dict) else {}
+
+
 def _movable(nodes: Sequence[Node]) -> list[Node]:
     """What moving ``nodes`` to the Recycle Bin really moves: the outermost entries, never the scanned folder."""
     return outermost(node for node in nodes if node.parent is not None)
@@ -601,4 +655,3 @@ def _trash_each(nodes: list[Node]) -> tuple[list[Node], list[Node]]:
 def _safe_name(name: str) -> str:
     cleaned = "".join(character if character.isalnum() or character in "-_" else "_" for character in name)
     return cleaned.strip("_") or "scan"
-
