@@ -8,6 +8,8 @@
 
 圖表 SVG 匯出使用 PySide6.QtSvg，Nuitka 會依匯入包含 Qt SVG 程式庫，與視窗使用相同的 PySide6 相依套件。
 
+列印與畫面 PDF 匯出使用 PySide6.QtPrintSupport，由既有的 PySide6 外掛收集。原生列印需要系統印表機服務，PDF 輸出使用 Qt 的 PDF 引擎。
+
 ## 1. 準備
 
 ### 1.1 Python 套件（每個系統都要）

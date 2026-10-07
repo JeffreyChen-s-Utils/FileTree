@@ -9,6 +9,14 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_print_view": "Print current view…",
+    "action_print_view_tip": "Print the visible results on one page through the system print dialog",
+    "action_export_view_pdf": "Current view (PDF)…",
+    "action_export_view_pdf_tip": "Save the visible results on one fitted PDF page",
+    "pdf_filter": "PDF document (*.pdf)",
+    "view_pdf_exported": "Saved current view: {path}",
+    "print_failed": "Could not print the view: {reason}",
+    "print_submitted": "View submitted to the printer",
     "action_export_chart_png": "Chart on screen (PNG)…",
     "action_export_chart_png_tip": "Save the visible chart, including its current viewport",
     "action_export_chart_svg": "Bars or sunburst (SVG)…",
@@ -604,6 +612,14 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_print_view": "列印目前畫面…",
+    "action_print_view_tip": "透過系統列印對話框將可見結果印在一頁上",
+    "action_export_view_pdf": "目前畫面（PDF）…",
+    "action_export_view_pdf_tip": "將可見結果調整為一頁 PDF 儲存",
+    "pdf_filter": "PDF 文件 (*.pdf)",
+    "view_pdf_exported": "已儲存目前畫面：{path}",
+    "print_failed": "無法列印畫面：{reason}",
+    "print_submitted": "已將畫面送到印表機",
     "action_export_chart_png": "畫面上的圖表（PNG）…",
     "action_export_chart_png_tip": "儲存目前可見的圖表範圍",
     "action_export_chart_svg": "長條圖或放射圖（SVG）…",
@@ -1142,6 +1158,14 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_print_view": "打印当前视图…",
+    "action_print_view_tip": "通过系统打印对话框将可见结果打印在一页上",
+    "action_export_view_pdf": "当前视图（PDF）…",
+    "action_export_view_pdf_tip": "将可见结果调整为一页 PDF 保存",
+    "pdf_filter": "PDF 文档 (*.pdf)",
+    "view_pdf_exported": "已保存当前视图：{path}",
+    "print_failed": "无法打印视图：{reason}",
+    "print_submitted": "已将视图发送到打印机",
     "action_export_chart_png": "屏幕上的图表（PNG）…",
     "action_export_chart_png_tip": "保存当前可见的图表范围",
     "action_export_chart_svg": "条形图或旭日图（SVG）…",

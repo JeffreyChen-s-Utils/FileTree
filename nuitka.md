@@ -11,6 +11,8 @@ longer build. The entry point it compiles is `start_file_tree.py` in the reposit
 
 The chart SVG exporter imports PySide6.QtSvg; Nuitka follows this import and includes the Qt SVG library. It uses the same PySide6 dependency as the window.
 
+Printing and view PDF export import PySide6.QtPrintSupport, collected by the existing PySide6 plugin. Native printing needs the system printer service; PDF output uses Qt's PDF engine.
+
 ## 1. Prepare
 
 ### 1.1 Python packages (every system)

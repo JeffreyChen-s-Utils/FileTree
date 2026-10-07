@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`printing` captures the visible results before opening QPrintDialog, then QPrinter fits those pixels
+on one printable page. PDF export uses the same fitted layout via QPdfWriter on ExportWorker, avoiding
+native printer enumeration. Its temporary sibling is flushed and atomically replaced after successful
+painting. Lossless image encoding keeps text/colours intact; PDF is a captured view, not a paginated
+inventory. MainWindow disables these actions during scans/moves and joins PDF writes on close.
+
 `graphics_export` captures PNG pixels or SVG geometry on the GUI thread, then ExportWorker performs
 PNG encoding and atomic QSaveFile writes with direct-write fallback disabled. PNG captures the current
 chart viewport; SVG renders bounded full bar rows or sunburst paths/text directly, bypassing the ring

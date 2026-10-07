@@ -8,6 +8,7 @@ from collections.abc import Callable, Sequence
 
 from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
+from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -39,6 +40,7 @@ from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.graphics_export import SVG_MODES, capture_svg, save_graphic
+from je_file_tree.gui.printing import print_view, save_view_pdf, view_printer
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
@@ -449,6 +451,39 @@ class MainWindow(QMainWindow):
 
     # --- export -----------------------------------------------------------
 
+    def print_current_view(self) -> None:
+        """Offer the system print dialog for one page containing the visible results."""
+        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+            return
+        image = self.results.grab().toImage()
+        printer = view_printer(image)
+        dialog = QPrintDialog(printer, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        try:
+            print_view(image, printer)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, tr("action_print_view"), tr("print_failed", reason=str(error)))
+            return
+        self.statusBar().showMessage(tr("print_submitted"), _STATUS_TIMEOUT_MS)
+
+    def export_view_pdf(self) -> None:
+        """Export captured results through Qt's PDF engine on an atomic-writing worker."""
+        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+            return
+        target, _ = QFileDialog.getSaveFileName(self, tr("action_export_view_pdf"), "view.pdf", tr("pdf_filter"))
+        if not target:
+            return
+        image = self.results.grab().toImage()
+        worker = ExportWorker(lambda: save_view_pdf(image, target), self)
+        worker.done.connect(lambda _count: self.statusBar().showMessage(tr("view_pdf_exported", path=target)))
+        worker.failed.connect(lambda reason: QMessageBox.warning(self, tr("export_title"),
+                                                                 tr("export_failed", reason=reason)))
+        worker.finished.connect(lambda: self._exports.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._exports.add(worker)
+        worker.start()
+
     def export_chart(self, kind: str) -> None:
         """Capture the visible chart as PNG, or full bounded bars/rings as vector SVG."""
         if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
@@ -613,6 +648,8 @@ class MainWindow(QMainWindow):
             ("export_json", None, lambda: self.export_results("json")),
             ("export_chart_png", None, lambda: self.export_chart("png")),
             ("export_chart_svg", None, lambda: self.export_chart("svg")),
+            ("print_view", QKeySequence.StandardKey.Print, self.print_current_view),
+            ("export_view_pdf", None, self.export_view_pdf),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("find", QKeySequence.StandardKey.Find, self._find),
             ("compare", None, self.choose_saved_scan),
@@ -647,6 +684,8 @@ class MainWindow(QMainWindow):
         export_menu = file_menu.addMenu("")
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "export_chart_svg"):
             export_menu.addAction(self._actions[key])
+        export_menu.addAction(self._actions["export_view_pdf"])
+        file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         file_menu.addAction(self._actions["recent_actions"])
         file_menu.addSeparator()
@@ -733,6 +772,8 @@ class MainWindow(QMainWindow):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
+        for key in ("print_view", "export_view_pdf"):
+            self._actions[key].setEnabled(has_results and not scanning)
 
     # --- dialogs ----------------------------------------------------------
 

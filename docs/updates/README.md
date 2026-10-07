@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-22 | 2026-10-07 | Print and export the current view to PDF | #done #export #printing | [2026-10](2026-10.md) |
 | U-20261007-21 | 2026-10-07 | Save chart pictures and vector graphics | #done #export #charts | [2026-10](2026-10.md) |
 | U-20261007-20 | 2026-10-07 | Modified-age colours for treemap and sunburst | #done #charts #age | [2026-10](2026-10.md) |
 | U-20261007-19 | 2026-10-07 | Gentle scan priorities and measured cost | #done #scanner #performance | [2026-10](2026-10.md) |
