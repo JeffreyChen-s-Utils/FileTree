@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
 EMPTY_FOLDERS = "empty_folders"
 _DAY = 86400.0
+_REBUILD_NAMES_CACHE = 32
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,6 +101,12 @@ RULES: tuple[Rule, ...] = (
     Rule("build_output", details=DETAILS["build_output"], folders=("target",), beside=("Cargo.toml", "pom.xml")),
     Rule("build_output", details=DETAILS["build_output"], folders=("build", "dist"),
          beside=("pyproject.toml", "setup.py", "package.json")),
+    Rule("build_output", details=DETAILS["build_output"], folders=(".venv", "venv"),
+         beside=("pyproject.toml", "setup.py", "setup.cfg", "requirements.txt")),
+    Rule("build_output", details=DETAILS["build_output"], folders=(".gradle",),
+         beside=("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts")),
+    Rule("build_output", details=DETAILS["build_output"], folders=(".conda", "conda-env"),
+         beside=("environment.yml", "environment.yaml")),
     Rule("old_installers", details=DETAILS["old_installers"],
          files=("*.msi", "*.msix", "*.exe", "*.dmg", "*.pkg", "*.deb", "*.rpm"), in_folder="Downloads"),
 )
@@ -125,7 +132,9 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
     rules = rules if policy is None else policy.rules()
     matcher = _Matcher(rules, time.time() if now is None else now)
     blocked, omitted = _policy_boundaries(root, policy, cancel)
-    coverage = coverage or coverage_of(root)
+    coverage = coverage or coverage_of(root, cancel=cancel)
+    if coverage is None:
+        return None
     found = _walk(root, matcher, cancel, coverage, blocked, omitted)
     if found is None:
         return None
@@ -167,7 +176,7 @@ def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
            found: dict[str, list[Node]], coverage: Coverage, blocked: set[Node],
            omitted: set[Node]) -> list[tuple[Node, tuple[str, ...]]]:
     """Put ``folder``'s matching entries in ``found``; returns the subfolders still to look into."""
-    names = {child.name.casefold() for child in folder.children}
+    names = _regular_names(folder)
     deeper: list[tuple[Node, tuple[str, ...]]] = []
     for child in folder.children:
         if child.is_link or child.error is not None or child in omitted:
@@ -241,12 +250,14 @@ class _Matcher:
                 names = "|".join(f"(?:{fnmatch.translate(name)})" for name in rule.files)
                 self._files.append((re.compile(names, re.IGNORECASE), rule))
 
-    def folder_key(self, parts: tuple[str, ...], siblings: set[str], node: Node) -> str | None:
+    def folder_key(self, parts: tuple[str, ...], siblings: set[str], node: Node, *,
+                   ignore_age: bool = False) -> str | None:
         """The group of the folder at ``parts`` (its casefolded path components), or None."""
         candidates = self._folders.get(parts[-1], ())
         for pattern, anchored, rule in candidates:
             if (_ends_with(parts, pattern, anchored) and _has_sign(rule, siblings)
-                    and self.old_enough(node, rule.details.minimum_age) and _has_evidence(node, rule)):
+                    and (ignore_age or self.old_enough(node, rule.details.minimum_age))
+                    and _has_evidence(node, rule)):
                 return rule.key
         return None
 
@@ -267,14 +278,50 @@ class _Matcher:
         return 0 < node.modified <= self._now - days * _DAY
 
 
+def _regular_names(folder: Node) -> set[str]:
+    return {child.name.casefold() for child in folder.children
+            if not child.is_dir and not child.is_link and child.error is None}
+
+
+class RebuildableMatcher:
+    """Share clean-up recognizers for a read-only inventory, without minimum-age eligibility."""
+
+    def __init__(self) -> None:
+        rules = tuple(replace(rule, details=replace(rule.details, minimum_age=0))
+                      for rule in RULES if rule.rebuildable)
+        self._matcher = _Matcher(rules, time.time())
+        self._signs = {sign.casefold() for rule in rules for sign in rule.beside}
+        self._names: dict[Node, set[str]] = {}
+
+    def matches(self, node: Node) -> bool:
+        """Recognize recorded folder evidence; this does not authorize deletion or override policy."""
+        if not node.is_dir or node.is_link or node.error or node.parent is None:
+            return False
+        if node.name.casefold() not in self._matcher._folders:
+            return False
+        if node.parent not in self._names:
+            if len(self._names) >= _REBUILD_NAMES_CACHE:
+                self._names.pop(next(iter(self._names)))
+            self._names[node.parent] = {child.name.casefold() for child in node.parent.children
+                                        if child.name.casefold() in self._signs and not child.is_dir
+                                        and not child.is_link and child.error is None}
+        return self._matcher.folder_key(_parts(node.path), self._names[node.parent], node, ignore_age=True) is not None
+
+
 def _has_evidence(node: Node, rule: Rule) -> bool:
     if rule.key != "build_output":
         return True
     if node.name.casefold() == "__pycache__":
-        return bool(node.children) and all(not child.is_dir and child.name.casefold().endswith(".pyc")
+        return bool(node.children) and all(not child.is_dir and not child.is_link and child.error is None
+                                          and child.name.casefold().endswith(".pyc")
                                           for child in node.children)
     if node.name.casefold() in (".pytest_cache", ".mypy_cache", ".ruff_cache"):
-        return any(child.name == "CACHEDIR.TAG" and not child.is_dir for child in node.children)
+        return "cachedir.tag" in _regular_names(node)
+    if node.name.casefold() in (".venv", "venv"):
+        return "pyvenv.cfg" in _regular_names(node)
+    if node.name.casefold() in (".conda", "conda-env"):
+        return any(child.name == "conda-meta" and child.is_dir and not child.is_link and child.error is None
+                   for child in node.children)
     return True  # Other build rules require a sibling project manifest and remain manual review.
 
 

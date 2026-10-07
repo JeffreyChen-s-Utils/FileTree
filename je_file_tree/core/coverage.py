@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import threading
 
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
@@ -30,13 +31,15 @@ class Coverage:
         return node.error is None and not node.is_link and node not in self.unsafe
 
 
-def coverage_of(root: Node) -> Coverage:
-    """Survey folders once on a worker and mark every ancestor of an omitted branch unsafe."""
+def coverage_of(root: Node, *, cancel: threading.Event | None = None) -> Coverage | None:
+    """Survey omitted scopes and their ancestors; return None only when an explicit event cancels."""
     known = skipped = inaccessible = pending = 0
     folders: list[Node] = []
     unsafe: set[Node] = set()
     stack = [root]
     while stack:
+        if cancel is not None and cancel.is_set():
+            return None
         give_way()
         folder = stack.pop()
         folders.append(folder)
@@ -52,6 +55,8 @@ def coverage_of(root: Node) -> Coverage:
             unsafe.add(folder)
         stack.extend(child for child in folder.children if child.is_dir and not child.is_link)
     for folder in reversed(folders):
+        if cancel is not None and cancel.is_set():
+            return None
         if folder in unsafe and folder.parent is not None:
             unsafe.add(folder.parent)
     return Coverage(root.size, known, skipped, inaccessible, pending, frozenset(unsafe))

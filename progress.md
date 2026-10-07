@@ -36,7 +36,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Developer machines
 
-- **#61** (P2) Projects and their rebuildable parts: recognise Git working trees, Python virtual environments (`pyvenv.cfg`), conda environments, `node_modules`, Rust `target`, `.gradle` and `.m2` caches and Docker's data, and show per project its source, its `.git` and what can be rebuilt (environments, build output), which can go to the Recycle Bin and be recreated. Shares its rules with #19 (a *rebuildable* flag per rule).
 
 ### Scanning
 

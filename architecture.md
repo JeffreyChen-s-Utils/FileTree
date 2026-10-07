@@ -21,6 +21,15 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.projects` surveys recorded manifests/markers iteratively without filesystem reads. Its shared
+RebuildableMatcher uses clean-up evidence without age eligibility; separate current-policy clean-up
+results gate review by age, coverage and exclusions. Coverage construction accepts cancellation.
+Generated and managed-store internals are skipped; bounded heaps keep the largest 1,000 project rows
+with complete counts, and each row retains at most 1,000 eligible entries with a full eligible count.
+Nested projects propagate known bytes to ancestors and overlap. ProjectsDialog owns/joins its worker,
+rejects late/canceled replies, selects existing tree nodes and sends explicit eligible review requests
+to MainWindow.move_to_trash. Standalone environments/Maven/global Gradle/Docker stores remain read-only.
+
 `core.git_history` pipes fixed read-only rev-list --all object IDs into cat-file metadata, retaining
 only 1,000 largest objects in a heap plus complete counts and a loose-object count. Bounded independent
 stdout/stderr readers prevent pipe deadlocks; cancellation/deadline reaps only owned processes/readers.
