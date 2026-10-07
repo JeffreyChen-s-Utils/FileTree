@@ -9,6 +9,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_gentle": "Gentle scanning",
+    "action_gentle_tip": "Lower CPU and I/O priority for new scans; may take longer",
+    "scan_priority_warning": "Some scan priority settings could not be applied: {reason}",
     "scan_pause": "Pause",
     "scan_resume": "Resume",
     "scan_pause_tip": "Pause new folder reads; current reads finish. Stop works while paused.",
@@ -589,6 +592,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_gentle": "低優先順序掃描",
+    "action_gentle_tip": "降低新掃描的 CPU 與 I/O 優先順序，可能花較久時間",
+    "scan_priority_warning": "部分掃描優先順序設定無法套用：{reason}",
     "scan_pause": "暫停",
     "scan_resume": "繼續",
     "scan_pause_tip": "暫停取得新資料夾；目前讀取會完成。暫停時仍可停止。",
@@ -1114,6 +1120,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_gentle": "低优先级扫描",
+    "action_gentle_tip": "降低新扫描的 CPU 与 I/O 优先级，可能花费较长时间",
+    "scan_priority_warning": "部分扫描优先级设置无法应用：{reason}",
     "scan_pause": "暂停",
     "scan_resume": "继续",
     "scan_pause_tip": "暂停获取新文件夹；当前读取会完成。暂停时仍可停止。",

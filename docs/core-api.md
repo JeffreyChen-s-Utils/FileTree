@@ -16,7 +16,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 
 | Module | Public entry points | Result and meaning |
 |---|---|---|
-| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=())` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.elapsed` in seconds, including pauses |
+| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now`; extension/category/age records have logical `.size` and `.count` |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |

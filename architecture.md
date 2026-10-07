@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`ScanOptions.gentle` lowers CPU and I/O priority only inside disposable crawler threads via
+`core.priority`: Windows background mode (restored at exit), Linux per-thread nice / ioprio_set.
+Errors and unsupported platforms are returned in `ScanResult.warnings`, separate from file coverage.
+MainWindow persists the opt-in setting and shows warnings; CLI/scale measurements accept `--gentle`.
+The GUI and reusable caller threads never receive priority changes.
+
 `scan(..., pause=event)` checks the pause event while crawler workers wait for their next folder.
 In-flight reads finish, progress callbacks and live refresh continue, cancellation bypasses the pause,
 and resuming retains the same nodes and totals. `ScanWorker` owns the event; the scan bar forwards

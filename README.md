@@ -11,6 +11,8 @@ the window.
 
 Use **Pause / Resume** in the scan bar to suspend taking new folders. Current folder reads finish and the live tree keeps refreshing; **Stop** and closing still work while paused. Final analysis cannot be paused. The elapsed time includes pauses; resuming keeps the same scan and counts.
 
+**Options → Gentle scanning** is off by default and applies to new scans. Each disposable scan thread uses Windows background CPU/I/O mode or Linux nice 10 plus the lowest best-effort I/O priority. The UI thread is unaffected. Unsupported platforms, denied changes and partial priority application are reported; readable folders still scan. I/O effects depend on the device scheduler and a scan can take longer. The CLI and measurement tool accept `--gentle`; CLI JSON includes `warnings`.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

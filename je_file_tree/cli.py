@@ -39,6 +39,7 @@ def _parser() -> argparse.ArgumentParser:
     scanning.add_argument("--limit", type=_positive, default=1000)
     scanning.add_argument("--exclude", action="append", default=[])
     scanning.add_argument("--no-hidden", action="store_true")
+    scanning.add_argument("--gentle", action="store_true")
     return parser
 
 
@@ -49,7 +50,8 @@ def _emit(stream: TextIO, document: dict) -> None:
 
 def _run_scan(args: argparse.Namespace, cancel: threading.Event) -> tuple[ScanResult, bool]:
     try:
-        options = ScanOptions(workers=args.workers, include_hidden=not args.no_hidden, exclude=tuple(args.exclude))
+        options = ScanOptions(workers=args.workers, include_hidden=not args.no_hidden,
+                              exclude=tuple(args.exclude), gentle=args.gentle)
         return scan(args.root, options=options, cancel=cancel), False
     except ScanCancelledError as stopped:
         if stopped.partial is None:
@@ -81,6 +83,7 @@ def _summary(result: ScanResult, coverage: Coverage, interrupted: bool) -> dict:
             "files": result.root.file_count, "folders": result.root.dir_count,
             "logical_bytes": result.root.size, "allocated_estimate_bytes": result.root.allocated,
             "elapsed_seconds": result.elapsed, "errors": len(result.errors), "capacity": capacity,
+            "warnings": result.warnings,
             "coverage": {"known_folders": coverage.known_folders, "skipped_folders": coverage.skipped_folders,
                          "inaccessible_folders": coverage.inaccessible_folders,
                          "pending_folders": coverage.pending_folders, "omitted_bytes": None}}

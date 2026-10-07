@@ -69,7 +69,8 @@ def measure(args: argparse.Namespace) -> dict[str, Any]:
             cancel.set()
 
     try:
-        result = scan(args.root, options=ScanOptions(workers=args.workers), cancel=cancel, progress=progress)
+        result = scan(args.root, options=ScanOptions(workers=args.workers, gentle=args.gentle),
+                      cancel=cancel, progress=progress)
     except ScanCancelledError as error:
         if error.partial is None:
             raise
@@ -82,6 +83,8 @@ def measure(args: argparse.Namespace) -> dict[str, Any]:
                               "initial_resident": initial, "scan_resident": resident_bytes(),
                               "budget_mb": args.memory_mb, "logical_bytes": root.size,
                               "allocated_bytes": root.allocated}
+    report["gentle"] = args.gentle
+    report["priority_warnings"] = result.warnings
     phases = {"analysis": lambda: summarise(root), "search_all": lambda: search(root, "*"),
               "cleanup": lambda: find_cleanup(root),
               "treemap": lambda: treemap.layout(root, treemap.Rect(0, 0, 1200, 800)),
@@ -165,6 +168,7 @@ def main() -> None:
     parser.add_argument("--memory-mb", type=int, default=512)
     parser.add_argument("--seconds", type=float, default=180)
     parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument("--gentle", action="store_true")
     parser.add_argument("--duplicates-seconds", type=float, default=0)
     parser.add_argument("--gui", action="store_true")
     parser.add_argument("--output", type=Path)

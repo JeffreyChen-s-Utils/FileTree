@@ -29,6 +29,7 @@ from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
+from je_file_tree.core.priority import background_priority
 from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
 
 # Windows reparse tags of links that must not be followed. A junction (and a
@@ -81,6 +82,7 @@ class ScanOptions:
     include_hidden: bool = True
     workers: int = DEFAULT_WORKERS
     exclude: tuple[str, ...] = ()  # folder name patterns and folder paths to skip (see core/exclusions.py)
+    gentle: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,6 +102,7 @@ class ScanResult:
     root: Node
     errors: list[tuple[str, str]] = field(default_factory=list)
     elapsed: float = 0.0
+    warnings: list[str] = field(default_factory=list)
 
 
 ProgressCallback = Callable[[ScanProgress], None]
@@ -151,11 +154,13 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
         for folder, _ in crawler.unread():
             folder.error = NOT_SCANNED
         _add_up(crawler.folders)
-        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started)) from None
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started,
+                                            sorted(set(crawler.warnings)))) from None
     _add_up(crawler.folders)
     if progress is not None:
         progress(crawler.snapshot())
-    return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started)
+    return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started,
+                      warnings=sorted(set(crawler.warnings)))
 
 
 class _Crawler:
@@ -177,6 +182,7 @@ class _Crawler:
         self._current = root_path
         self.folders: list[Node] = [root]  # every folder after its parent
         self.errors: list[tuple[str, str]] = []
+        self.warnings: list[str] = []
         self.files = 0
         self.size = 0
 
@@ -226,6 +232,12 @@ class _Crawler:
         self._done.set()
 
     def _work(self) -> None:
+        with background_priority(self._options.gentle) as warnings:
+            self._read_all()
+        with self._condition:
+            self.warnings.extend(warnings)
+
+    def _read_all(self) -> None:
         while (task := self._take()) is not None:
             give_way()
             try:

@@ -182,6 +182,9 @@ class MainWindow(QMainWindow):
         self._remember(outcome.result.root.path)
         self._update_actions()
 
+        if outcome.result.warnings:
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+
     def _scan_failed(self, reason: str) -> None:
         self._scan_ended()
         self._back_from_scan()
@@ -196,6 +199,8 @@ class MainWindow(QMainWindow):
         self.results.show_outcome(outcome)
         self._update_actions()
         self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
+        if outcome.result.warnings:
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
     def _scan_ended(self) -> None:
         self._worker = None
@@ -273,6 +278,8 @@ class MainWindow(QMainWindow):
         self._analyser = analyser
         self._analysers.add(analyser)
         analyser.start()
+        if outcome.result.warnings:
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
     def _summary_ready(self, summary: Summary) -> None:
         self.results.apply_summary(summary)
@@ -523,6 +530,7 @@ class MainWindow(QMainWindow):
             self.results.splitter.restoreState(splitter)
         self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
+        self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_recent(self._recent())
@@ -582,6 +590,7 @@ class MainWindow(QMainWindow):
             ("elevate", None, self.restart_as_admin),
             ("exclusions", None, self.edit_exclusions),
             ("cleanup_policy", None, self.edit_cleanup_policy),
+            ("gentle", None, lambda: self.settings.setValue("gentle_scan", self._actions["gentle"].isChecked())),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
@@ -594,6 +603,7 @@ class MainWindow(QMainWindow):
             self._actions[key] = action
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
+        self._actions["gentle"].setCheckable(True)
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
 
@@ -635,6 +645,7 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._actions["ask_admin"])
         options_menu = bar.addMenu("")
         options_menu.addAction(self._actions["cleanup_policy"])
+        options_menu.addAction(self._actions["gentle"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
         help_menu.addAction(self._actions["about"])
@@ -738,7 +749,8 @@ class MainWindow(QMainWindow):
         return [str(pattern) for pattern in value or []]
 
     def _scan_options(self) -> ScanOptions:
-        return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()))
+        return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
+                           gentle=self._actions["gentle"].isChecked())
 
     def choose_saved_scan(self) -> None:
         """Ask for a saved scan (a Folder tree JSON export) and compare the scan on screen with it."""
