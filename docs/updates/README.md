@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-02 | 2026-10-08 | Fix archive symlink refusal fixture lookup | #fix #tests #ci | [2026-10](2026-10.md) |
 | U-20261008-01 | 2026-10-08 | Add lazy virtual ZIP 7z and RAR inventories | #done #archives #gui #distribution | [2026-10](2026-10.md) |
 | U-20261007-75 | 2026-10-07 | Complete optional hard-link accounting across results and exports | #done #hard-links #gui #cli #exports | [2026-10](2026-10.md) |
 | U-20261007-74 | 2026-10-07 | Compression CI and native owned-file evidence across five Windows runtimes | #88 #done #windows #ci | [2026-10](2026-10.md) |

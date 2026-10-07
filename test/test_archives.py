@@ -133,7 +133,7 @@ def test_symlink_source_is_refused_when_supported(tmp_path):
         os.symlink(node.path, link)
     except OSError:
         pytest.skip("symlink creation requires developer mode or administrator rights")
-    linked = next(n for n in scan(tmp_path).root.iter_files() if n.name == link.name)
+    linked = next(n for n in scan(tmp_path).root.iter_nodes() if n.name == link.name)
     with pytest.raises(OSError):
         read_archive(linked)
 
