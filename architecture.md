@@ -235,7 +235,10 @@ name, so they must not come back. `.github/workflows/release.yml` releases on ev
 into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
 `je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
 stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
-with `tools/build_nuitka.py --onefile` for the GitHub release. The job that holds the token installs
+with `tools/build_nuitka.py --onefile` and a separate standalone build for the GitHub release.
+`tools/package_standalone.py` atomically archives the sole complete Windows `.dist` folder with all
+libraries/plugins/catalogues into a versioned ZIP; the workflow requires both artifacts and downloads
+both before publishing the EXE and ZIP together. The job that holds the token installs
 nothing but `.github/requirements/publish.txt` (`build`, `twine`, the build backend `setuptools` and
 what they need): wheels only, at locked hashes, generated from `publish.in` beside it, before the
 version is pushed. It builds with `python -m build --no-isolation`, so the backend is that locked

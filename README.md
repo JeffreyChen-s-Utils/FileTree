@@ -49,6 +49,11 @@ FileTree runs on Windows, macOS and Linux.
 **Windows, without Python**: download `FileTree-<version>.exe` from the [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) page and run it;
 there is nothing to install.
 
+Starting with the next release, the same page will also offer
+`FileTree-<version>-windows-standalone.zip`. Extract the **whole folder** and run its `FileTree.exe` for
+faster startup. Keep the DLLs, plugins and translations beside it. The single EXE is easier to carry,
+but unpacks its bundled files on every start. Both forms work without Python.
+
 **With Python 3.10 or newer**, from PyPI:
 
 ```bash

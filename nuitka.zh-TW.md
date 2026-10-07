@@ -41,6 +41,14 @@ python tools/build_nuitka.py
 
 產物是 `build/standalone/start_file_tree.dist/` 資料夾，裡面有 `FileTree.exe`（Linux 與 macOS 是 `FileTree`）。要給別台電腦用時，複製**整個資料夾**過去，從裡面啟動程式。這種方式啟動最快。
 
+Windows 發版時可打包完整資料夾（請使用發版的版本號）：
+
+```bash
+python tools/package_standalone.py --version 0.1.0
+```
+
+這會在儲存庫根目錄產生 `FileTree-0.1.0-windows-standalone.zip`，內含帶版本號的資料夾及 EXE、所有程式庫、外掛與翻譯檔。`build/standalone` 下必須恰有一個包含 `FileTree.exe` 的完整 `.dist` 資料夾；工具拒絕連結／接合點，以原子方式寫入壓縮檔。發版流程會從同一個標籤建置兩種形式，同時附上完整資料夾 ZIP 與單檔 EXE。
+
 ### 2.2 單一檔案
 
 ```bash

@@ -47,6 +47,18 @@ The result is the folder `build/standalone/start_file_tree.dist/`, with `FileTre
 `FileTree`) inside. Copy the **whole folder** to another computer and start the program from it. This
 form starts the fastest.
 
+For a Windows release, package the complete folder (use the release's version):
+
+```bash
+python tools/package_standalone.py --version 0.1.0
+```
+
+This writes `FileTree-0.1.0-windows-standalone.zip` in the repository root, containing a versioned
+folder with the EXE, all libraries, plugins and translation catalogues. It requires exactly one
+completed `.dist` folder with `FileTree.exe` under `build/standalone`, rejects links/junctions and
+writes the archive atomically. The release workflow builds both forms from the same tag and attaches
+both the standalone ZIP and the single EXE.
+
 ### 2.2 A single file
 
 ```bash

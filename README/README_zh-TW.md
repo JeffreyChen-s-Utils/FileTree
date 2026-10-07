@@ -29,6 +29,8 @@ FileTree 可在 Windows、macOS 與 Linux 上執行。
 
 **Windows，不需要 Python**：從 [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 頁面下載 `FileTree-<版本>.exe` 直接執行，不必安裝。
 
+從下一次發版起，同一頁也會提供 `FileTree-<版本>-windows-standalone.zip`。解壓縮**整個資料夾**後執行其中的 `FileTree.exe`，啟動較快；DLL、外掛及翻譯檔都要保留在旁邊。單檔 EXE 較方便攜帶，但每次啟動都會先解壓縮內含檔案。兩種形式都不需要 Python。
+
 **有 Python 3.10 以上**，從 PyPI 安裝：
 
 ```bash
