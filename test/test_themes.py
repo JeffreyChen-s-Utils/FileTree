@@ -1,7 +1,7 @@
 """Light/dark palettes keep labels readable and reset cached/native rendering correctly."""
 
 import pytest
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QFont, QPalette
 from PySide6.QtWidgets import QApplication
 
 from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
@@ -74,9 +74,14 @@ def test_bar_names_and_values_render_using_palette_ink(window, qapp, sample_tree
     window.pages.setCurrentIndex(RESULTS_PAGE)
     window.results.charts.set_mode(BARS)
     window.theme_menu.actions_by_theme[theme].trigger()
+    chart = window.results.charts.bars
+    # Exact-ink assertions require solid glyphs across DirectWrite and FreeType;
+    # antialiasing can blend every pixel of a small glyph with its background.
+    font = chart.font()
+    font.setStyleStrategy(QFont.StyleStrategy.NoAntialias)
+    chart.setFont(font)
     window.show()
     qapp.processEvents()
-    chart = window.results.charts.bars
     image = chart.grab().toImage()
     text = chart.palette().color(QPalette.ColorRole.Text).rgb()
     height = chart._row_height()
