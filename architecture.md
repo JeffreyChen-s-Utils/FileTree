@@ -576,8 +576,14 @@ subtype/loaded checks reject unknown native state and all handles close. Frozen 
 provider physical bytes, virtual capacity, disk UUID and fixed/dynamic/differencing/mounted state;
 they grant no compaction or stopped-machine authority. Guests remain unopened and their usage unknown.
 Native owned fixed/dynamic VHD/VHDX fixtures passed without elevation, exact UUIDs/unchanged full hashes.
-Compaction and its GUI review remain #59; unsupported formats need their own backend rather than
-passing them to VHD-only Windows tools.
+`gui.virtual_disks` wraps discovery in an owned modal table and explicit selected-header worker.
+Backing-file observations, native capacity/provider bytes and unknown guest usage are separate numeric
+columns with literal status/tooltips; unsupported/unknown/errors/counts/coverage stay visible. Only
+original scan nodes may activate the tree. Stop/close suppresses late replies and joins both workers;
+MainWindow tracks the dialog to serialize scans/file operations and process deferred rescans after
+close. Six GUI tests and a fresh owned native CJK VHDX GUI proof preserve bytes/identity/UUID.
+Compaction/approval remains #59; unsupported formats need their own backend rather than passing them
+to VHD-only Windows tools.
 
 ## 3. Entry points and public interfaces
 
@@ -594,6 +600,8 @@ job saves JSON for seven days. Native volume proof remains pending; provider pla
 extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
 failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
 application's bool/tuple-compatible Qt Trash receipt adapter.
+Validation ledger serialization retains scalar coverage counts and the unsafe-folder count rather
+than deep-copying/serializing Node authorization graphs; unknown buckets remain null.
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
 documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.

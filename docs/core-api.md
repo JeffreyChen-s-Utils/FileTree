@@ -450,7 +450,16 @@ proof. It launches no guest, command or elevation and never attaches a disk. Fre
 VHD/VHDX tests passed natively on Windows without elevation, exact UUIDs and complete unchanged hashes.
 The native structures and flags follow the [Windows SDK header](https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/virtdisk.h)
 and [read-only open parameters](https://learn.microsoft.com/en-us/windows/win32/api/virtdisk/ns-virtdisk-open_virtual_disk_parameters).
-Compaction/GUI review remains pending. DiskPart and Optimize-VHD apply to supported VHD formats,
+`gui.virtual_disks` opens from View on a completed/partial recorded result. Its bounded numeric,
+sortable/copyable read-only table separates backing length/allocation, native capacity/provider bytes
+and unknown guest usage. Original scanned nodes may activate the tree; external providers cannot.
+Inventory reads no headers; the explicit selected-header button owns a separate Windows query worker.
+Unknown/unsupported/error/omitted coverage stays visible. Plain-text status includes literal paths.
+Stop/close cancels replies and joins current calls; MainWindow tracks the owned modal dialog and
+serializes scans/file operations. Six GUI tests cover no automatic queries, separated observations,
+external/error behavior, both worker lifetimes and routing/serialization. Native fresh owned CJK VHDX
+GUI evidence verified its UUID and unchanged complete file hash/snapshot without attachment/elevation.
+Compaction/approval remains pending. DiskPart and Optimize-VHD apply to supported VHD formats,
 not VMDK/VDI/QCOW2:
 [DiskPart requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk),
 [Optimize-VHD requirements](https://learn.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd).
@@ -468,3 +477,5 @@ the scratch image; successful cleanup checks captured directory/image identities
 placeholders, shared extents, independent reserved bytes and APFS remain unmeasured. Phase JSON is
 saved before later native checks; only complete evidence confirms detachment/cleanup. Fixture Trash
 uses the application's bool/tuple-compatible Qt receipt adapter.
+Validation ledger JSON retains scalar coverage counts and the unsafe-folder count, preserving unknown
+buckets without deep-copying or serializing Node authorization graphs.

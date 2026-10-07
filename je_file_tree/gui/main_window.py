@@ -44,6 +44,7 @@ from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.programs import ProgramsDialog
+from je_file_tree.gui.virtual_disks import VirtualDisksDialog
 from je_file_tree.gui.file_times import FileTimesDialog
 from je_file_tree.gui.bin_labels import BinLabels, bin_key
 from je_file_tree.gui.compression import CompressionDialog
@@ -114,7 +115,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._worker: ScanWorker | None = None
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs: set[NamespaceDialog | DuplicateLinksDialog] = set()
+        self._path_dialogs: set[NamespaceDialog | DuplicateLinksDialog | VirtualDisksDialog] = set()
         self._trash_rescans: list[Node] = []
         self._closing = False
         self._analyser: AnalyseWorker | None = None
@@ -961,6 +962,7 @@ class MainWindow(QMainWindow):
             ("history_settings", None, self.configure_history),
             ("projects", None, self.show_projects),
             ("programs", None, self.show_programs),
+            ("virtual_disks", None, self.show_virtual_disks),
             ("file_times", None, self.show_file_times),
             ("capture_file_times", None, lambda: None),
             ("capture_owners", None, lambda: None),
@@ -1023,7 +1025,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history",
-                    "programs", "file_times"):
+                    "programs", "virtual_disks", "file_times"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -1128,7 +1130,7 @@ class MainWindow(QMainWindow):
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
         for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects", "history",
-                    "programs", "file_times"):
+                    "programs", "virtual_disks", "file_times"):
             self._actions[key].setEnabled(has_results and not scanning)
         for key in ("export_report_html", "export_report_xlsx"):
             self._actions[key].setEnabled(has_results and not scanning and not self.operation_busy
@@ -1156,6 +1158,25 @@ class MainWindow(QMainWindow):
             self.results.cleanup.set_bin_metadata(root, rows.get(bin_key(root)) if root else None)
 
     # --- dialogs ----------------------------------------------------------
+
+    def show_virtual_disks(self) -> None:
+        """Own a bounded read-only inventory/header dialog for the unchanged completed scan."""
+        if self._worker is not None or self.operation_busy or self.results.outcome is None:
+            return
+        outcome = self.results.outcome
+        dialog = VirtualDisksDialog(outcome.result.root, self._unit, self, partial=outcome.partial)
+        dialog.selected.connect(self.results.select_node)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            dialog.deleteLater()
+            self._update_actions()
+        if self._trash_rescans:
+            self._process_trash_rescans()
 
     def show_programs(self) -> None:
         """Review Windows registrations/game names against the current recorded tree on an owned worker."""

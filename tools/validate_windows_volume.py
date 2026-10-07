@@ -22,6 +22,7 @@ from je_file_tree.core.savings import estimate_savings  # noqa: E402
 from je_file_tree.core.windows_allocation import file_allocation  # noqa: E402
 from tools.windows_owned_volume import owned_ntfs_volume, OwnedVolume, require, verify_volume  # noqa: E402
 from tools.windows_bin_probe import bin_proof  # noqa: E402
+from tools.volume_evidence import ledger_record  # noqa: E402
 
 _MIB = 1024 * 1024
 _OPTIONS = ScanOptions(workers=1, exact_windows_allocation=True)
@@ -101,7 +102,7 @@ def _ledger(volume: OwnedVolume) -> dict:
     else:
         require(ledger.status == "estimated" and ledger.unaccounted == usage.used - sum(unique.values()),
                 "Whole-volume remainder differs from known native allocation")
-    return {"ledger": asdict(ledger), "os_usage": usage._asdict(), "errors": result.errors}
+    return {"ledger": ledger_record(ledger), "os_usage": usage._asdict(), "errors": result.errors}
 
 
 def _savings(volume: OwnedVolume, root: Path) -> dict:

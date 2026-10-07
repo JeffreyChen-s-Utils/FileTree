@@ -16,6 +16,7 @@ from je_file_tree.gui import bin_dialog as bins
 from je_file_tree.gui.file_actions import trash_receipt
 from je_file_tree.gui.volumes import Volume, VolumesWorker
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
+from tools.volume_evidence import ledger_record
 
 _TIMEOUT = 20
 _BYTES = 2 * 1024 * 1024
@@ -136,7 +137,7 @@ def bin_proof(volume: OwnedVolume) -> dict:
             return {"before": asdict(before), "arrival": asdict(after_arrival), "after": asdict(after),
                     "native_calls": called, "declined_preserved": True, "arrival_refused": refusal,
                     "two_questions": approved, "active_close_refused": True,
-                    "ledger_before_empty": asdict(ledger), "free_before": free_before,
+                    "ledger_before_empty": ledger_record(ledger), "free_before": free_before,
                     "free_after": shutil.disk_usage(volume.root).free}
         finally:
             dialog.shutdown()

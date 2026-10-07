@@ -9,6 +9,46 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "vd_name": 'Disk name',
+    "vd_source": 'Source',
+    'vd_issue_unverified': 'Unverified identity',
+    'vd_issue_unavailable': 'Linked, cloud or unavailable',
+    'vd_issue_changed': 'File changed',
+    'vd_issue_duplicate_hard_links': 'Multiple hard-link names',
+    "action_virtual_disks_tip": 'Review recorded virtual disks and explicitly query read-only native VHD information',
+    'action_virtual_disks': 'Virtual disks…',
+    'vd_kind': 'Format',
+    'vd_length': 'Backing-file length',
+    'vd_allocation': 'Recorded allocation',
+    'vd_capacity': 'Virtual capacity',
+    'vd_physical': 'Provider physical bytes',
+    'vd_guest': 'Guest used',
+    'vd_source_scan': 'Recorded scan',
+    'vd_source_wsl': 'WSL registration',
+    'vd_source_docker': 'Docker default (inferred)',
+    'vd_unsupported': 'Native VHD tools unsupported',
+    'vd_not_queried': 'Native header not queried',
+    'vd_fixed': 'Fixed',
+    'vd_dynamic': 'Dynamic',
+    'vd_differencing': 'Differencing',
+    'vd_loaded': 'Mounted/in use',
+    'vd_detached': 'Not loaded (observation)',
+    'vd_inspect': 'Query selected VHD header',
+    'vd_select': 'Show recorded entry',
+    'vd_reading': 'Discovering virtual backing files…',
+    'vd_querying': 'Reading native header: {path}',
+    'vd_summary': 'Showing {shown} of {count}; {issues} issues/omissions. Coverage: {coverage}.',
+    'vd_failed': 'Virtual-disk information: {reason}',
+    'vd_hint': (
+        'Read-only inventory; provider labels are location hints. Backing-file allocation, provider '
+         'bytes and virtual capacity are separate; guest usage stays unknown. Headers are queried '
+         'only on request. No VM starts, stops, mounts or compaction. Unsupported formats remain '
+         'visible.'
+    ),
+    'vd_information_hint': (
+        'Native observations do not authorize compaction or prove a stopped machine. Provider '
+         'physical bytes are not guest-used bytes. Disk UUID is in the row tooltip.'
+    ),
     "link_summary": "{total} extra copies: {ready} ready, {skipped} refused.",
     "link_title": "Link the extra copies…",
     "link_hint": (
@@ -1212,6 +1252,43 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "vd_name": '磁碟名稱',
+    "vd_source": '來源',
+    'vd_issue_unverified': '身分尚未核對',
+    'vd_issue_unavailable': '連結、雲端或不可用',
+    'vd_issue_changed': '檔案已變更',
+    'vd_issue_duplicate_hard_links': '有多個硬連結名稱',
+    "action_virtual_disks_tip": '檢視記錄的虛擬磁碟，並明確查詢唯讀原生 VHD 資訊',
+    'action_virtual_disks': '虛擬磁碟…',
+    'vd_kind': '格式',
+    'vd_length': '磁碟檔案長度',
+    'vd_allocation': '記錄的配置量',
+    'vd_capacity': '虛擬容量',
+    'vd_physical': '提供者實體位元組',
+    'vd_guest': '客體已用量',
+    'vd_source_scan': '掃描記錄',
+    'vd_source_wsl': 'WSL 註冊',
+    'vd_source_docker': 'Docker 預設（推定）',
+    'vd_unsupported': '不支援原生 VHD 工具',
+    'vd_not_queried': '尚未查詢原生標頭',
+    'vd_fixed': '固定',
+    'vd_dynamic': '動態',
+    'vd_differencing': '差異',
+    'vd_loaded': '已掛載／使用中',
+    'vd_detached': '未載入（觀察值）',
+    'vd_inspect': '查詢所選 VHD 標頭',
+    'vd_select': '顯示掃描記錄項目',
+    'vd_reading': '正在尋找虛擬磁碟檔案…',
+    'vd_querying': '正在讀取原生標頭：{path}',
+    'vd_summary': '顯示 {count} 筆中的 {shown} 筆；{issues} 個問題／略過項目。涵蓋範圍：{coverage}。',
+    'vd_failed': '虛擬磁碟資訊：{reason}',
+    'vd_hint': (
+        '唯讀清單；來源標籤只是位置提示。磁碟檔案配置量、提供者位元組與虛擬容量分別列出；客體用量保持未知。只有要求時才查詢標頭。不啟動、停止、掛載或壓縮虛擬機'
+        '器。不支援的格式仍會列出。'
+    ),
+    'vd_information_hint': (
+        '原生觀察不授予壓縮權限，也不證明機器已停機。提供者實體位元組不代表客體已用量。磁碟識別碼列於該列的工具提示。'
+    ),
     "link_summary": "{total} 個多餘副本：{ready} 個可執行，{skipped} 個拒絕。",
     "link_title": "將多餘副本改為硬連結…",
     "link_hint": (
@@ -2297,6 +2374,43 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "vd_name": '磁盘名称',
+    "vd_source": '来源',
+    'vd_issue_unverified': '身份尚未核对',
+    'vd_issue_unavailable': '链接、云端或不可用',
+    'vd_issue_changed': '文件已变化',
+    'vd_issue_duplicate_hard_links': '有多个硬链接名称',
+    "action_virtual_disks_tip": '查看记录的虚拟磁盘，并显式查询只读原生 VHD 信息',
+    'action_virtual_disks': '虚拟磁盘…',
+    'vd_kind': '格式',
+    'vd_length': '磁盘文件长度',
+    'vd_allocation': '记录的分配量',
+    'vd_capacity': '虚拟容量',
+    'vd_physical': '提供程序物理字节',
+    'vd_guest': '客户机已用量',
+    'vd_source_scan': '扫描记录',
+    'vd_source_wsl': 'WSL 注册',
+    'vd_source_docker': 'Docker 默认（推定）',
+    'vd_unsupported': '不支持原生 VHD 工具',
+    'vd_not_queried': '尚未查询原生头部',
+    'vd_fixed': '固定',
+    'vd_dynamic': '动态',
+    'vd_differencing': '差分',
+    'vd_loaded': '已挂载／使用中',
+    'vd_detached': '未加载（观察值）',
+    'vd_inspect': '查询所选 VHD 头部',
+    'vd_select': '显示扫描记录项目',
+    'vd_reading': '正在查找虚拟磁盘文件…',
+    'vd_querying': '正在读取原生头部：{path}',
+    'vd_summary': '显示 {count} 行中的 {shown} 行；{issues} 个问题／跳过项目。覆盖范围：{coverage}。',
+    'vd_failed': '虚拟磁盘信息：{reason}',
+    'vd_hint': (
+        '只读列表；来源标签只是位置提示。磁盘文件分配量、提供程序字节与虚拟容量分别列出；客户机用量保持未知。只有请求时才查询头部。不启动、停止、挂载或压缩虚拟'
+        '机。不支持的格式仍会列出。'
+    ),
+    'vd_information_hint': (
+        '原生观察不授予压缩权限，也不证明机器已关机。提供程序物理字节不代表客户机已用量。磁盘标识符显示在该行的工具提示中。'
+    ),
     "link_summary": "{total} 个多余副本：{ready} 个可执行，{skipped} 个拒绝。",
     "link_title": "将多余副本改为硬链接…",
     "link_hint": (

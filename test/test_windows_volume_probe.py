@@ -1,6 +1,7 @@
 """Privileged private-volume tooling refuses existing/ambiguous scopes before native commands."""
 
 import ctypes
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,6 +10,8 @@ import pytest
 from je_file_tree.core import virtual_disk_info as native
 from tools import windows_owned_volume as volumes
 from tools import windows_bin_probe as bins
+from tools import validate_windows_volume as probe
+from tools.volume_evidence import ledger_record
 
 
 def test_existing_image_is_preserved_before_native_creation(tmp_path):
@@ -132,3 +135,20 @@ def test_private_bin_fixture_reuses_bool_and_tuple_qt_receipts(tmp_path, monkeyp
     monkeypatch.setattr(file_actions.QFile, "moveToTrash", moved)
     bins._trash(volume, "owned.bin")
     assert calls == [str(tmp_path / "owned-bin-fixtures" / "owned.bin")]
+
+
+def test_phase_json_serializes_real_unsafe_coverage_counts_and_preserves_unknowns(tmp_path):
+    from je_file_tree.core.capacity import capacity_ledger
+    from je_file_tree.core.scanner import scan, ScanOptions
+    output = tmp_path / "native-evidence.json"
+    (tmp_path / "omitted").mkdir()
+    ledger = capacity_ledger(scan(tmp_path, options=ScanOptions(exclude=("omitted",))).root)
+    assert ledger.coverage.unsafe
+    probe._save(output, {"phase": "capacity_and_savings", "ledger": ledger_record(ledger)})
+    evidence = json.loads(output.read_text(encoding="utf-8"))
+    assert evidence["phase"] == "capacity_and_savings"
+    assert evidence["ledger"]["coverage"]["unsafe_folders"] == len(ledger.coverage.unsafe)
+    assert "unsafe" not in evidence["ledger"]["coverage"]
+    assert evidence["ledger"]["metadata_bytes"] is None
+    with pytest.raises(TypeError):
+        probe._save(output, {"unknown": object()})
