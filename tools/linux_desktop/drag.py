@@ -56,8 +56,8 @@ def check_drag(app: QApplication, window: MainWindow, evidence: Path, scratch: P
                     "windowactivate", "--sync", identity, "key", "--clearmodifiers", "ctrl+2", "sleep", ".5")
             app.primaryScreen().grabWindow(0).save(str(evidence / "drag-before.png"))
             # The pinned Debian Thunar detailed view's first row, beyond the side pane.
-            xdotool(app, "mousemove", "--window", identity, "310", "130", "mousedown", "1",
-                    "sleep", ".2", "mousemove", "--window", identity, "325", "135", "sleep", ".2",
+            xdotool(app, "mousemove", "--window", identity, "310", "105", "mousedown", "1",
+                    "sleep", ".2", "mousemove", "--window", identity, "325", "110", "sleep", ".2",
                     "mousemove", "500", "400", "sleep", "1", "mouseup", "1")
             deadline = time.monotonic() + 15
             while window._worker is not None or window.results.outcome is None or \
