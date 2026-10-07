@@ -163,6 +163,15 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
 
+Duplicate totals and group headers label extra-copy sizes as **logical size**. A background estimate
+shows unique allocated space and a conservative recoverable file-data range after emptying Trash,
+for all extra copies and each listed group. The estimate follows the current list and assumes its
+first (oldest) copy remains; review paths before moving anything. Other hard-link names can keep data
+allocated, compressed/sparse files use their allocated size, and cloud-only data is not downloaded.
+Shared extents and directory metadata remain unknown. Stop cancels estimates; a changed scan discards
+old figures. Moving files to Trash does not itself free disk space. Isolated-volume validation is
+pending; choosing the kept copy and rehashing a group before a move are still planned.
+
 ### Capacity details
 
 The line above the tree shows OS used/free space and an estimate of file allocation with hard links

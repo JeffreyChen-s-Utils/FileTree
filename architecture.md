@@ -30,6 +30,13 @@ range after emptying Trash, and current free space. A hard-linked file whose oth
 zero recoverable data. Unknown identities/coverage make recovery unknown; shared extents and directory
 metadata remain outside the estimate. Windows cluster-rounded allocation is explicitly an estimate.
 
+`duplicates.estimate_duplicate_savings` applies the same allocation/recovery rules to the extra copies
+of every group, matching the current oldest-first list, with separate per-group estimates for the
+listed groups. `DuplicateSavingsWorker` keeps this work off the UI thread and supports Stop; replaced
+or pruned groups cancel and discard stale estimates. Every active search/estimate thread is joined on
+close. The displayed extra-copy sum is explicitly logical size. Kept-copy choice and pre-move group
+rehashing remain outstanding; the accounting assumption is visible and does not approve a move.
+
 `core/capacity.py` builds a worker-computed estimated capacity ledger: OS total/used/available free,
 unique allocation on the root device, hard-link overcount, included Trash allocation seen, foreign
 allocation excluded and mount-boundary counts. Only complete whole-volume scans with known identities

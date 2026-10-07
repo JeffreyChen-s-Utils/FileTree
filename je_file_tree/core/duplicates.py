@@ -25,6 +25,7 @@ from typing import BinaryIO
 
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
+from je_file_tree.core.savings import Savings, estimate_savings
 
 HEAD_BYTES = 64 * 1024
 DEFAULT_MIN_SIZE = 1024 * 1024
@@ -41,7 +42,7 @@ class DuplicateGroup:
 
     @property
     def extra(self) -> int:
-        """The space every copy but one takes."""
+        """Logical size of every copy but one; not unique allocation or recoverable space."""
         return self.size * (len(self.files) - 1)
 
 
@@ -56,8 +57,41 @@ class DuplicateResult:
 
     @property
     def extra(self) -> int:
-        """The space all extra copies take together."""
+        """Logical size of all extra copies; not an estimate of free-space recovery."""
         return sum(group.extra for group in self.groups)
+
+
+@dataclass(frozen=True, slots=True)
+class DuplicateSavings:
+    """Extra-copy estimates assuming the first listed (oldest) copy of every group remains."""
+
+    total: Savings
+    groups: list[Savings]
+
+
+def estimate_duplicate_savings(groups: list[DuplicateGroup], root: Node, *, limit: int = 1000,
+                               cancel: threading.Event | None = None) -> DuplicateSavings | None:
+    """Estimate all extra copies and the first ``limit`` groups on a worker, without reading contents.
+
+    The ordering matches the current duplicate list; it is an accounting assumption, not an approval
+    to remove copies. Other hard-link names can keep data allocated, and snapshots/shared extents or
+    directory metadata remain unmeasured. A changed scan must discard this result.
+    """
+    all_extras: list[Node] = []
+    by_group: list[Savings] = []
+    for position, group in enumerate(groups):
+        give_way()
+        if cancel is not None and cancel.is_set():
+            return None
+        extras = sorted(group.files, key=lambda node: (node.modified, node.path))[1:]
+        all_extras.extend(extras)
+        if position < limit:
+            value = estimate_savings(extras, root=root, cancel=cancel)
+            if value is None:
+                return None
+            by_group.append(value)
+    total = estimate_savings(all_extras, root=root, cancel=cancel)
+    return DuplicateSavings(total, by_group) if total is not None else None
 
 
 @dataclass(frozen=True, slots=True)

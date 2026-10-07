@@ -9,6 +9,18 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "duplicates_savings": ("Unique allocated estimate {allocated}; recoverable file data after emptying Trash "
+                           "{recoverable}."),
+    "duplicates_estimating": ('Estimating unique allocation and recover'
+        'able file data…'),
+    "duplicates_estimate_unavailable": ('Allocation estimate unavailable. Run the'
+        ' search again before selecting extras.'),
+    "duplicates_estimate_assumption": ('Estimates assume the first listed (oldes'
+        't) copy remains; review paths before mov'
+        'ing. Other hard-link names may keep data'
+        ' allocated. Shared extents and directory'
+        ' metadata are unknown; moving to Trash d'
+        'oes not free space.'),
     'capacity_details': 'Capacity details',
     'capacity_summary': 'OS used {used}; free {free}; unique allocated estimate {unique}. {status}',
     'capacity_estimated': 'Whole-volume estimate; unaccounted space is shown in Details.',
@@ -259,10 +271,12 @@ EN: dict[str, str] = {
     "duplicates_running": "Read {files} of {total} files ({read} of {bytes})…",
     "duplicates_stopped": "The search was stopped.",
     "duplicates_none": "No duplicate files found.",
-    "duplicates_summary": "{groups} groups of duplicates: {extra} in extra copies.",
+    "duplicates_summary": ('{groups} groups of duplicates: {extra} l'
+        'ogical size in extra copies.'),
     "duplicates_limited": "The {shown} groups with the most extra space are listed.",
     "duplicates_skipped": "{count} files could not be read.",
-    "duplicates_group": "{count} copies of {size} — {extra} in extra copies",
+    "duplicates_group": ('{count} copies × {size}: {extra} logical'
+        ' extra-copy size.'),
     "search_placeholder": "Part of a name, or a pattern: backup, *.mp4, *.iso;*.zip",
     "search_hint": ("Type part of a name or a pattern with * and ?, choose conditions, or both, to find files "
                     "and folders anywhere in the scan."),
@@ -483,6 +497,13 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "duplicates_savings": ("不重複配置估計 {allocated}；清空資源回收筒後可回收的檔案資料 "
+                           "{recoverable}。"),
+    "duplicates_estimating": ('正在估計不重複配置空間與可回收的檔案資料…'),
+    "duplicates_estimate_unavailable": ('配置估計無法取得。選取多餘副本前請重新搜尋。'),
+    "duplicates_estimate_assumption": ('估計假設保留清單中的第一份（最舊）副本，'
+        '移動前請審查路徑。其他硬連結名稱可能仍佔用配置空間。'
+        '共用區塊與資料夾中繼資料未知，移到資源回收筒不會釋放空間。'),
     'capacity_details': '容量明細',
     'capacity_summary': '系統已用 {used}；可用 {free}；不重複配置估計 {unique}。{status}',
     'capacity_estimated': '整個磁碟的估計；未能歸帳的空間請見明細。',
@@ -714,10 +735,10 @@ ZH_TW: dict[str, str] = {
     "duplicates_running": "已讀取 {files} / {total} 個檔案（{read} / {bytes}）…",
     "duplicates_stopped": "搜尋已停止。",
     "duplicates_none": "沒有找到重複的檔案。",
-    "duplicates_summary": "{groups} 組重複檔案：多餘的副本共佔 {extra}。",
+    "duplicates_summary": ('{groups} 組重複檔案：多餘副本的邏輯大小共 {extra}。'),
     "duplicates_limited": "只列出多餘空間最大的 {shown} 組。",
     "duplicates_skipped": "有 {count} 個檔案無法讀取。",
-    "duplicates_group": "{count} 份相同的 {size} 檔案，多餘的副本佔 {extra}",
+    "duplicates_group": ('{count} 份 × {size}：多餘副本的邏輯大小 {extra}。'),
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "輸入名稱的一部分或含 * 和 ? 的樣式、選擇條件，或兩者一起，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
@@ -919,6 +940,13 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "duplicates_savings": ("不重复分配估计 {allocated}；清空回收站后可回收的文件数据 "
+                           "{recoverable}。"),
+    "duplicates_estimating": ('正在估计不重复分配空间与可回收的文件数据…'),
+    "duplicates_estimate_unavailable": ('无法获取分配估计。选择多余副本前请重新搜索。'),
+    "duplicates_estimate_assumption": ('估计假设保留列表中的第一份（最旧）副本，'
+        '移动前请审查路径。其他硬链接名称可能仍占用分配空间。'
+        '共享区块与文件夹元数据未知，移到回收站不会释放空间。'),
     'capacity_details': '容量明细',
     'capacity_summary': '系统已用 {used}；可用 {free}；不重复分配估计 {unique}。{status}',
     'capacity_estimated': '整个磁盘的估计；无法归账的空间请见明细。',
@@ -1149,10 +1177,10 @@ ZH_CN: dict[str, str] = {
     "duplicates_running": "已读取 {files} / {total} 个文件（{read} / {bytes}）…",
     "duplicates_stopped": "搜索已停止。",
     "duplicates_none": "没有找到重复的文件。",
-    "duplicates_summary": "{groups} 组重复文件：多余的副本共占 {extra}。",
+    "duplicates_summary": ('{groups} 组重复文件：多余副本的逻辑大小共 {extra}。'),
     "duplicates_limited": "只列出多余空间最大的 {shown} 组。",
     "duplicates_skipped": "有 {count} 个文件无法读取。",
-    "duplicates_group": "{count} 份相同的 {size} 文件，多余的副本占 {extra}",
+    "duplicates_group": ('{count} 份 × {size}：多余副本的逻辑大小 {extra}。'),
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "输入名称的一部分或含 * 和 ? 的模式、选择条件，或两者一起，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",

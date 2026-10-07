@@ -9,16 +9,21 @@ from PySide6.QtWidgets import (
     QLabel,
     QProgressBar,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
-from je_file_tree.core.duplicates import DEFAULT_MIN_SIZE, DuplicateGroup, DuplicateProgress, DuplicateResult
+from je_file_tree.core.duplicates import (
+    DEFAULT_MIN_SIZE, DuplicateGroup, DuplicateProgress, DuplicateResult, DuplicateSavings,
+)
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.core.savings import Savings
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui import grouped_list
 from je_file_tree.gui.scan_worker import DuplicatesWorker, wait_for
+from je_file_tree.gui.duplicate_savings_worker import DuplicateSavingsWorker
 
 MIN_SIZES = (1, 100 * 1024, DEFAULT_MIN_SIZE, 10 * 1024 * 1024, 100 * 1024 * 1024)
 LISTED_GROUPS = 1000
@@ -42,12 +47,21 @@ class DuplicatesPanel(QWidget):
         self.select_extra = QPushButton()
         self.status = QLabel()
         self.status.setWordWrap(True)
+        self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.estimate = QLabel()
+        self.estimate.setWordWrap(True)
+        self.estimate.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.estimate.setToolTip(tr("duplicates_estimate_assumption"))
         self._size_label = QLabel()
         self._busy = QProgressBar()
         self._busy.setRange(0, 0)
         self._busy.setMaximumWidth(120)
         self._root: Node | None = None
         self._worker: DuplicatesWorker | None = None
+        self._search_workers: set[DuplicatesWorker] = set()
+        self._estimator: DuplicateSavingsWorker | None = None
+        self._estimate_workers: set[DuplicateSavingsWorker] = set()
+        self._savings: DuplicateSavings | None = None
         self._groups: list[DuplicateGroup] = []
         self._found: DuplicateResult | None = None
         self._progress: DuplicateProgress | None = None
@@ -66,7 +80,7 @@ class DuplicatesPanel(QWidget):
     @property
     def running(self) -> bool:
         """Whether a search is running."""
-        return self._worker is not None
+        return self._worker is not None or self._estimator is not None
 
     def set_root(self, root: Node | None) -> None:
         """Look for duplicates beneath ``root`` from now on (None: nothing to search, the panel is idle)."""
@@ -74,20 +88,23 @@ class DuplicatesPanel(QWidget):
         self._root = root
         self._groups = []
         self._found = None
+        self._savings = None
         self._stopped = False
         self._rebuild()
         self._update()
 
     def start(self) -> None:
         """Start looking for duplicates of the size chosen or larger."""
-        if self._root is None or self._worker is not None:
+        if self._root is None or self.running:
             return
         worker = DuplicatesWorker(self._root, int(self.min_size.currentData()), self)
         worker.progressed.connect(lambda progress: worker is self._worker and self._show_progress(progress))
         worker.succeeded.connect(lambda result: worker is self._worker and self._show_result(result))
         worker.cancelled.connect(lambda: worker is self._worker and self._finish(stopped=True))
         worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(lambda: self._search_workers.discard(worker))
         self._worker = worker
+        self._search_workers.add(worker)
         self._progress = None
         self._stopped = False
         self._update()
@@ -96,11 +113,12 @@ class DuplicatesPanel(QWidget):
     def stop(self, *, wait: bool = False) -> None:
         """Stop a running search (``wait``: until its thread has ended); what was found so far is dropped."""
         worker = self._worker
-        if worker is None:
-            return
-        worker.stop()
+        self._cancel_estimate()
+        if worker is not None:
+            worker.stop()
         if wait:
-            wait_for(worker)
+            for pending in self._search_workers.copy() | self._estimate_workers.copy():
+                wait_for(pending)
         self._worker = None
         self._stopped = True
         self._update()
@@ -116,11 +134,15 @@ class DuplicatesPanel(QWidget):
             if len(files) > 1:
                 kept.append(DuplicateGroup(group.size, files))
         self._groups = kept
+        self._savings = None
         self._rebuild()
+        self._start_estimate()
         self._update()
 
     def select_extra_copies(self) -> None:
         """Select every file but the oldest of each group, ready for Delete."""
+        if self.running or self._savings is None:
+            return
         grouped_list.select_entries(self.model, self.view, skip_first=True)
 
     def set_unit(self, unit: str) -> None:
@@ -132,6 +154,7 @@ class DuplicatesPanel(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self._size_label.setText(tr("duplicates_min_size"))
+        self.estimate.setToolTip(tr("duplicates_estimate_assumption"))
         current = self.min_size.currentData()
         self.min_size.blockSignals(True)
         self.min_size.clear()
@@ -163,15 +186,15 @@ class DuplicatesPanel(QWidget):
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
         layout.addWidget(self.status)
+        layout.addWidget(self.estimate)
         layout.addWidget(self.view, 1)
 
     def _rebuild(self) -> None:
         """Fill the list from ``_groups`` (the most extra space first, up to ``LISTED_GROUPS``), oldest copy first."""
-        groups = [(tr("duplicates_group", count=format_count(len(group.files)),
-                      size=format_size(group.size, self.unit), extra=format_size(group.extra, self.unit)),
+        groups = [(self._group_title(position, group),
                    sorted(group.files, key=lambda file: (file.modified, file.path)))
-                  for group in self._groups[:LISTED_GROUPS]]
-        grouped_list.fill(self.model, self.view, groups, self.unit)
+                  for position, group in enumerate(self._groups[:LISTED_GROUPS])]
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups])
 
     # --- a search ---------------------------------------------------------
 
@@ -182,8 +205,10 @@ class DuplicatesPanel(QWidget):
     def _show_result(self, result: DuplicateResult) -> None:
         self._found = result
         self._groups = list(result.groups)
+        self._savings = None
         self._rebuild()
         self._finish(stopped=False)
+        self._start_estimate()
 
     def _finish(self, *, stopped: bool) -> None:
         self._worker = None
@@ -192,12 +217,58 @@ class DuplicatesPanel(QWidget):
 
     def _update(self) -> None:
         running = self._worker is not None
-        self.min_size.setEnabled(self._root is not None and not running)
-        self.start_button.setEnabled(self._root is not None and not running)
-        self.stop_button.setEnabled(running)
-        self._busy.setVisible(running)
-        self.select_extra.setEnabled(bool(self._groups) and not running)
+        self.min_size.setEnabled(self._root is not None and not self.running)
+        self.start_button.setEnabled(self._root is not None and not self.running)
+        self.stop_button.setEnabled(self.running)
+        self._busy.setVisible(self.running)
+        self.select_extra.setEnabled(bool(self._groups) and self._savings is not None and not self.running)
         self.status.setText(self._status_text())
+        self.estimate.setVisible(bool(self._groups) and not running)
+        self.estimate.setText(self._estimate_text())
+
+    def _cancel_estimate(self) -> None:
+        if self._estimator is not None:
+            self._estimator.stop()
+            self._estimator = None
+
+    def _start_estimate(self) -> None:
+        self._cancel_estimate()
+        if self._root is None or not self._groups:
+            self._update()
+            return
+        worker = DuplicateSavingsWorker(self._groups, self._root, LISTED_GROUPS, self)
+        worker.done.connect(lambda savings: worker is self._estimator and self._show_savings(savings))
+        worker.finished.connect(lambda: self._estimate_workers.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._estimator = worker
+        self._estimate_workers.add(worker)
+        self._update()
+        worker.start()
+
+    def _show_savings(self, savings: DuplicateSavings) -> None:
+        self._estimator = None
+        self._savings = savings
+        self._rebuild()
+        self._update()
+
+    def _savings_text(self, value: Savings) -> str:
+        maximum = value.recoverable_max
+        recovery = tr("size_unknown") if maximum is None else (
+            f"{format_size(value.recoverable_min, self.unit)} – {format_size(maximum, self.unit)}")
+        allocated = tr("size_unknown") if maximum is None else format_size(value.allocated, self.unit)
+        return tr("duplicates_savings", allocated=allocated, recoverable=recovery)
+
+    def _estimate_text(self) -> str:
+        if self._savings is not None:
+            return self._savings_text(self._savings.total) + " " + tr("duplicates_estimate_assumption")
+        return tr("duplicates_estimating") if self._estimator is not None else tr("duplicates_estimate_unavailable")
+
+    def _group_title(self, position: int, group: DuplicateGroup) -> str:
+        title = tr("duplicates_group", count=format_count(len(group.files)), size=format_size(group.size, self.unit),
+                   extra=format_size(group.extra, self.unit))
+        if self._savings is not None and position < len(self._savings.groups):
+            title += " " + self._savings_text(self._savings.groups[position])
+        return title
 
     def _status_text(self) -> str:
         if self._worker is not None:
