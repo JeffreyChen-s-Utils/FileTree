@@ -13,6 +13,7 @@ import contextlib
 import dataclasses
 import html
 import os
+import time
 from collections.abc import Callable, Mapping, Sequence
 
 from PySide6.QtCore import (
@@ -39,6 +40,7 @@ from PySide6.QtWidgets import (
 )
 
 from je_file_tree.core.analysis import (
+    AGES,
     CATEGORIES,
     AgeStat,
     CategoryStat,
@@ -61,6 +63,7 @@ from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.capacity_panel import CapacityPanel
+from je_file_tree.gui.age_colours import AGE_COLOURS, UNKNOWN_AGE_COLOUR
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
@@ -90,7 +93,7 @@ from je_file_tree.gui.tree_model import (
     SIZE,
     FolderTreeModel,
 )
-from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
+from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
 from je_file_tree.gui.tree_diagram import ORIENTATIONS
 from je_file_tree.gui.tree_columns import TreeColumns
 
@@ -199,6 +202,7 @@ class ResultsView(QWidget):
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
+        self.charts.set_age_reference(time.time())
         self.capacity.set_ledger(None)
         self.search.set_root(None)
         self.duplicates.set_root(None)
@@ -249,6 +253,7 @@ class ResultsView(QWidget):
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
         self._outcome = outcome
+        self.charts.set_age_reference(outcome.now)
         root = outcome.result.root
         self.scan_bar.hide()
         if self.tree_model.root is root:
@@ -320,6 +325,7 @@ class ResultsView(QWidget):
                                             categories=category_stats(summary.extensions), ages=summary.ages,
                                             now=summary.now)
         self._categories = self._outcome.categories
+        self.charts.set_age_reference(summary.now)
         if self._scope is None:
             self._show_lists(largest, summary.extensions, summary.ages)
         else:
@@ -368,7 +374,7 @@ class ResultsView(QWidget):
         treemap = self.charts.treemap
         with contextlib.suppress(ValueError):  # a hand-edited setting that is not a number: keep the default
             treemap.set_levels(int(str(values.get("treemap_levels", treemap.levels))))
-        treemap.set_colour_mode(str(values.get("treemap_colours", treemap.colour_mode)))
+        self.charts.set_colour_mode(str(values.get("treemap_colours", treemap.colour_mode)))
         self.charts.tree.set_orientation(str(values.get("tree_orientation", self.charts.tree.orientation)))
         _select_data(self._levels_combo, treemap.levels)
         _select_data(self._colours_combo, treemap.colour_mode)
@@ -660,9 +666,10 @@ class ResultsView(QWidget):
     def _choose_colours(self) -> None:
         mode = self._colours_combo.currentData()
         if mode is not None and mode != self.charts.treemap.colour_mode:
-            self.charts.treemap.set_colour_mode(str(mode))
+            self.charts.set_colour_mode(str(mode))
             self.chart_setting_changed.emit("treemap_colours", str(mode))
             self._update_chart_controls()
+            self._update_texts()
 
     def _choose_tree_orientation(self) -> None:
         orientation = self._tree_orientation_combo.currentData()
@@ -671,13 +678,16 @@ class ResultsView(QWidget):
             self.chart_setting_changed.emit("tree_orientation", str(orientation))
 
     def _update_chart_controls(self) -> None:
-        """Treemap options only with the treemap; the file-type legend only where the colours are file types."""
+        """Show shared colour choices for treemap/sunburst, and the matching legend."""
         treemap_on_screen = self.charts.mode == TREEMAP
-        self._treemap_options.setVisible(treemap_on_screen)
+        self._treemap_options.setVisible(self.charts.mode in (TREEMAP, SUNBURST))
+        self._levels_label.setVisible(treemap_on_screen)
+        self._levels_combo.setVisible(treemap_on_screen)
         self._tree_options.setVisible(self.charts.mode == TREE)
-        by_folder = self.charts.mode in (SUNBURST, TREE) or (
-            treemap_on_screen and self.charts.treemap.colour_mode == BY_FOLDER)
+        by_folder = self.charts.mode == TREE or (self.charts.mode in (TREEMAP, SUNBURST)
+                                                  and self.charts.treemap.colour_mode == BY_FOLDER)
         self._legend.setVisible(not by_folder)
+        self._legend.setText(self._legend_html())
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
@@ -882,6 +892,13 @@ class ResultsView(QWidget):
         self.summary.setText(self._summary_text())
 
     def _legend_html(self) -> str:
+        if self.charts.mode in (TREEMAP, SUNBURST) and self.charts.treemap.colour_mode == BY_AGE:
+            self._legend.setToolTip(tr("age_colour_tip"))
+            return " &nbsp; ".join(f'<span style="color:{colour}">&#9632;</span> '
+                                   + _unbreakable(label) for colour, label in
+                                   [(AGE_COLOURS[age], tr(f"age_{age}")) for age in AGES]
+                                   + [(UNKNOWN_AGE_COLOUR, tr("age_colour_unknown"))])
+        self._legend.setToolTip("")
         sizes = {stat.category: stat.size for stat in self._categories}
         parts = []
         for category in CATEGORIES:

@@ -8,6 +8,7 @@ cached pixmap; the mouse only adds the highlight.
 from __future__ import annotations
 
 import math
+import time
 
 from PySide6.QtCore import QEvent, QPoint, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import (
@@ -27,6 +28,8 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.core.sunburst import Segment, layout, segment_at
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.age_colours import age_colour, age_text_colour
+from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, BY_TYPE, COLOUR_MODES, colour_for
 
 RINGS = 4  # at most; fewer when the tree is shallower, so the rings always fill the space
 _GOLDEN = 0.618033988749895
@@ -55,8 +58,21 @@ class SunburstWidget(QWidget):
         self._selected: Node | None = None
         self._hues: dict[int, float] = {}
         self._rings = 1
+        self._colours = BY_FOLDER
+        self.age_reference = time.time()
 
     # --- the same interface as the treemap --------------------------------
+
+    @property
+    def colour_mode(self) -> str:
+        """File-type, top-folder or recorded modified-age colouring."""
+        return self._colours
+
+    def set_colour_mode(self, mode: str) -> None:
+        """Use a shared chart colouring mode and discard the cached drawing."""
+        if mode in COLOUR_MODES:
+            self._colours = mode
+            self.invalidate()
 
     @property
     def view_root(self) -> Node | None:
@@ -252,11 +268,15 @@ class SunburstWidget(QWidget):
         point = QPointF(centre.x() + radius * math.sin(angle), centre.y() - radius * math.cos(angle))
         width = min(segment.span * 2 * math.pi * radius, ring * 1.6)
         box = QRectF(point.x() - width / 2, point.y() - ring / 2, width, ring)
-        painter.setPen(QColor("#000000"))
+        painter.setPen(age_text_colour(self._colour(segment)) if self._colours == BY_AGE else QColor("#000000"))
         text = painter.fontMetrics().elidedText(segment.node.name, Qt.TextElideMode.ElideRight, int(width))
         painter.drawText(box, Qt.AlignmentFlag.AlignCenter, text)
 
     def _colour(self, segment: Segment) -> QColor:
+        if self._colours == BY_AGE:
+            return age_colour(segment.node, self.age_reference)
+        if self._colours == BY_TYPE:
+            return colour_for(segment.node)
         top = segment.node
         while top.parent is not None and top.parent is not self._view_root:
             top = top.parent

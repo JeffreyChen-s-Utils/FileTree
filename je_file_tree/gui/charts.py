@@ -95,6 +95,17 @@ class ChartStack(QStackedWidget):
             chart.unit = unit
             chart.invalidate()
 
+    def set_colour_mode(self, mode: str) -> None:
+        """Apply the shared colour choice to both treemap tiles and sunburst arcs."""
+        self.treemap.set_colour_mode(mode)
+        self.sunburst.set_colour_mode(mode)
+
+    def set_age_reference(self, now: float) -> None:
+        """Freeze both age palettes at the current scan/analysis time."""
+        for chart in (self.treemap, self.sunburst):
+            chart.age_reference = now
+            chart.invalidate()
+
     def _follow(self, node: Node | None) -> None:
         """One view moved to ``node``: move the others along, then tell the page once."""
         if self._moving:

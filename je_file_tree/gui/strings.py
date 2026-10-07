@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "treemap_colours_age": "By modified age",
+    "age_colour_unknown": "Date unknown",
+    "age_colour_tip": ("Time since modification. "
+                        "Folder colour uses its newest recorded modification; grey means no usable date. "
+                        "Grouped tiles stay grey."),
     "action_gentle": "Gentle scanning",
     "action_gentle_tip": "Lower CPU and I/O priority for new scans; may take longer",
     "scan_priority_warning": "Some scan priority settings could not be applied: {reason}",
@@ -592,6 +597,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "treemap_colours_age": "依修改檔齡",
+    "age_colour_unknown": "日期未知",
+    "age_colour_tip": "距離修改的時間。資料夾依最新的修改記錄著色，無可用日期時為灰色；合併的小項目保持灰色。",
     "action_gentle": "低優先順序掃描",
     "action_gentle_tip": "降低新掃描的 CPU 與 I/O 優先順序，可能花較久時間",
     "scan_priority_warning": "部分掃描優先順序設定無法套用：{reason}",
@@ -1120,6 +1128,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "treemap_colours_age": "按修改年龄",
+    "age_colour_unknown": "日期未知",
+    "age_colour_tip": "距离修改的时间。文件夹按最新修改记录着色，无可用日期时为灰色；合并的小项目保持灰色。",
     "action_gentle": "低优先级扫描",
     "action_gentle_tip": "降低新扫描的 CPU 与 I/O 优先级，可能花费较长时间",
     "scan_priority_warning": "部分扫描优先级设置无法应用：{reason}",

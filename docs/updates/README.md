@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-20 | 2026-10-07 | Modified-age colours for treemap and sunburst | #done #charts #age | [2026-10](2026-10.md) |
 | U-20261007-19 | 2026-10-07 | Gentle scan priorities and measured cost | #done #scanner #performance | [2026-10](2026-10.md) |
 | U-20261007-18 | 2026-10-07 | Pause and resume folder scans | #done #scanner #gui | [2026-10](2026-10.md) |
 | U-20261007-17 | 2026-10-07 | Remember tree columns and show share of drive | #done #gui #columns | [2026-10](2026-10.md) |

@@ -13,6 +13,8 @@ Use **Pause / Resume** in the scan bar to suspend taking new folders. Current fo
 
 **Options → Gentle scanning** is off by default and applies to new scans. Each disposable scan thread uses Windows background CPU/I/O mode or Linux nice 10 plus the lowest best-effort I/O priority. The UI thread is unaffected. Unsupported platforms, denied changes and partial priority application are reported; readable folders still scan. I/O effects depend on the device scheduler and a scan can take longer. The CLI and measurement tool accept `--gentle`; CLI JSON includes `warnings`.
 
+Treemap and Sunburst share **Colours → By modified age**, using the same age ranges as the Age list and a legend from light (recent) to dark (older). Colours use the scan/analysis time, not the current clock while hovering. Folder colour represents its newest recorded modification; unusable/future dates and grouped small tiles are grey. This shows modification age, not last access or whether files are unused.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

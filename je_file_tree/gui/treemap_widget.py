@@ -15,6 +15,7 @@ grey, hatched tile ("12 more"), instead of a mass of specks.
 from __future__ import annotations
 
 import html
+import time
 
 from PySide6.QtCore import QEvent, QPoint, QRectF, Qt, Signal
 from PySide6.QtGui import (
@@ -36,6 +37,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, 
 from je_file_tree.core.node import Node
 from je_file_tree.core.treemap import Rect, Tile, layout
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.age_colours import age_colour, age_text_colour
 
 # One colour per file-type group (every key of analysis.CATEGORIES), readable on
 # light and dark themes alike.
@@ -52,8 +54,8 @@ CATEGORY_COLOURS: dict[str, str] = {
 _FOLDER_COLOURS = ("#d3d7cf", "#babdb6", "#a4a8a0")
 LEVELS = (1, 2, 3, 4, 8)  # 8: every level worth drawing
 DEFAULT_LEVELS = 2
-BY_TYPE, BY_FOLDER = "type", "folder"
-COLOUR_MODES = (BY_TYPE, BY_FOLDER)
+BY_TYPE, BY_FOLDER, BY_AGE = "type", "folder", "age"
+COLOUR_MODES = (BY_TYPE, BY_FOLDER, BY_AGE)
 _GOLDEN = 0.618033988749895  # hue step that keeps neighbouring folders apart
 MIN_SIDE = 14  # px: a tile smaller than this is hard to see or point at, so it joins its folder's group
 _GROUP_COLOUR = "#c9ccc4"
@@ -89,6 +91,7 @@ class TreemapWidget(QWidget):
         self.unit = AUTO_UNIT
         self._levels = DEFAULT_LEVELS
         self._colours = BY_TYPE
+        self.age_reference = time.time()
         self._hues: dict[int, float] = {}
 
     @property
@@ -104,11 +107,11 @@ class TreemapWidget(QWidget):
 
     @property
     def colour_mode(self) -> str:
-        """``BY_TYPE`` (the file-type colours of the legend) or ``BY_FOLDER`` (one hue per top-level folder)."""
+        """File-type, top-folder or recorded modified-age colouring."""
         return self._colours
 
     def set_colour_mode(self, mode: str) -> None:
-        """Colour by file type or by folder (``COLOUR_MODES``; others are ignored)."""
+        """Use one of ``COLOUR_MODES``; ignore unknown saved preferences."""
         if mode in COLOUR_MODES:
             self._colours = mode
             self.invalidate()
@@ -238,7 +241,7 @@ class TreemapWidget(QWidget):
             return
         node = tile.node
         colour = self._colour(node, tile.depth)
-        if min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir:
+        if min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir and self._colours != BY_AGE:
             gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
             gradient.setColorAt(0.0, colour.lighter(135))
             gradient.setColorAt(1.0, colour.darker(115))
@@ -250,7 +253,8 @@ class TreemapWidget(QWidget):
         if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
             return
         size = format_size(node.size, self.unit)
-        painter.setPen(QColor("#000000") if node.is_dir else QColor("#ffffff"))
+        painter.setPen(age_text_colour(colour) if self._colours == BY_AGE else
+                       QColor("#000000") if node.is_dir else QColor("#ffffff"))
         if tile.header:
             strip = QRectF(rect.x() + 3, rect.y() + 2, rect.width() - 6, tile.header)
             self._draw_label(painter, strip, f"{node.name}  {size}", Qt.AlignmentFlag.AlignVCenter)
@@ -293,6 +297,8 @@ class TreemapWidget(QWidget):
         """The fill of a tile: by file type (folders grey by depth), or by the hue of its top-level folder."""
         if self._colours == BY_TYPE:
             return colour_for(node)
+        if self._colours == BY_AGE:
+            return age_colour(node, self.age_reference)
         top = node
         while top.parent is not None and top.parent is not self._view_root:
             top = top.parent

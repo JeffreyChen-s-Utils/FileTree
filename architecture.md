@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+Treemap and sunburst share type/folder/modified-age preferences through ChartStack. `age_colours`
+uses `analysis.AGES` and a scan/summary reference time without any extra tree walk. Unusable or future
+dates are grey, grouped treemap tiles retain their separate grey presentation, and age labels choose
+contrasting ink. Folder colours use the scanner's newest recorded modification. ResultsView shows the
+matching legend and exposes colour controls for both charts; this does not infer access or inactivity.
+
 `ScanOptions.gentle` lowers CPU and I/O priority only inside disposable crawler threads via
 `core.priority`: Windows background mode (restored at exit), Linux per-thread nice / ioprio_set.
 Errors and unsupported platforms are returned in `ScanResult.warnings`, separate from file coverage.
