@@ -107,7 +107,8 @@ def test_recent_actions_shows_unknown_outcomes_and_exports_redacted_metadata(qap
     dialog = RecentActions(journal)
     try:
         _wait(qapp, lambda: dialog.model.rowCount() == 2)
-        assert tr("journal_status_approved") == dialog.model.index(0, 4).data()
+        statuses = {dialog.model.index(row, 4).data() for row in range(dialog.model.rowCount())}
+        assert statuses == {tr("journal_status_approved"), tr("journal_status_moved")}
         assert any(tr("journal_hint") == label.text()
                    for label in dialog.findChildren(type(dialog.status)))
         output = tmp_path / "export.csv"

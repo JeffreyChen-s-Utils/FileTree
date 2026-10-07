@@ -189,7 +189,8 @@ def _decode(line: str) -> OperationRecord:
                 or any(not isinstance(part, str) or not part.isdecimal() for part in identity)):
             raise ValueError("invalid identity")
         identity = (int(identity[0]), int(identity[1]))
-    return OperationRecord(value["id"], value["batch"], timestamp.astimezone(timezone.utc).isoformat(),
+    return OperationRecord(value["id"], value["batch"],
+                           timestamp.astimezone(timezone.utc).isoformat(timespec="microseconds"),
                            value["source"], identity, value["reason"],
                            OperationOutcome(value["result"], value["detail"], destination))
 
@@ -225,10 +226,6 @@ def _append_atomic(path: Path, block: bytes) -> None:
 @contextmanager
 def _lock(path: Path) -> Iterator[None]:
     with path.open("a+b") as stream:
-        stream.seek(0, os.SEEK_END)
-        if stream.tell() == 0:
-            stream.write(b"\0")
-            stream.flush()
         deadline = time.monotonic() + _LOCK_SECONDS
         while True:
             try:
@@ -239,6 +236,12 @@ def _lock(path: Path) -> Iterator[None]:
                     raise
                 time.sleep(0.05)
         try:
+            # Lock the byte even beyond EOF before initializing it. Two first writers must
+            # not race a flush against another writer's already-held Windows byte lock.
+            stream.seek(0, os.SEEK_END)
+            if stream.tell() == 0:
+                stream.write(b"\0")
+                stream.flush()
             yield
         finally:
             _file_lock(stream, acquire=False)

@@ -87,6 +87,22 @@ def test_concurrent_writers_do_not_lose_approved_events(tmp_path) -> None:
     assert {row.id for row in OperationJournal(tmp_path).recent().records} == {row.id for row in records}
 
 
+def test_lock_file_initialization_is_inside_the_acquired_lock(tmp_path, monkeypatch) -> None:
+    original = module._file_lock
+    observed = []
+
+    def checked(stream, *, acquire):
+        if acquire:
+            observed.append(os.fstat(stream.fileno()).st_size)
+        else:
+            assert os.fstat(stream.fileno()).st_size == 1
+        original(stream, acquire=acquire)
+
+    monkeypatch.setattr(module, "_file_lock", checked)
+    OperationJournal(tmp_path).append([record(tmp_path)])
+    assert observed == [0], "the initial byte must not be written outside the lock"
+
+
 def test_retention_only_removes_owned_segments_and_preserves_recent_records(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(module, "_EVENT_BYTES", 1024)
     monkeypatch.setattr(module, "_SEGMENT_BYTES", 1024)
