@@ -231,5 +231,7 @@ def restore(plan: RestorePlan, *, cancel: threading.Event | None = None) -> Rest
                 raise ValueError("Restored metadata changed; payload rolled back to Trash")
             bin_empty._remove_entry(info, plan.mount, plan.receipt)
         return RestoreResult(True, original.path, plan.trashed, receipt_retained=False)
-    except (OSError, ValueError, bin_empty.BinSurveyCancelledError) as exc:
+    except bin_empty.BinSurveyCancelledError:
+        return RestoreResult(False, original.path, plan.trashed, "Undo canceled before native restoration")
+    except (OSError, ValueError) as exc:
         return RestoreResult(restored, original.path, plan.trashed, str(exc))

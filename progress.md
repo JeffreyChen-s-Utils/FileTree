@@ -11,7 +11,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#52** (P3) Undo GUI and Windows Shell restoration: capture `core.trash_restore.TrashOrigin` before successful Trash and `RestorePlan` from its actual freedesktop destination; offer *Undo* in the status bar for a few seconds, join an owned restoration worker and rescan source parents. Add Windows Recycle Bin Shell item/`undelete` restoration with exact destination/identity checks and visible collision/errors. Preserve truthful partial/receipt outcomes, the existing operation audit, protected-source approval, stale/expired rejection and #22 redirect collisions; native Linux restore CI proof and GUI integration remain to verify.
+- **#52** (P3) Undo GUI and Windows Shell restoration: capture `core.trash_restore.TrashOrigin` before successful Trash and `RestorePlan` from its actual freedesktop destination; offer *Undo* in the status bar for a few seconds, join an owned restoration worker and rescan source parents. Add Windows Recycle Bin Shell item/`undelete` restoration with exact destination/identity checks and visible collision/errors. Preserve truthful partial/receipt outcomes, the existing operation audit, protected-source approval, stale/expired rejection and #22 redirect collisions; native Windows Shell and GUI lifecycle remain to verify.
 
 ### Freeing space
 

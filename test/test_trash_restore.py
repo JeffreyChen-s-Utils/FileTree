@@ -63,6 +63,22 @@ def test_native_probe_writes_atomic_evidence_and_restores_process_environment(tm
     assert os.environ["XDG_DATA_HOME"] == "original-setting"
 
 
+def test_empty_cancellation_exception_has_visible_error_and_preserves_receipt(tmp_path, monkeypatch):
+    source = tmp_path.resolve() / "original"
+    source.write_bytes(b"preserved")
+    origin = trash_restore.capture_origin(str(source), stat_snapshot(str(source)))
+    receipt = bin_empty.BinEntry(("payload.trashinfo",), origin.snapshot, False)
+    plan = trash_restore.RestorePlan(origin, str(tmp_path / "payload"), str(tmp_path), 0, 0, (), (), receipt, ())
+
+    def canceled(_root):
+        raise bin_empty.BinSurveyCancelledError
+
+    monkeypatch.setattr(bin_empty, "_volume", canceled)
+    result = trash_restore.restore(plan)
+    assert not result.restored and result.receipt_retained and "canceled" in result.error
+    assert source.read_bytes() == b"preserved" and not (tmp_path / "payload").exists()
+
+
 @pytest.fixture
 def owned_bin(tmp_path, monkeypatch):
     if not sys.platform.startswith("linux"):

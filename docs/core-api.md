@@ -297,3 +297,6 @@ cleanup failure is restored=True with an error and retained metadata. Cancellati
 rename; native rename/rollback/receipt cleanup is joined rather than interrupted. Concurrency remains
 observational. Windows Shell `undelete` and the GUI's expiring Undo are separate pending integration.
 Specification: [freedesktop Trash](https://specifications.freedesktop.org/trash/1.0/).
+
+Cancellation before native restoration returns restored=False, receipt_retained=True and a nonempty
+error detail, including exceptions without a message.

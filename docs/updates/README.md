@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-11 | 2026-10-08 | 取消復原明確回報與 Linux 原生證據 | #52 #CI #Safety #Fix | [2026-10-b](2026-10-b.md) |
 | U-20261008-10 | 2026-10-08 | freedesktop 復原核心、收據邊界與原生 Linux 驗證工作 | #52 #Safety #Core #CI | [2026-10-b](2026-10-b.md) |
 | U-20261008-09 | 2026-10-08 | 跨磁碟複製介面、回收前驗證與選用原位置連結 | #22 #done #GUI #Safety #Copy | [2026-10-b](2026-10-b.md) |
 | U-20261008-08 | 2026-10-08 | Verified exclusive folder-copy core | #22 #copy #files #safety | [2026-10-b](2026-10-b.md) |
