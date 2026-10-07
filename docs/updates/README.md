@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-60 | 2026-10-07 | Exercise denied folders through both scan strategies | #fix #75 #tests | [2026-10](2026-10.md) |
 | U-20261007-59 | 2026-10-07 | Guard Linux scans against live mount changes | #snapshot #75 #safety #core | [2026-10](2026-10.md) |
 | U-20261007-58 | 2026-10-07 | Isolate installation-inventory platform tests | #fix #60 #tests | [2026-10](2026-10.md) |
 | U-20261007-57 | 2026-10-07 | Installed programs and Steam/Epic library names | #done #60 #windows #gui | [2026-10](2026-10.md) |

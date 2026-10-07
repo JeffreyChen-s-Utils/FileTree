@@ -106,14 +106,16 @@ def test_a_matching_folder_with_an_excluded_branch_is_not_suggested(tmp_path: Pa
 
 def test_a_matching_folder_with_an_inaccessible_branch_is_not_suggested(tmp_path: Path, monkeypatch) -> None:
     make_tree(tmp_path, {"node_modules": {"locked": {"private": b"x"}}})
-    original = os.scandir
+    from je_file_tree.core.mounts import MountSurvey
 
-    def denied(path):
+    original = MountSurvey.listing
+
+    def denied(self, path, snapshot):
         if os.fspath(path).endswith("locked"):
             raise PermissionError(13, "denied")
-        return original(path)
+        return original(self, path, snapshot)
 
-    monkeypatch.setattr(os, "scandir", denied)
+    monkeypatch.setattr(MountSurvey, "listing", denied)
     root = scan(tmp_path).root
     assert coverage_of(root).inaccessible_folders == 1
     assert find_cleanup(root) == []

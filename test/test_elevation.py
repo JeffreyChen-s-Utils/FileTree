@@ -117,14 +117,14 @@ def test_denied_folders_bring_the_offer_to_the_problems_tab(window: MainWindow, 
                                                             sample_tree: Path,
                                                             monkeypatch: pytest.MonkeyPatch) -> None:
     locked = str(sample_tree / "photos")
-    real_scandir = os.scandir
+    real_listing = scanner.MountSurvey.listing
 
-    def scandir(path: str):
+    def listing(self, path: str, snapshot: bytes):
         if path == locked:
             raise PermissionError(13, "Access is denied")
-        return real_scandir(path)
+        return real_listing(self, path, snapshot)
 
-    monkeypatch.setattr(scanner.os, "scandir", scandir)
+    monkeypatch.setattr(scanner.MountSurvey, "listing", listing)
     window.start_scan(str(sample_tree))
     deadline = time.monotonic() + 10
     while window.results.outcome is None:
