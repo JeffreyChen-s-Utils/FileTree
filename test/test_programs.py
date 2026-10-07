@@ -129,7 +129,7 @@ def test_registration_views_deduplicate_without_writes_and_preserve_unavailable_
     calls = []
     fake = SimpleNamespace(HKEY_LOCAL_MACHINE=1, HKEY_CURRENT_USER=2, KEY_WOW64_64KEY=64, KEY_WOW64_32KEY=32)
     monkeypatch.setattr(programs, "winreg", fake, raising=False)
-    monkeypatch.setattr(programs.sys, "platform", "win32")
+    monkeypatch.setattr(programs, "sys", SimpleNamespace(platform="win32"))
 
     def view(hive, flags, _cancel):
         calls.append((hive, flags))
@@ -154,7 +154,7 @@ def test_external_epic_metadata_is_read_for_other_drive_scan_and_deduplicates_sc
     (directory / "owned.item").write_text(json.dumps({"DisplayName": "Epic game", "InstallLocation": str(installed),
                                                      "InstallSize": True}), encoding="utf-8")
     monkeypatch.setenv("PROGRAMDATA", str(data))
-    monkeypatch.setattr(programs.sys, "platform", "win32")
+    monkeypatch.setattr(programs, "sys", SimpleNamespace(platform="win32"))
     monkeypatch.setattr(programs, "registered_programs", lambda **_kwargs: Programs([], 0, 0))
     result = installed_programs(scan(installed).root)
     assert result.count == 1 and result.rows[0].node.size == 4096 and result.rows[0].reported is None

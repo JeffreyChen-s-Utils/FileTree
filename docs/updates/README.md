@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-58 | 2026-10-07 | Isolate installation-inventory platform tests | #fix #60 #tests | [2026-10](2026-10.md) |
 | U-20261007-57 | 2026-10-07 | Installed programs and Steam/Epic library names | #done #60 #windows #gui | [2026-10](2026-10.md) |
 | U-20261007-56 | 2026-10-07 | Retained scan history and size-over-time comparison | #done #37 #history #gui | [2026-10](2026-10.md) |
 | U-20261007-55 | 2026-10-07 | Native ext4 capacity and recovery evidence | #snapshot #75 #76 #tests | [2026-10](2026-10.md) |

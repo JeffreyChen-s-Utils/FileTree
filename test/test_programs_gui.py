@@ -2,6 +2,7 @@
 
 import sys
 import threading
+from types import SimpleNamespace
 
 from PySide6.QtCore import Qt
 
@@ -24,7 +25,7 @@ def test_readonly_installation_table_fixed_os_page_and_exact_tree_activation(win
     assert dialog.model.index(0, 0).data() == "中文 Game"
     assert not dialog.model.flags(dialog.model.index(0, 0)) & Qt.ItemFlag.ItemIsEditable
     opened, selected = [], []
-    monkeypatch.setattr(programs.sys, "platform", "win32")
+    monkeypatch.setattr(programs, "sys", SimpleNamespace(platform="win32"))
     monkeypatch.setattr(programs.QDesktopServices, "openUrl", lambda url: opened.append(url.toString()) and True)
     dialog.open_uninstall_page()
     assert opened == ["ms-settings:appsfeatures"]
@@ -57,5 +58,5 @@ def test_windows_only_action_requires_completed_results(window, sample_tree):
     assert not window._actions["programs"].isEnabled()
     window.results.show_outcome(analyse(scan(sample_tree)))
     window._update_actions()
-    assert window._actions["programs"].isEnabled()
+    assert window._actions["programs"].isEnabled() == (sys.platform == "win32")
     assert core.installed_programs(window.results.outcome.result.root) is not None
