@@ -207,6 +207,9 @@ automatic clean-up is available from the console.
 
 ## Development
 
+For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
+duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.
+
 ```bash
 pip install -r dev_requirements.txt
 python -m pytest

@@ -49,6 +49,9 @@ traversal; same-device POSIX bind mounts still need boundary detection.
 
 ## 3. Entry points and public interfaces
 
+The supported core library imports, result fields, ownership and error/cancellation contracts are
+documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.
+
 - `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`
   and `python -m je_file_tree [folder]`: all three call `app.run()`, which opens the window and scans `folder`
   right away if given (`test/test_start_script.py`).

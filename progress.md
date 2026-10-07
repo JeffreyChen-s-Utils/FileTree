@@ -74,7 +74,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#41** (P3) Print and PDF of the view on screen (`QPrinter`).
 - **#70** (P2) Export any list, copy rows: Search results, Duplicates, Changes, File types and Age to CSV like the existing exports (`je_file_tree/core/export.py`, written on the `ExportWorker`), and Ctrl+C in any list copies the selected rows as tab-separated text for a spreadsheet.
 - **#71** (P2) Save a chart as a picture: PNG of the chart on screen, and SVG for the bars and the sunburst (`QSvgGenerator`), from the chart's context menu and File → Export.
-- **#72** (P2) Use as a library: `je_file_tree` is on PyPI, so document `je_file_tree.core` as a Python API (scan, analysis, search, duplicates, compare, allocation) with what counts as public and stable, in a short page linked from the README; `je_file_tree.core` stays free of Qt (`test/test_layers.py`).
 
 ### Everyday use
 

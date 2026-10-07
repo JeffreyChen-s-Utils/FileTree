@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-08 | 2026-10-07 | Document the supported headless core library API | #done #api #docs | [2026-10](2026-10.md) |
 | U-20261007-07 | 2026-10-07 | Duplicate logical, allocated and recoverable estimates | #snapshot #duplicates #allocation #gui | [2026-10](2026-10.md) |
 | U-20261007-06 | 2026-10-07 | Estimated capacity ledger and mount boundaries | #snapshot #capacity #scanning #gui #cli | [2026-10](2026-10.md) |
 | U-20261007-05 | 2026-10-07 | Headless console scan exports and comparisons | #done #cli #core #export | [2026-10](2026-10.md) |

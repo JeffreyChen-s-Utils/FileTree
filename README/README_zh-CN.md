@@ -127,6 +127,8 @@ python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
 
 ## 开发
 
+Python 集成请参阅[核心 API 指南](../docs/core-api.md)：公开导入路径、扫描／搜索／重复文件／比较示例、取消、原子导出及分配空间限制。核心不会导入 Qt。
+
 ```bash
 pip install -r dev_requirements.txt
 python -m pytest
