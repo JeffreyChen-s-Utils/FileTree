@@ -11,7 +11,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#52** (P3) Verify native Linux private-fixture GUI Undo on CI, including normal pre-Trash origin capture, recognized destination preparation, native restoration, receipt/container preservation and affected-parent rescan; Windows native GUI and portable lifecycle checks are recorded in `docs/updates/`.
 
 ### Freeing space
 

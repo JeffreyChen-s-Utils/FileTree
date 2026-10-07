@@ -528,7 +528,8 @@ path dialogs and close discard authority. MainWindow serializes inverse work wit
 postpones automatic source-parent rescans while Undo is offered and joins native work before close.
 Late partial/receipt/audit results remain visible in plain text; a replaced tree receives no rescan.
 An occupied copy redirect is refused without removing it. Native Windows owned-fixture GUI proof
-confirmed button/action/hash/empty-folder/audit/rescan behavior; Linux native GUI fixtures run in CI.
+confirmed button/action/hash/empty-folder/audit/rescan behavior; Native Linux CI verified normal GUI capture, exact private-bin restoration, receipt cleanup/container preservation
+and source-parent rescan on fresh fixtures.
 
 ## 3. Entry points and public interfaces
 

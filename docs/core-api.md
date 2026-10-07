@@ -344,3 +344,7 @@ inverse approval writes prevent restoration; failed outcome writes preserve obse
 cancel remaining entries. An approved-only inverse remains unknown after interruption. Recorded
 history is metadata, never authority to restore an arbitrary path. Occupied original-path redirects
 are refused without unlinking them; successful copies remain intact.
+
+Native Linux GUI CI verified the normal capture/preparation/native-restore/receipt cleanup/container preservation/
+parent-rescan path on newly owned private fixtures. Windows GUI native proof and both nine-job CI runs
+passed; no existing user bin was emptied.
