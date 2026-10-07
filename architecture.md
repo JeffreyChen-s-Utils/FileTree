@@ -113,6 +113,11 @@ it). `FolderTreeModel.remove` detaches each node and subtracts its totals from e
 largest files, per-type and per-age totals and treemap are updated once before the rescans. Entries the system
 refuses stay and are named in a warning.
 
+For platform failures, `TrashWorker` calls the read-only `core.lock_holders` diagnostics: Windows
+Restart Manager registers up to 256 scanned files; Linux compares `/proc/*/fd` identities. Warnings
+name observed holders and disclose incomplete visibility. Cancellation stops additional queries;
+no process is shut down, and macOS reports that diagnosis is unavailable.
+
 `Node.snapshot` holds compact packed device/file identity, kind, size, nanosecond timestamps, attributes
 and link count (`core/snapshot.py`). Windows listings lack identity, so the scanner makes an additional
 no-follow stat (10k calls measured at 0.67 s). After confirmation, `TrashWorker` runs `core.operations`:

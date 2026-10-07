@@ -119,6 +119,11 @@ reasons; moved, skipped and failed counts are separate. *Stop* cancels remaining
 parents are rescanned. The status reports bytes moved: free space increases only after emptying the
 Recycle Bin. Recording file identities costs additional scan time and memory, especially on Windows.
 
+When a move fails, background diagnostics name observed programs and process IDs holding the files
+open (Windows Restart Manager or Linux `/proc`). No program is closed automatically. Folder diagnostics
+cover at most 256 scanned files; inaccessible processes, directory handles and other failure causes
+may remain unknown, and an observed holder is not proof of why the move failed.
+
 Clean-up group selection and *Select all* open one review queue before the existing confirmations. Every
 path has its rule, reason, date, logical/allocated size, protection and consequence; the selected row's
 full explanation appears below the table. Uncheck entries to keep them or open their containing folder.

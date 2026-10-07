@@ -9,6 +9,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "trash_holder": "{name} (PID {pid})",
+    "trash_holders": "{path}: observed open in {programs}. Close the relevant program yourself and retry.",
+    "trash_holders_limited": "{path}: process visibility is limited; other holders or causes may be unknown.",
     "duplicates_savings": ("Unique allocated estimate {allocated}; recoverable file data after emptying Trash "
                            "{recoverable}."),
     "duplicates_estimating": ('Estimating unique allocation and recover'
@@ -497,6 +500,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "trash_holder": "{name}（PID {pid}）",
+    "trash_holders": "{path}：觀察到 {programs} 開啟此檔案。請自行關閉相關程式後重試。",
+    "trash_holders_limited": "{path}：無法完整查詢行程；其他占用程式或失敗原因可能未知。",
     "duplicates_savings": ("不重複配置估計 {allocated}；清空資源回收筒後可回收的檔案資料 "
                            "{recoverable}。"),
     "duplicates_estimating": ('正在估計不重複配置空間與可回收的檔案資料…'),
@@ -940,6 +946,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "trash_holder": "{name}（PID {pid}）",
+    "trash_holders": "{path}：观察到 {programs} 打开此文件。请自行关闭相关程序后重试。",
+    "trash_holders_limited": "{path}：无法完整查询进程；其他占用程序或失败原因可能未知。",
     "duplicates_savings": ("不重复分配估计 {allocated}；清空回收站后可回收的文件数据 "
                            "{recoverable}。"),
     "duplicates_estimating": ('正在估计不重复分配空间与可回收的文件数据…'),

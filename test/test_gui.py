@@ -473,6 +473,31 @@ def test_trash_wrapper_reports_qt_tuple_failures(qt_result, expected, monkeypatc
     assert file_actions.move_to_trash("unused") is expected
 
 
+def test_failed_trash_reports_holders_from_worker(window, qapp, sample_tree, monkeypatch) -> None:
+    from je_file_tree.core.lock_holders import Holder, LockReport
+    from je_file_tree.gui import trash_worker
+
+    _scanned(window, qapp, sample_tree)
+    root = window.results.tree_model.root
+    node = root.children[0]
+    warnings, threads = [], []
+
+    def diagnose(entry, *, cancel):
+        threads.append(threading.get_ident())
+        return LockReport([Holder(123, "Editor")], incomplete=True)
+
+    monkeypatch.setattr(trash_worker, "find_holders", diagnose)
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: False)
+    monkeypatch.setattr(window, "rescan_folder", lambda node: None)
+    window.move_to_trash([node])
+    _wait(qapp, lambda: window._trash_worker is None)
+    assert "Editor (PID 123)" in warnings[0] and "visibility is limited" in warnings[0]
+    assert threads and threads[0] != threading.get_ident()
+    assert node in root.children and Path(node.path).is_file()
+
+
 def test_file_replaced_during_confirmation_is_skipped_and_parent_rescanned(
         window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     file = tmp_path / "chosen"

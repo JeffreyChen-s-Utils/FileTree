@@ -11,7 +11,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#51** (P2) Why a move failed: when the Recycle Bin refuses an entry, find which program holds it open (Windows Restart Manager `RmStartSession` / `RmRegisterResources` / `RmGetList`; Linux `/proc/*/fd`) and name it in the warning (`trash_failed`), so the user knows what to close.
 - **#52** (P3) Undo a move: after a move to the Recycle Bin, an *Undo* in the status bar for a few seconds puts the entries back (Windows: the Recycle Bin shell folder's items and their `undelete` verb; freedesktop: move back from `Trash/files` to the path in the `.trashinfo`) and rescans their folders (`MainWindow.rescan_folder`).
 - **#82** (P2) Operation journal: each user-approved move records time, original path, item identity, stated reason, result and Recycle Bin destination when the platform exposes it in an append-only file under the application data directory, with retention and a *Recent actions* view. Record failures and partial batches too; never store file contents. It is an audit trail, not a claim that an item can be restored (#52 covers actual Undo). Use atomic writes, redact home-directory prefixes in exported reports, and test crash/restart plus a partially successful batch.
 

@@ -7,6 +7,7 @@ import threading
 from PySide6.QtCore import QObject, QThread, Signal
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.lock_holders import find_holders
 from je_file_tree.core.operations import move_batch
 from je_file_tree.core.protected import Protection
 from je_file_tree.gui import file_actions
@@ -34,4 +35,8 @@ class TrashWorker(QThread):
         """Thread body; the GUI changes its model only after receiving the result."""
         result = move_batch(self._root, self._nodes, file_actions.move_to_trash,
                             places=self._places, approved=self._approvals, cancel=self._cancel)
+        for node in result.failed:
+            if self._cancel.is_set():
+                break
+            result.holders[node] = find_holders(node, cancel=self._cancel)
         self.done.emit(result)

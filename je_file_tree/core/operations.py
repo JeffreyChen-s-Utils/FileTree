@@ -8,6 +8,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.lock_holders import LockReport
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.protected import Protection, protection_of
 from je_file_tree.core.snapshot import Snapshot, stat_snapshot, unpack_snapshot
@@ -21,6 +22,7 @@ class MoveResult:
     skipped: list[tuple[Node, str]] = field(default_factory=list)
     failed: list[Node] = field(default_factory=list)
     parents: list[Node] = field(default_factory=list)
+    holders: dict[Node, LockReport] = field(default_factory=dict)
 
 
 def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),

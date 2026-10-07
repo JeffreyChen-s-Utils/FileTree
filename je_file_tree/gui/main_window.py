@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
         if failed:
             message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
                        tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
-            QMessageBox.warning(self, tr("trash_confirm_title"), message)
+            QMessageBox.warning(self, tr("trash_confirm_title"), message + self._holder_lines(result))
         if result.skipped:
             lines = [f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in result.skipped]
             QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names="\n".join(lines)))
@@ -325,6 +325,17 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
         QTimer.singleShot(0, self._rescan_after_trash)
+
+    def _holder_lines(self, result: MoveResult) -> str:
+        lines = []
+        for node, report in result.holders.items():
+            if report.holders:
+                names = ", ".join(tr("trash_holder", name=holder.name, pid=str(holder.pid))
+                                  for holder in report.holders[:_LISTED_NAMES])
+                lines.append(tr("trash_holders", path=node.path, programs=names))
+            if report.incomplete or report.error:
+                lines.append(tr("trash_holders_limited", path=node.path))
+        return "\n\n" + "\n".join(lines) if lines else ""
 
     def _rescan_after_trash(self) -> None:
         if self._worker is not None or not self._trash_rescans:
