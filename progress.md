@@ -32,7 +32,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Windows space explained
 
 - **#59** (P2) Virtual disks: find `.vhdx`, `.vhd`, `.vmdk`, `.vdi` and `.qcow2` files, WSL distributions' `ext4.vhdx` and Docker Desktop's disk image, show how much each takes against how much its contents use, and compact them from FileTree: WSL through `wsl --shutdown` then `wsl --manage <distro> --set-sparse true` (or `diskpart compact vdisk` on older WSL), Hyper-V disks through `Optimize-VHD`, others through `diskpart`, each only after checking that the machine or distribution is stopped and after a question that says so; administrator rights through the existing restart (`je_file_tree/gui/elevation.py`). Fixed programs and a generated `diskpart` script file, no shell.
-- **#60** (P3) Installed programs: a view of installed programs with their size (the Windows uninstall registry's `EstimatedSize`, checked against their install folder in the scan) and a button to the system's uninstall page; Steam and Epic libraries named by their game manifests instead of folder ids.
 
 ### Scanning
 

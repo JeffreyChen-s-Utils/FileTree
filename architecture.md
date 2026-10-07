@@ -21,6 +21,18 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.programs` reads only fixed HKLM/HKCU uninstall keys in both registry views, including optional
+EstimatedSize KiB and InstallLocation, never uninstall command fields. It deduplicates mirrored records,
+limits enumeration to 20,000 keys per view and reports inaccessible/omitted entries. Recognized scanned
+Steam appmanifest ACF uses a bounded iterative quoted-KeyValues reader; Epic item JSON comes from the
+scan and the fixed Windows ProgramData metadata folder. Manifest content reads are bounded to 1 MiB,
+guard scan/path/descriptor snapshots through duplicate hashing's metadata checks and refuse known
+cloud/link states. No installation folder is rescanned. Iterative recorded-folder matching plus coverage
+delivers up to 1,000 rows/full counts to gui.programs; reported, logical and named allocation stay
+separate and overlapping installations are never summed. The owned dialog worker supports Stop/close,
+Ctrl+C and exact recorded-node activation. Its only uninstall action opens a fixed ms-settings URI;
+the menu is visible on Windows with completed results. No uninstall subprocess or registry writes.
+
 `core.history.ScanHistory` writes stable completed full trees on the existing ScanWorker, before
 publishing its outcome. Compatible file-tree/1 JSON has a bounded first-line owned history header and
 one serialization fragment per line; history's reader uses an iterative stack for deep trees. Root

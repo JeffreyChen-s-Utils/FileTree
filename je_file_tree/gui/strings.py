@@ -9,6 +9,32 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_programs": "Installed programs…",
+    "action_programs_tip": "Compare installer/game metadata with installation folders in this scan",
+    "program_name": "Program / game",
+    "program_source": "Metadata source",
+    "program_version": "Version / build",
+    "program_publisher": "Publisher",
+    "program_reported": "Reported estimate",
+    "program_scanned": "Scanned logical bytes",
+    "program_allocated": "Scanned named allocation",
+    "program_coverage": "Recorded folder coverage",
+    "program_location": "Installation folder",
+    "program_registry": "Windows registry",
+    "program_steam": "Steam manifest",
+    "program_epic": "Epic manifest",
+    "program_outside": "No exact scanned folder",
+    "program_hint": "Windows uninstall registrations and recognized Steam/Epic manifests, matched only to exact "
+                    "folders in this scan. Epic's fixed ProgramData manifest folder is also read. Reported sizes "
+                    "are estimates; missing metadata stays unknown. Shared/nested folders can overlap: do not sum "
+                    "rows or treat them as recoverable space. Portable/packaged apps may be absent. Double-click "
+                    "selects a recorded folder; Ctrl+C copies rows. Uninstall only through Windows or the launcher.",
+    "program_reading": "Reading installation metadata…",
+    "program_summary": "Showing {shown} of {count} installations; "
+                       "{issues} unavailable/malformed/omitted metadata items",
+    "program_failed": "Cannot read installations: {reason}",
+    "program_uninstall_page": "Open Windows installed-app settings",
+    "program_open_failed": "Windows could not open the installed-app settings page",
     "action_history": "Scan history…",
     "action_history_tip": "Review this root's size over time and compare with an earlier scan",
     "action_history_settings": "Scan history settings…",
@@ -893,6 +919,30 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_programs": "已安裝程式…",
+    "action_programs_tip": "核對安裝程式／遊戲中繼資料與此掃描中的安裝資料夾",
+    "program_name": "程式／遊戲",
+    "program_source": "中繼資料來源",
+    "program_version": "版本／組建",
+    "program_publisher": "發行者",
+    "program_reported": "回報的估計大小",
+    "program_scanned": "掃描的邏輯大小",
+    "program_allocated": "掃描依名稱計算的配置量",
+    "program_coverage": "記錄的資料夾涵蓋範圍",
+    "program_location": "安裝資料夾",
+    "program_registry": "Windows 登錄資料庫",
+    "program_steam": "Steam 清單",
+    "program_epic": "Epic 清單",
+    "program_outside": "沒有完全相符的掃描資料夾",
+    "program_hint": "Windows 解除安裝登錄項目與辨識到的 Steam／Epic 清單，僅核對此掃描中完全相符的資料夾，"
+                    "也會讀取 Epic 在 ProgramData 的固定清單目錄。回報大小是估計，缺少資料保持未知。共用或巢狀"
+                    "資料夾可能重疊，請勿加總列或視為可回收空間。可攜式／封裝應用程式可能未列出。按兩下選取"
+                    "記錄的資料夾，Ctrl+C 複製列。請透過 Windows 或遊戲啟動器解除安裝。",
+    "program_reading": "正在讀取安裝中繼資料…",
+    "program_summary": "顯示 {shown}／{count} 個安裝項目；{issues} 個無法讀取、格式錯誤或略過的中繼資料項目",
+    "program_failed": "無法讀取安裝項目：{reason}",
+    "program_uninstall_page": "開啟 Windows 已安裝應用程式設定",
+    "program_open_failed": "Windows 無法開啟已安裝應用程式設定頁面",
     "action_history": "掃描歷史…",
     "action_history_tip": "查看此根目錄大小隨時間的變化，並與先前掃描比較",
     "action_history_settings": "掃描歷史設定…",
@@ -1692,6 +1742,30 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_programs": "已安装程序…",
+    "action_programs_tip": "核对安装程序／游戏元数据与此扫描中的安装文件夹",
+    "program_name": "程序／游戏",
+    "program_source": "元数据来源",
+    "program_version": "版本／构建",
+    "program_publisher": "发布者",
+    "program_reported": "报告的估计大小",
+    "program_scanned": "扫描的逻辑大小",
+    "program_allocated": "扫描按名称计算的分配量",
+    "program_coverage": "记录的文件夹覆盖范围",
+    "program_location": "安装文件夹",
+    "program_registry": "Windows 注册表",
+    "program_steam": "Steam 清单",
+    "program_epic": "Epic 清单",
+    "program_outside": "没有完全匹配的扫描文件夹",
+    "program_hint": "Windows 卸载注册项与识别到的 Steam／Epic 清单，仅核对此扫描中完全匹配的文件夹，"
+                    "也会读取 Epic 在 ProgramData 的固定清单目录。报告大小是估计，缺少数据保持未知。共享或嵌套"
+                    "文件夹可能重叠，请勿合计行或视为可回收空间。便携式／打包应用可能未列出。双击选中"
+                    "记录的文件夹，Ctrl+C 复制行。请通过 Windows 或游戏启动器卸载。",
+    "program_reading": "正在读取安装元数据…",
+    "program_summary": "显示 {shown}／{count} 个安装条目；{issues} 个无法读取、格式错误或跳过的元数据条目",
+    "program_failed": "无法读取安装条目：{reason}",
+    "program_uninstall_page": "打开 Windows 已安装应用设置",
+    "program_open_failed": "Windows 无法打开已安装应用设置页面",
     "action_history": "扫描历史…",
     "action_history_tip": "查看此根目录大小随时间的变化，并与先前扫描比较",
     "action_history_settings": "扫描历史设置…",

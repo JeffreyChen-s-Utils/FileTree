@@ -282,6 +282,19 @@ folder removal.
 
 ### Capacity details
 
+On Windows, **File → Installed programs…** lists up to 1,000 Windows uninstall registrations and
+recognized Steam/Epic game names, with complete discovered counts and visible metadata failures.
+HKLM/HKCU 32/64-bit views are read without modifying the registry. `EstimatedSize` is a reported KiB
+estimate; logical/allocated folder totals come only from exact nonlinked folders in the current scan.
+Missing locations and unreadable/omitted branches stay unknown or incomplete. Steam manifests are read
+from scanned `steamapps`; Epic's fixed `%PROGRAMDATA%/Epic/EpicGamesLauncher/Data/Manifests` location is
+also read, so names can match games scanned on another drive. Manifest reads are limited to 1 MiB,
+check recorded/open-file snapshots and skip known cloud/link states; malformed/changed records are
+reported. Shared/nested installation folders may overlap, so do not sum rows or infer uninstall savings.
+Some packaged/portable apps are absent. Double-click selects a matched tree folder; Ctrl+C copies rows.
+The button opens Windows' installed-app settings using a fixed URI; no registry uninstall command is
+executed. Stop/close joins the background worker and ignores canceled replies. This view is Windows-only.
+
 The line above the tree shows OS used/free space and an estimate of file allocation with hard links
 counted once. **Capacity details** distinguishes named allocation, hard-link overcount, Recycle Bin data
 seen (already included), omitted/unreadable branches and other mounted volumes. A complete whole-volume
