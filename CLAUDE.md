@@ -80,6 +80,12 @@ tool default.
   on one local drive through `SHEmptyRecycleBinW`, only after two questions naming that drive, its
   reported size/item count and irreversibility; the worker rechecks totals before starting. This
   exception never permits arbitrary path deletion or an empty/null all-drive scope.
+  Explicit freedesktop *Empty Trash* may remove only reviewed, recognized current-user `files`/`info`
+  scopes on one mounted Linux volume, after two questions naming their exact paths, reported
+  bytes/items and irreversibility. Approval captures complete no-follow metadata; changed entries,
+  unknown receipts, foreign owners, linked scope directories and mount boundaries are refused.
+  Descriptor-relative operations never follow payload links or remove the OS-bin directories.
+  Failures and partial completion must remain visible and trigger fresh bin/capacity metadata.
   Retention may permanently remove FileTree's own recognized operation-journal segments under its
   application data directory; it never applies to scanned user entries. Atomic temporary files may
   also be removed after a failed write.

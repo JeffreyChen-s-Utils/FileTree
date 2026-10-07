@@ -134,6 +134,7 @@ def test_bin_manager_close_refreshes_labels_and_scan_invalidates_late_reply(
     monkeypatch.setattr(labels, "trash_usage", query)
     class Dialog:
         scan_requested = SimpleNamespace(connect=lambda _callback: None)
+        emptied = SimpleNamespace(connect=lambda _callback: None)
         def __init__(self, *_args):
             self.closed = False
         def exec(self):
@@ -149,6 +150,16 @@ def test_bin_manager_close_refreshes_labels_and_scan_invalidates_late_reply(
     _wait(qapp, lambda: not window._bin_labels._running)
     assert not window.welcome._bin_data
     assert window.results.cleanup.bin_totals.text() == tr("bin_label_scope_unknown")
+
+
+def test_bin_operation_discards_capacity_and_stale_analyser(window, qapp, sample_tree):
+    _scanned(window, qapp, sample_tree)
+    root = window.results.outcome.result.root
+    assert window.results.outcome.capacity is not None
+    window._analyser = object()  # a previous analyser's identity must no longer be accepted
+    window._bin_emptied("D:/")
+    assert window._analyser is None and window.results.outcome.capacity is None
+    assert window.results.outcome.result.root is root
 
 
 def test_nonready_and_zero_capacity_roots_are_not_queried(qapp, monkeypatch):

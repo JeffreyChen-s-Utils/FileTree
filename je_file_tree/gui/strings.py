@@ -232,7 +232,16 @@ EN: dict[str, str] = {
                       "from more workers; excessive concurrency can overload a disk/server. Running scans retain "
                       "their existing workers. Real UNC performance depends on your share.",
     "action_bins": "Recycle Bins…",
-    "action_bins_tip": "Review per-drive bin totals and explicit Windows emptying",
+    "action_bins_tip": "Review per-drive bin totals and explicit Windows/Linux emptying",
+    "bin_preparing": "Reviewing exact Trash scopes on {root}…",
+    "bin_no_approval": "No complete nonempty Trash approval; refresh and review again.",
+    "bin_scope_first": "Empty these current-user Trash payload/receipt scopes?\n\n{root}\n\n"
+                       "Logical payload: {size}\nItems: {count}",
+    "bin_scope_irreversible": "Permanently remove the reviewed contents of these exact scopes?\n\n{root}\n\n"
+                              "Logical payload: {size}\nItems: {count}\n\nThis cannot be undone. "
+                              "Payload links are removed without following their targets. Changed entries are refused; "
+                              "failures can leave partial results. Emptying cannot be canceled once started.",
+    "bin_partial": "Removed {count} reviewed items; remaining failures: {reason}",
     "bin_empty": "Empty selected drive's Recycle Bin…",
     "bin_first": "Empty the Recycle Bin on {root}?\n\nReported size: {size}\nItems: {count}",
     "bin_irreversible": "Permanently remove all items currently in the Recycle Bin on {root}?\n\n"
@@ -240,9 +249,10 @@ EN: dict[str, str] = {
                         "the OS operation may also be removed. The native operation cannot be canceled once started.",
     "bin_running": "Emptying the Recycle Bin on {root}; waiting for the OS operation…",
     "bin_failed": "Emptying did not complete: {reason}",
-    "bin_hint": "Select one local drive. Windows emptying permanently removes its current-user bin after two "
-                "questions and a totals recheck; an active OS operation cannot be canceled. Other platforms are "
-                "read-only here. Capacity/bin values refresh afterwards; rescan to update the main tree.",
+    "bin_hint": "Select one mounted volume. Windows empties its current-user OS bin; Linux inventories recognized "
+                "files/info scopes. Two questions show exact scope and totals before permanent removal. "
+                "Stop cancels surveys; active emptying must finish. macOS remains read-only. Capacity/bin "
+                "values refresh afterwards; rescan to update the main tree.",
     "action_volumes": "Drive overview…",
     "action_volumes_tip": "Inspect mounted volumes, capacity, allocation units and Recycle Bin totals",
     "volume_root": "Mounted root",
@@ -1279,15 +1289,24 @@ ZH_TW: dict[str, str] = {
                       "過高並行數可能使磁碟／伺服器負荷過重。進行中的掃描保留既有執行緒數，"
                       "UNC 效能取決於實際共用環境。",
     "action_bins": "資源回收筒…",
-    "action_bins_tip": "審查各磁碟回收筒總量與 Windows 明確清空動作",
+    "action_bins_tip": "審查各磁碟回收筒總量與 Windows／Linux 明確清空動作",
+    "bin_preparing": "正在盤點 {root} 的確切回收筒範圍…",
+    "bin_no_approval": "沒有完整且非空的回收筒盤點，請更新後重新檢視。",
+    "bin_scope_first": "清空目前使用者的這些回收筒內容／收據範圍？\n\n{root}\n\n內容邏輯大小：{size}\n項目數：{count}",
+    "bin_scope_irreversible": "永久移除這些確切範圍內已檢視的內容？\n\n{root}\n\n"
+                              "內容邏輯大小：{size}\n項目數：{count}\n\n"
+                              "此動作無法復原。內容中的連結只移除連結本身，不跟隨其目標。已變動項目會拒絕處理；"
+                              "失敗時可能只完成一部分。開始清空後無法取消。",
+    "bin_partial": "已移除 {count} 個已檢視項目；其餘失敗原因：{reason}",
     "bin_empty": "清空選取磁碟的資源回收筒…",
     "bin_first": "清空 {root} 的資源回收筒？\n\n回報大小：{size}\n項目數：{count}",
     "bin_irreversible": "永久移除 {root} 資源回收筒目前的全部項目？\n\n回報大小：{size}\n項目數：{count}\n\n"
                         "此動作無法復原。系統作業期間新增的項目也可能被移除；原生作業開始後不能取消。",
     "bin_running": "正在清空 {root} 的資源回收筒，等待系統作業完成…",
     "bin_failed": "未完成清空：{reason}",
-    "bin_hint": "選取一個本機磁碟。Windows 清空動作經兩次詢問與總量重新檢查，永久移除目前使用者的回收筒內容；"
-                "系統作業開始後不能取消。其他平台在此僅能檢視。完成後更新容量／回收筒數值；重新掃描可更新主樹狀圖。",
+    "bin_hint": "選取一個已掛載磁碟。Windows 清空目前使用者的系統回收筒；Linux 盤點已識別的 files／info 範圍。"
+                "永久移除前以兩次詢問列出確切範圍與總量。停止可取消盤點；開始清空後必須等待完成。macOS 目前僅能檢視。"
+                "完成後更新容量／回收筒數值；重新掃描可更新主樹狀圖。",
     "action_volumes": "磁碟總覽…",
     "action_volumes_tip": "查看已掛載磁碟、容量、配置單位與資源回收筒總量",
     "volume_root": "掛載根目錄",
@@ -2242,15 +2261,24 @@ ZH_CN: dict[str, str] = {
     "workers_prompt": "新扫描线程数（1–32），默认值为 {default}。慢速网络共享可能受益于更多线程；"
                       "过高并行数可能使磁盘／服务器负荷过重。进行中的扫描保留现有线程数，UNC 性能取决于实际共享环境。",
     "action_bins": "回收站…",
-    "action_bins_tip": "检查各磁盘回收站总量与 Windows 明确清空操作",
+    "action_bins_tip": "检查各磁盘回收站总量与 Windows／Linux 明确清空操作",
+    "bin_preparing": "正在清点 {root} 的确切回收站范围…",
+    "bin_no_approval": "没有完整且非空的回收站清点，请刷新后重新检查。",
+    "bin_scope_first": "清空当前用户的这些回收站内容／收据范围？\n\n{root}\n\n内容逻辑大小：{size}\n项数：{count}",
+    "bin_scope_irreversible": "永久移除这些确切范围内已检查的内容？\n\n{root}\n\n"
+                              "内容逻辑大小：{size}\n项数：{count}\n\n"
+                              "此操作无法恢复。内容中的链接只移除链接本身，不跟随其目标。已变化的项会拒绝处理；"
+                              "失败时可能只完成一部分。开始清空后无法取消。",
+    "bin_partial": "已移除 {count} 个已检查项；其余失败原因：{reason}",
     "bin_empty": "清空选中磁盘的回收站…",
     "bin_first": "清空 {root} 的回收站？\n\n报告大小：{size}\n项数：{count}",
     "bin_irreversible": "永久移除 {root} 回收站当前的全部项？\n\n报告大小：{size}\n项数：{count}\n\n"
                         "此操作无法恢复。系统操作期间新增的项也可能被移除；原生操作开始后不能取消。",
     "bin_running": "正在清空 {root} 的回收站，等待系统操作完成…",
     "bin_failed": "未完成清空：{reason}",
-    "bin_hint": "选中一个本地磁盘。Windows 清空操作经两次询问与总量重新检查，永久移除当前用户的回收站内容；"
-                "系统操作开始后不能取消。其他平台在此只能查看。完成后更新容量／回收站数值；重新扫描可更新主树。",
+    "bin_hint": "选中一个已挂载磁盘。Windows 清空当前用户的系统回收站；Linux 清点已识别的 files／info 范围。"
+                "永久移除前以两次询问列出确切范围与总量。停止可取消清点；开始清空后必须等待完成。macOS 当前只能查看。"
+                "完成后更新容量／回收站数值；重新扫描可更新主树。",
     "action_volumes": "磁盘总览…",
     "action_volumes_tip": "查看已挂载磁盘、容量、分配单位与回收站总量",
     "volume_root": "挂载根目录",

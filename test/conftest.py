@@ -23,8 +23,16 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     from je_file_tree.gui import history
     from je_file_tree.core import trash_size
     from je_file_tree.gui import bin_labels
+    from je_file_tree.core import bin_empty
 
     emptied: list[str] = []
+    original_empty_scope = bin_empty._empty_scope
+    def forbid_live_posix_scope(scope, mount):
+        if os.path.commonpath((str(tmp_path), scope.directory)) != str(tmp_path):
+            emptied.append(scope.directory)
+            raise AssertionError("Tests cannot empty a real user POSIX Trash")
+        return original_empty_scope(scope, mount)
+    monkeypatch.setattr(bin_empty, "_empty_scope", forbid_live_posix_scope)
     if os.name == "nt":
         def forbid_live_empty(_window, root, _flags):
             emptied.append(root)

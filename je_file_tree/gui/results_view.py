@@ -331,6 +331,13 @@ class ResultsView(QWidget):
             self.capacity.set_ledger(capacity)
             self.tree_model.set_drive_total(capacity.total)
 
+    def clear_capacity(self) -> None:
+        """Discard an old capacity ledger after an external OS-bin operation."""
+        self.capacity.set_ledger(None)
+        self.tree_model.set_drive_total(None)
+        if self._outcome is not None:
+            self._outcome = dataclasses.replace(self._outcome, capacity=None)
+
     def apply_summary(self, summary: Summary) -> None:
         """Show recomputed largest files and per-type and per-age totals for the tree on screen."""
         outcome = self._outcome

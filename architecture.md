@@ -90,12 +90,26 @@ MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded de
 passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
 subsequent workers; welcome text explains UNC account/coverage behavior without initiating network I/O.
 
-`gui.bin_dialog` extends the volume survey with Windows-only explicit single-drive native emptying.
+`gui.bin_dialog` extends the volume survey with explicit Windows single-drive native emptying.
 Two GUI questions capture drive/bytes/item count and permanent-operation scope; EmptyBinWorker
 rechecks totals through core.trash_size before SHEmptyRecycleBinW. Empty/null, nonlocal, incomplete,
 empty and changed totals are rejected. The modal view blocks Stop/close/activation while the native
 call executes, joins owned threads and refreshes capacity/bins on completion or partial failure.
 Welcome, Clean up and View share this entry point. No scanned path deletion is added.
+
+Linux `BinApprovalWorker` inventories `core.bin_empty.prepare_bin_empty` before two default-No questions
+listing every exact recognized current-uid files/info path, logical payload bytes and top-level count.
+Canonical mount roots, private uid directories and full bounded no-follow metadata/receipt matching
+are mandatory; unknown, special, foreign, linked scope or nested mount entries disable approval.
+`empty_posix_bin` re-derives the entire plan before deletion and pins component directories with
+O_NOFOLLOW plus descriptor mount IDs/ancestor identities. Reverse-order unlink/rmdir removes only
+captured payloads and their matching receipts, never original paths or bin containers; payload links
+are unlinked without following targets. Concurrency is not transactional: changed entries and partial
+errors remain visible with removed counts. Survey Stop/close joins and suppresses late approval; active
+emptying blocks Stop/close. Completion refreshes volume rows/bin labels and invalidates the old main
+capacity ledger, including stale analyser replies; rescan rebuilds recorded tree/accounting.
+The private ext4 validation tool tests native scoped removal and unchanged outside symlink targets.
+macOS remains read-only pending its Finder-wide scope implementation and unavailable native validation.
 
 `gui.bin_labels.BinLabels` owns cancellable metadata-query threads independently of scans and cleanup
 suggestions. Manual Refresh, completed Trash operations and bin-manager close query at most 256 ready

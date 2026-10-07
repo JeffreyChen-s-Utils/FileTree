@@ -1065,17 +1065,22 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def show_bins(self) -> None:
-        """Review OS bin metadata and Windows single-drive emptying after two explicit questions."""
+        """Review OS bin metadata and exact-scope emptying after two explicit questions."""
         if self._worker is not None or self._trash_worker is not None:
             return
         dialog = BinDialog(self._unit, self)
         dialog.scan_requested.connect(self.start_scan)
+        dialog.emptied.connect(self._bin_emptied)
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
             dialog.deleteLater()
             self.refresh_bin_labels()
+
+    def _bin_emptied(self, _root: str) -> None:
+        self._analyser = None
+        self.results.clear_capacity()
 
     def show_volumes(self) -> None:
         """Show mounted volumes and scan an explicitly activated root."""

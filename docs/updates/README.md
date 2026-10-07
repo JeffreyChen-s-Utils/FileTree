@@ -10,6 +10,7 @@ Run from the repository root:
 
 | To find | Command |
 |---|---|
+| [2026-10-b](2026-10-b.md) | 2026-10 |
 | every entry, one line each | `rg -n "^## U-2" docs/updates` |
 | entries of one type | `rg -n "^## U-2.*#done" docs/updates` |
 | entries with a topic tag | `rg -n "^## U-2.*#<tag>" docs/updates` |
@@ -65,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-04 | 2026-10-08 | Scoped Linux Trash approval and emptying | #21 #linux #trash #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-03 | 2026-10-08 | Add reviewable similar-photo groups and thumbnails | #done #photos #duplicates #performance #distribution | [2026-10](2026-10.md) |
 | U-20261008-02 | 2026-10-08 | Fix archive symlink refusal fixture lookup | #fix #tests #ci | [2026-10](2026-10.md) |
 | U-20261008-01 | 2026-10-08 | Add lazy virtual ZIP 7z and RAR inventories | #done #archives #gui #distribution | [2026-10](2026-10.md) |

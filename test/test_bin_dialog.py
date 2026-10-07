@@ -1,6 +1,7 @@
 """Only explicit two-question approvals reach a mocked native bin operation."""
 
 import threading
+from dataclasses import replace
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
@@ -10,6 +11,8 @@ from test_gui import _wait
 from test_volumes import _sources
 from je_file_tree.gui import bin_dialog as bins
 from je_file_tree.gui.bin_dialog import BinDialog
+from je_file_tree.core.bin_empty import BinEmptyPlan, BinEmptyResult, BinScope
+from je_file_tree.core.trash_size import TrashUsage
 
 
 def _dialog(qapp, monkeypatch):
@@ -21,6 +24,18 @@ def _dialog(qapp, monkeypatch):
     return dialog
 
 
+def test_scope_question_uses_literal_paths_and_default_no(qapp, monkeypatch):
+    text = "/owned/<b>literal</b>/files\n123 B, 2 items"
+    def inspect(box):
+        assert box.textFormat() == Qt.TextFormat.PlainText
+        assert box.text() == text
+        assert box.defaultButton() is box.button(QMessageBox.StandardButton.No)
+        return QMessageBox.StandardButton.No
+    monkeypatch.setattr(bins.QMessageBox, "exec", inspect)
+    assert bins.ask_bin(None, "review", text, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No
+
+
 @pytest.mark.parametrize("decline", (0, 1))
 def test_either_declined_question_prevents_native_action(qapp, monkeypatch, decline):
     dialog = _dialog(qapp, monkeypatch)
@@ -29,7 +44,7 @@ def test_either_declined_question_prevents_native_action(qapp, monkeypatch, decl
         assert default == QMessageBox.StandardButton.No
         questions.append(message)
         return QMessageBox.StandardButton.No if len(questions) - 1 == decline else QMessageBox.StandardButton.Yes
-    monkeypatch.setattr(bins.QMessageBox, "question", question)
+    monkeypatch.setattr(bins, "ask_bin", question)
     monkeypatch.setattr(bins, "empty_windows_bin", lambda *args: called.append(args))
     try:
         dialog.empty_selected()
@@ -45,7 +60,7 @@ def test_either_declined_question_prevents_native_action(qapp, monkeypatch, decl
 def test_approved_native_operation_blocks_close_until_completion(qapp, monkeypatch):
     dialog = _dialog(qapp, monkeypatch)
     entered, release, called = threading.Event(), threading.Event(), []
-    monkeypatch.setattr(bins.QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(bins, "ask_bin", lambda *_args: QMessageBox.StandardButton.Yes)
     def native(root, approved):
         called.append((root, approved.count))
         entered.set()
@@ -70,7 +85,7 @@ def test_approved_native_operation_blocks_close_until_completion(qapp, monkeypat
 
 def test_native_failure_refreshes_metadata_and_displays_plain_error(qapp, monkeypatch):
     dialog = _dialog(qapp, monkeypatch)
-    monkeypatch.setattr(bins.QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(bins, "ask_bin", lambda *_args: QMessageBox.StandardButton.Yes)
     def failed(*_args):
         raise OSError("<partial native failure>")
     monkeypatch.setattr(bins, "empty_windows_bin", failed)
@@ -83,3 +98,81 @@ def test_native_failure_refreshes_metadata_and_displays_plain_error(qapp, monkey
     finally:
         dialog.reject()
         dialog.deleteLater()
+
+
+def _linux_dialog(qapp, monkeypatch):
+    dialog = _dialog(qapp, monkeypatch)
+    monkeypatch.setattr(bins.sys, "platform", "linux")
+    scope = BinScope("/owned-volume/.Trash-123", b"fixture", (), (), 123, 2)
+    plan = BinEmptyPlan("/owned-volume", 123, (scope,), TrashUsage(123, 2, True))
+    monkeypatch.setattr(bins, "prepare_bin_empty", lambda _root, **_kwargs: plan)
+    return dialog, plan
+
+
+@pytest.mark.parametrize("decline", (0, 1, None))
+def test_linux_exact_scopes_two_questions_partial_refresh(qapp, monkeypatch, decline):
+    dialog, plan = _linux_dialog(qapp, monkeypatch)
+    questions, called, attempted = [], [], []
+    def question(_parent, _title, message, _buttons, default):
+        assert default == QMessageBox.StandardButton.No
+        questions.append(message)
+        return QMessageBox.StandardButton.No if len(questions) - 1 == decline else QMessageBox.StandardButton.Yes
+    def empty(approved):
+        called.append(approved)
+        return BinEmptyResult(1, ("<fixture remaining>",))
+    monkeypatch.setattr(bins, "ask_bin", question)
+    monkeypatch.setattr(bins, "empty_posix_bin", empty)
+    dialog.emptied.connect(attempted.append)
+    try:
+        dialog.empty_selected()
+        _wait(qapp, lambda: dialog._approval_worker is None and dialog._empty_worker is None
+              and not dialog.worker.isRunning())
+        assert len(questions) == (2 if decline is None else decline + 1)
+        assert all("/owned-volume/.Trash-123/files" in message and "/owned-volume/.Trash-123/info" in message
+                   and "123 B" in message and "2" in message for message in questions)
+        assert called == ([plan] if decline is None else [])
+        assert attempted == ([plan.root] if decline is None else [])
+        if decline is None:
+            assert "<fixture remaining>" in dialog.status.text()
+            assert dialog.status.textFormat() == Qt.TextFormat.PlainText
+    finally:
+        dialog.reject()
+        dialog.deleteLater()
+
+
+def test_linux_incomplete_plan_never_opens_confirmation(qapp, monkeypatch):
+    dialog, plan = _linux_dialog(qapp, monkeypatch)
+    monkeypatch.setattr(bins, "prepare_bin_empty", lambda *_args, **_kwargs: replace(
+        plan, usage=TrashUsage(123, 2, False, "<fixture orphan receipt>")))
+    questions = []
+    monkeypatch.setattr(bins, "ask_bin", lambda *args: questions.append(args))
+    try:
+        dialog.empty_selected()
+        _wait(qapp, lambda: dialog._approval_worker is None)
+        assert not questions and "<fixture orphan receipt>" in dialog.status.text()
+        assert dialog.status.textFormat() == Qt.TextFormat.PlainText
+    finally:
+        dialog.reject()
+        dialog.deleteLater()
+
+
+@pytest.mark.parametrize("close", (False, True))
+def test_linux_stop_or_close_joins_survey_without_late_approval(qapp, monkeypatch, close):
+    dialog, plan = _linux_dialog(qapp, monkeypatch)
+    entered, finished, questions = threading.Event(), threading.Event(), []
+    def prepare(_root, *, cancel):
+        entered.set()
+        assert cancel.wait(10)
+        finished.set()
+        return plan
+    monkeypatch.setattr(bins, "prepare_bin_empty", prepare)
+    monkeypatch.setattr(bins, "ask_bin", lambda *args: questions.append(args))
+    dialog.empty_selected()
+    _wait(qapp, entered.is_set)
+    dialog.reject() if close else dialog.stop()
+    qapp.processEvents()
+    assert finished.is_set() and not questions
+    if not close:
+        assert dialog._approval_worker is None and dialog.view.isEnabled()
+        dialog.reject()
+    dialog.deleteLater()

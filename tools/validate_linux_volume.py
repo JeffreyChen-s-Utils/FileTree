@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from contextlib import contextmanager
 from dataclasses import asdict, replace
 import json
@@ -19,6 +20,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from je_file_tree.core.capacity import capacity_ledger  # noqa: E402
+from je_file_tree.core.bin_empty import empty_posix_bin, prepare_bin_empty  # noqa: E402
 from je_file_tree.core.duplicates import estimate_duplicate_savings, find_duplicates  # noqa: E402
 from je_file_tree.core.export import _atomic_file  # noqa: E402
 from je_file_tree.core import mounts, scanner  # noqa: E402
@@ -30,6 +32,7 @@ from je_file_tree.core.trash_size import trash_usage  # noqa: E402
 _MIB = 1024 * 1024
 _BLOCK = 4096
 _BIN_SIZE = 65536
+_BIN_ITEMS = 3
 _RECOVERY_CASES = 4
 _TIMING_FILES = 2000
 
@@ -73,6 +76,7 @@ def fixtures(root: Path) -> dict[str, Path]:
     write_payload(paths["sparse"], 16 * _MIB, sparse=True)
     payloads, receipts = root / ".Trash-0" / "files", root / ".Trash-0" / "info"
     payloads.mkdir(parents=True)
+    payloads.parent.chmod(0o700)
     receipts.mkdir()
     paths["bin"] = payloads / "owned-payload"
     write_payload(paths["bin"], _BIN_SIZE)
@@ -274,6 +278,47 @@ def descriptor_cost(root: Path) -> dict[str, object]:
             "comparison": "Listing/backend variants interleave in one process; all retain initial/final surveys."}
 
 
+def bin_empty_proof(root: Path, paths: dict[str, Path]) -> dict[str, object]:
+    """Exercise native descriptor emptying only in the fresh private ext4 image."""
+    scope = paths["bin"].parent.parent
+    files, info = scope / "files", scope / "info"
+    peer = root / "retained-bin-peer"
+    peer.write_bytes(b"outside owned payload")
+    before = hashlib.sha256(peer.read_bytes()).hexdigest()
+    folder = files / "nested"
+    folder.mkdir()
+    (folder / "child").write_bytes(b"owned child")
+    peer_folder = root / "retained-bin-peer-folder"
+    peer_folder.mkdir()
+    (peer_folder / "child").write_bytes(b"outside bind payload")
+    link = files / "external-link"
+    link.symlink_to(peer)
+    for name in (folder.name, link.name):
+        (info / f"{name}.trashinfo").write_text("[Trash Info]\nPath=/not-used\n", encoding="utf-8")
+    command(["/usr/bin/mount", "--bind", str(peer_folder), str(folder)])
+    try:
+        blocked = prepare_bin_empty(str(root))
+        require(blocked is not None and not blocked.usage.complete,
+                "Same-device mounted bin descendant was approved")
+    finally:
+        command(["/usr/bin/umount", str(folder)])
+    plan = prepare_bin_empty(str(root))
+    require(plan is not None and plan.usage.complete and plan.usage.count == _BIN_ITEMS,
+            "Native reviewed bin scopes did not match owned fixtures")
+    free_before = available(root)
+    result = empty_posix_bin(plan)
+    free_after = available(root)
+    require(result.removed == _BIN_ITEMS and not result.failures, "Native bin emptying was incomplete")
+    require(files.is_dir() and info.is_dir() and not list(files.iterdir()) and not list(info.iterdir()),
+            "Owned bin containers were removed or remain nonempty")
+    require(hashlib.sha256(peer.read_bytes()).hexdigest() == before, "Payload symlink target changed")
+    require((peer_folder / "child").read_bytes() == b"outside bind payload", "Outside bind payload changed")
+    return {"removed": result.removed, "logical_bytes": plan.usage.size,
+            "free_bytes_change": free_after - free_before, "containers_retained": True,
+            "symlink_target_unchanged": True, "same_device_bin_bind_refused": True,
+            "scope": "fresh private ext4 current-uid files/info only"}
+
+
 def probe(scratch: Path, token: str) -> dict[str, object]:
     """Refuse foreign directories or the host namespace before creating a disposable image."""
     require(sys.platform.startswith("linux") and os.geteuid() == 0, "Requires Linux namespace privileges")
@@ -298,6 +343,7 @@ def probe(scratch: Path, token: str) -> dict[str, object]:
         return {"filesystem": "ext4", "private_namespace": True, "owned_image_bytes": 64 * _MIB,
                 "capacity": ledger_proof(root, paths), "recovery": recovery_proof(root, paths),
                 "bind_mount": bind_proof(root), "live_bind_mount": live_bind_proof(root),
+                "bin_empty": bin_empty_proof(root, paths),
                 "descriptor_cost": descriptor_cost(root),
                 "unverified": ["compression", "cloud_placeholders", "NTFS", "APFS", "shared_extents"]}
     finally:
@@ -325,7 +371,8 @@ def main() -> int:
             arguments, check=True, stdout=subprocess.PIPE, text=True, encoding="utf-8")
         proof = json.loads(result.stdout)
     require(proof.get("private_namespace") and len(proof.get("recovery", [])) == _RECOVERY_CASES
-            and proof.get("bind_mount") and proof.get("live_bind_mount") and proof.get("descriptor_cost"),
+            and proof.get("bind_mount") and proof.get("live_bind_mount") and proof.get("descriptor_cost")
+            and proof.get("bin_empty"),
             "Incomplete ext4 volume proof")
     args.evidence.mkdir(parents=True, exist_ok=True)
     with _atomic_file(args.evidence / "proof.json", encoding="utf-8") as stream:

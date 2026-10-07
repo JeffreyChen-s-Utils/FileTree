@@ -186,6 +186,19 @@ remainder only for compatible complete whole-volume scans. Both estimates still 
 validation and neither authorizes removing files. Duplicate hashing checks snapshots around each read
 and skips known offline/recall placeholders; unrecognized provider states may still trigger retrieval.
 
+`bin_empty.prepare_bin_empty(root, *, cancel=None)` returns a frozen `BinEmptyPlan`, or `None` on
+cancellation. Linux only: root must be a canonical mounted volume, scopes are derived current-user
+freedesktop Trash directories, and `.usage.complete` is required. Linked/private-permission/owner/mount
+failures and unrecognized/orphan receipts make approval incomplete. Inventories are capped at 100,000
+entries, 128 levels and 64 KiB per receipt; logical payload bytes exclude directory/receipt allocation.
+`empty_posix_bin(plan)` is a permanent-delete exception solely for these reviewed OS-bin scopes,
+requiring the GUI's two questions naming exact files/info paths, bytes/items and irreversibility.
+It rechecks the full plan, pins no-follow descriptors and validates current mount/ancestor identities;
+original receipt paths and payload link targets are never followed. OS-bin containers remain.
+`BinEmptyResult.removed` counts removed top-level payloads; `.failures` retains at most 20 errors.
+Concurrent mutation can cause partial completion; no cancellation is offered after deletion starts.
+This API does not authorize arbitrary source removal or report guaranteed recoverable bytes.
+
 Saved JSON (`file-tree/1`) stores folders and aggregate logical sizes, not a restorable file inventory or
 removal authorization. `compare` matches relative folder paths, normalizing case on Windows; it compares
 sizes, not contents. Missing values are `None`; `.change` treats a missing side as zero. Partial or
