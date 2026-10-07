@@ -41,6 +41,7 @@ from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.graphics_export import SVG_MODES, capture_svg, save_graphic
 from je_file_tree.gui.printing import print_view, save_view_pdf, view_printer
+from je_file_tree.gui.list_transfer import ListCapture, ListStream
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
@@ -451,6 +452,35 @@ class MainWindow(QMainWindow):
 
     # --- export -----------------------------------------------------------
 
+    def export_list(self) -> None:
+        """Stream the active list in displayed order to CSV using bounded GUI capture and ExportWorker."""
+        view = self.results.current_list()
+        if view is None or self.results.outcome is None:
+            return
+        target, _ = QFileDialog.getSaveFileName(self, tr('action_export_list'), 'list.csv', tr('csv_filter'))
+        if not target:
+            return
+        stream = ListStream()
+        capture = ListCapture(view, self, stream=stream)
+        self._captures.add(capture)
+        capture.finished.connect(lambda: self._captures.discard(capture))
+        capture.finished.connect(capture.deleteLater)
+        worker = ExportWorker(lambda: export.export_table_csv(capture.header, stream.rows(), target), self)
+        worker.done.connect(lambda count: self._export_done(target, count))
+        worker.failed.connect(lambda reason: self._list_export_failed(capture, reason))
+        worker.finished.connect(capture.cancel)
+        worker.finished.connect(lambda: self._exports.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._exports.add(worker)
+        self.statusBar().showMessage(tr('export_running', path=target))
+        worker.start()
+        capture.start()
+
+    def _list_export_failed(self, capture: ListCapture, reason: str) -> None:
+        capture.cancel()
+        if not self._closing:
+            QMessageBox.warning(self, tr('export_title'), tr('export_failed', reason=reason))
+
     def print_current_view(self) -> None:
         """Offer the system print dialog for one page containing the visible results."""
         if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
@@ -614,6 +644,8 @@ class MainWindow(QMainWindow):
         self.results.changes.stop(wait=True)
         self.results.details.stop(wait=True)
         self.results.wait_for_lists()
+        for capture in self._captures.copy():
+            capture.cancel()
         for worker in self._analysers.copy():
             wait_for(worker)
         for worker in self._exports.copy():  # a file being written is finished, never left half-written
@@ -640,12 +672,14 @@ class MainWindow(QMainWindow):
     # --- building ---------------------------------------------------------
 
     def _build_actions(self) -> None:
+        self._captures: set[ListCapture] = set()
         definitions: list[tuple[str, QKeySequence | str | None, Callable[[], object]]] = [
             ("open", QKeySequence.StandardKey.Open, self.choose_folder),
             ("rescan", QKeySequence.StandardKey.Refresh, self.rescan),
             ("stop", "Esc", self.stop_scan),
             ("export_folders", None, lambda: self.export_results("folders")),
             ("export_largest", None, lambda: self.export_results("largest")),
+            ("export_list", None, self.export_list),
             ("export_json", None, lambda: self.export_results("json")),
             ("export_chart_png", None, lambda: self.export_chart("png")),
             ("export_chart_svg", None, lambda: self.export_chart("svg")),
@@ -686,6 +720,7 @@ class MainWindow(QMainWindow):
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "export_chart_svg"):
             export_menu.addAction(self._actions[key])
         export_menu.addAction(self._actions["export_view_pdf"])
+        export_menu.addAction(self._actions["export_list"])
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         file_menu.addAction(self._actions["recent_actions"])
@@ -760,6 +795,7 @@ class MainWindow(QMainWindow):
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)
         self.results.charts.mode_changed.connect(lambda _mode: self._update_actions())
+        self.results.tabs.currentChanged.connect(lambda _tab: self._update_actions())
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
@@ -775,6 +811,8 @@ class MainWindow(QMainWindow):
                                                     and self.results.charts.mode in SVG_MODES)
         for key in ("print_view", "export_view_pdf"):
             self._actions[key].setEnabled(has_results and not scanning)
+        self._actions['export_list'].setEnabled(has_results and not scanning
+                                              and self.results.current_list() is not None)
 
     # --- dialogs ----------------------------------------------------------
 

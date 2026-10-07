@@ -13,7 +13,7 @@ import json
 import os
 import tempfile
 import time
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any, TextIO
@@ -40,6 +40,19 @@ def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> i
     """Write one row per file in ``files``, in the given order; return the row count."""
     rows = ([node.path, node.size, node.allocated, _iso_time(node.modified)] for node in files)
     return _write_csv(target, FILE_COLUMNS, rows)
+
+
+def export_table_csv(header: Sequence[str], rows: Iterable[Sequence[str]],
+                     target: str | os.PathLike[str]) -> int:
+    """Atomically save displayed table text as UTF-8/BOM CSV, escaping spreadsheet formulas."""
+    return _write_csv(target, tuple(spreadsheet_text(cell) for cell in header),
+                      ([spreadsheet_text(cell) for cell in row] for row in rows))
+
+
+def spreadsheet_text(cell: str) -> str:
+    """Prefix text that a spreadsheet could interpret as an executable formula."""
+    dangerous = cell.startswith(('\t', '\r', '\n')) or cell.lstrip().startswith(('=', '+', '-', '@'))
+    return "'" + cell if dangerous else cell
 
 
 def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | None = None) -> None:

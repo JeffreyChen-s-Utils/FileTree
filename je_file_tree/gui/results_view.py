@@ -71,6 +71,7 @@ from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.details_panel import DetailsPanel
+from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome, wait_for
@@ -400,6 +401,14 @@ class ResultsView(QWidget):
         self.tabs.setCurrentIndex(SEARCH_TAB)
         self.search.focus()
 
+    def current_list(self) -> QAbstractItemView | None:
+        """The active result list, including filtered/sorted and grouped model order."""
+        lists = {LARGEST_TAB: self.largest_table, SEARCH_TAB: self.search_table, TYPES_TAB: self.types_table,
+                 AGE_TAB: self.age_table, CHANGES_TAB: self.changes_table, PROBLEMS_TAB: self.problems_table,
+                 CLEANUP_TAB: self.cleanup.view if self.cleanup_pages.currentIndex() == SUGGESTIONS_PAGE
+                 else self.duplicates.view}
+        return lists.get(self.tabs.currentIndex())
+
     def select_node(self, node: Node) -> None:
         """Select ``node`` in the tree (expanding its folders), and outline it in the treemap."""
         index = self.tree_model.index_for(node)
@@ -644,6 +653,9 @@ class ResultsView(QWidget):
         self.changes.failed.connect(self.compare_failed)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
+        for view in (self.tree, self.largest_table, self.search_table, self.types_table, self.age_table,
+                     self.changes_table, self.problems_table, self.cleanup.view, self.duplicates.view):
+            install_copy(view)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self._tree_with_details())

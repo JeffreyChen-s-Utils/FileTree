@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`list_transfer` snapshots Qt models only on the GUI thread in ≤128-row / 4 ms turns, observing model
+changes to invalidate mixed captures. Current-list CSV sends text batches over an eight-batch bounded
+ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
+Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
+before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
+
 `details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
 Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`
 keeps bounded category/age totals in a cancellable iterative pass, giving way per folder and separating

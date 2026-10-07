@@ -9,6 +9,10 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_export_list": "Current list (CSV)…",
+    "action_export_list_tip": "Save every row of the active list in its displayed filter and sort order",
+    "list_changed": "The list changed during capture. Try exporting or copying again.",
+
     "details_title": "Details",
     "details_empty": "Select an entry to see its details",
     "details_live": "Distribution is available when scanning finishes.",
@@ -625,6 +629,10 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_export_list": "目前清單（CSV）…",
+    "action_export_list_tip": "依目前的篩選與排序儲存作用中清單的所有列",
+    "list_changed": "擷取期間清單已變更，請重新匯出或複製。",
+
     "details_title": "詳細資訊",
     "details_empty": "選取項目以顯示詳細資訊",
     "details_live": "掃描完成後可查看分布。",
@@ -1183,6 +1191,10 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_export_list": "当前列表（CSV）…",
+    "action_export_list_tip": "按当前筛选与排序保存活动列表的所有行",
+    "list_changed": "获取期间列表已变更，请重新导出或复制。",
+
     "details_title": "详细信息",
     "details_empty": "选择条目以显示详细信息",
     "details_live": "扫描完成后可查看分布。",

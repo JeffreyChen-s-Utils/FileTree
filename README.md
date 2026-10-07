@@ -23,6 +23,8 @@ The Chart tab has clickable folder breadcrumbs and **Back / Forward** (`Alt+Left
 
 Expand **Details** below the folder tree to see the selected entry’s logical size, size on disk, file/folder counts and recorded modification date, plus miniature type and age distributions. The panel remembers whether it is expanded. Distributions run on a cancellable background worker only when expanded after scanning, use recorded entries, and separate unknown/future dates. Selecting elsewhere replaces stale results; closing joins the workers.
 
+**File → Export → Current list (CSV)** saves Search, Duplicates, Changes, File types, Age, Largest files, Clean-up suggestions or Problems, with displayed labels, units, filters and sorting. Grouped lists include headings and their entries, even if collapsed. **Ctrl+C** while a list or the folder tree has focus copies its selected rows with column headings as quoted tab-separated text; text fields keep normal copying. Formula-like text is escaped for spreadsheets. CSV capture yields between short GUI batches and streams through a bounded queue to an atomic export worker; changing the list cancels the export and preserves any existing target.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
