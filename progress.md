@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [BLOCKED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation, CJK rendering, native cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS; no Mac or macOS VM is available from the owner.
+- **#4** [BLOCKED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation, CJK rendering, native duplicate hard-link execution/metadata and cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS; no Mac or macOS VM is available from the owner.
 
 ### Safety
 
@@ -15,7 +15,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Freeing space
 
 - **#21** (P2) [BLOCKED] Validate isolated Windows emptying without touching real user bins (isolated NTFS volumes need unavailable administrator access) and macOS bin querying/Finder-wide emptying on a native environment; no Mac is available. Verify native macOS automation consent, APFS/firmlink scope deduplication, multi-volume coverage, active-operation lifetime and failed/partial metadata refresh; fixture/mocked execution does not prove native behavior.
-- **#24** (P3) Add *Link the extra copies* in Duplicates using the frozen explicit-keeper core preview/executor. Require a default-No plain-text review explaining that old copies are not kept in Trash and all linked names share future data/metadata/security edits. Show every pair/refusal and actual partial/retained paths; add per-outcome operation audits, cancel/close joining and complete current-root rescans. Verify native Windows/Linux GUI workflows and Linux executor behavior; native macOS requires the unavailable Mac.
+- **#24** (P3) [UNVERIFIED] Confirm the full owned duplicate-link GUI/audit/cancel/close/full-root-rescan workflow and executor regressions on Linux CI, including the current GUI stage. Native macOS hard-link validation requires the unavailable Mac (#4).
 - **#76** (P1) Finish savings validation on isolated NTFS/APFS volumes, covering hard links, compression, sparse files and real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown. NTFS test-volume creation needs administrator access, unavailable in this session; APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
 
 ### Finding things

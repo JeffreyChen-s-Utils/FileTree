@@ -545,6 +545,10 @@ def test_move_batch_rescans_the_actual_affected_parent(
         return True
 
     monkeypatch.setattr(file_actions, "trash_receipt", moved)
+    # This fake move has no OS-bin receipt; do not enumerate the host bins while testing parent refresh.
+    def unavailable_undo(*_args):
+        raise ValueError("Mocked Trash move has no native Undo destination")
+    monkeypatch.setattr("je_file_tree.gui.trash_worker.prepare_undo", unavailable_undo)
     window.move_to_trash([node])
     _wait(qapp, lambda: window._trash_worker is None and window._worker is None
           and window.results.tree_model.root is not old_root)

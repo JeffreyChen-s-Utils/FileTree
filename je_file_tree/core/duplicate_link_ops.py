@@ -77,13 +77,16 @@ def _compare(pair: LinkPair, keeper: bytes, cancel: threading.Event | None) -> N
 
 
 def _link(pair: LinkPair, temporary: str, source: int | None, target: int | None) -> None:
-    if os.name == "nt":
-        os.link(pair.keeper_path, temporary, follow_symlinks=False)
-    elif source is not None and target is not None:
-        os.link(os.path.basename(pair.keeper_path), os.path.basename(temporary), src_dir_fd=source,
-                dst_dir_fd=target, follow_symlinks=False)
-    else:
-        raise ValueError("Native linking requires anchored parent descriptors")
+    try:
+        if os.name == "nt":
+            os.link(pair.keeper_path, temporary, follow_symlinks=False)
+        elif source is not None and target is not None:
+            os.link(os.path.basename(pair.keeper_path), os.path.basename(temporary), src_dir_fd=source,
+                    dst_dir_fd=target, follow_symlinks=False)
+        else:
+            raise ValueError("Native linking requires anchored parent descriptors")
+    except NotImplementedError as exc:
+        raise ValueError("Native exclusive hard linking is unavailable") from exc
 
 
 def _publish(state: _Attempt, keeper: bytes, source: int | None,
@@ -159,7 +162,8 @@ def _one(plan: LinkPlan, pair: LinkPair, keeper: bytes,
 
 
 def execute_links(plan: LinkPlan, *, cancel: threading.Event | None = None,
-                  progress: Callable[[LinkPair], None] | None = None) -> LinkResult:
+                  progress: Callable[[LinkPair], None] | None = None,
+                  completed: Callable[[LinkOutcome], None] | None = None) -> LinkResult:
     """Execute an explicitly reviewed plan; fully rehash before every same-volume replacement.
 
     Group metadata/handle/content decisions are rechecked before changes. Create a unique temporary
@@ -170,6 +174,8 @@ def execute_links(plan: LinkPlan, *, cancel: threading.Event | None = None,
     Partial published aliases remain linked=True even if verification/retirement fails. Cancel stops
     unstarted work; native calls/rollback are joined. No copy/overwrite or directory-delete fallback.
     Caller must keep the scan tree stable, obtain explicit approval and rescan affected parents.
+    completed observes every stored outcome before the next row; callbacks should not raise and
+    may set cancel to stop later work, including after an audit write failure.
     """
     result = LinkResult(parents=tuple(sorted({os.path.dirname(path) for pair in plan.pairs
                                             for path in (pair.copy_path, pair.keeper_path) if path})))
@@ -182,13 +188,19 @@ def execute_links(plan: LinkPlan, *, cancel: threading.Event | None = None,
         keeper = group.kept.snapshot if group.kept is not None else None
         for pair in pairs:
             if pair.reason or reason or cancel is not None and cancel.is_set():
-                result.outcomes.append(LinkOutcome(pair, False, pair.reason or reason or "cancelled"))
+                _record(result, LinkOutcome(pair, False, pair.reason or reason or "cancelled"), completed)
                 continue
             if progress is not None:
                 progress(pair)
             outcome, keeper = _one(plan, pair, keeper, cancel)
-            result.outcomes.append(outcome)
+            _record(result, outcome, completed)
             if outcome.error:
                 reason = "Previous replacement failed; review a fresh scan before remaining copies"
     result.canceled = cancel is not None and cancel.is_set()
     return result
+
+
+def _record(result: LinkResult, outcome: LinkOutcome, callback: Callable[[LinkOutcome], None] | None) -> None:
+    result.outcomes.append(outcome)
+    if callback is not None:
+        callback(outcome)

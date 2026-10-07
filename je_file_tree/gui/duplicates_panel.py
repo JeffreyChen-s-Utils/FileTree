@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from PySide6.QtCore import QItemSelectionModel, QSize
+from PySide6.QtCore import QItemSelectionModel, QSize, Signal
 
 from PySide6.QtGui import QIcon, QImage, QPixmap, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -44,6 +44,8 @@ class DuplicatesPanel(QWidget):
     files that left the tree (moved to the Recycle Bin, or in a rescanned folder).
     """
 
+    link_requested = Signal(object)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.unit = AUTO_UNIT
@@ -62,6 +64,7 @@ class DuplicatesPanel(QWidget):
         self.stop_button = QPushButton()
         self.select_extra = QPushButton()
         self.keep_selected = QPushButton()
+        self.link_extra = QPushButton()
         self.status = QLabel()
         self.status.setWordWrap(True)
         self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
@@ -205,6 +208,18 @@ class DuplicatesPanel(QWidget):
         chosen = set(nodes)
         return [group for group in self._groups if any(node in chosen for node in group.files)]
 
+    def link_extra_copies(self) -> None:
+        """Request bounded explicit-keeper exact groups; heuristic photos/folders cannot grant authority."""
+        if groups := self.link_groups:
+            self.link_requested.emit(groups)
+
+    @property
+    def link_groups(self) -> tuple[DuplicateGroup, ...]:
+        """Idle exact-file decisions with explicit keepers; empty for heuristic or unfinished searches."""
+        if self.running or self.kind.currentData() != "exact" or self._found is None:
+            return ()
+        return tuple(group for group in self._groups if group.kept is not None)
+
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.unit = unit
@@ -237,6 +252,8 @@ class DuplicatesPanel(QWidget):
         self.select_extra.setText(tr("duplicates_select_extra"))
         self.select_extra.setToolTip(tr("duplicates_select_extra_tip"))
         self.keep_selected.setText(tr("duplicates_keep_selected"))
+        self.link_extra.setText(tr("link_title"))
+        self.link_extra.setToolTip(tr("link_hint"))
         self._rebuild()
         self._update()
 
@@ -247,6 +264,7 @@ class DuplicatesPanel(QWidget):
         self.stop_button.clicked.connect(lambda: self.stop())  # noqa: PLW0108 - clicked(bool) must not reach stop()
         self.select_extra.clicked.connect(self.select_extra_copies)
         self.keep_selected.clicked.connect(self.choose_kept_copy)
+        self.link_extra.clicked.connect(self.link_extra_copies)
         bar = QHBoxLayout()
         bar.setContentsMargins(0, 0, 0, 0)
         for widget in (self.kind, self._size_label, self.min_size, self.start_button, self.stop_button, self._busy):
@@ -256,6 +274,7 @@ class DuplicatesPanel(QWidget):
         decisions.addStretch(1)
         decisions.addWidget(self.keep_selected)
         decisions.addWidget(self.select_extra)
+        decisions.addWidget(self.link_extra)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
@@ -365,6 +384,8 @@ class DuplicatesPanel(QWidget):
         self._busy.setVisible(self.running)
         eligible = self._savings is not None and any(issue is None for issue in self._savings.issues)
         self.select_extra.setEnabled(bool(self._groups) and eligible and not self.running)
+        self.link_extra.setEnabled(not self.running and not photos and self._found is not None
+                                   and any(group.kept is not None for group in self._groups))
         self._keeper_button()
         self.status.setText(self._status_text())
         self.estimate.setVisible(bool(self._groups) and not running and not photos)

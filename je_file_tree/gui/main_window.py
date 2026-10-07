@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from je_file_tree import __version__
 from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
+from je_file_tree.core.duplicates import DuplicateGroup
 from je_file_tree.core.cleanup import DETAILS, CleanupGroup
 from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting, load_policy
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
@@ -48,6 +49,7 @@ from je_file_tree.gui.bin_labels import BinLabels, bin_key
 from je_file_tree.gui.compression import CompressionDialog
 from je_file_tree.gui.namespace_dialog import NamespaceDialog
 from je_file_tree.gui.copy_dialog import CopyDialog
+from je_file_tree.gui.duplicate_link_dialog import DuplicateLinksDialog
 from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
@@ -112,7 +114,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._worker: ScanWorker | None = None
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs: set[NamespaceDialog] = set()
+        self._path_dialogs: set[NamespaceDialog | DuplicateLinksDialog] = set()
         self._trash_rescans: list[Node] = []
         self._closing = False
         self._analyser: AnalyseWorker | None = None
@@ -162,8 +164,8 @@ class MainWindow(QMainWindow):
 
     @property
     def operation_busy(self) -> bool:
-        """Serialize source mutations across Trash and an owned native restoration worker."""
-        return self._trash_worker is not None or self._undo.busy
+        """Serialize source mutations across Trash, restoration and owned path-operation dialogs."""
+        return self._trash_worker is not None or self._undo.busy or bool(self._path_dialogs)
 
     # --- scanning ---------------------------------------------------------
 
@@ -364,6 +366,33 @@ class MainWindow(QMainWindow):
         if dialog.finish_requested and dialog.approval is not None:
             self.move_to_trash([proof.item.node for proof in dialog.approval.proofs], copies=dialog.approval)
         if not self.operation_busy:
+            self.rescan_folder(root)
+
+    def show_duplicate_links(self, groups: Sequence[DuplicateGroup]) -> None:
+        """Serialize reviewed exact-file linking and rebuild the full root after any attempted operation."""
+        outcome = self.results.outcome
+        panel = self.results.duplicates
+        if (outcome is None or self._worker is not None or self.operation_busy or not groups
+                or any(group not in panel.link_groups for group in groups)):
+            return
+        root = outcome.result.root
+        if any(group.kept is None or any(not node.is_in(root) for node in group.files) for group in groups):
+            return
+        panel.stop(wait=True)
+        self._undo.expire()
+        dialog = DuplicateLinksDialog(root, groups, self._journal, self)
+        self._path_dialogs.add(dialog)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            dialog.deleteLater()
+            QTimer.singleShot(0, self._rescan_after_trash)
+        if not self._closing and dialog.changed and self.results.outcome is outcome:
+            self._analyser = None
+            self.results.clear_capacity()
+            self._bin_labels.refresh()
             self.rescan_folder(root)
 
     def show_compression(self, node: Node) -> None:
@@ -1057,6 +1086,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
 
     def _connect(self) -> None:
+        self.results.duplicates.link_requested.connect(self.show_duplicate_links)
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)

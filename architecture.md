@@ -547,7 +547,18 @@ are carried forward; unrelated changes stop the group. Exclusive rollback never 
 Outcomes retain actual published state and backup/alias paths after cancellation or failure. Both
 keeper and extra parents need a fresh scan; freed capacity is unknown. The scoped CLAUDE exception
 requires explicit review explaining shared future data/metadata and no Trash copy. Native owned
-Windows multiple-copy/ADS/rollback/cancel/collision tests passed. GUI review remains pending.
+Windows multiple-copy/ADS/rollback/cancel/collision tests passed; Linux CI passed the native executor.
+`gui.duplicate_link_dialog` owns frozen bounded explicit-keeper previews with literal path/refusal
+tables and default-No review (shared future data/metadata/security; no Trash copy or automatic Undo).
+Similar-photo/folder matches never enable linking. `gui.duplicate_link_worker` persists distinct batch
+approvals before execution and original-extra-identity per-outcome audits via the additive completed
+callback. Approval failure prevents mutation; result-audit failure cancels later work while preserving
+published aliases. Both workers retain/guard results and cancel/join on stop or dialog/parent close;
+late partials and retained paths remain visible. MainWindow's operation_busy includes owned path
+dialogs to serialize scan/Trash/Undo; only the same current root receives a complete post-attempt
+rescan, invalidating keeper/extra snapshots, capacity and duplicate decisions. Native Windows owned
+CJK/ADS GUI proof verified three aliases, independent original audit identities and full-root refresh;
+the same owned workflow runs in Linux CI. Native macOS validation remains #4.
 
 ## 3. Entry points and public interfaces
 

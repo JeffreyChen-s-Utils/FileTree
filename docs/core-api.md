@@ -369,7 +369,7 @@ OSError/ValueError while leaving payloads untouched. This is read-only evidence,
 for later replacement/deletion/linking; a mutation executor must recheck at its operation boundary.
 Native macOS behavior remains unverified.
 
-`duplicate_link_ops.execute_links(plan, *, cancel=None, progress=None)` executes only an explicitly
+`duplicate_link_ops.execute_links(plan, *, cancel=None, progress=None, completed=None)` executes only an explicitly
 reviewed plan while the caller keeps its scan tree stable. It fully rechecks each original group and
 each pair before linking; subsequent extras accept only the keeper's observed own link-count/ctime
 changes. Same-volume native hard links and native exclusive renames retain the old extra under a
@@ -389,4 +389,19 @@ could be the last name. An error stops remaining extras in its group. Old copies
 Trash; edits and metadata/security changes through one linked name affect every name. Callers must
 obtain explicit approval and refresh affected scan observations; no freed-space amount is guaranteed.
 Concurrency remains observational. Native owned Windows fixtures verified multiple aliases, full
-ADS retirement, cancellation, rollback, arrivals and partial publication. GUI review remains pending.
+ADS retirement, cancellation, rollback, arrivals and partial publication. The optional completed
+callback observes every stored outcome before the next row; callbacks should not raise and may set
+cancel after an audit write failure. Unsupported native link APIs are explicit refusals.
+
+The Duplicates panel offers *Link the extra copies* only for idle exact-file searches with explicit
+keepers. `gui.duplicate_link_dialog` owns a frozen metadata-preview worker, lists every exact pair/
+refusal and requires default-No plain-text approval with complete Details and shared-future-edits/no
+Trash/no automatic Undo warnings. `gui.duplicate_link_worker` writes separate operation approvals
+before execution and per-outcome audits with original identities, additive linked status and reason
+duplicate_links. Approval failure prevents execution; result-audit failure retains actual success
+and stops later rows. Workers retain outcomes before signals; stop/close joins native work and shows
+late partial/retained paths in plain text. MainWindow serializes path dialogs with scan/Trash/Undo,
+expires old Undo offers, then fully rescans the unchanged current root after any attempted batch.
+Both keeper and extra snapshots, capacity and duplicate observations refresh; replaced roots cannot
+receive an old refresh. Native Windows CJK/ADS GUI evidence verified three aliases, original audit
+identities and full-root refresh. The same fresh owned GUI/native workflow runs in Linux CI.

@@ -158,3 +158,30 @@ def test_native_ads_are_preserved_and_verified_while_retiring_delete_handle(tmp_
     assert item.linked and not item.error and not item.retained
     assert open_bytes(item.pair.keeper_path + stream_name) == open_bytes(item.pair.copy_path + stream_name) == payload
     assert len(os.listdir(root.path)) == 2
+
+
+def test_completed_callback_can_stop_after_actual_success_without_losing_outcomes(tmp_path):
+    root, group = _fixture(tmp_path, copies=3)
+    cancel, observed = threading.Event(), []
+
+    def completed(outcome):
+        observed.append(outcome)
+        if outcome.linked:
+            cancel.set()
+
+    result = ops.execute_links(duplicate_links.prepare_links(root, [group]), cancel=cancel, completed=completed)
+    assert observed == result.outcomes and result.canceled
+    assert observed[0].linked and not observed[1].linked
+    assert len(os.listdir(root.path)) == 3
+
+
+def test_unsupported_native_link_reports_refusal_and_preserves_copies(tmp_path, monkeypatch):
+    root, group = _fixture(tmp_path)
+
+    def unavailable(*_args, **_kwargs):
+        raise NotImplementedError("no native link API")
+
+    monkeypatch.setattr(os, "link", unavailable)
+    item = ops.execute_links(duplicate_links.prepare_links(root, [group])).outcomes[0]
+    assert not item.linked and "unavailable" in item.error and not item.retained
+    assert len(os.listdir(root.path)) == 2 and all(os.stat(node.path).st_nlink == 1 for node in group.files)

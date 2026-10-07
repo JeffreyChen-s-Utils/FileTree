@@ -9,6 +9,32 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "link_summary": "{total} extra copies: {ready} ready, {skipped} refused.",
+    "link_title": "Link the extra copies…",
+    "link_hint": (
+        "Review exact duplicate files with explicitly kept copies (up to 1,000 extras). "
+        "Protected, changed, cloud, linked and unsupported files are refused. No guaranteed freed-space amount."
+    ),
+    "link_copy": "Extra copy to replace",
+    "link_keeper": "Kept file",
+    "link_apply": "Link reviewed extra copies…",
+    "link_confirm": (
+        "Replace {count} extra copies with hard links? {skipped} refused rows will be skipped.\n\n"
+        "Old data is not kept in Trash. Every linked name shares future content, metadata and "
+        "security/permission changes. This has no automatic Undo. Failures or cancellation may retain "
+        "published links and old-copy backups at the paths shown. Stop/close waits for the current native call. "
+        "Complete data and named streams are rechecked; concurrent changes remain observational. "
+        "Review every pair and refusal in Details."
+    ),
+    "link_progress": "Rechecking/linking: {path}",
+    "link_done": (
+        "Hard links: {linked} published, {other} not linked. "
+        "Rescan to refresh observations; recovered capacity is unknown."
+    ),
+    "link_not_linked": "Not linked",
+    "link_retained": "Retained paths:\n{paths}",
+    "journal_status_linked": "Hard link published",
+    "journal_reason_duplicate_links": "Explicit duplicate hard-link replacement",
     "undo_button": "Undo ({count})",
     "undo_running": "Restoring captured Trash items…",
     "undo_done": "Undo: {restored} restored, {failed} failed",
@@ -1186,6 +1212,31 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "link_summary": "{total} 個多餘副本：{ready} 個可執行，{skipped} 個拒絕。",
+    "link_title": "將多餘副本改為硬連結…",
+    "link_hint": (
+        "檢閱明確選定保留副本的精確重複檔案（最多 1,000 個多餘副本）。受保護、"
+        "已變更、雲端、連結或不支援的檔案會拒絕。可回收容量無法保證。"
+    ),
+    "link_copy": "要替換的多餘副本",
+    "link_keeper": "保留檔案",
+    "link_apply": "將已檢閱的多餘副本改為硬連結…",
+    "link_confirm": (
+        "要將 {count} 個多餘副本替換為硬連結嗎？{skipped} 個拒絕列"
+        "會略過。\n\n舊資料不保留在資源回收筒。全部連結名稱共用後續內容、中繼資料與安"
+        "全性／權限變更。此操作沒有自動復原。失敗或取消可能保留已發布的連結及舊副本備"
+        "份，確切路徑會顯示。停止／關閉會等待目前原生呼叫完成。完整內容及具名串流會重"
+        "新核對；同時變更仍僅能觀察。請在詳細資料檢閱每個配對與拒絕原因。"
+    ),
+    "link_progress": "正在重新核對／建立硬連結：{path}",
+    "link_done": (
+        "硬連結：{linked} 個已發布，{other} 個未連結。請重新掃描以更"
+        "新記錄；回收容量未知。"
+    ),
+    "link_not_linked": "未連結",
+    "link_retained": "保留路徑：\n{paths}",
+    "journal_status_linked": "已發布硬連結",
+    "journal_reason_duplicate_links": "明確要求替換重複檔案為硬連結",
     "undo_button": "復原（{count}）",
     "undo_running": "正在復原已記錄的資源回收筒項目…",
     "undo_done": "復原：{restored} 個已復原，{failed} 個失敗",
@@ -2246,6 +2297,31 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "link_summary": "{total} 个多余副本：{ready} 个可执行，{skipped} 个拒绝。",
+    "link_title": "将多余副本改为硬链接…",
+    "link_hint": (
+        "检查明确选定保留副本的精确重复文件（最多 1,000 个多余副本）。受保护、"
+        "已变化、云端、链接或不支持的文件会拒绝。可回收容量无法保证。"
+    ),
+    "link_copy": "要替换的多余副本",
+    "link_keeper": "保留文件",
+    "link_apply": "将已检查的多余副本改为硬链接…",
+    "link_confirm": (
+        "要将 {count} 个多余副本替换为硬链接吗？{skipped} 个拒绝行"
+        "会跳过。\n\n旧数据不保留在回收站。全部链接名称共享后续内容、元数据与安全性／"
+        "权限变化。此操作没有自动恢复。失败或取消可能保留已发布的链接及旧副本备份，准"
+        "确路径会显示。停止／关闭会等待当前原生调用完成。完整内容及命名流会重新核对；"
+        "同时变化仍只能观察。请在详细信息检查每个配对与拒绝原因。"
+    ),
+    "link_progress": "正在重新核对／创建硬链接：{path}",
+    "link_done": (
+        "硬链接：{linked} 个已发布，{other} 个未链接。请重新扫描以更"
+        "新记录；回收容量未知。"
+    ),
+    "link_not_linked": "未链接",
+    "link_retained": "保留路径：\n{paths}",
+    "journal_status_linked": "已发布硬链接",
+    "journal_reason_duplicate_links": "明确要求替换重复文件为硬链接",
     "undo_button": "恢复（{count}）",
     "undo_running": "正在恢复已记录的回收站项目…",
     "undo_done": "恢复：{restored} 个已恢复，{failed} 个失败",
