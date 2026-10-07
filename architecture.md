@@ -21,6 +21,15 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.report` prepares immutable translated scalar tables from the recorded whole scan, with bounded
+largest-folder/file and type lists, complete counts, overlap/coverage notes and cancellable traversal.
+It writes escaped script-free HTML atomically with inline PNG bytes. GUI report adapters capture a
+separate whole-root ChartStack on the GUI thread without changing navigation, encode owned QImages on
+the worker and write Excel through openpyxl outside the stdlib-only core. A ReportDialog owns/joins its
+worker, rejects late replies and makes tree mutations unavailable while preparation/writing runs.
+Excel tables retain numeric bytes/counts, escape formula-like/XML-control text and preserve oversized
+integers as exact text. Every writer checks cancellation before atomic destination replacement.
+
 `core.projects` surveys recorded manifests/markers iteratively without filesystem reads. Its shared
 RebuildableMatcher uses clean-up evidence without age eligibility; separate current-policy clean-up
 results gate review by age, coverage and exclusions. Coverage construction accepts cancellation.

@@ -15,6 +15,8 @@ Printing and view PDF export import PySide6.QtPrintSupport, collected by the exi
 
 ## 1. Prepare
 
+Excel reports import `openpyxl` outside the stdlib-only core. Install `requirements.txt` before compiling; Nuitka follows this import and its `et-xmlfile` dependency. The executable release installs the universal wheels at verified hashes from `.github/requirements/reports.txt`, independently of the publishing job's tooling lock. HTML embeds Qt-encoded PNGs and needs no browser or image dependency.
+
 ### 1.1 Python packages (every system)
 
 Use a virtual environment so the build contains only what FileTree needs:

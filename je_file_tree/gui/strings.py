@@ -9,6 +9,31 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_export_report_html": "Scan report (HTML)…",
+    "action_export_report_html_tip": "Save a self-contained report with three embedded chart images",
+    "action_export_report_xlsx": "Scan report (Excel)…",
+    "action_export_report_xlsx_tip": "Save the report lists on separate Excel worksheets",
+    "html_filter": "HTML reports (*.html)",
+    "xlsx_filter": "Excel workbooks (*.xlsx)",
+    "report_title": "FileTree scan report",
+    "report_note": "Known recorded scope only; allocation is an estimate. Counts in headings show displayed / total. "
+                   "Top folders overlap: do not add their rows. Largest files and folders are limited to 1,000; "
+                   "file types to 10,000. Sizes are bytes. Ages use recorded modification times, not last access; "
+                   "unavailable dates belong to the oldest existing age group. HTML charts show the whole scan root "
+                   "with bounded geometry. Excel text is escaped, control characters shown as hex, cells limited "
+                   "to 32,767 characters and integers of 16 digits or more stored as exact text.",
+    "report_bytes": "Logical bytes",
+    "report_allocated": "Allocated bytes (estimate)",
+    "report_created": "Report created",
+    "report_reference": "Age reference",
+    "report_skipped": "Skipped folders",
+    "report_denied": "Unreadable folders",
+    "report_pending": "Pending folders",
+    "report_summary": "Summary",
+    "report_field": "Field",
+    "report_value": "Value",
+    "report_top_folders": "Largest folders (overlapping)",
+    "report_categories": "Categories",
     "action_projects": "Projects and rebuildable data…",
     "action_projects_tip": "Inspect recorded project, Git and generated data sizes",
     "project_path": "Project / managed store",
@@ -801,6 +826,29 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_export_report_html": "掃描報告（HTML）…",
+    "action_export_report_html_tip": "儲存內嵌三張圖表圖片的獨立報告",
+    "action_export_report_xlsx": "掃描報告（Excel）…",
+    "action_export_report_xlsx_tip": "將報告清單儲存在各自的 Excel 工作表",
+    "html_filter": "HTML 報告 (*.html)",
+    "xlsx_filter": "Excel 活頁簿 (*.xlsx)",
+    "report_title": "FileTree 掃描報告",
+    "report_note": "僅含已知記錄範圍；磁碟配置是估計值。標題數量為顯示／全部。最大資料夾範圍重疊，不要加總各列。"
+                   "最大檔案與資料夾各限 1,000 筆，檔案類型限 10,000 筆。大小單位為位元組。檔齡依修改記錄，非最後存取；"
+                   "無可用日期歸入既有的最舊檔齡群組。HTML 圖表顯示整份掃描根目錄，圖形範圍有限。"
+                   "Excel 文字經逸出，控制字元顯示為十六進位，每格限 32,767 字元，16 位以上整數以精確文字儲存。",
+    "report_bytes": "邏輯位元組",
+    "report_allocated": "配置位元組（估計）",
+    "report_created": "報告建立時間",
+    "report_reference": "檔齡參照時間",
+    "report_skipped": "略過資料夾",
+    "report_denied": "無法讀取資料夾",
+    "report_pending": "待讀取資料夾",
+    "report_summary": "摘要",
+    "report_field": "欄位",
+    "report_value": "值",
+    "report_top_folders": "最大資料夾（範圍重疊）",
+    "report_categories": "分類",
     "action_projects": "專案與可重建資料…",
     "action_projects_tip": "查看已掃描的專案、Git 與產生資料大小",
     "project_path": "專案／管理儲存區",
@@ -1516,6 +1564,30 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_export_report_html": "扫描报告（HTML）…",
+    "action_export_report_html_tip": "保存内嵌三张图表图片的独立报告",
+    "action_export_report_xlsx": "扫描报告（Excel）…",
+    "action_export_report_xlsx_tip": "将报告列表保存在各自的 Excel 工作表",
+    "html_filter": "HTML 报告 (*.html)",
+    "xlsx_filter": "Excel 工作簿 (*.xlsx)",
+    "report_title": "FileTree 扫描报告",
+    "report_note": "仅含已知记录范围；磁盘分配是估计值。标题数量为显示／全部。最大文件夹范围重叠，不要汇总各行。"
+                   "最大文件与文件夹各限 1,000 条，文件类型限 10,000 条。大小单位为字节。"
+                   "文件时间按修改记录，非最后访问；"
+                   "无可用日期归入现有的最旧时间组。HTML 图表显示整份扫描根目录，图形范围有限。"
+                   "Excel 文本经转义，控制字符显示为十六进制，每格限 32,767 字符，16 位以上整数以精确文本保存。",
+    "report_bytes": "逻辑字节",
+    "report_allocated": "分配字节（估计）",
+    "report_created": "报告创建时间",
+    "report_reference": "文件时间参考点",
+    "report_skipped": "跳过文件夹",
+    "report_denied": "不可读取文件夹",
+    "report_pending": "待读取文件夹",
+    "report_summary": "摘要",
+    "report_field": "字段",
+    "report_value": "值",
+    "report_top_folders": "最大文件夹（范围重叠）",
+    "report_categories": "分类",
     "action_projects": "项目与可重建数据…",
     "action_projects_tip": "查看已扫描的项目、Git 与生成数据大小",
     "project_path": "项目／管理存储区",

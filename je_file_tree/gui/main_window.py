@@ -38,6 +38,7 @@ from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
 from je_file_tree.gui.projects import ProjectsDialog
+from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -476,6 +477,28 @@ class MainWindow(QMainWindow):
 
     # --- export -----------------------------------------------------------
 
+    def export_report(self, kind: str) -> None:
+        """Export a bounded whole-scan HTML or Excel report through an owned cancellable modal worker."""
+        outcome = self.results.outcome
+        if outcome is None or self._worker is not None or self._trash_worker is not None or self._analysers:
+            return
+        target, _ = QFileDialog.getSaveFileName(self, tr("action_export_report_" + kind),
+                                                f"report.{kind}", tr(kind + "_filter"))
+        if not target:
+            return
+        try:
+            dialog = ReportDialog(outcome, kind, target, self._unit, self.results.charts, self)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, tr("export_title"), tr("export_failed", reason=str(error)))
+            return
+        try:
+            dialog.exec()
+            if dialog.saved:
+                self.settings.setValue("export_dir", os.path.dirname(target))
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
+
     def export_list(self) -> None:
         """Stream the active list in displayed order to CSV using bounded GUI capture and ExportWorker."""
         view = self.results.current_list()
@@ -716,6 +739,8 @@ class MainWindow(QMainWindow):
             ("export_chart_svg", None, lambda: self.export_chart("svg")),
             ("print_view", QKeySequence.StandardKey.Print, self.print_current_view),
             ("export_view_pdf", None, self.export_view_pdf),
+            ("export_report_html", None, lambda: self.export_report("html")),
+            ("export_report_xlsx", None, lambda: self.export_report("xlsx")),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("find", QKeySequence.StandardKey.Find, self._find),
             ("compare", None, self.choose_saved_scan),
@@ -758,6 +783,8 @@ class MainWindow(QMainWindow):
             export_menu.addAction(self._actions[key])
         export_menu.addAction(self._actions["export_view_pdf"])
         export_menu.addAction(self._actions["export_list"])
+        for key in ("export_report_html", "export_report_xlsx"):
+            export_menu.addAction(self._actions[key])
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects"):
@@ -852,6 +879,9 @@ class MainWindow(QMainWindow):
                                                     and self.results.charts.mode in SVG_MODES)
         for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects"):
             self._actions[key].setEnabled(has_results and not scanning)
+        for key in ("export_report_html", "export_report_xlsx"):
+            self._actions[key].setEnabled(has_results and not scanning and self._trash_worker is None
+                                          and not self._analysers)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
 

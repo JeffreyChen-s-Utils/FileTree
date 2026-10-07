@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-49 | 2026-10-07 | Whole-scan HTML and Excel reports | #done #reports #exports #40 | [2026-10](2026-10.md) |
 | U-20261007-48 | 2026-10-07 | Projects and conservative rebuildable-data review | #done #projects #cleanup #61 | [2026-10](2026-10.md) |
 | U-20261007-47 | 2026-10-07 | Inspect largest all-ref Git objects without writes or lazy fetching | #done #git #performance | [2026-10](2026-10.md) |
 | U-20261007-46 | 2026-10-07 | Filter expanded tree folders while preserving live model identities | #done #tree #navigation | [2026-10](2026-10.md) |
