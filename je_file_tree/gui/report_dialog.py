@@ -23,7 +23,7 @@ def _labels() -> dict[str, str]:
              "modified": "column_modified", "problem": "column_problem", "created": "report_created",
              "reference": "report_reference", "coverage": "project_coverage", "incomplete": "project_partial",
              "recorded": "project_recorded", "skipped": "report_skipped", "denied": "report_denied",
-             "pending": "report_pending", "summary": "report_summary", "field": "report_field",
+             "pending": "report_pending", "notes": "report_notes", "summary": "report_summary", "field": "report_field",
              "value": "report_value", "top_folders": "report_top_folders", "largest": "tab_largest",
              "types": "tab_types", "categories": "report_categories", "type": "column_type",
              "age": "column_age", "ages": "tab_age", "no_extension": "no_extension"}

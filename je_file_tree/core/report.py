@@ -92,7 +92,7 @@ def prepare_report(root: Node, summary: Summary, labels: Mapping[str, str], *, p
         ("bytes", root.size), ("allocated", root.allocated), ("files", root.file_count), ("folders", root.dir_count),
         ("coverage", labels["incomplete"] if partial or not coverage.complete else labels["recorded"]),
         ("skipped", coverage.skipped_folders), ("denied", coverage.inaccessible_folders),
-        ("pending", coverage.pending_folders), ("note", labels["note"])))
+        ("pending", coverage.pending_folders), ("notes", labels["note"])))
     stat_header = (labels["type"], labels["bytes"], labels["files"])
     tables = [ReportTable(labels["summary"], (labels["field"], labels["value"]), summary_rows, len(summary_rows)),
               ReportTable(labels["top_folders"], header, _entry_rows(folders, cancel), folder_count),
@@ -127,13 +127,15 @@ def write_html(report: Report, charts: Sequence[tuple[str, bytes]], target: str,
                      "table{border-collapse:collapse;width:100%;font-size:14px}"
                      "th,td{padding:.5rem;border-bottom:1px solid #ddd;text-align:left;overflow-wrap:anywhere}"
                      "th{background:#edf1f7}tr:nth-child(even){background:#f8f9fb}"
+                     "table.summary th:first-child,table.summary td:first-child{width:14rem;white-space:nowrap}"
                      "figure{margin:1rem 0}img{max-width:100%;height:auto}.table{overflow:auto}"
                      "</style></head><body>")
         stream.write(f"<h1>{escape(report.title)}</h1><p>{escape(report.note)}</p>")
-        for table in report.tables:
+        for number, table in enumerate(report.tables):
             check_cancel(cancel)
+            table_class = ' class="summary"' if number == 0 else ""
             stream.write(f"<h2>{escape(table.title)} ({len(table.rows)} / {table.count})</h2>"
-                         '<div class="table"><table><thead><tr>')
+                         f'<div class="table"><table{table_class}><thead><tr>')
             stream.write("".join(f"<th>{escape(cell)}</th>" for cell in table.header) + "</tr></thead><tbody>")
             for row in table.rows:
                 check_cancel(cancel)

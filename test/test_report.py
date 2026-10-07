@@ -23,6 +23,7 @@ def test_recorded_scope_is_copied_without_original_file_reads(sample_tree, monke
     report = prepare_report(root, summary, _labels())
     assert len(report.tables) == 6
     assert dict(report.tables[0].rows)["Logical bytes"] == 1000
+    assert dict(report.tables[0].rows)["Notes"] == report.note
     assert report.tables[1].count == 3
     assert report.tables[2].count == 6 and report.tables[2].rows[0][1] == 500
     before = report.tables[2].rows[0]
