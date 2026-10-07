@@ -22,8 +22,8 @@ def test_pause_finishes_current_folder_then_resumes_the_same_tree(tmp_path, monk
     original = scanner._read_folder
     reads = []
 
-    def read(folder, path, options, allocation, excluded):
-        result = original(folder, path, options, allocation, excluded)
+    def read(folder, path, options, allocation, excluded, boundaries):
+        result = original(folder, path, options, allocation, excluded, boundaries)
         reads.append(path)
         if path == str(tmp_path):
             pause.set()

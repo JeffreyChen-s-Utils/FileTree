@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-35 | 2026-10-07 | Detect Linux directory bind mounts from the process namespace | #snapshot #capacity #linux #scanning | [2026-10](2026-10.md) |
 | U-20261007-34 | 2026-10-07 | Select explicit proposed files in review safety regressions | #incident #tests #safety | [2026-10](2026-10.md) |
 | U-20261007-33 | 2026-10-07 | Explain cloud and special files using recorded scan metadata | #done #cloud #allocation | [2026-10](2026-10.md) |
 | U-20261007-32 | 2026-10-07 | Measure named stream prevalence and per-entry cost | #done #performance #ntfs | [2026-10](2026-10.md) |

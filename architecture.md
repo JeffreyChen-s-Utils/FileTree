@@ -162,7 +162,13 @@ unknown. `gui/capacity_panel.py` shows the ledger and its limits. Tree edits inv
 whole-tree analysis after a branch rescan refreshes it. Replaced analysis signals are ignored and all
 analysis threads are joined at close. CLI scan JSON includes the same ledger. Accuracy validation on
 isolated NTFS/ext4/APFS volumes is outstanding. Different-device directory mounts are listed without
-traversal; same-device POSIX bind mounts still need boundary detection.
+traversal. `core.mounts` reads the Linux process namespace once per scan, strictly parsing mountinfo
+and decoding escaped whitespace/backslashes exactly once. The immutable directory boundary set is
+rebased for ancestor aliases and shared by crawler threads; no per-entry mount syscall is added.
+Same-device boundaries are listed as links with a translated omission reason, so coverage remains
+incomplete and the ledger counts those mounts without attributing their contents. An unknown table
+stops before directory traversal. Explicit mount roots remain scannable. Live mount-table changes,
+isolated bind namespaces and test-volume reconciliation still require validation.
 
 ## 3. Entry points and public interfaces
 

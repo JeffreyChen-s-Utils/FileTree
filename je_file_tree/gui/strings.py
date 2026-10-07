@@ -9,6 +9,7 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "problem_mount_boundary": "Mount boundary: contents not scanned",
     "action_special_files": "Cloud and special files…",
     "action_special_files_tip": "Inspect recorded recall, offline, compressed and sparse file states",
     "special_states": "Recorded state",
@@ -711,6 +712,7 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "problem_mount_boundary": "掛載邊界：未掃描內容",
     "action_special_files": "雲端與特殊檔案…",
     "action_special_files_tip": "查看已記錄的召回、離線、壓縮及稀疏檔案狀態",
     "special_states": "已記錄狀態",
@@ -1342,6 +1344,7 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "problem_mount_boundary": "挂载边界：未扫描内容",
     "action_special_files": "云端与特殊文件…",
     "action_special_files_tip": "查看已记录的召回、脱机、压缩及稀疏文件状态",
     "special_states": "已记录状态",

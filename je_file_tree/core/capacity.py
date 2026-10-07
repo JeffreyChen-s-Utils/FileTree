@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from je_file_tree.core.coverage import Coverage, coverage_of
 from je_file_tree.core.node import Node
+from je_file_tree.core.mounts import MOUNT_BOUNDARY
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.snapshot import stat_snapshot, unpack_snapshot
 
@@ -59,7 +60,8 @@ def capacity_ledger(root: Node, *, partial: bool = False) -> CapacityLedger:
             counts.bin_found = True
             counts.bin_complete &= node.error is None and not node.is_link
         parent_info = unpack_snapshot(node.parent.snapshot) if node.parent and node.parent.snapshot else None
-        if info is not None and parent_info is not None and info.device != parent_info.device:
+        if node.error == MOUNT_BOUNDARY or (info is not None and parent_info is not None
+                                           and info.device != parent_info.device):
             counts.mounts += 1
         if not node.is_link:
             for child in node.children:

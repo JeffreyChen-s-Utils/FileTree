@@ -260,7 +260,12 @@ omitted bytes and other-volume totals remain **unknown**, never zero. OS capacit
 measured at different instants; shared extents, snapshots and Windows allocation estimates can affect
 the remainder. NTFS/ext4/APFS test-volume validation is still pending, so the ledger is an estimate.
 The CLI scan record includes the same figures under `capacity`. Other-device directory mounts are
-listed without traversal; same-device POSIX bind-mount detection is still pending.
+listed without traversal. Linux also snapshots `/proc/self/mountinfo` once per scan and skips exact
+directory mount points, including same-device bind mounts and roots reached through ancestor aliases.
+Mount boundaries appear in Problems and make omitted bytes unknown; explicitly scanning a mounted
+directory itself is allowed. Missing/malformed mount tables stop the scan before traversal. Other POSIX
+systems retain device-boundary detection. The mount table is not a transaction: changes during a scan
+and isolated namespace/volume validation remain pending.
 
 Right-click the folder-tree header to choose visible columns; choices are remembered. The name stays visible and starts at a readable width, with horizontal scrolling for extra columns. **% of drive** is optional and divides logical bytes by OS-reported total capacity, alongside **% of parent**. It is unknown until capacity is available, after tree changes and for other-volume entries; hard-link names still count separately, so it does not measure allocated or recoverable space.
 

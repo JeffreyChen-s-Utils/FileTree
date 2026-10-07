@@ -28,6 +28,7 @@ from typing import cast
 from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.mounts import MOUNT_BOUNDARY, boundary_path, mount_points, rebase_mount_points
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.priority import background_priority
 from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
@@ -169,6 +170,7 @@ class _Crawler:
     def __init__(self, root: Node, root_path: str, options: ScanOptions,
                  cancel: threading.Event | None = None, pause: threading.Event | None = None) -> None:
         self._options = options
+        self._mounts = rebase_mount_points(root_path, mount_points())
         self._allocation = allocation_for(root_path)
         self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
@@ -241,7 +243,7 @@ class _Crawler:
         while (task := self._take()) is not None:
             give_way()
             try:
-                read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded)
+                read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded, self._mounts)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
                 with self._condition:
                     self._failure = error
@@ -295,7 +297,7 @@ def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
 
 
 def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation,
-                 excluded: Excluded | None = None) -> _FolderRead:
+                 excluded: Excluded | None = None, boundaries: frozenset[str] = frozenset()) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
@@ -310,7 +312,11 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
         child = _entry_node(entry, options, read, allocation, excluded)
         if child is None:
             continue
-        if _other_volume(folder, child):
+        if boundaries and child.is_dir and not child.is_link and boundary_path(entry.path) in boundaries:
+            child.is_link = True
+            child.error = MOUNT_BOUNDARY
+            read.errors.append((entry.path, MOUNT_BOUNDARY))
+        elif _other_volume(folder, child):
             child.is_link = True  # a mount boundary is listed, never traversed
             child.error = None
         child.parent = folder
