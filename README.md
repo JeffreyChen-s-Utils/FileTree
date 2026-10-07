@@ -321,7 +321,7 @@ mkdir -p desktop-evidence
 docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
 ```
 
-This harness supplies concrete evidence; a real file-manager drag and macOS verification remain separate checks.
+The probe also drives a real Thunar-to-FileTree X11 drag, checks the scanned path and preserves the original file's identity and contents. Before/after desktop captures are retained. macOS verification requires a separate environment.
 
 ## License
 

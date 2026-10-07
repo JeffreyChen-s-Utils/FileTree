@@ -19,7 +19,7 @@ def run_probe(environment: dict[str, str], evidence: Path) -> int:
     if result.returncode:
         return result.returncode
     proof = json.loads((evidence / "proof.json").read_text(encoding="utf-8"))
-    for key in ("dbus", "trash", "fallback", "cjk_font"):
+    for key in ("dbus", "trash", "fallback", "drag", "cjk_font"):
         if not proof.get(key) or isinstance(proof[key], dict) and "error" in proof[key]:
             raise RuntimeError(f"Incomplete native desktop evidence: {key}")
     if not (evidence / "desktop-zh-TW.png").is_file():

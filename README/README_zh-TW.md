@@ -197,7 +197,7 @@ mkdir -p desktop-evidence
 docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
 ```
 
-這個工具提供具體證據；實際檔案管理員拖放與 macOS 驗證仍是分開的檢查。
+工具也會操作實際的 Thunar 至 FileTree X11 拖曳，檢查掃描路徑及原始檔案的識別與內容，並保留拖曳前後的桌面截圖。macOS 驗證需要另外的環境。
 
 ## 授權
 

@@ -24,6 +24,7 @@ from je_file_tree.gui import file_actions, main_window
 from je_file_tree.gui.i18n import set_language
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.scan_worker import analyse
+from drag import check_drag
 
 
 def require(condition: bool, message: str) -> None:
@@ -157,7 +158,8 @@ def main() -> int:
         proof, failures = {}, []
         for name, check in (("dbus", lambda: check_bus(app, evidence, scratch)),
                             ("trash", lambda: check_trash(app, window, scratch)),
-                            ("fallback", lambda: check_fallback(app, evidence, scratch))):
+                            ("fallback", lambda: check_fallback(app, evidence, scratch)),
+                            ("drag", lambda: check_drag(app, window, evidence, scratch))):
             try:
                 proof[name] = check()
             except (OSError, RuntimeError, ValueError, ET.ParseError) as error:

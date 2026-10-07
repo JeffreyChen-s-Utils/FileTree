@@ -30,6 +30,8 @@ resources and retains evidence even on failures. This tooling introduces no appl
 An isolated disconnected-bus process exercises QDesktopServices with a logging xdg-open to verify
 the containing-folder fallback. MainWindow accepts dropped folder references only as Copy, rejecting
 Move-only sources so scan initiation never authorizes a file manager to remove its original.
+Owned Openbox and Thunar processes plus xdotool exercise external X11 drag negotiation while Qt
+continues processing events; the probe verifies the completed root and original payload identity.
 
 `core.special_files` surveys existing packed snapshot attributes on a cancellable iterative walk,
 giving way per folder and retaining at most 1,000 largest matches plus full matching totals. It uses
