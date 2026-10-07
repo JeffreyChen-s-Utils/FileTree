@@ -219,3 +219,22 @@ removal authorization. `compare` matches relative folder paths, normalizing case
 sizes, not contents. Missing values are `None`; `.change` treats a missing side as zero. Partial or
 depth-limited reports only describe recorded coverage. CSV is UTF-8 with a BOM and byte-valued size
 columns; JSON is UTF-8. Formatting, whitespace and object field order are not an API contract.
+
+`namespace_moves.prepare_namespace(root, nodes, *, directory=None, pattern=None, collision="skip",
+cancel=None)` returns a frozen `NamespacePlan` or None on cancellation. Choose exactly one existing
+move directory or rename pattern; raw selections are bounded to 1,000 and collapse to outermost rows.
+Only `{name}`, `{stem}`, `{ext}`, `{n}` are literal tokens; destination names cannot escape their
+directory. `collision="rename"` previews available numbered suffixes, never chooses new names during
+execution. `NamespaceItem.reason` is empty only for eligible rows; all other rows remain reviewable.
+`execute_namespace(plan, *, cancel=None, progress=None)` requires explicit user approval of the plan.
+It revalidates full source coverage, refuses protected/unavailable/special/link/incomplete/changed
+sources and protected/descendant/colliding/cross-volume targets, and anchors captured parent identities.
+Native exclusive rename has no overwrite/copy fallback. Results expose moved/skipped/failed rows,
+canceled and both affected parent paths, including failures for conservative refresh. Stop between
+entries retains completed moves. Verified post-rename receipts update only trusted inode expectations
+for later hard-link names, never Node snapshots. A changed receipt attempts exclusive rollback; failure
+reports the retained destination path for manual inspection. Native failures preserve sources;
+concurrent filesystem mutation is not transactional. Native macOS remains unverified.
+POSIX semantics: [Linux exclusive rename](https://www.man7.org/linux/man-pages/man2/rename.2.html),
+[Apple rename flags/signature](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/stdio.h).
+Windows behavior: [os.rename](https://docs.python.org/3/library/os.html#os.rename).

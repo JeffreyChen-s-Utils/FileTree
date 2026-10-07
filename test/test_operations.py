@@ -171,8 +171,8 @@ def test_move_boundary_rechecks_after_the_potentially_long_validation_walk(tmp_p
     node = root.children[0]
     original = operations._check_subtree
 
-    def replace_after_walk(entry, cancel):
-        reason = original(entry, cancel)
+    def replace_after_walk(entry, cancel, overrides=None):
+        reason = original(entry, cancel, overrides)
         file.rename(tmp_path / "old")
         file.write_bytes(b"new")
         return reason

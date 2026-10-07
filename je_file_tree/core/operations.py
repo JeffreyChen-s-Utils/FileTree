@@ -37,12 +37,15 @@ class MoveResult:
 
 
 def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),
-               approved: Protection | None = None, cancel: threading.Event | None = None) -> str | None:
+               approved: Protection | None = None, cancel: threading.Event | None = None,
+               snapshot_overrides: dict[tuple[int, int], bytes] | None = None) -> str | None:
     """Return a reason key if the entry changed, escaped, became protected or has incomplete coverage.
 
     Ancestors retain their scan identity and must not have become links. A selected folder's complete
     descendants and child names are checked too; modifications deep inside it cannot hide behind its
     unchanged aggregate size. This is a no-follow snapshot check, not an OS transaction with Trash.
+    snapshot_overrides is reserved for trusted post-rename receipts keyed by inode identity; callers
+    must never use it to approve arbitrary metadata changes. Defaults leave scan validation unchanged.
     """
     if node is root or not node.is_in(root):
         return "outside"
@@ -50,7 +53,7 @@ def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),
     if reason is not None:
         return reason
     reason = _check_location(node, root, places, approved)
-    return reason if reason is not None else _check_subtree(node, cancel)
+    return reason if reason is not None else _check_subtree(node, cancel, snapshot_overrides)
 
 
 def _check_ancestors(node: Node) -> str | None:
@@ -84,14 +87,15 @@ def _check_location(node: Node, root: Node, places: Sequence[Protection], approv
     return None
 
 
-def _check_subtree(node: Node, cancel: threading.Event | None) -> str | None:
+def _check_subtree(node: Node, cancel: threading.Event | None,
+                   overrides: dict[tuple[int, int], bytes] | None = None) -> str | None:
     stack = [node]
     while stack:
         if cancel is not None and cancel.is_set():
             return "cancelled"
         give_way()
         entry = stack.pop()
-        reason = _check_node(entry)
+        reason = _check_node(entry, overrides=overrides)
         if reason is not None:
             return reason
         if entry.is_dir and not entry.is_link:
@@ -106,7 +110,8 @@ def _check_subtree(node: Node, cancel: threading.Event | None) -> str | None:
     return None
 
 
-def _check_node(node: Node, *, identity_only: bool = False) -> str | None:
+def _check_node(node: Node, *, identity_only: bool = False,
+                overrides: dict[tuple[int, int], bytes] | None = None) -> str | None:
     if not identity_only and system_file(node.path) is not None:
         return 'system_managed'
     if node.snapshot is None:
@@ -120,6 +125,8 @@ def _check_node(node: Node, *, identity_only: bool = False) -> str | None:
     except OSError:
         return "unreadable"
     before = unpack_snapshot(node.snapshot)
+    if overrides and not identity_only:
+        before = unpack_snapshot(overrides.get(before.identity, node.snapshot))
     return _changed(node, before, current, identity_only)
 
 

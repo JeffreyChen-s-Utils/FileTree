@@ -452,6 +452,17 @@ read-only File times query with date kind/day controls, Stop/close joining and s
 Changed controls cancel/join the previous query. Exact-node activation cannot prepare cleanup. File CSV
 adds optional accessed/created ISO columns (empty if absent); folder-only JSON/history is unchanged.
 
+`core.namespace_moves` prepares bounded read-only source/destination plans and executes explicitly
+approved same-volume namespace changes. `core.no_replace` captures every ancestor identity and anchors
+Windows handles or descriptor-relative POSIX components. Windows os.rename, Linux renameat2
+RENAME_NOREPLACE and macOS renameatx_np RENAME_EXCL provide exclusive native rename, without an unsafe
+fallback. Revalidation refuses protected/unavailable/incomplete/changed sources and
+protected/descendant/colliding/cross-volume targets; outcomes include both affected parents.
+Verified post-rename inode receipts permit subsequent hard-link aliases despite rename ctime changes,
+without changing the captured tree or ordinary Trash validation. An unexpected receipt attempts
+exclusive rollback; failures retain visible paths. Concurrency is not transactional. GUI integration
+and native macOS validation remain pending.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
