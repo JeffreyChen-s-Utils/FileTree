@@ -29,6 +29,7 @@ from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
+from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
@@ -260,11 +261,20 @@ class MainWindow(QMainWindow):
         root = self.results.tree_model.root
         if not chosen or root is None or self._worker is not None or self._trash_worker is not None:
             return
+        reasons = self.results.cleanup.reasons_for(chosen)
+        if reasons:
+            chosen = self._review_cleanup(chosen, reasons, root)
+            if not chosen:
+                return
         approvals = {node: protection_of(node.path, self._protected) for node in chosen}
         if not self._confirm_protected(chosen):
             return
         answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
+            return
+        if self._worker is not None or self._trash_worker is not None or self.results.tree_model.root is not root:
+            lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
+            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
             return
         worker = TrashWorker(root, chosen, self._protected, approvals, self)
         worker.done.connect(self._trash_finished)
@@ -274,6 +284,14 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("trash_running"))
         worker.start()
+
+    def _review_cleanup(self, nodes: list[Node], reasons: dict[Node, str], root: Node) -> list[Node]:
+        dialog = CleanupReview(nodes, reasons, self._protected, self._unit, root, self)
+        try:
+            return dialog.selected_nodes() if dialog.exec() == QDialog.DialogCode.Accepted else []
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def _trash_finished(self, result: MoveResult) -> None:
         self._trash_worker = None
@@ -580,6 +598,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
 
     def _connect(self) -> None:
+        self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)

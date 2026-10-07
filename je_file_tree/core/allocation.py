@@ -27,6 +27,11 @@ import sys
 from collections.abc import Callable
 from typing import Any
 
+from je_file_tree.core.savings import Savings, estimate_savings
+
+__all__ = ["Allocation", "DEFAULT_CLUSTER", "Savings", "allocation_for", "blocks_allocation", "windows_allocation",
+           "cluster_size", "compressed_size", "estimate_savings"]
+
 Allocation = Callable[["os.DirEntry[str]", os.stat_result], int]
 """Tells the space a file takes on disk from its directory entry and its ``stat`` result."""
 

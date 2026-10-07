@@ -24,6 +24,12 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 `core/coverage.py` surveys folder coverage on the cleanup worker, marking incomplete branches and all
 their ancestors unsafe to remove as a whole. Unseen bytes remain unknown.
 
+`core/savings.py` (also exported from `allocation`) estimates reviewed selections without reading file
+contents: outermost paths, logical bytes, unique hard-link allocation, conservative recoverable file-data
+range after emptying Trash, and current free space. A hard-linked file whose other names remain offers
+zero recoverable data. Unknown identities/coverage make recovery unknown; shared extents and directory
+metadata remain outside the estimate. Windows cluster-rounded allocation is explicitly an estimate.
+
 ## 3. Entry points and public interfaces
 
 - `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`
@@ -142,6 +148,13 @@ and failed entry stats leave the parent incomplete. A matching incomplete folder
 empty-folder detection also requires successful reads. The worker returns coverage with its groups;
 the panel displays a coverage banner and disables bulk selection on partial scans. Refresh discards old
 rows immediately and ignores replaced workers; acting on incomplete branches requires their rescan.
+
+Group selection emits `CleanupPanel.review_requested`; `MainWindow.move_to_trash` also intercepts manual
+selections containing a current suggestion. `gui/cleanup_review.py` shows a lazy checkbox table of all
+outermost proposed entries, their rules/reasons/consequences, metadata and protection. Unchecked entries
+never reach the existing protection and Trash questions; rejection does nothing. A cancellable estimate
+worker updates the count and logical/allocated/recovery/free-space fields; Continue waits for that result.
+Full row explanations appear below the table and containing folders can be opened from the dialog.
 
 **Duplicates.** The Duplicates page (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
 `DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are

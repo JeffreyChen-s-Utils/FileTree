@@ -91,7 +91,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Chart | *Treemap*: one rectangle per file, sized by space used; each folder has a strip with its name and size, and tiles show their size. The files of a folder too small to see or point at share one grey, hatched tile (*12 more*, with their size); double-click it to show that folder on its own. *Levels* sets how many levels are drawn (2 at first, up to all), *Colours* colours by file type (the legend is under it) or by top-level folder. *Bars*: one bar per entry of the folder shown, largest first, with its size and share of the folder. *Sunburst*: the folder in the centre and each deeper level as a ring, the angles by size, each top-level folder in its own colour; click the centre to go up. *Tree*: expandable folder cards with allocated size and parent share; click the plus sign to open a branch or an “other folders” card to reveal more, choose horizontal or vertical direction, Ctrl+wheel to zoom and use scroll bars to pan. Double-click a folder to focus it and *Up* to go back; all four views follow the same folder, and FileTree remembers the chosen view and tree direction |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); conditions under the box narrow it down or search on their own: larger or smaller than a size, changed within a week / month / year or not for one, two or five years, a file type, files only or folders only; a search can be saved under a name and chosen again later; the 1,000 largest matches are listed with the count and total size of all |
-| Clean up → Suggestions | Found after every scan: temporary files, browser caches, thumbnail caches, crash dumps, package caches (pip, npm, Gradle…), build output that can be rebuilt (`node_modules`, `__pycache__`, `target` beside `Cargo.toml`…), installers in Downloads untouched for 90 days, and empty folders; one group per kind, the largest first, with a tooltip on what deleting it does. *Select this group* or *Select all*, then Delete |
+| Clean up → Suggestions | Found after every scan: temporary files, browser caches, thumbnail caches, crash dumps, package caches (pip, npm, Gradle…), build output that can be rebuilt (`node_modules`, `__pycache__`, `target` beside `Cargo.toml`…), installers in Downloads untouched for 90 days, and empty folders; one group per kind, the largest first, with a tooltip on what deleting it does. *Select this group* or *Select all* opens the review queue before the confirmations |
 | Clean up → Duplicates | Press *Find duplicates*: files of the same size are compared, first by their first 64 KB, then by their whole content (hard links count once). Files under 1 MB are left out unless you choose a smaller size, because reading takes time. Each group lists its copies oldest first; *Select extra copies* selects all but the oldest, ready for Delete |
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
@@ -113,6 +113,13 @@ resolved protection and a folder's contents. Changed, missing or incomplete entr
 reasons; moved, skipped and failed counts are separate. *Stop* cancels remaining entries; affected
 parents are rescanned. The status reports bytes moved: free space increases only after emptying the
 Recycle Bin. Recording file identities costs additional scan time and memory, especially on Windows.
+
+Clean-up group selection and *Select all* open one review queue before the existing confirmations. Every
+path has its rule, reason, date, logical/allocated size, protection and consequence; the selected row's
+full explanation appears below the table. Uncheck entries to keep them or open their containing folder.
+Parent/child selections collapse to the outermost entry. The background estimate counts shared hard-link
+allocation once and gives no recovery credit for a file whose other names remain. Recoverable file data
+is a conservative range after emptying Trash; shared extents and directory metadata remain unknown.
 
 ### Seeing what grew
 

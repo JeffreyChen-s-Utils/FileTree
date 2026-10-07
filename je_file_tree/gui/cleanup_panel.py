@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
@@ -20,6 +21,8 @@ class CleanupPanel(QWidget):
     A ``CleanupWorker`` finds them when a scan is shown (``set_root``) and again after the tree
     changed (``refresh``); only the latest search is shown.
     """
+
+    review_requested = Signal(object)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -104,6 +107,7 @@ class CleanupPanel(QWidget):
         """Select every suggested entry, ready for Delete."""
         if self.select_all.isEnabled():
             grouped_list.select_entries(self.model, self.view, skip_first=False)
+            self.review_requested.emit([node for group in self._groups for node in group.nodes])
 
     def select_current_group(self) -> None:
         """Select the entries of the group the cursor is in."""
@@ -114,6 +118,12 @@ class CleanupPanel(QWidget):
             return
         group = index.parent() if index.parent().isValid() else index
         grouped_list.select_group(self.model, self.view, group.row())
+        self.review_requested.emit(self._groups[group.row()].nodes)
+
+    def reasons_for(self, nodes: list[Node]) -> dict[Node, str]:
+        """Rule keys of current suggestions in a proposed batch, including mixed manual selections."""
+        wanted = set(nodes)
+        return {node: group.key for group in self._groups for node in group.nodes if node in wanted}
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""

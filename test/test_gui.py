@@ -966,17 +966,20 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
         ("build_output", ["node_modules"]), ("crash_dumps", ["memory.dmp"]), ("empty_folders", ["old"])]
     assert panel.model.index(0, 0).data() == "Build output (can be rebuilt) — 400 B (1)"
     assert "building the project again" in panel.model.index(0, 0).data(Qt.ItemDataRole.ToolTipRole)
-    assert panel.status.text().startswith("450 B could be freed in 3 groups.")
+    assert panel.status.text().startswith("450 B logical size in 3 groups.")
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", lambda _self: QDialog.DialogCode.Rejected)
     panel.view.setCurrentIndex(panel.model.index(0, 0, panel.model.index(0, 0)))
     panel.select_current_group()
     picked = _selected_in(panel.view)
     assert [node.name for node in picked] == ["node_modules"]
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", lambda _self: QDialog.DialogCode.Accepted)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash(picked)
     _wait(qapp, lambda: window._trash_worker is None)
     _wait(qapp, lambda: not panel.busy and [group.key for group in panel.groups] == ["crash_dumps", "empty_folders"])
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", lambda _self: QDialog.DialogCode.Rejected)
     panel.select_all_entries()
     assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
 
@@ -990,6 +993,8 @@ def test_incomplete_cleanup_disables_bulk_selection_and_discards_stale_rows(
     _wait(qapp, lambda: not panel.busy)
     assert [group.key for group in panel.groups] == ["crash_dumps"]
     assert not panel.select_all.isEnabled()
+
+
     assert "Omitted bytes are unknown" in panel.coverage_banner.text()
     panel.select_all_entries()
     assert _selected_in(panel.view) == []
@@ -1000,6 +1005,73 @@ def test_incomplete_cleanup_disables_bulk_selection_and_discards_stale_rows(
     panel.set_root(outcome.result.root, partial=True)
     _wait(qapp, lambda: not panel.busy)
     assert not panel.select_all.isEnabled()
+
+
+def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    make_tree(tmp_path, {"memory.dmp": b"dump", "guarded": {"program": b"important"}})
+    _scanned(window, qapp, tmp_path)
+    _wait(qapp, lambda: not window.results.cleanup.busy)
+    root = window.results.tree_model.root
+    safe, protected = _child(root, "memory.dmp"), _child(root, "guarded")
+    window._protected = [Protection(protected.path, PROGRAMS)]
+    reviewed, moved, questions = [], [], []
+
+    def review(dialog):
+        reviewed.append(dialog.model.data(dialog.model.index(1, 7)))
+        dialog.model.setData(dialog.model.index(1, 0), Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", review)
+    monkeypatch.setattr(QMessageBox, "question", lambda _parent, _title, text:
+                        questions.append(text) or QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(window, "rescan_folder", lambda _node: None)
+    window.move_to_trash([safe, protected])
+    _wait(qapp, lambda: window._trash_worker is None)
+    assert reviewed == ["installed programs"]
+    assert moved == [str(tmp_path / "memory.dmp")] and len(questions) == 1
+    assert protected.is_in(root) and (tmp_path / "guarded" / "program").read_bytes() == b"important"
+
+
+def test_cancelling_cleanup_review_never_opens_trash_confirmation(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "memory.dmp").write_bytes(b"dump")
+    _scanned(window, qapp, tmp_path)
+    _wait(qapp, lambda: not window.results.cleanup.busy)
+    node = window.results.tree_model.root.children[0]
+    reviewed, questions, moved = [], [], []
+
+    def cancel(dialog):
+        reviewed.append(dialog.model.data(dialog.model.index(0, 1)))
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", cancel)
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: questions.append(True))
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    window.move_to_trash([node])
+    assert reviewed == [node.path] and questions == [] and moved == []
+    assert (tmp_path / "memory.dmp").read_bytes() == b"dump"
+
+
+def test_replacing_the_selected_scan_while_review_is_open_invalidates_the_batch(
+        window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "memory.dmp").write_bytes(b"dump")
+    _scanned(window, qapp, tmp_path)
+    _wait(qapp, lambda: not window.results.cleanup.busy)
+    node = window.results.tree_model.root.children[0]
+    warnings, moved = [], []
+
+    def replace_scan(dialog):
+        window.results.show_outcome(analyse(scan(tmp_path)))
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", replace_scan)
+    monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
+    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    window.move_to_trash([node])
+    assert moved == [] and warnings and "outside the current scan" in warnings[0]
 
 
 def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qapp: QApplication,

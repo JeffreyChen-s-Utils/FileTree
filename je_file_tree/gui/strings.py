@@ -9,6 +9,24 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "review_title": "Review clean-up proposals",
+    "review_details": "{path}\nRule: {rule}; protection: {protection}. {consequence}",
+    "review_hint": "Review every path and consequence. Uncheck entries to keep them; Continue opens the confirmations.",
+    "review_select": "Move",
+    "review_rule": "Rule",
+    "review_reason": "Reason",
+    "review_protection": "Protection",
+    "review_consequence": "Consequence",
+    "review_manual": "Manual selection",
+    "review_manual_reason": "User-selected entry; removing it may affect files or programs that depend on it.",
+    "review_not_protected": "No protected-path match",
+    "review_open_folder": "Open containing folder",
+    "review_continue": "Continue to confirmation",
+    "review_estimating": "{count} entries selected; estimating allocation…",
+    "review_summary": ("{count} entries; logical {logical}; allocated estimate {allocated}; recoverable file data "
+                       "after emptying the Recycle Bin: {recoverable}; free now {free}. "
+                       "Shared extents and directory metadata remain unknown. Moving to Trash does not free space."),
+    "size_unknown": "unknown",
     "trash_running": "Revalidating and moving approved entries… Stop cancels remaining entries.",
     "trash_batch_done": "Moved {moved}, skipped {skipped}, failed {failed}; {size} moved to the Recycle Bin.",
     "trash_skipped": "These entries were skipped. Rescan their folders before trying again:\n{names}",
@@ -167,8 +185,8 @@ EN: dict[str, str] = {
     "cleanup_running": "Looking for things to clean up…",
     "cleanup_hint": "Places whose contents can usually go appear here after a scan.",
     "cleanup_none": "Nothing to suggest in this scan.",
-    "cleanup_summary": ("{size} could be freed in {groups} groups. Select entries and press Delete to move them to "
-                        "the Recycle Bin; hover over a group to see what deleting it does."),
+    "cleanup_summary": ("{size} logical size in {groups} groups. Select entries to review paths and allocation "
+                        "before moving to the Recycle Bin; moving does not free space immediately."),
     "cleanup_group": "{title} — {size} ({count})",
     "cleanup_temp": "Temporary files",
     "cleanup_temp_tip": "Files programs left behind for a while; a program that is still running may need some.",
@@ -425,6 +443,24 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "review_title": "審查清理建議",
+    "review_details": "{path}\n規則：{rule}；保護狀態：{protection}。{consequence}",
+    "review_hint": "請檢查每條路徑與移除後果，取消勾選即可保留項目；繼續後才會顯示確認問題。",
+    "review_select": "移動",
+    "review_rule": "規則",
+    "review_reason": "原因",
+    "review_protection": "保護狀態",
+    "review_consequence": "移除後果",
+    "review_manual": "手動選取",
+    "review_manual_reason": "使用者選取的項目，移除可能影響相依的檔案或程式。",
+    "review_not_protected": "未符合受保護路徑",
+    "review_open_folder": "開啟所在資料夾",
+    "review_continue": "繼續到確認步驟",
+    "review_estimating": "已選取 {count} 項，正在估計配置空間…",
+    "review_summary": ("{count} 項；邏輯大小 {logical}；配置空間估計 {allocated}；清空資源回收筒後可回收的檔案資料 "
+                       "{recoverable}；目前可用 {free}。共用區塊與資料夾中繼資料仍未知，"
+                       "移到資源回收筒不會立刻釋出空間。"),
+    "size_unknown": "未知",
     "trash_running": "正在重新核對並移動已核准的項目…按停止可取消剩餘項目。",
     "trash_batch_done": "已移動 {moved}、略過 {skipped}、失敗 {failed}；共 {size} 移到資源回收筒。",
     "trash_skipped": "已略過下列項目，請重新掃描資料夾後再試：\n{names}",
@@ -576,8 +612,8 @@ ZH_TW: dict[str, str] = {
     "cleanup_running": "正在找可以清理的東西…",
     "cleanup_hint": "掃描完成後，這裡會列出內容通常可以刪掉的位置。",
     "cleanup_none": "這次掃描沒有可以建議清理的東西。",
-    "cleanup_summary": ("共 {groups} 組，可以釋出 {size}。選取項目後按 Delete 會移到資源回收筒；"
-                        "滑鼠停在組名上可以看刪掉它的影響。"),
+    "cleanup_summary": ("共 {groups} 組，邏輯大小 {size}。移到資源回收筒前請先審查路徑與配置空間；"
+                        "移動不會立刻釋出空間。"),
     "cleanup_group": "{title}：{count} 項，共 {size}",
     "cleanup_temp": "暫存檔",
     "cleanup_temp_tip": "程式暫時留下的檔案；仍在執行的程式可能還在使用其中一些。",
@@ -812,6 +848,23 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "review_title": "审查清理建议",
+    "review_details": "{path}\n规则：{rule}；保护状态：{protection}。{consequence}",
+    "review_hint": "请检查每条路径与删除后果，取消勾选即可保留项目；继续后才会显示确认问题。",
+    "review_select": "移动",
+    "review_rule": "规则",
+    "review_reason": "原因",
+    "review_protection": "保护状态",
+    "review_consequence": "删除后果",
+    "review_manual": "手动选择",
+    "review_manual_reason": "用户选择的项目，删除可能影响依赖的文件或程序。",
+    "review_not_protected": "未匹配受保护路径",
+    "review_open_folder": "打开所在文件夹",
+    "review_continue": "继续到确认步骤",
+    "review_estimating": "已选择 {count} 项，正在估计分配空间…",
+    "review_summary": ("{count} 项；逻辑大小 {logical}；分配空间估计 {allocated}；清空回收站后可回收的文件数据 "
+                       "{recoverable}；当前可用 {free}。共享区块与文件夹元数据仍未知，移到回收站不会立刻释放空间。"),
+    "size_unknown": "未知",
     "trash_running": "正在重新核对并移动已批准的项目…点击停止可取消剩余项目。",
     "trash_batch_done": "已移动 {moved}、跳过 {skipped}、失败 {failed}；共 {size} 移到回收站。",
     "trash_skipped": "已跳过以下项目，请重新扫描文件夹后再试：\n{names}",
@@ -963,8 +1016,8 @@ ZH_CN: dict[str, str] = {
     "cleanup_running": "正在查找可以清理的东西…",
     "cleanup_hint": "扫描完成后，这里会列出内容通常可以删掉的位置。",
     "cleanup_none": "这次扫描没有可以建议清理的东西。",
-    "cleanup_summary": ("共 {groups} 组，可以释放 {size}。选中项目后按 Delete 会移到回收站；"
-                        "鼠标停在组名上可以看删掉它的影响。"),
+    "cleanup_summary": ("共 {groups} 组，逻辑大小 {size}。移到回收站前请先审查路径与分配空间；"
+                        "移动不会立刻释放空间。"),
     "cleanup_group": "{title}：{count} 项，共 {size}",
     "cleanup_temp": "临时文件",
     "cleanup_temp_tip": "程序暂时留下的文件；仍在运行的程序可能还在使用其中一些。",
