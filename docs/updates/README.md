@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-32 | 2026-10-07 | Measure named stream prevalence and per-entry cost | #done #performance #ntfs | [2026-10](2026-10.md) |
 | U-20261007-31 | 2026-10-07 | Opt-in Explorer folder scanning and native Properties | #done #windows #shell | [2026-10](2026-10.md) |
 | U-20261007-30 | 2026-10-07 | Use solid glyphs for exact theme foreground pixel checks | #incident #tests #themes | [2026-10](2026-10.md) |
 | U-20261007-29 | 2026-10-07 | System, light and dark themes with readable chart labels | #done #themes #charts | [2026-10](2026-10.md) |

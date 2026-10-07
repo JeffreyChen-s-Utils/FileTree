@@ -21,6 +21,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`tools/measure_streams.py` is an independent Windows metadata survey, not a scanner extension.
+It times ordinary gentle scans, bounds its additional file/directory sample and enumerates named
+streams through FindFirstStreamW/FindNextStreamW, always closing search handles. Reparse/changed/error
+entries are unknown; it neither opens stream contents nor treats logical stream lengths as allocation.
+
 `shell_integration` installs a marked current-user Directory verb only on explicit Options dialog Save.
 Native registry creation disposition prevents claiming an existing unowned key; ownership and key-shape
 checks limit updates/removal to this verb. Commands quote the executable and absolute `launcher.py`

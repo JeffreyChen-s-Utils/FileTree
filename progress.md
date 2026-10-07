@@ -49,7 +49,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#35** (P2) Network shares: check scans of UNC paths (`\\server\share`) and mapped drives: the worker count (`ScanOptions.workers`) may want to be higher on slow links, `allocation.cluster_size` on a share root, access-denied folders, a share that disconnects halfway. Add a hint for UNC paths on the welcome page.
 - **#75** (P1) Finish capacity-ledger validation: compare `core.capacity.capacity_ledger` against OS capacity on isolated NTFS, ext4 and APFS test volumes before calling it accurate; verify Recycle Bin attribution and allocation estimates, especially shared extents and reserved capacity. Add same-device POSIX bind-mount boundary detection (different-device mounts are now listed without traversal). The GUI and CLI ledger are estimates; filesystem metadata, omitted bytes and other-volume totals remain unknown. Drive-wide Recycle Bin querying remains #21; tree hard-link accounting remains #32.
 
-- **#65** (P3) NTFS alternate data streams: data attached to files under another stream name (`FindFirstStreamW`) that no size shows; measure how common and costly reading them is before adding anything.
 
 ### Over time
 
