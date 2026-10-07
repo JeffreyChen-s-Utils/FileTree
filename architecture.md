@@ -21,6 +21,13 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`gui.bin_dialog` extends the volume survey with Windows-only explicit single-drive native emptying.
+Two GUI questions capture drive/bytes/item count and permanent-operation scope; EmptyBinWorker
+rechecks totals through core.trash_size before SHEmptyRecycleBinW. Empty/null, nonlocal, incomplete,
+empty and changed totals are rejected. The modal view blocks Stop/close/activation while the native
+call executes, joins owned threads and refreshes capacity/bins on completion or partial failure.
+Welcome, Clean up and View share this entry point. No scanned path deletion is added.
+
 `core.trash_size` exposes read-only Windows SHQueryRecycleBinW totals or iterative POSIX logical
 payload inventories with cancellation, omitted metadata and explicit incomplete/error states.
 `core.allocation.allocation_unit` distinguishes known Windows clusters/POSIX fragment granularity

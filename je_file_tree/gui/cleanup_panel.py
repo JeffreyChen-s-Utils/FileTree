@@ -25,6 +25,7 @@ class CleanupPanel(QWidget):
     """
 
     review_requested = Signal(object)
+    bins_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -43,6 +44,8 @@ class CleanupPanel(QWidget):
         self._policy = CleanupPolicy()
         self.select_all = QPushButton()
         self.select_group = QPushButton()
+        self.bins = QPushButton()
+        self.bins.clicked.connect(self.bins_requested)
         self.select_all.clicked.connect(self.select_all_entries)
         self.select_group.clicked.connect(self.select_current_group)
         self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._group_button())
@@ -55,6 +58,7 @@ class CleanupPanel(QWidget):
         bar.addWidget(self.status, 1)
         bar.addWidget(self.select_group)
         bar.addWidget(self.select_all)
+        bar.addWidget(self.bins)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
@@ -147,6 +151,7 @@ class CleanupPanel(QWidget):
         """Re-read every translated text."""
         self.select_all.setText(tr("cleanup_select_all"))
         self.select_group.setText(tr("cleanup_select_group"))
+        self.bins.setText(tr("action_bins"))
         self._rebuild()
 
     def _show(self, worker: CleanupWorker, groups: list[CleanupGroup], coverage: Coverage) -> None:

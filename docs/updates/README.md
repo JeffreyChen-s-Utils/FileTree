@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-52 | 2026-10-07 | Reviewed single-drive Windows bin emptying | #snapshot #trash #safety #21 | [2026-10](2026-10.md) |
 | U-20261007-51 | 2026-10-07 | Mounted-drive overview and read-only bin totals | #done #volumes #trash #42 | [2026-10](2026-10.md) |
 | U-20261007-50 | 2026-10-07 | Readable report summary labels | #incident #reports | [2026-10](2026-10.md) |
 | U-20261007-49 | 2026-10-07 | Whole-scan HTML and Excel reports | #done #reports #exports #40 | [2026-10](2026-10.md) |

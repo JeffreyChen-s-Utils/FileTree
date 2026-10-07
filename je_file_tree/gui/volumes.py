@@ -159,16 +159,28 @@ class VolumesDialog(QDialog):
         self.view.setItemDelegateForColumn(_FREE_COLUMN, FreeSpaceDelegate(self.view))
         self.view.doubleClicked.connect(self._scan)
         install_copy(self.view)
-        hint = QLabel(tr("volume_hint"))
-        hint.setWordWrap(True)
+        self.hint = QLabel(tr("volume_hint"))
+        self.hint.setWordWrap(True)
         self.status = QLabel(tr("volume_reading"))
         self.stop_button = QPushButton(tr("action_stop"))
         self.stop_button.clicked.connect(self.stop)
         close = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         close.rejected.connect(self.reject)
         layout = QVBoxLayout(self)
-        for widget in (hint, self.view, self.status, self.stop_button, close):
+        for widget in (self.hint, self.view, self.status, self.stop_button, close):
             layout.addWidget(widget, 1 if widget is self.view else 0)
+        self.close_box = close
+        self.refresh()
+
+    def refresh(self) -> None:
+        """Replace a completed survey and refresh capacity/Trash after an explicit OS operation."""
+        previous = getattr(self, "worker", None)
+        if previous is not None:
+            previous.cancel.set()
+            wait_for(previous)
+            previous.deleteLater()
+        self.status.setText(tr("volume_reading"))
+        self.stop_button.setEnabled(True)
         self.worker = VolumesWorker(self)
         self.worker.ready.connect(self._show)
         self.worker.start()

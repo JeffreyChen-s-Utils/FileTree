@@ -20,12 +20,21 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     """
     reached: list[str] = []
     from je_file_tree.gui import main_window
+    from je_file_tree.core import trash_size
+
+    emptied: list[str] = []
+    if os.name == "nt":
+        def forbid_live_empty(_window, root, _flags):
+            emptied.append(root)
+            raise AssertionError("Tests cannot empty a real user Recycle Bin")
+        monkeypatch.setattr(trash_size._shell32(), "SHEmptyRecycleBinW", forbid_live_empty)
 
     monkeypatch.setattr(main_window, "journal_folder", lambda: tmp_path / "journal")
     monkeypatch.setattr(elevation, "run_as_admin",
                         lambda program, _parameters, _folder: reached.append(program) and False)
     yield
     assert not reached, f"a test brought up the real administrator prompt for {reached}"
+    assert not emptied, f"a test tried to empty a real user Recycle Bin for {emptied}"
 
 
 def make_tree(root: Path, spec: dict) -> None:

@@ -9,6 +9,18 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_bins": "Recycle Bins…",
+    "action_bins_tip": "Review per-drive bin totals and explicit Windows emptying",
+    "bin_empty": "Empty selected drive's Recycle Bin…",
+    "bin_first": "Empty the Recycle Bin on {root}?\n\nReported size: {size}\nItems: {count}",
+    "bin_irreversible": "Permanently remove all items currently in the Recycle Bin on {root}?\n\n"
+                        "Reported size: {size}\nItems: {count}\n\nThis cannot be undone. New items arriving during "
+                        "the OS operation may also be removed. The native operation cannot be canceled once started.",
+    "bin_running": "Emptying the Recycle Bin on {root}; waiting for the OS operation…",
+    "bin_failed": "Emptying did not complete: {reason}",
+    "bin_hint": "Select one local drive. Windows emptying permanently removes its current-user bin after two "
+                "questions and a totals recheck; an active OS operation cannot be canceled. Other platforms are "
+                "read-only here. Capacity/bin values refresh afterwards; rescan to update the main tree.",
     "action_volumes": "Drive overview…",
     "action_volumes_tip": "Inspect mounted volumes, capacity, allocation units and Recycle Bin totals",
     "volume_root": "Mounted root",
@@ -847,6 +859,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_bins": "資源回收筒…",
+    "action_bins_tip": "審查各磁碟回收筒總量與 Windows 明確清空動作",
+    "bin_empty": "清空選取磁碟的資源回收筒…",
+    "bin_first": "清空 {root} 的資源回收筒？\n\n回報大小：{size}\n項目數：{count}",
+    "bin_irreversible": "永久移除 {root} 資源回收筒目前的全部項目？\n\n回報大小：{size}\n項目數：{count}\n\n"
+                        "此動作無法復原。系統作業期間新增的項目也可能被移除；原生作業開始後不能取消。",
+    "bin_running": "正在清空 {root} 的資源回收筒，等待系統作業完成…",
+    "bin_failed": "未完成清空：{reason}",
+    "bin_hint": "選取一個本機磁碟。Windows 清空動作經兩次詢問與總量重新檢查，永久移除目前使用者的回收筒內容；"
+                "系統作業開始後不能取消。其他平台在此僅能檢視。完成後更新容量／回收筒數值；重新掃描可更新主樹狀圖。",
     "action_volumes": "磁碟總覽…",
     "action_volumes_tip": "查看已掛載磁碟、容量、配置單位與資源回收筒總量",
     "volume_root": "掛載根目錄",
@@ -1605,6 +1627,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_bins": "回收站…",
+    "action_bins_tip": "检查各磁盘回收站总量与 Windows 明确清空操作",
+    "bin_empty": "清空选中磁盘的回收站…",
+    "bin_first": "清空 {root} 的回收站？\n\n报告大小：{size}\n项数：{count}",
+    "bin_irreversible": "永久移除 {root} 回收站当前的全部项？\n\n报告大小：{size}\n项数：{count}\n\n"
+                        "此操作无法恢复。系统操作期间新增的项也可能被移除；原生操作开始后不能取消。",
+    "bin_running": "正在清空 {root} 的回收站，等待系统操作完成…",
+    "bin_failed": "未完成清空：{reason}",
+    "bin_hint": "选中一个本地磁盘。Windows 清空操作经两次询问与总量重新检查，永久移除当前用户的回收站内容；"
+                "系统操作开始后不能取消。其他平台在此只能查看。完成后更新容量／回收站数值；重新扫描可更新主树。",
     "action_volumes": "磁盘总览…",
     "action_volumes_tip": "查看已挂载磁盘、容量、分配单位与回收站总量",
     "volume_root": "挂载根目录",

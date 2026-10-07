@@ -38,6 +38,31 @@ def test_windows_native_recycle_bin_read_only_query():
     assert usage.complete and usage.size >= 0 and usage.count >= 0
 
 
+def test_emptying_requires_one_complete_unchanged_nonempty_drive(monkeypatch):
+    calls = []
+    approved = trash.TrashUsage(123, 2, True)
+    monkeypatch.setattr(trash.sys, "platform", "win32")
+    monkeypatch.setattr(trash, "_windows_usage", lambda _root: approved)
+    monkeypatch.setattr(trash, "_shell32", lambda: SimpleNamespace(
+        SHEmptyRecycleBinW=lambda *args: calls.append(args) or 0))
+    trash.empty_windows_bin("D:/", approved)
+    assert calls == [(None, "D:/", 7)]
+    for root in ("", "D:", "D:/folder", "\\\\server\\share\\"):
+        with pytest.raises(ValueError, match="one Windows"):
+            trash.empty_windows_bin(root, approved)
+    for invalid in (trash.TrashUsage(0, 0, True), trash.TrashUsage(123, 2, False)):
+        with pytest.raises(ValueError, match="approval"):
+            trash.empty_windows_bin("D:/", invalid)
+    monkeypatch.setattr(trash, "_windows_usage", lambda _root: trash.TrashUsage(124, 2, True))
+    with pytest.raises(ValueError, match="changed"):
+        trash.empty_windows_bin("D:/", approved)
+    assert len(calls) == 1
+    monkeypatch.setattr(trash, "_windows_usage", lambda _root: approved)
+    monkeypatch.setattr(trash, "_shell32", lambda: SimpleNamespace(SHEmptyRecycleBinW=lambda *_args: -2147467259))
+    with pytest.raises(OSError, match="remaining"):
+        trash.empty_windows_bin("D:/", approved)
+
+
 def test_payload_counts_top_entries_and_logical_contents_without_reading_files(tmp_path, monkeypatch):
     payload = tmp_path / "Trash" / "files"
     payload.mkdir(parents=True)

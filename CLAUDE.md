@@ -76,6 +76,10 @@ tool default.
   confirmation. Do not add a permanent delete. Everything that moves entries to the Recycle Bin goes through
   `MainWindow.move_to_trash`, so system and program folders (`je_file_tree/core/protected.py`) always get
   their second question.
+  An explicit Windows *Empty Recycle Bin* operation may permanently remove the current user's OS bin
+  on one local drive through `SHEmptyRecycleBinW`, only after two questions naming that drive, its
+  reported size/item count and irreversibility; the worker rechecks totals before starting. This
+  exception never permits arbitrary path deletion or an empty/null all-drive scope.
   Retention may permanently remove FileTree's own recognized operation-journal segments under its
   application data directory; it never applies to scanned user entries. Atomic temporary files may
   also be removed after a failed write.

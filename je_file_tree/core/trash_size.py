@@ -1,4 +1,4 @@
-"""Read-only OS Recycle Bin totals and bounded-state POSIX Trash payload inventories."""
+"""OS bin metadata, POSIX payload inventories and explicitly approved Windows native emptying."""
 
 from __future__ import annotations
 
@@ -35,6 +35,8 @@ def _shell32():
     shell = ctypes.WinDLL("shell32", use_last_error=True)
     shell.SHQueryRecycleBinW.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(_QueryInfo)]
     shell.SHQueryRecycleBinW.restype = ctypes.c_int32
+    shell.SHEmptyRecycleBinW.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_uint32]
+    shell.SHEmptyRecycleBinW.restype = ctypes.c_int32
     return shell
 
 
@@ -47,6 +49,24 @@ def _windows_usage(root: str) -> TrashUsage:
     if result != 0 or info.size < 0 or info.count < 0:
         return TrashUsage(0, 0, False, f"SHQueryRecycleBinW failed (0x{result & 0xffffffff:08x})")
     return TrashUsage(info.size, info.count, True)
+
+
+def empty_windows_bin(root: str, approved: TrashUsage) -> None:
+    """Permanently empty one drive's OS bin, only after the GUI's two explicit questions.
+
+    Reject nonlocal/nonroot scopes, incomplete or empty approvals and changed query totals.
+    Native deletion cannot be canceled once started. No arbitrary filesystem paths are removed.
+    """
+    if sys.platform != "win32" or not re.fullmatch(r"[A-Za-z]:[/\\]", root):
+        raise ValueError("Emptying requires one Windows local drive-letter root")
+    if not approved.complete or approved.count <= 0 or approved.size < 0:
+        raise ValueError("No complete nonempty Recycle Bin approval")
+    current = _windows_usage(root)
+    if current != approved:
+        raise ValueError("Recycle Bin changed or became unavailable; refresh and review again")
+    result = _shell32().SHEmptyRecycleBinW(None, root, 0x7)
+    if result != 0:
+        raise OSError(f"SHEmptyRecycleBinW failed (0x{result & 0xffffffff:08x}); refresh to inspect remaining items")
 
 
 def _is_link(info: os.stat_result) -> bool:
