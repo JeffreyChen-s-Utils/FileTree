@@ -23,7 +23,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Finding things
 
-- **#28** (P2) Space per owner: a Users tab with the size owned by each user. On POSIX `st_uid` comes with the stat the scan already makes; Windows needs `GetNamedSecurityInfoW` per file, an extra call: measure it as #2 was measured and make it an option if it slows the scan.
 
 - **#56** (P3) Inside archives: show the contents and uncompressed sizes of `.zip` (stdlib `zipfile`), `.7z` (`py7zr`, a new dependency) and `.rar` (`rarfile`, which needs `unrar` or `bsdtar` on the system; without one the archive is shown as a plain file) as a virtual subtree marked as such, read on demand when the entry is expanded, never extracted to disk.
 - **#57** (P3) Similar photos: near-duplicate images (resized, re-encoded, lightly edited) found by a 64-bit difference hash (`Pillow`, a new dependency: grey 9×8 thumbnail, compare neighbours) and a Hamming distance threshold, in the Duplicates tab as a second kind of group with a thumbnail per file; reading every image is slow, so it runs on the duplicates worker with Stop, from a minimum size, and only over the image types of `analysis.CATEGORY_EXTENSIONS`.

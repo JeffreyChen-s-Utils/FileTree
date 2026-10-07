@@ -16,8 +16,8 @@ Capacity and recovery estimates are experimental measurements with the limits de
 
 | Module | Public entry points | Result and meaning |
 |---|---|---|
-| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
-| `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None |
+| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
+| `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now`; extension/category/age records have logical `.size` and `.count` |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
 | `duplicates` | `find_duplicates(root, *, min_size=..., workers=4, progress=None, cancel=None)` | `DuplicateResult.groups`, `.files_read`, `.bytes_read`, `.skipped`; each `DuplicateGroup` has `.size`, `.files`, `.extra` (logical extra-copy size) |
@@ -25,6 +25,8 @@ Capacity and recovery estimates are experimental measurements with the limits de
 | `history` | `ScanHistory(directory, *, max_bytes=DEFAULT_LIMIT)`, `.save(root, *, cancel=None)`, `.read(root_path, *, limit=1000, cancel=None)`, `load_history(entry, *, cancel=None)` | Application-owned folder metadata only; atomic saved JSON, global oldest-first retention, bounded listing and iterative deep-tree loading; caller keeps the tree stable and excludes stopped scans |
 | `programs` | `registered_programs(*, cancel=None)`, `installed_programs(root, *, partial=False, cancel=None)` | Read-only Windows registrations and bounded game metadata; `Programs.rows`, `.count`, `.issues`; exact recorded-folder matches, separate reported estimates, unknown/unreadable coverage; `None` on cancellation |
 | `file_times` | `files_older_than(root, days, *, clock="accessed", now=None, cancel=None, policy=None)`, `access_policy()` | Bounded recorded-file date query, complete counts/unknowns and NTFS configuration limits; `None` on cancellation |
+| `owners` | `owner_stats(root, *, cancel=None)` | `OwnerInventory.rows` (largest 1,000 owner groups), `.count`, `.files`, `.size`, `.unknown_files`, `.unknown_size`, `.incomplete`; `OwnerStat` includes raw identity/name, logical/named allocation/file totals and logical share; `None` on cancellation |
+| `owner_id` | `owner_identifier(owner)`, `owner_name(owner)` | Stable uid/SID text and read-only name lookup with raw-identity fallback; None remains unavailable, never inferred from the process account |
 | `allocation` | `allocation_for(root)`, `blocks_allocation()`, `windows_allocation(cluster)`, `cluster_size(path)`, `compressed_size(path)` | A file-allocation callable takes `(DirEntry, stat_result)`; Windows-only helpers must be called on Windows |
 | `export` | `export_folders_csv(root, target, max_depth=None)`, `export_files_csv(files, target)`, `export_json(root, target, max_depth=None)` | CSV exports return the row count; JSON returns `None`; all write atomically to an existing destination directory |
 
@@ -101,6 +103,19 @@ known matched bytes and unknown/future-date counts. It does not read scanned pay
 NTFS disabled/unknown update configurations refuse access-age matching; timestamps never prove use.
 File CSV adds accessed/created ISO dates, empty if absent; folder JSON/history remains folder-only.
 
+Regular-file POSIX uid is captured from the existing scan stat. `ScanOptions(windows_owners=True)`
+opts into per-file Windows security queries and a no-follow metadata recheck; defaults false because
+the calls are costly. Links/cloud/offline/failed/changed queries have owner None. Owner metadata uses
+one shared immutable key slot, separate from operation snapshots. `owners.owner_stats` groups recorded
+non-link files by owner, never by an ancestor directory's owner. It runs account-name lookups only for
+the largest displayed groups; run on your worker and keep the tree stable. Names may require network
+account lookup and cancellation waits through the current OS call. Unknown owners form a separate
+group; traversal omissions remain unknown. Named hard-link allocation is not counted once, ownership
+does not establish actual use or cleanup permission, and folder-only exports/history omit file owners.
+Windows capture follows the documented buffer ownership of
+[GetNamedSecurityInfoW](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfow);
+raw identities follow the [SID structure](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid).
+
 ## Size and snapshot semantics
 
 `Node.size` is logical size; folder totals count each file name, including hard-link names. `allocated`
@@ -108,7 +123,9 @@ uses POSIX `st_blocks * 512`; ordinary Windows files are estimated by cluster ro
 allocation queried for compressed/sparse files. Online-only cloud data is counted without downloading
 it during scanning. Directory metadata, shared extents and filesystem snapshots are not measured.
 Symbolic links, Windows junctions and different-device directory mounts are listed without traversal;
-same-device POSIX bind-mount detection is pending. The scan is a sequence of observations, not a
+Linux mount surveys also omit same-device directory binds and ancestor aliases; pinned directory
+descriptors reject live mount changes and incomplete mount-ID queries. Other POSIX same-device native
+validation remains pending. The scan is a sequence of observations, not a
 transactional filesystem snapshot.
 
 `allocation.estimate_savings(nodes, *, root=None, cancel=None)` returns `Savings` (or `None` if canceled):

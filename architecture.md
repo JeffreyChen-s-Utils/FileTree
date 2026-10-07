@@ -303,6 +303,22 @@ directory and atomically saves JSON evidence. Native NTFS/APFS, compression, clo
 extents remain unverified; this harness does not promote the ledger
 or recovery ranges to guarantees.
 
+`core.owner_id` captures regular-file POSIX uid from the existing stat, or optional Windows owner SID
+through OWNER_SECURITY_INFORMATION/GetNamedSecurityInfoW with LocalFree ownership. Windows capture
+skips cloud/offline/link records and rechecks no-follow metadata after querying; failures become unknown
+owners without making readable content incomplete. ScanOptions.windows_owners is off by default and
+captured with other options for full/branch scans. Node.owner is a shared immutable uid/SID key or None:
+100k-node retention measured one slot at +8 bytes/entry versus +28 for a copied SID suffix, with a bounded
+4,096-key canonical cache. Identity/operation snapshots and file timestamps are unchanged.
+`core.owners.owner_stats` traverses whole-root recorded files with cancellation/pacing, full byte/file/
+owner-group counts and a 1,000-row largest-group limit. Unknown owners are separate; omitted data stays
+unknown. It resolves only displayed account names on the worker and retains uid/SID on lookup failure.
+`gui.users_panel` runs lazy analysis only on Users activation, owns/replaces/joins all threads, invalidates
+totals after moves/branch replacement and reuses read-only numeric tables, Ctrl+C/current-list CSV.
+It never assigns directory ownership to descendants or turns ownership into cleanup eligibility.
+Native Windows 9,626-file interleaved five-run scans: capture off/on 0.41176/1.01844 s; aggregation/name
+resolution 0.01346 s; all owners captured with one shared SID object. Results describe this fixture only.
+
 `ScanOptions.file_times` optionally appends two double timestamps to regular-file snapshots from the
 existing stat: 76→92 bytes, with no Node slots or per-file timestamp syscall. Access/creation properties
 read that suffix, while snapshot validators and live content verification compare stable identity/

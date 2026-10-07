@@ -23,6 +23,8 @@ class Node:
 
     Only the root stores a full path (as its ``name``); every other path is
     rebuilt from the names on the way up, see ``path``.
+    ``owner`` is a recorded regular-file POSIX uid or optional Windows SID bytes; None is unknown.
+    Shared immutable owner keys add one pointer slot, measured at 8 bytes per node (2026-10-07).
     """
 
     name: str
@@ -37,6 +39,7 @@ class Node:
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
     snapshot: bytes | None = field(default=None, repr=False)
+    owner: int | bytes | None = field(default=None, repr=False)
 
     @property
     def accessed(self) -> float | None:

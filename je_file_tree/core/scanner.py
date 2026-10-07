@@ -29,6 +29,7 @@ from typing import cast
 from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.owner_id import file_owner
 from je_file_tree.core.mounts import MOUNT_BOUNDARY, MountChangedError, MountSurvey, boundary_path, mount_points
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.priority import background_priority
@@ -86,6 +87,7 @@ class ScanOptions:
     exclude: tuple[str, ...] = ()  # folder name patterns and folder paths to skip (see core/exclusions.py)
     gentle: bool = False
     file_times: bool = False
+    windows_owners: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -389,7 +391,8 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
     read.size += info.st_size
     read.allocated += allocated
     return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
-                modified=info.st_mtime, snapshot=snapshot)
+                modified=info.st_mtime, snapshot=snapshot,
+                owner=file_owner(entry.path, info, windows=options.windows_owners))
 
 
 def _folder_node(entry: os.DirEntry[str], modified: float, excluded: Excluded | None) -> Node:

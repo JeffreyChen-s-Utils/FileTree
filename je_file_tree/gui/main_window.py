@@ -706,6 +706,7 @@ class MainWindow(QMainWindow):
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
         self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
+        self._actions["capture_owners"].setChecked(read_flag(self.settings, "capture_owners", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_unit(self._unit)
@@ -723,6 +724,7 @@ class MainWindow(QMainWindow):
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
         self.results.cleanup.stop(wait=True)
+        self.results.users.stop(wait=True)
         self.results.changes.stop(wait=True)
         self.results.details.stop(wait=True)
         self.results.wait_for_lists()
@@ -788,6 +790,7 @@ class MainWindow(QMainWindow):
             ("programs", None, self.show_programs),
             ("file_times", None, self.show_file_times),
             ("capture_file_times", None, lambda: None),
+            ("capture_owners", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
@@ -814,6 +817,10 @@ class MainWindow(QMainWindow):
         self._actions["capture_file_times"].setCheckable(True)
         self._actions["capture_file_times"].toggled.connect(
             lambda checked: self.settings.setValue("capture_file_times", checked))
+        self._actions["capture_owners"].setCheckable(True)
+        self._actions["capture_owners"].setVisible(elevation.supported())
+        self._actions["capture_owners"].toggled.connect(
+            lambda checked: self.settings.setValue("capture_owners", checked))
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
         self._actions["shell_integration"].setVisible(shell_integration.supported())
@@ -871,6 +878,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
         options_menu.addAction(self._actions["capture_file_times"])
+        options_menu.addAction(self._actions["capture_owners"])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -1165,7 +1173,8 @@ class MainWindow(QMainWindow):
     def _scan_options(self) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
                            gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
-                           file_times=self._actions["capture_file_times"].isChecked())
+                           file_times=self._actions["capture_file_times"].isChecked(),
+                           windows_owners=self._actions["capture_owners"].isChecked())
 
     def configure_workers(self) -> None:
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""

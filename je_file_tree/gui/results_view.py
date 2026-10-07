@@ -101,6 +101,7 @@ from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, CATEGORY_COLOURS,
 from je_file_tree.gui.tree_diagram import ORIENTATIONS
 from je_file_tree.gui.tree_columns import TreeColumns
 from je_file_tree.gui.type_locations import TypeLocationsModel, TypeLocationsWorker
+from je_file_tree.gui.users_panel import UsersPanel
 
 _LARGEST_SIZE_COLUMN = 1
 # Name starts at 250 px; extra columns use horizontal scrolling.
@@ -112,6 +113,7 @@ _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
 CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
+USERS_TAB = 8
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
@@ -174,9 +176,7 @@ class ResultsView(QWidget):
         self.search_model = LargestFilesModel(self)
         self.search_table, _ = self._build_entries_table(self.search_model)
         self.search = SearchPanel(self.search_table, self.search_model)
-        self.duplicates = DuplicatesPanel()
-        self.cleanup = CleanupPanel()
-        self.cleanup_pages = QTabWidget()
+        self._build_cleanup_panels()
         self.changes_model = ChangesModel(self)
         self.changes_table, _ = self._build_table(self.changes_model, _CHANGE_COLUMN)
         self.changes = ChangesPanel(self.changes_table, self.changes_model)
@@ -216,6 +216,7 @@ class ResultsView(QWidget):
         self.search.set_root(None)
         self.duplicates.set_root(None)
         self.cleanup.set_root(None)
+        self.users.set_root(None)
         self.changes.set_root(None)
         self._live_ticks = 0
         self.tree_model.set_root(None)
@@ -286,6 +287,7 @@ class ResultsView(QWidget):
         self.search.set_root(root)
         self.duplicates.set_root(root)
         self.cleanup.set_root(root, partial=outcome.partial)
+        self.users.set_root(root, partial=outcome.partial)
         self.changes.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now
@@ -314,6 +316,7 @@ class ResultsView(QWidget):
         self.search.rerun()
         self.duplicates.prune()
         self.cleanup.refresh()
+        self.users.refresh()
         self.changes.refresh()
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
@@ -354,6 +357,7 @@ class ResultsView(QWidget):
         self.search.retranslate()
         self.duplicates.set_unit(unit)
         self.cleanup.set_unit(unit)
+        self.users.set_unit(unit)
         self.charts.set_unit(unit)
         self.details.unit = unit
         self.details.retranslate()
@@ -418,6 +422,7 @@ class ResultsView(QWidget):
         lists = {LARGEST_TAB: self.type_locations_table if self.type_locations_table.hasFocus() else self.largest_table,
                  SEARCH_TAB: self.search_table, TYPES_TAB: self.types_table,
                  AGE_TAB: self.age_table, CHANGES_TAB: self.changes_table, PROBLEMS_TAB: self.problems_table,
+                 USERS_TAB: self.users.view,
                  CLEANUP_TAB: self.cleanup.view if self.cleanup_pages.currentIndex() == SUGGESTIONS_PAGE
                  else self.duplicates.view}
         return lists.get(self.tabs.currentIndex())
@@ -469,6 +474,7 @@ class ResultsView(QWidget):
         self.search.rerun()
         self.duplicates.prune()
         self.cleanup.refresh()
+        self.users.refresh()
         self.changes.refresh()
         self._update_texts()
 
@@ -507,6 +513,7 @@ class ResultsView(QWidget):
         self.search.retranslate()
         self.duplicates.retranslate()
         self.cleanup.retranslate()
+        self.users.retranslate()
         self.changes.retranslate()
         self.breadcrumbs.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
@@ -516,6 +523,12 @@ class ResultsView(QWidget):
         self._update_texts()
 
     # --- building ---------------------------------------------------------
+
+    def _build_cleanup_panels(self) -> None:
+        self.duplicates = DuplicatesPanel()
+        self.cleanup = CleanupPanel()
+        self.users = UsersPanel()
+        self.cleanup_pages = QTabWidget()
 
     def _build_scope_switch(self) -> None:
         self._scope: Node | None = None  # the folder the three lists cover; None: the whole scan
@@ -680,6 +693,8 @@ class ResultsView(QWidget):
         self.changes.failed.connect(self.compare_failed)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
+        self.tabs.addTab(self.users, "")
+        self.tabs.currentChanged.connect(lambda index: self.users.set_active(index == USERS_TAB))
         for view in (self.tree, self.largest_table, self.search_table, self.types_table, self.age_table,
                      self.changes_table, self.problems_table, self.cleanup.view, self.duplicates.view,
                      self.type_locations_table):
@@ -973,6 +988,7 @@ class ResultsView(QWidget):
         self.cleanup_pages.setTabText(SUGGESTIONS_PAGE, tr("cleanup_suggestions"))
         self.cleanup_pages.setTabText(DUPLICATES_PAGE, tr("tab_duplicates"))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
+        self.tabs.setTabText(USERS_TAB, tr("tab_users"))
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
         self._legend.setText(self._legend_html())

@@ -9,6 +9,27 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_capture_owners": "Capture Windows file owners",
+    "action_capture_owners_tip": "Off by default; adds owner metadata queries to future scans; enable and rescan",
+    "tab_users": "Users",
+    "column_owner": "Owner",
+    "column_owner_id": "Owner identity",
+    "owner_unknown": "Unknown owner",
+    "owners_refresh": "Refresh recorded totals",
+    "owners_reading": "Adding recorded owner totals and resolving account names…",
+    "owners_unqueried": "Open Users after scanning to query recorded owner totals.",
+    "owners_partial": "Incomplete scan: omitted/unreadable bytes and their owners remain unknown.",
+    "owners_summary": (
+        "{count} owner groups; showing {shown}; {files} files, {size}. "
+        "Unknown owners: {unknown_files} files, {unknown_size}."
+    ),
+    "owners_hint": (
+        "Whole scan, file owners only; directory ownership does not assign descendants. "
+        "POSIX uid comes from the scan's stat. On Windows enable Options → Capture Windows file owners and rescan. "
+        "Disabled, failed, changed or cloud/offline queries stay unknown. Names can fall back to uid/SID. "
+        "Named allocation remains estimated and hard links count per name. Ownership does not prove actual use "
+        "or removal permission. No cleanup actions are prepared."
+    ),
     "bin_labels_refresh": "Refresh bin totals",
     "bin_labels_hint": (
         "Read-only snapshot for up to 256 ready drives, prioritizing the scanned drive. "
@@ -972,6 +993,26 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_capture_owners": "記錄 Windows 檔案擁有者",
+    "action_capture_owners_tip": "預設關閉；後續掃描增加擁有者中繼資料查詢，啟用後請重新掃描",
+    "tab_users": "使用者",
+    "column_owner": "擁有者",
+    "column_owner_id": "擁有者識別碼",
+    "owner_unknown": "擁有者未知",
+    "owners_refresh": "更新記錄總計",
+    "owners_reading": "正在加總擁有者記錄並查詢帳號名稱…",
+    "owners_unqueried": "掃描完成後開啟「使用者」，即可查詢已記錄的擁有者總計。",
+    "owners_partial": "掃描不完整：略過／無法讀取的大小與擁有者保持未知。",
+    "owners_summary": (
+        "{count} 組擁有者，顯示 {shown} 組；{files} 個檔案，{size}。"
+        "擁有者未知：{unknown_files} 個檔案，{unknown_size}。"
+    ),
+    "owners_hint": (
+        "使用整份掃描，僅按檔案擁有者加總；資料夾擁有者不會套用至內含檔案。"
+        "POSIX uid 來自掃描已讀取的 stat；Windows 請啟用「選項 → 記錄 Windows 檔案擁有者」並重新掃描。"
+        "未啟用、失敗、路徑已變或雲端／離線查詢保持未知，名稱可能改顯示 uid／SID。"
+        "具名磁碟分配仍是估計值，硬連結按各名稱計算。擁有者不能證明實際使用或移除權限；此處不會準備清理操作。"
+    ),
     "bin_labels_refresh": "更新回收筒大小",
     "bin_labels_hint": (
         "唯讀快照，最多查詢 256 個就緒磁碟，優先查詢掃描所在磁碟。"
@@ -1836,6 +1877,26 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_capture_owners": "记录 Windows 文件所有者",
+    "action_capture_owners_tip": "默认关闭；后续扫描增加所有者元数据查询，启用后请重新扫描",
+    "tab_users": "用户",
+    "column_owner": "所有者",
+    "column_owner_id": "所有者标识",
+    "owner_unknown": "所有者未知",
+    "owners_refresh": "刷新记录总计",
+    "owners_reading": "正在累加所有者记录并查询账户名称…",
+    "owners_unqueried": "扫描完成后打开“用户”，即可查询已记录的所有者总计。",
+    "owners_partial": "扫描不完整：跳过／无法读取的大小与所有者保持未知。",
+    "owners_summary": (
+        "{count} 组所有者，显示 {shown} 组；{files} 个文件，{size}。"
+        "所有者未知：{unknown_files} 个文件，{unknown_size}。"
+    ),
+    "owners_hint": (
+        "使用整份扫描，仅按文件所有者累加；文件夹所有者不会应用到其中的文件。"
+        "POSIX uid 来自扫描已读取的 stat；Windows 请启用“选项 → 记录 Windows 文件所有者”并重新扫描。"
+        "未启用、失败、路径已变或云端／离线查询保持未知，名称可能改显示 uid／SID。"
+        "具名磁盘分配仍是估计值，硬链接按各名称计算。所有者不能证明实际使用或移除权限；此处不会准备清理操作。"
+    ),
     "bin_labels_refresh": "刷新回收站大小",
     "bin_labels_hint": (
         "只读快照，最多查询 256 个就绪磁盘，优先查询扫描所在磁盘。"
