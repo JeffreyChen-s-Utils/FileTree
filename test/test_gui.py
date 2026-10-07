@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import (
+    QAbstractEventDispatcher,
     QEventLoop,
     QItemSelectionModel,
     QModelIndex,
@@ -180,26 +181,30 @@ def test_workers_wait_while_the_window_handles_something(qapp: QApplication) -> 
         QTimer.singleShot(0, lambda: seen.append(pacing.WINDOW.is_open))
         _wait(qapp, lambda: bool(seen))
         assert seen == [False], "the gate is closed while the window handles an event"
-        opened = threading.Event()
-        watcher = threading.Thread(target=lambda: opened.set() if _opens_within(1.0) else None)
-        watcher.start()
         loop = QEventLoop()
-        QTimer.singleShot(300, loop.quit)
-        loop.exec()  # the window waits for the timer: the gate opens meanwhile
-        watcher.join()
-        assert opened.is_set()
+        idle_states: list[bool] = []
+        dispatcher = QAbstractEventDispatcher.instance()
+
+        def observe_idle() -> None:
+            idle_states.append(pacing.WINDOW.is_open)
+            loop.quit()
+
+        # Observe after pace_workers' native signal handler. A polling thread
+        # can miss a 300 ms idle interval entirely on a loaded host.
+        dispatcher.aboutToBlock.connect(observe_idle)
+        guard = QTimer(loop)
+        guard.setSingleShot(True)
+        guard.timeout.connect(loop.quit)
+        guard.start(10000)
+        try:
+            loop.exec()
+        finally:
+            guard.stop()
+            dispatcher.aboutToBlock.disconnect(observe_idle)
+        assert idle_states and all(idle_states), "the gate opens whenever the window becomes idle"
     finally:
         pace_workers(connect=False)
     assert pacing.WINDOW.is_open
-
-
-def _opens_within(seconds: float) -> bool:
-    deadline = time.monotonic() + seconds
-    while time.monotonic() < deadline:
-        if pacing.WINDOW.is_open:
-            return True
-        time.sleep(0.001)
-    return False
 
 
 class _GivingWay(QThread):
