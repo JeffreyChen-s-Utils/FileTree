@@ -129,6 +129,8 @@ def _private_scope(fd: int, mount: int) -> bytes:
     info = os.fstat(fd)
     if info.st_uid != os.getuid() or info.st_mode & 0o077 or not stat.S_ISDIR(info.st_mode):
         raise OSError("Trash scope must be a private current-user directory")
+    if not info.st_dev or not info.st_ino:
+        raise OSError("Trash scope identity is unavailable")
     if descriptor_mount(fd) != mount:
         raise OSError("Trash scope belongs to another mount")
     return pack_snapshot(info)
@@ -137,6 +139,8 @@ def _private_scope(fd: int, mount: int) -> bytes:
 def _entry(info: os.stat_result, parts: tuple[str, ...]) -> BinEntry:
     if info.st_uid != os.getuid():
         raise OSError("Foreign owner inside Trash")
+    if not info.st_dev or not info.st_ino:
+        raise OSError("Trash entry identity is unavailable")
     if not (stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode)):
         raise OSError("Special entry inside Trash")
     return BinEntry(parts, pack_snapshot(info), stat.S_ISDIR(info.st_mode))

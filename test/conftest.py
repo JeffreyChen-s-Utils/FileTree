@@ -33,6 +33,11 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
             raise AssertionError("Tests cannot empty a real user POSIX Trash")
         return original_empty_scope(scope, mount)
     monkeypatch.setattr(bin_empty, "_empty_scope", forbid_live_posix_scope)
+    from je_file_tree.core import finder_bin
+    def forbid_live_finder_empty():
+        emptied.append("Finder-wide Trash")
+        raise AssertionError("Tests cannot empty a real user's Finder Trash")
+    monkeypatch.setattr(finder_bin, "_run_finder_empty", forbid_live_finder_empty)
     if os.name == "nt":
         def forbid_live_empty(_window, root, _flags):
             emptied.append(root)

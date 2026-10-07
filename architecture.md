@@ -109,7 +109,21 @@ errors remain visible with removed counts. Survey Stop/close joins and suppresse
 emptying blocks Stop/close. Completion refreshes volume rows/bin labels and invalidates the old main
 capacity ledger, including stale analyser replies; rescan rebuilds recorded tree/accounting.
 The private ext4 validation tool tests native scoped removal and unchanged outside symlink targets.
-macOS remains read-only pending its Finder-wide scope implementation and unavailable native validation.
+macOS `core.finder_bin` surveys the private home `.Trash` and mounted `.Trashes/<uid>` through a
+trusted complete `QStorageInfo` provider injected by the GUI. Unavailable/omitted/oversized root sets
+disable global approval; physical scopes are deduplicated, total metadata capped at 100k entries/128
+levels and no-follow descriptor surveys reject foreign/special/linked/mounted/changed entries.
+`SCDynamicStoreCopyConsoleUser` must match the unelevated process uid (never root); its copied CFString
+is released. The account home comes from pwd rather than an overridden HOME. Unknown/switched user
+identity disables approval. Native console/account behavior is included in the pending Mac validation.
+Two default-No plain-text questions list all scopes/roots, logical bytes/items and Finder-wide
+irreversibility, independent of row selection. The worker compares a fresh entire plan, invokes only
+fixed `/usr/bin/osascript -e 'tell application "Finder" to empty the trash'` and awaits replies without
+shell/path interpolation or termination. Finder can also remove new arrivals. Automation/native errors
+and remaining/inaccessible Trash produce visible failures and fresh metadata; Finder may continue after
+an error. All lifecycle/capacity invalidation paths are shared with Windows/Linux.
+Disposable POSIX fixture tests and mocked subprocess checks do not prove native macOS/Finder/APFS
+semantics; #4/#21 remain blocked by the absent native environment.
 
 `gui.bin_labels.BinLabels` owns cancellable metadata-query threads independently of scans and cleanup
 suggestions. Manual Refresh, completed Trash operations and bin-manager close query at most 256 ready

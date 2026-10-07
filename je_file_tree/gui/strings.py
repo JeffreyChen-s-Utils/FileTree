@@ -232,7 +232,17 @@ EN: dict[str, str] = {
                       "from more workers; excessive concurrency can overload a disk/server. Running scans retain "
                       "their existing workers. Real UNC performance depends on your share.",
     "action_bins": "Recycle Bins…",
-    "action_bins_tip": "Review per-drive bin totals and explicit Windows/Linux emptying",
+    "action_bins_tip": "Review bin totals and explicit scoped OS emptying",
+    "bin_finder_empty": "Empty Finder Trash on all mounted volumes…",
+    "bin_finder_all": "all mounted volumes (Finder-wide Trash)",
+    "bin_finder_scopes": "Current-user Trash scopes:\n{scopes}\n\nMounted volumes:\n{roots}",
+    "bin_finder_first": "Empty the current user's Finder Trash across ALL mounted volumes?\n\n{root}\n\n"
+                        "Logical payload: {size}\nItems: {count}",
+    "bin_finder_irreversible": "Permanently empty the current user's Finder Trash on ALL mounted volumes?\n\n"
+                               "{root}\n\nLogical payload: {size}\nItems: {count}\n\nThis cannot be undone. Finder can "
+                               "also remove items arriving during its operation. This affects every mounted bin, "
+                               "regardless of the selected row. The OS operation cannot be canceled. Automation or "
+                               "permission failures can leave partial results, and Finder may still be working.",
     "bin_preparing": "Reviewing exact Trash scopes on {root}…",
     "bin_no_approval": "No complete nonempty Trash approval; refresh and review again.",
     "bin_scope_first": "Empty these current-user Trash payload/receipt scopes?\n\n{root}\n\n"
@@ -251,7 +261,8 @@ EN: dict[str, str] = {
     "bin_failed": "Emptying did not complete: {reason}",
     "bin_hint": "Select one mounted volume. Windows empties its current-user OS bin; Linux inventories recognized "
                 "files/info scopes. Two questions show exact scope and totals before permanent removal. "
-                "Stop cancels surveys; active emptying must finish. macOS remains read-only. Capacity/bin "
+                "Stop cancels surveys; active emptying must finish. macOS empties ALL mounted Finder Trash after "
+                "global review (native validation pending). Capacity/bin "
                 "values refresh afterwards; rescan to update the main tree.",
     "action_volumes": "Drive overview…",
     "action_volumes_tip": "Inspect mounted volumes, capacity, allocation units and Recycle Bin totals",
@@ -1289,7 +1300,17 @@ ZH_TW: dict[str, str] = {
                       "過高並行數可能使磁碟／伺服器負荷過重。進行中的掃描保留既有執行緒數，"
                       "UNC 效能取決於實際共用環境。",
     "action_bins": "資源回收筒…",
-    "action_bins_tip": "審查各磁碟回收筒總量與 Windows／Linux 明確清空動作",
+    "action_bins_tip": "審查回收筒總量與明確範圍的系統清空動作",
+    "bin_finder_empty": "清空所有已掛載磁碟的 Finder 回收筒…",
+    "bin_finder_all": "所有已掛載磁碟（Finder 全域回收筒）",
+    "bin_finder_scopes": "目前使用者的回收筒範圍：\n{scopes}\n\n已掛載磁碟：\n{roots}",
+    "bin_finder_first": "清空目前使用者在所有已掛載磁碟上的 Finder 回收筒？\n\n{root}\n\n"
+                        "內容邏輯大小：{size}\n項目數：{count}",
+    "bin_finder_irreversible": "永久清空目前使用者在所有已掛載磁碟上的 Finder 回收筒？\n\n{root}\n\n"
+                               "內容邏輯大小：{size}\n項目數：{count}\n\n此動作無法復原。"
+                               "Finder 也可能移除作業期間新增的項目。"
+                               "此動作影響所有已掛載磁碟的回收筒，與選取哪一列無關，開始後不能取消。"
+                               "自動化或權限錯誤可能導致僅完成一部分，Finder 也可能仍在執行。",
     "bin_preparing": "正在盤點 {root} 的確切回收筒範圍…",
     "bin_no_approval": "沒有完整且非空的回收筒盤點，請更新後重新檢視。",
     "bin_scope_first": "清空目前使用者的這些回收筒內容／收據範圍？\n\n{root}\n\n內容邏輯大小：{size}\n項目數：{count}",
@@ -1305,7 +1326,8 @@ ZH_TW: dict[str, str] = {
     "bin_running": "正在清空 {root} 的資源回收筒，等待系統作業完成…",
     "bin_failed": "未完成清空：{reason}",
     "bin_hint": "選取一個已掛載磁碟。Windows 清空目前使用者的系統回收筒；Linux 盤點已識別的 files／info 範圍。"
-                "永久移除前以兩次詢問列出確切範圍與總量。停止可取消盤點；開始清空後必須等待完成。macOS 目前僅能檢視。"
+                "永久移除前以兩次詢問列出確切範圍與總量。停止可取消盤點；開始清空後必須等待完成。"
+                "macOS 經全域檢視後清空所有已掛載磁碟的 Finder 回收筒，原生驗證待完成。"
                 "完成後更新容量／回收筒數值；重新掃描可更新主樹狀圖。",
     "action_volumes": "磁碟總覽…",
     "action_volumes_tip": "查看已掛載磁碟、容量、配置單位與資源回收筒總量",
@@ -2261,7 +2283,17 @@ ZH_CN: dict[str, str] = {
     "workers_prompt": "新扫描线程数（1–32），默认值为 {default}。慢速网络共享可能受益于更多线程；"
                       "过高并行数可能使磁盘／服务器负荷过重。进行中的扫描保留现有线程数，UNC 性能取决于实际共享环境。",
     "action_bins": "回收站…",
-    "action_bins_tip": "检查各磁盘回收站总量与 Windows／Linux 明确清空操作",
+    "action_bins_tip": "检查回收站总量与明确范围的系统清空操作",
+    "bin_finder_empty": "清空所有已挂载磁盘的 Finder 回收站…",
+    "bin_finder_all": "所有已挂载磁盘（Finder 全局回收站）",
+    "bin_finder_scopes": "当前用户的回收站范围：\n{scopes}\n\n已挂载磁盘：\n{roots}",
+    "bin_finder_first": "清空当前用户在所有已挂载磁盘上的 Finder 回收站？\n\n{root}\n\n"
+                        "内容逻辑大小：{size}\n项数：{count}",
+    "bin_finder_irreversible": "永久清空当前用户在所有已挂载磁盘上的 Finder 回收站？\n\n{root}\n\n"
+                               "内容逻辑大小：{size}\n项数：{count}\n\n此操作无法恢复。"
+                               "Finder 也可能移除操作期间新增的项。"
+                               "此操作影响所有已挂载磁盘的回收站，与选中哪一行无关，开始后不能取消。"
+                               "自动化或权限错误可能导致仅完成一部分，Finder 也可能仍在运行。",
     "bin_preparing": "正在清点 {root} 的确切回收站范围…",
     "bin_no_approval": "没有完整且非空的回收站清点，请刷新后重新检查。",
     "bin_scope_first": "清空当前用户的这些回收站内容／收据范围？\n\n{root}\n\n内容逻辑大小：{size}\n项数：{count}",
@@ -2277,7 +2309,8 @@ ZH_CN: dict[str, str] = {
     "bin_running": "正在清空 {root} 的回收站，等待系统操作完成…",
     "bin_failed": "未完成清空：{reason}",
     "bin_hint": "选中一个已挂载磁盘。Windows 清空当前用户的系统回收站；Linux 清点已识别的 files／info 范围。"
-                "永久移除前以两次询问列出确切范围与总量。停止可取消清点；开始清空后必须等待完成。macOS 当前只能查看。"
+                "永久移除前以两次询问列出确切范围与总量。停止可取消清点；开始清空后必须等待完成。"
+                "macOS 经全局检查后清空所有已挂载磁盘的 Finder 回收站，原生验证待完成。"
                 "完成后更新容量／回收站数值；重新扫描可更新主树。",
     "action_volumes": "磁盘总览…",
     "action_volumes_tip": "查看已挂载磁盘、容量、分配单位与回收站总量",

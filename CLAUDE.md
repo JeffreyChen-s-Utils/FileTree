@@ -86,6 +86,15 @@ tool default.
   unknown receipts, foreign owners, linked scope directories and mount boundaries are refused.
   Descriptor-relative operations never follow payload links or remove the OS-bin directories.
   Failures and partial completion must remain visible and trigger fresh bin/capacity metadata.
+  Explicit macOS Finder *Empty Trash* may invoke only fixed `/usr/bin/osascript` with Finder's global
+  empty-trash command after two questions naming all current-user mounted Trash scopes, bytes/items
+  and irreversibility. A complete native mounted-root provider and deduplicated no-follow private-uid
+  inventories must be rechecked before invoking it; incomplete/changed scopes or volumes are refused.
+  Require the same unelevated uid as the primary console user and the account's home directory;
+  an overridden HOME, root process or another switched/console user never grants Finder approval.
+  No arbitrary paths are passed and no direct deletion is permitted. Explain that Finder acts on all
+  mounted bins and may remove new arrivals. Join the OS call; surface automation/permission/partial
+  errors and refresh metadata, including errors where Finder may still be working.
   Retention may permanently remove FileTree's own recognized operation-journal segments under its
   application data directory; it never applies to scanned user entries. Atomic temporary files may
   also be removed after a failed write.

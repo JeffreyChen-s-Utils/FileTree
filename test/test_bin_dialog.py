@@ -3,15 +3,16 @@
 import threading
 from dataclasses import replace
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtWidgets import QMessageBox
 import pytest
 
 from test_gui import _wait
-from test_volumes import _sources
+from test_volumes import _sources, _storage
 from je_file_tree.gui import bin_dialog as bins
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.core.bin_empty import BinEmptyPlan, BinEmptyResult, BinScope
+from je_file_tree.core.finder_bin import FinderEmptyPlan, FinderScope
 from je_file_tree.core.trash_size import TrashUsage
 
 
@@ -176,3 +177,50 @@ def test_linux_stop_or_close_joins_survey_without_late_approval(qapp, monkeypatc
         assert dialog._approval_worker is None and dialog.view.isEnabled()
         dialog.reject()
     dialog.deleteLater()
+
+
+@pytest.mark.parametrize("decline", (0, 1, None))
+def test_finder_confirmation_is_global_and_rechecks_with_native_provider(qapp, monkeypatch, decline):
+    dialog = _dialog(qapp, monkeypatch)
+    monkeypatch.setattr(bins.sys, "platform", "darwin")
+    scope = FinderScope("/owned-home/.Trash", b"fixture", (), 123, 2)
+    plan = FinderEmptyPlan(("/", "/owned-volume"), 123, (scope,), TrashUsage(123, 2, True))
+    monkeypatch.setattr(bins, "prepare_finder_empty", lambda _provider, **_kwargs: plan)
+    questions, called = [], []
+    def question(_parent, _title, text, _buttons, default):
+        assert default == QMessageBox.StandardButton.No
+        assert "all mounted volumes" in _title
+        questions.append(text)
+        return QMessageBox.StandardButton.No if len(questions) - 1 == decline else QMessageBox.StandardButton.Yes
+    def empty(approved, provider):
+        called.append(approved)
+        assert provider is bins.finder_roots
+        raise OSError("<fixture automation denied>")
+    monkeypatch.setattr(bins, "ask_bin", question)
+    monkeypatch.setattr(bins, "empty_finder_bin", empty)
+    try:
+        dialog.view.setCurrentIndex(QModelIndex())
+        dialog.empty_selected()
+        _wait(qapp, lambda: dialog._approval_worker is None and dialog._empty_worker is None
+              and not dialog.worker.isRunning())
+        assert len(questions) == (2 if decline is None else decline + 1)
+        assert all("ALL mounted volumes" in text and scope.directory in text and "/owned-volume" in text
+                   and "123 B" in text for text in questions)
+        assert called == ([plan] if decline is None else [])
+        if decline is None:
+            assert "<fixture automation denied>" in dialog.status.text()
+    finally:
+        dialog.reject()
+        dialog.deleteLater()
+
+
+def test_finder_mount_provider_refuses_unavailable_or_omitted_roots(monkeypatch):
+    _sources(monkeypatch, [_storage("/"), _storage("/owned-volume")])
+    assert bins.finder_roots() == ("/", "/owned-volume")
+    _sources(monkeypatch, [_storage("/"), _storage("/unready", ready=False)])
+    with pytest.raises(ValueError, match="unavailable"):
+        bins.finder_roots()
+    _sources(monkeypatch, [_storage("/"), _storage("/owned-volume")])
+    monkeypatch.setattr(bins, "MAX_ROOTS", 1)
+    with pytest.raises(ValueError, match="complete"):
+        bins.finder_roots()

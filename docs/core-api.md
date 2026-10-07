@@ -199,6 +199,21 @@ original receipt paths and payload link targets are never followed. OS-bin conta
 Concurrent mutation can cause partial completion; no cancellation is offered after deletion starts.
 This API does not authorize arbitrary source removal or report guaranteed recoverable bytes.
 
+`finder_bin.prepare_finder_empty(provider, *, cancel=None)` is macOS-only and returns a frozen
+`FinderEmptyPlan`, or `None` on cancellation. `provider()` must return every native mounted root
+without omitted/unavailable scopes; the GUI uses `QStorageInfo` and rejects such omissions/errors.
+Recognized private current-uid home/volume Trash is surveyed without payload reads, physical scopes
+deduplicated and metadata bounded globally to 100k entries/128 levels. Incomplete scopes disable
+approval. The unelevated process uid must match `SCDynamicStoreCopyConsoleUser`, never root or another
+switched user; pwd supplies the account home, independent of HOME. Unknown identity disables approval.
+`empty_finder_bin(plan, provider)` requires two explicit Finder-wide questions listing all
+current-user scopes, mounted roots, logical bytes/items and permanent consequences. It rechecks the
+whole plan, calls only fixed Finder osascript without path arguments/direct deletion, and surveys
+remaining contents. Changed plans, OS/automation errors and remaining/inaccessible data raise visible
+errors. Active execution is awaited; Finder can remove new arrivals and may continue after an error.
+Returned `TrashUsage` is a fresh logical observation, never guaranteed recovery. Native macOS remains
+unverified; POSIX fixture and mocked command checks establish only portable approval/control behavior.
+
 Saved JSON (`file-tree/1`) stores folders and aggregate logical sizes, not a restorable file inventory or
 removal authorization. `compare` matches relative folder paths, normalizing case on Windows; it compares
 sizes, not contents. Missing values are `None`; `.change` treats a missing side as zero. Partial or
