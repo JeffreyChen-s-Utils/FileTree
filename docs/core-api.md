@@ -109,6 +109,9 @@ use `dataclasses.replace(group, kept=chosen_member)` to make a choice. Undecided
 recovery maximum, not an implicit oldest keeper. `DuplicateGroup.digest` and `.proofs` record the
 verified search snapshot; `duplicate_decisions.check_group(..., rehash=True)` validates every member
 and rehashes the whole group without changing files. Failed checks require rescanning/searching.
+`DuplicateResult.folders` lists matching nonempty folder trees derived from those hashes, without extra
+content reads. Each group has `.folders`, `.size` and `.files`; missing hashes/errors/links prevent a
+match. Names and empty-folder structure are compared exactly. These are read-only snapshot results.
 `capacity.capacity_ledger(root, *, partial=False)` reports OS capacity, coverage and an estimated
 remainder only for compatible complete whole-volume scans. Both estimates still need isolated-volume
 validation and neither authorizes removing files. Duplicate hashing checks snapshots around each read

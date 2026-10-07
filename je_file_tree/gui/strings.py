@@ -9,6 +9,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "duplicate_folder_match": "{copy} = {original} ({size}, {files} files; matching search snapshot)",
+    "duplicate_folder_tip": ("Matching names, sizes, verified hashes and empty-folder structure. "
+                             "Read-only; not a clean-up approval."),
     "duplicates_keep_selected": "Keep selected copy",
     "duplicates_kept_name": "Kept: {name}",
     "duplicates_kept_path": "Kept copy: {path}.",
@@ -554,6 +557,8 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "duplicate_folder_match": "{copy} = {original}（{size}，{files} 個檔案；搜尋快照相符）",
+    "duplicate_folder_tip": "名稱、大小、已驗證雜湊與空資料夾結構相同。僅供比對，不代表可清理。",
     "duplicates_keep_selected": "保留選取的副本",
     "duplicates_kept_name": "保留：{name}",
     "duplicates_kept_path": "保留副本：{path}。",
@@ -1046,6 +1051,8 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "duplicate_folder_match": "{copy} = {original}（{size}，{files} 个文件；搜索快照相符）",
+    "duplicate_folder_tip": "名称、大小、已验证哈希与空文件夹结构相同。仅供比较，不代表可清理。",
     "duplicates_keep_selected": "保留选中的副本",
     "duplicates_kept_name": "保留：{name}",
     "duplicates_kept_path": "保留副本：{path}。",

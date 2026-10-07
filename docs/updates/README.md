@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-14 | 2026-10-07 | Find matching folder trees from existing duplicate hashes | #done #duplicates | [2026-10](2026-10.md) |
 | U-20261007-13 | 2026-10-07 | Require explicit duplicate keepers and whole-group revalidation | #done #duplicates #safety | [2026-10](2026-10.md) |
 | U-20261007-12 | 2026-10-07 | Preview and persist validated clean-up policy | #done #cleanup #settings | [2026-10](2026-10.md) |
 | U-20261007-11 | 2026-10-07 | Require age and evidence for conservative clean-up rules | #done #cleanup #safety | [2026-10](2026-10.md) |

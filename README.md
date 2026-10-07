@@ -202,6 +202,13 @@ atomic group operation. Compressed/sparse files use allocation; known cloud plac
 opened by hashing. Shared extents and directory metadata remain unknown, and moving to Trash does
 not itself free space. Isolated-volume validation remains pending.
 
+Matching folders appear above the file groups as **copy = original**, using the search's existing
+hashes without reading contents again. Every nonempty file must have a verified hash; relative names,
+sizes, hashes and empty-folder structure must match. Unhashed small/unique files, links and incomplete
+branches prevent a folder match. Nested matches covered by an outer pair are collapsed, while an
+additional outside copy is still listed. These lines compare the search snapshot and do not approve
+folder removal.
+
 ### Capacity details
 
 The line above the tree shows OS used/free space and an estimate of file allocation with hard links

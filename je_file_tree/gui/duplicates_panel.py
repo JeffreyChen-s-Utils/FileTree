@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QListWidget,
     QProgressBar,
     QPushButton,
     QSizePolicy,
@@ -45,6 +46,9 @@ class DuplicatesPanel(QWidget):
         super().__init__(parent)
         self.unit = AUTO_UNIT
         self.model = QStandardItemModel(self)
+        self.folder_matches = QListWidget()
+        self.folder_matches.setMaximumHeight(110)
+        self.folder_matches.setVisible(False)
         self.view = grouped_list.build_view(self.model)
         self.min_size = QComboBox()
         self.start_button = QPushButton()
@@ -133,6 +137,10 @@ class DuplicatesPanel(QWidget):
     def prune(self) -> None:
         """Drop files that are no longer in the tree, and groups left with a single file."""
         root = self._root
+        if self._found is not None:
+            self._found = replace(self._found, folders=[])
+        self.folder_matches.clear()
+        self.folder_matches.setVisible(False)
         if root is None or not self._groups:
             return
         kept = []
@@ -228,6 +236,7 @@ class DuplicatesPanel(QWidget):
         layout.addLayout(decisions)
         layout.addWidget(self.status)
         layout.addWidget(self.estimate)
+        layout.addWidget(self.folder_matches)
         layout.addWidget(self.view, 1)
 
     def _rebuild(self) -> None:
@@ -245,6 +254,24 @@ class DuplicatesPanel(QWidget):
                     font = item.font()
                     font.setBold(True)
                     item.setFont(font)
+        self._folder_lines()
+
+    def _folder_lines(self) -> None:
+        self.folder_matches.clear()
+        matches = self._found.folders[:LISTED_GROUPS] if self._found is not None else []
+        for group in matches:
+            if self._root is None or any(not folder.is_in(self._root) for folder in group.folders):
+                continue
+            original = group.folders[0]
+            for copy in group.folders[1:]:
+                if self.folder_matches.count() == LISTED_GROUPS:
+                    break
+                text = tr("duplicate_folder_match", copy=copy.path, original=original.path,
+                          size=format_size(group.size, self.unit), files=format_count(group.files))
+                self.folder_matches.addItem(text)
+                self.folder_matches.item(self.folder_matches.count() - 1).setToolTip(text)
+        self.folder_matches.setVisible(self.folder_matches.count() > 0)
+        self.folder_matches.setToolTip(tr("duplicate_folder_tip"))
 
     # --- a search ---------------------------------------------------------
 

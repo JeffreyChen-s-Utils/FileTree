@@ -55,6 +55,13 @@ batch; a failed check skips all selected members and queues a rescan. Platform m
 produce a partial batch; path-based Trash calls are not an atomic group transaction. All workers join
 on close. The displayed extra-copy sum is explicitly logical; shared extents remain unknown.
 
+`core.duplicate_folders` builds iterative bottom-up folder signatures from the verified file-group
+digests, without extra content reads. Every nonempty file must be hashed and relative names, sizes and
+empty-directory structure must agree; unknown/error/link branches invalidate ancestors. Outer matches
+collapse covered nested pairs while preserving an additional outside copy. `DuplicateResult.folders`
+is shown as bounded read-only comparison lines above file groups, cleared by tree edits. It is never
+used as authorization to move whole folders.
+
 `core/capacity.py` builds a worker-computed estimated capacity ledger: OS total/used/available free,
 unique allocation on the root device, hard-link overcount, included Trash allocation seen, foreign
 allocation excluded and mount-boundary counts. Only complete whole-volume scans with known identities

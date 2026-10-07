@@ -25,6 +25,7 @@ from dataclasses import dataclass, field, replace
 from typing import BinaryIO
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.duplicate_folders import DuplicateFolderGroup, find_duplicate_folders
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.savings import Savings, estimate_savings
 from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
@@ -60,6 +61,7 @@ class DuplicateResult:
     files_read: int
     bytes_read: int
     skipped: int
+    folders: list[DuplicateFolderGroup] = field(default_factory=list)
 
     @property
     def extra(self) -> int:
@@ -145,7 +147,10 @@ def find_duplicates(root: Node, *, min_size: int = DEFAULT_MIN_SIZE, workers: in
                                   proofs={node: reader.proofs[node] for node in files})
                    for files in reader.round(pool, longer, whole=True)]
     groups.sort(key=lambda group: (-group.extra, group.files[0].name.lower()))
-    return DuplicateResult(groups, reader.files_read, reader.bytes_read, reader.skipped)
+    folders = find_duplicate_folders(root, groups, cancel=cancel)
+    if folders is None:
+        raise DuplicateSearchCancelledError
+    return DuplicateResult(groups, reader.files_read, reader.bytes_read, reader.skipped, folders)
 
 
 def _by_size(files: Iterable[Node], min_size: int) -> dict[int, list[Node]]:
