@@ -30,6 +30,16 @@ range after emptying Trash, and current free space. A hard-linked file whose oth
 zero recoverable data. Unknown identities/coverage make recovery unknown; shared extents and directory
 metadata remain outside the estimate. Windows cluster-rounded allocation is explicitly an estimate.
 
+`core/capacity.py` builds a worker-computed estimated capacity ledger: OS total/used/available free,
+unique allocation on the root device, hard-link overcount, included Trash allocation seen, foreign
+allocation excluded and mount-boundary counts. Only complete whole-volume scans with known identities
+can compute an unaccounted remainder; omitted bytes, filesystem metadata and other-volume totals remain
+unknown. `gui/capacity_panel.py` shows the ledger and its limits. Tree edits invalidate it immediately;
+whole-tree analysis after a branch rescan refreshes it. Replaced analysis signals are ignored and all
+analysis threads are joined at close. CLI scan JSON includes the same ledger. Accuracy validation on
+isolated NTFS/ext4/APFS volumes is outstanding. Different-device directory mounts are listed without
+traversal; same-device POSIX bind mounts still need boundary detection.
+
 ## 3. Entry points and public interfaces
 
 - `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`

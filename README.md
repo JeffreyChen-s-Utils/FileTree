@@ -163,6 +163,19 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
 
+### Capacity details
+
+The line above the tree shows OS used/free space and an estimate of file allocation with hard links
+counted once. **Capacity details** distinguishes named allocation, hard-link overcount, Recycle Bin data
+seen (already included), omitted/unreadable branches and other mounted volumes. A complete whole-volume
+scan can show the unexplained remainder as **unaccounted**. A folder scan, partial scan, missing identities
+or an estimate larger than OS used space cannot reconcile the drive. Filesystem metadata/reserved space,
+omitted bytes and other-volume totals remain **unknown**, never zero. OS capacity and file snapshots are
+measured at different instants; shared extents, snapshots and Windows allocation estimates can affect
+the remainder. NTFS/ext4/APFS test-volume validation is still pending, so the ledger is an estimate.
+The CLI scan record includes the same figures under `capacity`. Other-device directory mounts are
+listed without traversal; same-device POSIX bind-mount detection is still pending.
+
 ## Command line without a window
 
 The console entry uses only the core and never imports Qt. It writes the same atomic CSV/JSON exports

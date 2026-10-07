@@ -290,6 +290,9 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
         child = _entry_node(entry, options, read, allocation, excluded)
         if child is None:
             continue
+        if _other_volume(folder, child):
+            child.is_link = True  # a mount boundary is listed, never traversed
+            child.error = None
         child.parent = folder
         children.append(child)
         if child.is_dir and not child.is_link and child.error == NOT_SCANNED:
@@ -299,6 +302,12 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
     else:
         folder.error = None
     return read
+
+
+def _other_volume(folder: Node, child: Node) -> bool:
+    """Different-device directory mounts must not bring another volume into this scan."""
+    return bool(child.is_dir and folder.snapshot is not None and child.snapshot is not None
+                and unpack_snapshot(folder.snapshot).device != unpack_snapshot(child.snapshot).device)
 
 
 def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead,

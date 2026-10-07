@@ -9,6 +9,46 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'capacity_details': 'Capacity details',
+    'capacity_summary': 'OS used {used}; free {free}; unique allocated estimate {unique}. {status}',
+    'capacity_estimated': 'Whole-volume estimate; unaccounted space is shown in Details.',
+    'capacity_folder_only': 'Folder scan: cannot reconcile the volume.',
+    'capacity_incomplete': 'Incomplete scan: cannot reconcile the volume.',
+    'capacity_identity_unknown': 'Missing file identities: cannot reconcile the volume.',
+    'capacity_capacity_unavailable': 'OS capacity is unavailable; cannot reconcile the volume.',
+    'capacity_root_changed': 'Scanned root changed; rescan before reconciling.',
+    'capacity_allocation_exceeds_used': 'Allocated estimate exceeds OS used space; cannot reconcile.',
+    'capacity_coverage': 'Skipped {skipped}; unreadable {inaccessible}; pending {pending}',
+    'capacity_bin_partial': 'The Recycle Bin was not fully identified or read; its shown amount is only data seen.',
+    "capacity_explanation": ('Known file allocation includes the Recycle'
+                             ' Bin data seen. Hard-link names count once'
+                             '. Other mounted volumes are excluded. Omit'
+                             'ted data and filesystem metadata are unkno'
+                             'wn, not zero. Unaccounted may include inac'
+                             'cessible data, metadata, snapshots, shared'
+                             ' extents and allocation estimates. OS capa'
+                             'city and files are measured at different i'
+                             'nstants; the filesystem can change during '
+                             'scanning. Unavailable free space is the di'
+                             'fference between reported total, used and '
+                             'available free, not a measured metadata to'
+                             'tal. These are estimates pending NTFS, ext'
+                             '4 and APFS volume validation.'),
+    'capacity_row_total': 'OS total',
+    'capacity_row_used': 'OS used',
+    'capacity_row_free': 'OS available free',
+    'capacity_row_unavailable_free': 'Unavailable free space',
+    'capacity_row_named_allocated': 'Named allocated estimate',
+    'capacity_row_unique_allocated': 'Unique allocated estimate',
+    'capacity_row_hard_link_overcount': 'Hard-link overcount removed',
+    'capacity_row_recycle_bin_seen': 'Recycle Bin allocation seen (included)',
+    'capacity_row_foreign_allocated_seen': 'Other-volume file allocation seen (excluded)',
+    'capacity_row_unaccounted': 'Unaccounted',
+    'capacity_row_metadata_bytes': 'Filesystem metadata / reserved',
+    'capacity_row_omitted_bytes': 'Omitted data',
+    'capacity_row_other_volumes_bytes': 'Other mounted volumes',
+    'capacity_row_mounts': 'Different-device mount boundaries',
+    'capacity_row_coverage': 'Coverage',
     "review_title": "Review clean-up proposals",
     "review_details": "{path}\nRule: {rule}; protection: {protection}. {consequence}",
     "review_hint": "Review every path and consequence. Uncheck entries to keep them; Continue opens the confirmations.",
@@ -443,6 +483,37 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'capacity_details': '容量明細',
+    'capacity_summary': '系統已用 {used}；可用 {free}；不重複配置估計 {unique}。{status}',
+    'capacity_estimated': '整個磁碟的估計；未能歸帳的空間請見明細。',
+    'capacity_folder_only': '僅掃描資料夾：無法核對整個磁碟。',
+    'capacity_incomplete': '掃描不完整：無法核對整個磁碟。',
+    'capacity_identity_unknown': '缺少檔案識別資訊：無法核對整個磁碟。',
+    'capacity_capacity_unavailable': '無法取得系統容量：無法核對整個磁碟。',
+    'capacity_root_changed': '掃描根目錄已變更，請重新掃描後核對。',
+    'capacity_allocation_exceeds_used': '配置估計超過系統已用空間，無法核對。',
+    'capacity_coverage': '略過 {skipped}；無法讀取 {inaccessible}；尚未讀取 {pending}',
+    'capacity_bin_partial': '未完整識別或讀取資源回收筒，顯示的大小僅限已讀取的資料。',
+    "capacity_explanation": ('已知檔案配置包含讀取到的資源回收筒資料，硬連結的多個名稱只算一次。其他掛載磁碟不列入'
+                             '。略過的資料與檔案系統中繼資料是未知，而非 0。未能歸帳的空間可能包含無法讀取的資料'
+                             '、中繼資料、快照、共用區塊及配置估計誤差。系統容量與檔案不是同時量測，掃描期間檔案系'
+                             '統可能變動。不可用的剩餘空間是系統回報的總量、已用及可用量之差，不是量測得到的中繼資'
+                             '料總量。這些數字是估計，仍待 NTFS、ext4 與 APFS 測試磁碟驗證。'),
+    'capacity_row_total': '系統總容量',
+    'capacity_row_used': '系統已用空間',
+    'capacity_row_free': '系統可用空間',
+    'capacity_row_unavailable_free': '不可用的剩餘空間',
+    'capacity_row_named_allocated': '依名稱計算的配置估計',
+    'capacity_row_unique_allocated': '不重複配置估計',
+    'capacity_row_hard_link_overcount': '已扣除的硬連結重複量',
+    'capacity_row_recycle_bin_seen': '已讀取的資源回收筒配置（已包含）',
+    'capacity_row_foreign_allocated_seen': '已讀取的其他磁碟配置（不列入）',
+    'capacity_row_unaccounted': '未能歸帳',
+    'capacity_row_metadata_bytes': '檔案系統中繼資料／保留空間',
+    'capacity_row_omitted_bytes': '略過的資料',
+    'capacity_row_other_volumes_bytes': '其他掛載磁碟',
+    'capacity_row_mounts': '跨磁碟掛載邊界',
+    'capacity_row_coverage': '掃描涵蓋範圍',
     "review_title": "審查清理建議",
     "review_details": "{path}\n規則：{rule}；保護狀態：{protection}。{consequence}",
     "review_hint": "請檢查每條路徑與移除後果，取消勾選即可保留項目；繼續後才會顯示確認問題。",
@@ -848,6 +919,37 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'capacity_details': '容量明细',
+    'capacity_summary': '系统已用 {used}；可用 {free}；不重复分配估计 {unique}。{status}',
+    'capacity_estimated': '整个磁盘的估计；无法归账的空间请见明细。',
+    'capacity_folder_only': '仅扫描文件夹：无法核对整个磁盘。',
+    'capacity_incomplete': '扫描不完整：无法核对整个磁盘。',
+    'capacity_identity_unknown': '缺少文件标识信息：无法核对整个磁盘。',
+    'capacity_capacity_unavailable': '无法获取系统容量：无法核对整个磁盘。',
+    'capacity_root_changed': '扫描根目录已更改，请重新扫描后核对。',
+    'capacity_allocation_exceeds_used': '分配估计超过系统已用空间，无法核对。',
+    'capacity_coverage': '跳过 {skipped}；无法读取 {inaccessible}；尚未读取 {pending}',
+    'capacity_bin_partial': '未完整识别或读取回收站，显示的大小仅限已读取的数据。',
+    "capacity_explanation": ('已知文件分配包含读取到的回收站数据，硬链接的多个名称只算一次。其他挂载磁盘不计入。跳'
+                             '过的数据与文件系统元数据是未知，而非 0。无法归账的空间可能包含无法读取的数据、元数'
+                             '据、快照、共享区块及分配估计误差。系统容量与文件不是同时测量，扫描期间文件系统可能变'
+                             '化。不可用的剩余空间是系统报告的总量、已用及可用量之差，不是测量得到的元数据总量。这'
+                             '些数字是估计，仍待 NTFS、ext4 与 APFS 测试磁盘验证。'),
+    'capacity_row_total': '系统总容量',
+    'capacity_row_used': '系统已用空间',
+    'capacity_row_free': '系统可用空间',
+    'capacity_row_unavailable_free': '不可用的剩余空间',
+    'capacity_row_named_allocated': '按名称计算的分配估计',
+    'capacity_row_unique_allocated': '不重复分配估计',
+    'capacity_row_hard_link_overcount': '已扣除的硬链接重复量',
+    'capacity_row_recycle_bin_seen': '已读取的回收站分配（已包含）',
+    'capacity_row_foreign_allocated_seen': '已读取的其他磁盘分配（不计入）',
+    'capacity_row_unaccounted': '无法归账',
+    'capacity_row_metadata_bytes': '文件系统元数据／保留空间',
+    'capacity_row_omitted_bytes': '跳过的数据',
+    'capacity_row_other_volumes_bytes': '其他挂载磁盘',
+    'capacity_row_mounts': '跨磁盘挂载边界',
+    'capacity_row_coverage': '扫描覆盖范围',
     "review_title": "审查清理建议",
     "review_details": "{path}\n规则：{rule}；保护状态：{protection}。{consequence}",
     "review_hint": "请检查每条路径与删除后果，取消勾选即可保留项目；继续后才会显示确认问题。",

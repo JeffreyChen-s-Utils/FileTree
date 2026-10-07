@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
         self._trash_rescans: list[Node] = []
         self._closing = False
         self._analyser: AnalyseWorker | None = None
+        self._analysers: set[AnalyseWorker] = set()
         self._exports: set[ExportWorker] = set()
         self._protected = protected_places()  # system and program folders: ask twice before moving them
         self._last_path = ""
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, tr("scan_failed_title"), tr("not_a_folder", path=path))
             return
         self.stop_scan(wait=True)
+        self._analyser = None
         self._last_path = path
         self.path_edit.setText(path)
         worker = ScanWorker(path, self._scan_options(), self)
@@ -215,6 +217,7 @@ class MainWindow(QMainWindow):
         if node.parent is None:
             self.rescan()
             return
+        self._analyser = None
         worker = ScanWorker(node.path, self._scan_options(), self)
         before = node.size
         worker.progressed.connect(
@@ -236,10 +239,16 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("rescan_done", name=new.name, before=format_size(before, self._unit),
                                         after=format_size(new.size, self._unit)), _STATUS_TIMEOUT_MS)
-        analyser = AnalyseWorker(self.results.tree_model.root, self)
-        analyser.done.connect(self._summary_ready)
+        root = self.results.tree_model.root
+        analyser = AnalyseWorker(root, self, partial=self.results.outcome.partial, with_capacity=True)
+        analyser.capacity_ready.connect(lambda ledger: not self._closing and self.results.tree_model.root is root
+                                         and self._analyser is analyser and self.results.set_capacity(ledger))
+        analyser.done.connect(lambda summary: not self._closing and self._analyser is analyser
+                              and self._summary_ready(summary))
+        analyser.finished.connect(lambda: self._analysers.discard(analyser))
         analyser.finished.connect(analyser.deleteLater)
         self._analyser = analyser
+        self._analysers.add(analyser)
         analyser.start()
 
     def _summary_ready(self, summary: Summary) -> None:
@@ -302,6 +311,7 @@ class MainWindow(QMainWindow):
         moved, failed = result.moved, result.failed
         moved_size = format_size(sum(node.size for node in moved), self._unit)
         if moved:
+            self._analyser = None
             self.results.forget(moved)
         if failed:
             message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
@@ -487,6 +497,8 @@ class MainWindow(QMainWindow):
         self.results.cleanup.stop(wait=True)
         self.results.changes.stop(wait=True)
         self.results.wait_for_lists()
+        for worker in self._analysers.copy():
+            wait_for(worker)
         for worker in self._exports.copy():  # a file being written is finished, never left half-written
             wait_for(worker)
         self.settings.setValue("geometry", self.saveGeometry())

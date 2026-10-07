@@ -30,6 +30,9 @@ def test_console_exports_unicode_paths_without_importing_qt(tmp_path: Path) -> N
     report = json.loads(result.stdout)
     assert report["files"] == 1 and not report["partial"]
     assert report["root"] == str(folder)
+    assert report["capacity"]["status"] == "folder_only"
+    assert report["capacity"]["unaccounted"] is None
+    assert report["capacity"]["omitted_bytes"] is None
     assert json.loads(target.read_text(encoding="utf-8"))["root"]["size"] == 4
     with (tmp_path / "files.csv").open(encoding="utf-8-sig", newline="") as stream:
         assert list(csv.DictReader(stream))[0]["path"] == str(folder / "檔案.txt")

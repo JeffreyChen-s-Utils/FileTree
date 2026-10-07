@@ -53,10 +53,12 @@ from je_file_tree.core.analysis import (
     subtract_stats,
 )
 from je_file_tree.core.formatting import format_count, format_size
+from je_file_tree.core.capacity import CapacityLedger
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
+from je_file_tree.gui.capacity_panel import CapacityPanel
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
@@ -145,6 +147,7 @@ class ResultsView(QWidget):
         self.scan_bar = ScanBar()
         self._live_ticks = 0
         self.summary = _summary_label()
+        self.capacity = CapacityPanel()
         self.tree = self._build_tree()
         self._build_chart_controls()
         self._treemap_up = QToolButton()
@@ -192,6 +195,7 @@ class ResultsView(QWidget):
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
+        self.capacity.set_ledger(None)
         self.search.set_root(None)
         self.duplicates.set_root(None)
         self.cleanup.set_root(None)
@@ -241,6 +245,7 @@ class ResultsView(QWidget):
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
         self._outcome = outcome
+        self.capacity.set_ledger(outcome.capacity)
         root = outcome.result.root
         self.scan_bar.hide()
         if self.tree_model.root is root:
@@ -270,6 +275,7 @@ class ResultsView(QWidget):
         The tree, the treemap, the problems and the summary change at once; the
         lists that need the whole tree follow with ``apply_summary``.
         """
+        self.capacity.set_ledger(None)
         new = fresh.root
         view_root = self.charts.view_root
         inside_old = view_root is not None and _is_within(view_root, old)
@@ -279,6 +285,7 @@ class ResultsView(QWidget):
             errors = self._outcome.result.errors
             errors[:] = [error for error in errors if error[0] != old.path and not error[0].startswith(prefix)]
             errors.extend(fresh.errors)
+            self._outcome = dataclasses.replace(self._outcome, capacity=None)
             self.problems_model.set_rows(errors)
         self.charts.set_view_root(new if inside_old else view_root)
         self.search.rerun()
@@ -288,6 +295,12 @@ class ResultsView(QWidget):
         self._update_texts()
         self.selection_changed.emit(self.selected_node())
         return new
+
+    def set_capacity(self, capacity: CapacityLedger) -> None:
+        """Show a refreshed whole-tree ledger computed after a branch rescan."""
+        if self._outcome is not None:
+            self._outcome = dataclasses.replace(self._outcome, capacity=capacity)
+            self.capacity.set_ledger(capacity)
 
     def apply_summary(self, summary: Summary) -> None:
         """Show recomputed largest files and per-type and per-age totals for the tree on screen."""
@@ -308,6 +321,8 @@ class ResultsView(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.tree_model.set_unit(unit)
+        self.capacity.unit = unit
+        self.capacity.retranslate()
         for model in (self.largest_model, self.types_model, self.age_model, self.search_model, self.changes_model):
             model.unit = unit
             model.refresh()
@@ -381,6 +396,7 @@ class ResultsView(QWidget):
         outcome = self._outcome
         if outcome is None:
             return
+        self.capacity.set_ledger(None)
         view_root = self.charts.view_root
         extensions = outcome.extensions
         ages = outcome.ages
@@ -391,7 +407,8 @@ class ResultsView(QWidget):
         root = outcome.result.root
         self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,
                                             categories=category_stats(extensions),
-                                            largest=[file for file in outcome.largest if file.is_in(root)])
+                                            largest=[file for file in outcome.largest if file.is_in(root)],
+                                            capacity=None)
         self._categories = self._outcome.categories
         if self._scope is None:
             self._largest_all = [file for file in self._largest_all if file.is_in(root)]
@@ -412,6 +429,7 @@ class ResultsView(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self.tree_model.retranslate()
+        self.capacity.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.refresh()
         self._show_all.setText(tr("largest_show_all"))
@@ -606,6 +624,7 @@ class ResultsView(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
         layout.addWidget(self.scan_bar)
         layout.addWidget(self.summary)
+        layout.addWidget(self.capacity)
         layout.addWidget(splitter, 1)
 
     # --- reactions --------------------------------------------------------

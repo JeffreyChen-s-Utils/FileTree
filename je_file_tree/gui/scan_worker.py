@@ -15,6 +15,7 @@ from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
 from je_file_tree.core.cleanup import find_cleanup
+from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
 from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
@@ -37,6 +38,7 @@ class ScanOutcome:
     ages: list[AgeStat]
     now: float
     partial: bool = False
+    capacity: CapacityLedger | None = None
 
 
 def pace_workers(connect: bool = True) -> None:
@@ -67,21 +69,27 @@ def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
     """Compute the largest files and the per-type and per-age totals of a scan (``partial`` when it was stopped)."""
     summary = summarise(result.root, LARGEST_FILES_LIMIT)
     return ScanOutcome(result, summary.largest, summary.extensions, category_stats(summary.extensions),
-                       summary.ages, summary.now, partial)
+                       summary.ages, summary.now, partial, capacity_ledger(result.root, partial=partial))
 
 
 class AnalyseWorker(QThread):
     """Recomputes the largest files and the per-type and per-age totals of a whole tree; emits ``done(Summary)``."""
 
     done = Signal(object)
+    capacity_ready = Signal(object)
 
-    def __init__(self, root: Node, parent: QObject | None = None) -> None:
+    def __init__(self, root: Node, parent: QObject | None = None, *, partial: bool = False,
+                 with_capacity: bool = False) -> None:
         super().__init__(parent)
         self._root = root
+        self._partial = partial
+        self._with_capacity = with_capacity
 
     def run(self) -> None:
         """Thread body."""
         summary: Summary = summarise(self._root, LARGEST_FILES_LIMIT)
+        if self._with_capacity:
+            self.capacity_ready.emit(capacity_ledger(self._root, partial=self._partial))
         self.done.emit(summary)
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import signal
 import sys
@@ -13,6 +14,7 @@ from typing import TextIO
 from je_file_tree.core import export
 from je_file_tree.core.analysis import summarise
 from je_file_tree.core.compare import SavedScan, compare, load_saved
+from je_file_tree.core.capacity import capacity_ledger
 from je_file_tree.core.coverage import Coverage, coverage_of
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
 
@@ -71,11 +73,14 @@ def _reports(args: argparse.Namespace, result: ScanResult, saved: SavedScan | No
 
 
 def _summary(result: ScanResult, coverage: Coverage, interrupted: bool) -> dict:
+    ledger = capacity_ledger(result.root, partial=interrupted)
+    capacity = {field.name: getattr(ledger, field.name) for field in dataclasses.fields(ledger)
+                if field.name != "coverage"}
     return {"format": "file-tree-cli/1", "kind": "scan", "root": result.root.path,
             "partial": interrupted or not coverage.complete, "interrupted": interrupted,
             "files": result.root.file_count, "folders": result.root.dir_count,
             "logical_bytes": result.root.size, "allocated_estimate_bytes": result.root.allocated,
-            "elapsed_seconds": result.elapsed, "errors": len(result.errors),
+            "elapsed_seconds": result.elapsed, "errors": len(result.errors), "capacity": capacity,
             "coverage": {"known_folders": coverage.known_folders, "skipped_folders": coverage.skipped_folders,
                          "inaccessible_folders": coverage.inaccessible_folders,
                          "pending_folders": coverage.pending_folders, "omitted_bytes": None}}
