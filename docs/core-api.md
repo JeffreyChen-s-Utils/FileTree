@@ -18,7 +18,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 |---|---|---|
 | `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False, exact_windows_allocation=False, count_hard_links=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
-| `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now`; extension/category/age records have logical `.size` and `.count` |
+| `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
 | `hard_links` | `account_hard_links(root, *, cancel=None)`; `ScanOptions(count_hard_links=False)` | Optional `ScanResult.hard_links` describes `.aliases`, `.logical_overcount`, `.allocation_overcount`, `.unknown`; worker-only recorded-stat accounting without OS/payload queries; `Node.accounted_size/accounted_allocated` preserve named size/allocation; lexical first observed name contributes, proven aliases count zero; inconsistent/unknown groups stay named; reapply after tree mutation; canceled surveys retain previous accounting |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
 | `duplicates` | `find_duplicates(root, *, min_size=..., workers=4, progress=None, cancel=None)` | `DuplicateResult.groups`, `.files_read`, `.bytes_read`, `.skipped`; each `DuplicateGroup` has `.size`, `.files`, `.extra` (logical extra-copy size) |
@@ -31,12 +31,24 @@ Capacity and recovery estimates are experimental measurements with the limits de
 | `compression_ops` | `compress_files(root, files, mode, *, cancel=None, progress=None)` | Caller confirms ≤1,000 exact recorded files; `ntfs`, `xpress8k`, `uncompress`; local Windows NTFS only, current snapshots and ancestor pins; refuses links/cloud/sparse/protected/hard-linked files; no recursive commands; `CompressionResult` retains partial counts, matched before/after allocation, unknowns, failures and cancellation |
 | `owner_id` | `owner_identifier(owner)`, `owner_name(owner)` | Stable uid/SID text and read-only name lookup with raw-identity fallback; None remains unavailable, never inferred from the process account |
 | `allocation` | `allocation_for(root, *, exact_windows=False)`, `blocks_allocation()`, `windows_allocation(cluster, *, exact=False)`, `cluster_size(path)`, `compressed_size(path)` | A file-allocation callable takes `(DirEntry, stat_result)`; optional per-file Windows handle measurements include unflagged WOF, with estimates on failure; Windows-only helpers must be called on Windows |
-| `export` | `export_folders_csv(root, target, max_depth=None)`, `export_files_csv(files, target)`, `export_json(root, target, max_depth=None)` | CSV exports return the row count; JSON returns `None`; all write atomically to an existing destination directory |
+| `export` | `export_folders_csv(root, target, max_depth=None)`, `export_files_csv(files, target)`, `export_json(root, target, max_depth=None)` | CSV exports return the row count and append `accounted_size_bytes`, `accounted_allocated_bytes`, `hard_link_accounting` (0/1); JSON returns `None`, adds counted folder fields and a top-level mode flag, retaining named `size` and `file-tree/1`; all write atomically to an existing destination directory |
 
 `Query` accepts `text`, `min_size`, `max_size`, `changed_within`, `unchanged_for`, `category` and `kind`
 (`"any"`, `"files"` or `"folders"`). Sizes are bytes; age spans are seconds. Conditions combine with AND.
 Names match without case sensitivity: plain text is a substring, wildcards match the whole name and
 `;` separates alternative patterns. An empty query has no matches. Search excludes the root itself.
+
+The accounted root's `accounting` tuple marks active mode even without aliases. Its counted properties
+fall back to named bytes when accounting is absent. Layouts use counted weights; file/type/age/owner
+lists and saved-scan comparisons retain named totals. After mutation, callers must reapply accounting
+on a stable tree in a worker. GUI branch refresh and Trash completion instead rescan the whole root,
+so removing the contributing name transfers its bytes to a surviving name.
+
+CLI `scan --count-hard-links` adds `accounted_logical_bytes`, `accounted_allocated_estimate_bytes` and
+`hard_link_accounting` metadata without changing existing named totals. GUI report labels include
+`accounted_bytes` and `accounted_allocated` to append counted columns and summary rows; older label
+mappings retain the original report columns. Counts and capacity recovery remain distinct estimates:
+once-per-observed-identity accounting does not measure shared extents or directory metadata.
 
 ## Runnable example
 

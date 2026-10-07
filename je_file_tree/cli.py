@@ -40,6 +40,7 @@ def _parser() -> argparse.ArgumentParser:
     scanning.add_argument("--exclude", action="append", default=[])
     scanning.add_argument("--no-hidden", action="store_true")
     scanning.add_argument("--gentle", action="store_true")
+    scanning.add_argument("--count-hard-links", action="store_true")
     return parser
 
 
@@ -51,7 +52,7 @@ def _emit(stream: TextIO, document: dict) -> None:
 def _run_scan(args: argparse.Namespace, cancel: threading.Event) -> tuple[ScanResult, bool]:
     try:
         options = ScanOptions(workers=args.workers, include_hidden=not args.no_hidden,
-                              exclude=tuple(args.exclude), gentle=args.gentle)
+                              exclude=tuple(args.exclude), gentle=args.gentle, count_hard_links=args.count_hard_links)
         return scan(args.root, options=options, cancel=cancel), False
     except ScanCancelledError as stopped:
         if stopped.partial is None:
@@ -82,6 +83,9 @@ def _summary(result: ScanResult, coverage: Coverage, interrupted: bool) -> dict:
             "partial": interrupted or not coverage.complete, "interrupted": interrupted,
             "files": result.root.file_count, "folders": result.root.dir_count,
             "logical_bytes": result.root.size, "allocated_estimate_bytes": result.root.allocated,
+            "accounted_logical_bytes": result.root.accounted_size,
+            "accounted_allocated_estimate_bytes": result.root.accounted_allocated,
+            "hard_link_accounting": dataclasses.asdict(result.hard_links) if result.hard_links is not None else None,
             "elapsed_seconds": result.elapsed, "errors": len(result.errors), "capacity": capacity,
             "warnings": result.warnings,
             "coverage": {"known_folders": coverage.known_folders, "skipped_folders": coverage.skipped_folders,

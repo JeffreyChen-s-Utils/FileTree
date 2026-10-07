@@ -43,6 +43,7 @@ class ScanOutcome:
     now: float
     partial: bool = False
     capacity: CapacityLedger | None = None
+    chart_categories: list[CategoryStat] | None = None
 
 
 def pace_workers(connect: bool = True) -> None:
@@ -73,7 +74,8 @@ def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
     """Compute the largest files and the per-type and per-age totals of a scan (``partial`` when it was stopped)."""
     summary = summarise(result.root, LARGEST_FILES_LIMIT)
     return ScanOutcome(result, summary.largest, summary.extensions, category_stats(summary.extensions),
-                       summary.ages, summary.now, partial, capacity_ledger(result.root, partial=partial))
+                       summary.ages, summary.now, partial, capacity_ledger(result.root, partial=partial),
+                       summary.counted_categories)
 
 
 class AnalyseWorker(QThread):

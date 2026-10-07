@@ -126,7 +126,7 @@ class SunburstWidget(QWidget):
     def paintEvent(self, event: QPaintEvent) -> None:
         """Qt: the cached rings plus the hover and selection outlines."""
         painter = QPainter(self)
-        if self._view_root is None or self._view_root.size <= 0:
+        if self._view_root is None or self._view_root.accounted_size <= 0:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
             return
         if self._pixmap is None:
@@ -212,7 +212,7 @@ class SunburstWidget(QWidget):
             self._rings = max((segment.depth for segment in self._segments), default=1)
             self._hues = {id(child): (index * _GOLDEN) % 1.0
                           for index, child in enumerate(sorted(self._view_root.children,
-                                                               key=lambda node: node.size, reverse=True))}
+                                                               key=lambda node: node.accounted_size, reverse=True))}
         return self._segments
 
     def _path(self, segment: Segment) -> QPainterPath:
@@ -245,7 +245,7 @@ class SunburstWidget(QWidget):
     def draw_vector(self, painter: QPainter) -> None:
         """Draw the bounded current rings directly, for lossless SVG output without a cached bitmap."""
         root = self._view_root
-        if root is None or root.size <= 0:
+        if root is None or root.accounted_size <= 0:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
             return
         painter.fillRect(self.rect(), self.palette().base())
@@ -267,7 +267,7 @@ class SunburstWidget(QWidget):
         painter.setPen(self.palette().text().color())
         box = QRectF(centre.x() - inner, centre.y() - inner, 2 * inner, 2 * inner).adjusted(6, 6, -6, -6)
         name = painter.fontMetrics().elidedText(root.name, Qt.TextElideMode.ElideMiddle, int(box.width()))
-        painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.size, self.unit)}")
+        painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.accounted_size, self.unit)}")
 
     def _draw_label(self, painter: QPainter, segment: Segment, radius: float, ring: float) -> None:
         angle = (segment.start + segment.span / 2) * 2 * math.pi
@@ -293,6 +293,6 @@ class SunburstWidget(QWidget):
 
     def _describe(self, node: Node) -> str:
         root = self._view_root
-        share = node.size / root.size if root is not None and root.size else 0.0
-        return tr("treemap_tooltip", name=node.name, size=format_size(node.size, self.unit),
+        share = node.accounted_size / root.accounted_size if root is not None and root.accounted_size else 0.0
+        return tr("treemap_tooltip", name=node.name, size=format_size(node.accounted_size, self.unit),
                   share=format_share(share), path=node.path)

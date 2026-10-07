@@ -31,13 +31,15 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.reasons import problem_text
 
 NAME, SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, MODIFIED, ACCESSED, CREATED = range(10)
+ACCOUNTED_SIZE, ACCOUNTED_ALLOCATED = 10, 11
 COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_drive_share",
                "column_files", "column_folders",
-               "column_modified", "column_accessed", "column_created")
+               "column_modified", "column_accessed", "column_created", "column_accounted_size",
+               "column_accounted_allocated")
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
-_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS)
+_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, ACCOUNTED_SIZE, ACCOUNTED_ALLOCATED)
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 
 ModelIndex = QModelIndex | QPersistentModelIndex
@@ -56,6 +58,8 @@ def sort_key(column: int) -> Callable[[Node], Any]:
         MODIFIED: lambda node: node.modified,
         ACCESSED: lambda node: node.accessed or -1,
         CREATED: lambda node: node.created or -1,
+        ACCOUNTED_SIZE: lambda node: node.accounted_size,
+        ACCOUNTED_ALLOCATED: lambda node: node.accounted_allocated,
     }
     return keys[column]
 
@@ -78,6 +82,8 @@ class FolderTreeModel(QAbstractItemModel):
             NAME: lambda node: node.name,
             SIZE: lambda node: format_size(node.size, self._unit),
             ALLOCATED: lambda node: "" if node.is_link else format_size(node.allocated, self._unit),
+            ACCOUNTED_SIZE: lambda node: format_size(node.accounted_size, self._unit),
+            ACCOUNTED_ALLOCATED: lambda node: format_size(node.accounted_allocated, self._unit),
             SHARE: lambda node: format_share(node.share_of_parent()),
             DRIVE_SHARE: lambda node: (format_share(share) if (share := self._drive_share(node)) is not None
                                        else tr("size_unknown")),
@@ -99,6 +105,8 @@ class FolderTreeModel(QAbstractItemModel):
     # --- public API -------------------------------------------------------
 
     def _column_tooltip(self, node: Node, column: int) -> str:
+        if column in (ACCOUNTED_SIZE, ACCOUNTED_ALLOCATED):
+            return tr("hard_links_hint")
         if column in (ACCESSED, CREATED):
             return tr("file_times_hint")
         return tr("drive_share_tip") if column == DRIVE_SHARE else self._tooltip(node)

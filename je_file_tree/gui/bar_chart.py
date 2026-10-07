@@ -113,13 +113,13 @@ class BarChartWidget(QWidget):
         if not rows:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("bars_empty_folder"))
             return
-        largest = max(rows[0].size, 1)
+        largest = max(rows[0].accounted_size, 1)
         for index, node in enumerate(rows):
-            self._draw_row(painter, index, node, node.size / largest, root.size)
+            self._draw_row(painter, index, node, node.accounted_size / largest, root.accounted_size)
         count, size = self._rest
         if count:
             label = tr("bars_more", count=format_count(count), size=format_size(size, self.unit))
-            self._draw_line(painter, len(rows), label, None, min(size / largest, 1.0), size, root.size)
+            self._draw_line(painter, len(rows), label, None, min(size / largest, 1.0), size, root.accounted_size)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         """Qt: highlight the bar under the mouse and describe it in a tooltip."""
@@ -167,15 +167,16 @@ class BarChartWidget(QWidget):
         """The entries with a bar, the largest first (read from the folder when it changed)."""
         if self._rows is None:
             children = list(self._view_root.children) if self._view_root is not None else []
-            self._rows = heapq.nlargest(MAX_BARS, children, key=lambda node: node.size)
+            self._rows = heapq.nlargest(MAX_BARS, children, key=lambda node: node.accounted_size)
             rest = len(children) - len(self._rows)
-            self._rest = (rest, sum(node.size for node in children) - sum(node.size for node in self._rows))
+            total = sum(node.accounted_size for node in children)
+            self._rest = (rest, total - sum(node.accounted_size for node in self._rows))
         return self._rows
 
     def _draw_row(self, painter: QPainter, index: int, node: Node, fraction: float, total: int) -> None:
         if index == self._hover:
             painter.fillRect(self._line_rect(index), self.palette().alternateBase())
-        self._draw_line(painter, index, node.name, node, fraction, node.size, total)
+        self._draw_line(painter, index, node.name, node, fraction, node.accounted_size, total)
         if node is self._selected:
             painter.setPen(self.palette().highlight().color())
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -213,6 +214,6 @@ class BarChartWidget(QWidget):
 
     def _describe(self, node: Node) -> str:
         root = self._view_root
-        share = node.size / root.size if root is not None and root.size else 0.0
-        return tr("treemap_tooltip", name=node.name, size=format_size(node.size, self.unit),
+        share = node.accounted_size / root.accounted_size if root is not None and root.accounted_size else 0.0
+        return tr("treemap_tooltip", name=node.name, size=format_size(node.accounted_size, self.unit),
                   share=format_share(share), path=node.path)

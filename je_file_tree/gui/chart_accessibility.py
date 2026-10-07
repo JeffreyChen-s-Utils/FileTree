@@ -56,6 +56,10 @@ class ChartAccessibility(QObject):
                                       size=format_size(node.size, chart.unit),
                                       allocated=format_size(node.allocated, chart.unit),
                                       files=format_count(node.file_count), folders=format_count(node.dir_count))
+            if node.accounting is not None:
+                description += (f"\n{tr('column_accounted_size')}: {format_size(node.accounted_size, chart.unit)}; "
+                                f"{tr('column_accounted_allocated')}: "
+                                f"{format_size(node.accounted_allocated, chart.unit)}")
         chart.setAccessibleDescription(description)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
@@ -96,7 +100,7 @@ class ChartAccessibility(QObject):
         elif isinstance(chart, TreeDiagramWidget):
             nodes = [row.node for row in chart.rows() if row.node is not None]
         else:
-            if chart._pixmap is None and root.size > 0:
+            if chart._pixmap is None and root.accounted_size > 0:
                 chart._render()
             nodes = [tile.node for tile in chart._tiles if not tile.grouped]
         return list(dict.fromkeys((root, *nodes)))

@@ -164,7 +164,7 @@ class TreemapWidget(QWidget):
     def paintEvent(self, event: QPaintEvent) -> None:
         """Qt: the cached picture plus the hover and selection outlines."""
         painter = QPainter(self)
-        if self._view_root is None or self._view_root.size <= 0:
+        if self._view_root is None or self._view_root.accounted_size <= 0:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
             return
         if self._pixmap is None:
@@ -255,7 +255,7 @@ class TreemapWidget(QWidget):
         painter.drawRect(rect)
         if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
             return
-        size = format_size(node.size, self.unit)
+        size = format_size(node.accounted_size, self.unit)
         painter.setPen(ink)
         if tile.header:
             strip = QRectF(rect.x() + 3, rect.y() + 2, rect.width() - 6, tile.header)
@@ -326,8 +326,9 @@ class TreemapWidget(QWidget):
 
     def _describe(self, tile: Tile) -> str:
         node = tile.node
-        size = tile.grouped_size if tile.grouped else node.size
-        share = format_share(size / self._view_root.size if self._view_root and self._view_root.size else 0.0)
+        size = tile.grouped_size if tile.grouped else node.accounted_size
+        total = self._view_root.accounted_size if self._view_root else 0
+        share = format_share(size / total if total else 0.0)
         if not tile.grouped:
             return tr("treemap_tooltip", name=html.escape(node.name), size=format_size(size, self.unit),
                       share=share, path=html.escape(node.path))

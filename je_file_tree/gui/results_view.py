@@ -279,7 +279,7 @@ class ResultsView(QWidget):
         self._scope_button.setChecked(False)
         self._show_lists(outcome.largest, outcome.extensions, outcome.ages)
         self.problems_model.set_rows(outcome.result.errors)
-        self._categories = outcome.categories
+        self._categories = outcome.chart_categories if outcome.chart_categories is not None else outcome.categories
         view_root = self.charts.view_root
         self.charts.set_view_root(view_root if view_root is not None and view_root.is_in(root) else root)
         if self.selected_node() is None:
@@ -338,8 +338,9 @@ class ResultsView(QWidget):
         largest = [node for node in summary.largest if node.is_in(root)]
         self._outcome = dataclasses.replace(outcome, largest=largest, extensions=summary.extensions,
                                             categories=category_stats(summary.extensions), ages=summary.ages,
-                                            now=summary.now)
-        self._categories = self._outcome.categories
+                                            now=summary.now, chart_categories=summary.counted_categories)
+        self._categories = (summary.counted_categories if summary.counted_categories is not None
+                            else self._outcome.categories)
         self.charts.set_age_reference(summary.now)
         if self._scope is None:
             self._show_lists(largest, summary.extensions, summary.ages)
@@ -1006,7 +1007,13 @@ class ResultsView(QWidget):
         if outcome is None:
             return tr("summary_live", **values)
         key = "summary_partial" if outcome.partial else "summary"
-        return tr(key, time=format_duration(outcome.result.elapsed), **values)
+        text = tr(key, time=format_duration(outcome.result.elapsed), **values)
+        if outcome.result.hard_links is not None:
+            info = outcome.result.hard_links
+            text += "<br>" + tr("hard_links_summary", size=format_size(root.accounted_size),
+                                allocated=format_size(root.accounted_allocated), aliases=format_count(info.aliases),
+                                unknown=format_count(info.unknown))
+        return text
 
     def _fitting_path(self, path: str) -> str:
         """``path`` shortened in the middle to half the summary line's width (it is shown in bold)."""

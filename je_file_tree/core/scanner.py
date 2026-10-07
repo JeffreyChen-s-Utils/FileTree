@@ -81,7 +81,10 @@ class ScanCancelledError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class ScanOptions:
-    """What a scan includes and how many folders it reads at once."""
+    """What a scan includes and how many folders it reads at once.
+
+    ``count_hard_links`` adds counted totals from recorded identities without changing named bytes.
+    """
 
     include_hidden: bool = True
     workers: int = DEFAULT_WORKERS

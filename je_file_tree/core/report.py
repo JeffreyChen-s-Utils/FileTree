@@ -67,12 +67,14 @@ def _top_folders(root: Node, cancel: threading.Event) -> tuple[list[Node], int]:
     return [item[2] for item in sorted(heap, reverse=True)], count
 
 
-def _entry_rows(nodes: Sequence[Node], cancel: threading.Event) -> tuple[tuple[Cell, ...], ...]:
+def _entry_rows(nodes: Sequence[Node], cancel: threading.Event, *, accounting: bool = False
+                ) -> tuple[tuple[Cell, ...], ...]:
     rows = []
     for node in nodes:
         check_cancel(cancel)
-        rows.append((node.path, node.size, node.allocated, node.file_count if node.is_dir else 1,
-                     node.dir_count, _iso_time(node.modified), node.error or ""))
+        row = (node.path, node.size, node.allocated, node.file_count if node.is_dir else 1,
+               node.dir_count, _iso_time(node.modified), node.error or "")
+        rows.append((*row, node.accounted_size, node.accounted_allocated) if accounting else row)
     return tuple(rows)
 
 
@@ -86,17 +88,25 @@ def prepare_report(root: Node, summary: Summary, labels: Mapping[str, str], *, p
         raise ReportCancelledError()
     folders, folder_count = _top_folders(root, cancel)
     fields = ("path", "bytes", "allocated", "files", "folders", "modified", "problem")
+    accounting = "accounted_bytes" in labels and "accounted_allocated" in labels
     header = tuple(labels[key] for key in fields)
+    if accounting:
+        header += (labels["accounted_bytes"], labels["accounted_allocated"])
     summary_rows = tuple((labels[key], value) for key, value in (
         ("path", root.path), ("created", _iso_time(time.time())), ("reference", _iso_time(summary.now)),
         ("bytes", root.size), ("allocated", root.allocated), ("files", root.file_count), ("folders", root.dir_count),
         ("coverage", labels["incomplete"] if partial or not coverage.complete else labels["recorded"]),
         ("skipped", coverage.skipped_folders), ("denied", coverage.inaccessible_folders),
         ("pending", coverage.pending_folders), ("notes", labels["note"])))
+    if accounting:
+        summary_rows += ((labels["accounted_bytes"], root.accounted_size),
+                         (labels["accounted_allocated"], root.accounted_allocated))
     stat_header = (labels["type"], labels["bytes"], labels["files"])
     tables = [ReportTable(labels["summary"], (labels["field"], labels["value"]), summary_rows, len(summary_rows)),
-              ReportTable(labels["top_folders"], header, _entry_rows(folders, cancel), folder_count),
-              ReportTable(labels["largest"], header, _entry_rows(summary.largest[:_LIST_LIMIT], cancel),
+              ReportTable(labels["top_folders"], header, _entry_rows(folders, cancel, accounting=accounting),
+                          folder_count),
+              ReportTable(labels["largest"], header, _entry_rows(summary.largest[:_LIST_LIMIT], cancel,
+                                                               accounting=accounting),
                           root.file_count)]
     tables.append(ReportTable(labels["types"], stat_header,
                              tuple((stat.extension or labels["no_extension"], stat.size, stat.count)

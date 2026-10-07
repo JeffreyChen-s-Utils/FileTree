@@ -257,9 +257,9 @@ class TreeDiagramWidget(QWidget):
         name = painter.fontMetrics().elidedText(label, Qt.TextElideMode.ElideMiddle, round(left.width()))
         painter.drawText(left, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft, name)
         if node is not None:
-            parent_size = node.parent.allocated if node.parent is not None else node.allocated
-            share = format_share(node.allocated / parent_size) if parent_size else ""
+            parent_size = node.parent.accounted_allocated if node.parent is not None else node.accounted_allocated
+            share = format_share(node.accounted_allocated / parent_size) if parent_size else ""
             value = (tr("tree_unavailable") if node.error is not None
-                     else f"{format_size(node.allocated, self.unit)}  {share}")
+                     else f"{format_size(node.accounted_allocated, self.unit)}  {share}")
             painter.drawText(left, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft, value)
         painter.restore()

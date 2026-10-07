@@ -9,6 +9,30 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_count_hard_links": (
+        "Count observed hard links once"
+    ),
+    "action_count_hard_links_tip": (
+        "Off by default; future scans keep named sizes and add counted totals. "
+        "Branch/Trash rescans rebuild the full root."
+    ),
+    "column_accounted_size": (
+        "Counted size"
+    ),
+    "column_accounted_allocated": (
+        "Counted disk size"
+    ),
+    "hard_links_hint": (
+        "With hard-link accounting enabled, the lexical first observed name con"
+        "tributes bytes; aliases count zero here. Named sizes remain real file "
+        "lengths. Unknown/inconsistent records stay estimated; shared extents a"
+        "re unknown."
+    ),
+    "hard_links_summary": (
+        "Counted: {size} (disk estimate {allocated}); {aliases} observed aliase"
+        "s; {unknown} unknown records. Charts use counted totals; file/type/age"
+        " lists keep named sizes."
+    ),
     "compression_mode_ntfs": "NTFS compression",
     "compression_mode_xpress8k": "XPRESS8K compression (rarely modified files)",
     "compression_mode_uncompress": "Uncompress (NTFS and executable modes)",
@@ -1040,6 +1064,26 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_count_hard_links": (
+        "觀察到的硬連結只計一次"
+    ),
+    "action_count_hard_links_tip": (
+        "預設關閉；後續掃描保留具名大小並新增計入總量。分支／資源回收筒移動後會重掃完整範圍。"
+    ),
+    "column_accounted_size": (
+        "計入大小"
+    ),
+    "column_accounted_allocated": (
+        "計入磁碟大小"
+    ),
+    "hard_links_hint": (
+        "啟用硬連結計量時，觀察到的路徑排序第一個名稱計入位元組，其他名稱在此計為零。具名大小仍是實際檔案長度。未知／不一致記錄保留估計值，共用資料區"
+        "段仍未知。"
+    ),
+    "hard_links_summary": (
+        "計入：{size}（磁碟估計 {allocated}）；觀察到 {aliases} 個別名；未知記錄 {unknown} 個。圖表使用計入總"
+        "量，檔案／類型／檔齡列表保留具名大小。"
+    ),
     "compression_mode_ntfs": "NTFS 壓縮",
     "compression_mode_xpress8k": "XPRESS8K 壓縮（少修改的檔案）",
     "compression_mode_uncompress": "解壓縮（NTFS 及執行檔模式）",
@@ -1965,6 +2009,26 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_count_hard_links": (
+        "观察到的硬链接只计一次"
+    ),
+    "action_count_hard_links_tip": (
+        "默认关闭；后续扫描保留具名大小并增加计入总量。分支／回收站移动后会重扫完整范围。"
+    ),
+    "column_accounted_size": (
+        "计入大小"
+    ),
+    "column_accounted_allocated": (
+        "计入磁盘大小"
+    ),
+    "hard_links_hint": (
+        "启用硬链接计量时，观察到的路径排序第一个名称计入字节，其他名称在此计为零。具名大小仍是实际文件长度。未知／不一致记录保留估计值，共享数据区段"
+        "仍未知。"
+    ),
+    "hard_links_summary": (
+        "计入：{size}（磁盘估计 {allocated}）；观察到 {aliases} 个别名；未知记录 {unknown} 个。图表使用计入总"
+        "量，文件／类型／文件年龄列表保留具名大小。"
+    ),
     "compression_mode_ntfs": "NTFS 压缩",
     "compression_mode_xpress8k": "XPRESS8K 压缩（很少修改的文件）",
     "compression_mode_uncompress": "解压缩（NTFS 及可执行文件模式）",

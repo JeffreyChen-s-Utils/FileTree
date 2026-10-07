@@ -29,6 +29,7 @@ def _labels() -> dict[str, str]:
              "age": "column_age", "ages": "tab_age", "no_extension": "no_extension"}
     names.update({"category_" + key: "category_" + key for key in CATEGORIES})
     names.update({"age_" + key: "age_" + key for key in AGES})
+    names.update({"accounted_bytes": "column_accounted_size", "accounted_allocated": "column_accounted_allocated"})
     return {key: tr(value) for key, value in names.items()}
 
 

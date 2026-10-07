@@ -352,10 +352,20 @@ size/time/attribute/allocation records. The lexical first observed path contribu
 others use one shared zero tuple. Node.size/allocated/counts/snapshots stay named/unchanged; separate
 accounted_size/accounted_allocated fall back to named totals. A canceled survey makes no assignments;
 callers must reapply after tree mutation. Shared extents and directory metadata remain unknown.
-One optional accounting pointer measured 100k nodes at 222.828→230.820 bytes/entry (+8); only changed
-folder totals allocate tuples. Baseline recorded-identity grouping: 9,770 files, five-run median
+One optional accounting pointer measured 100k nodes at 222.828→230.820 bytes/entry (+8); the root and
+changed folder totals allocate tuples. The root tuple marks active accounting even without aliases.
+Baseline recorded-identity grouping: 9,770 files, five-run median
 0.02091 s. Integrated one-worker 9,774-file interleaved scans off/on: 1.09788/1.14110 s, no extra OS query
-or payload read. GUI/chart/export integration and coherent mutation invalidation remain #32.
+or payload read. MainWindow persists the off-by-default option and captures it per worker. Two optional
+tree columns expose counted bytes; charts and their category legends use counted weights, while file,
+type, age and owner lists and parent/drive shares retain named totals. Summary.counted_categories is
+computed in the existing analysis pass only when accounting is active. A counted-mode branch rescan or
+completed Trash operation starts a whole-root scan, transferring contribution to surviving names;
+compression's transient exact-allocation override is preserved. The captured old tree remains stable
+until replacement. CSV appends counted bytes and a mode flag; folder JSON adds counted fields and a mode
+flag without changing file-tree/1 or named saved-scan/history comparison. GUI HTML/XLSX reports append
+counted entry and summary fields; older API label mappings retain their original columns. CLI exposes
+--count-hard-links, counted totals and the accounting metadata alongside named byte totals.
 `core.owners.owner_stats` traverses whole-root recorded files with cancellation/pacing, full byte/file/
 owner-group counts and a 1,000-row largest-group limit. Unknown owners are separate; omitted data stays
 unknown. It resolves only displayed account names on the worker and retains uid/SID on lookup failure.

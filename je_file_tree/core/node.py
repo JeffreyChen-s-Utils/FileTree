@@ -25,6 +25,8 @@ class Node:
     rebuilt from the names on the way up, see ``path``.
     ``owner`` is a recorded regular-file POSIX uid or optional Windows SID bytes; None is unknown.
     Shared immutable owner keys add one pointer slot, measured at 8 bytes per node (2026-10-07).
+    ``accounting`` optionally holds counted logical/allocation bytes; named totals never change.
+    An accounted root always has this tuple, including when no hard-link alias was observed.
     """
 
     name: str

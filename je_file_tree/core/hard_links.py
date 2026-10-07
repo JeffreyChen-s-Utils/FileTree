@@ -60,7 +60,8 @@ def account_hard_links(root: Node, *, cancel: threading.Event | None = None) -> 
     for folder in reversed(folders):
         size = sum(child.accounted_size for child in folder.children)
         allocation = sum(child.accounted_allocated for child in folder.children)
-        folder.accounting = (size, allocation) if (size, allocation) != (folder.size, folder.allocated) else None
+        changed = (size, allocation) != (folder.size, folder.allocated)
+        folder.accounting = (size, allocation) if folder is root or changed else None
     return HardLinkAccounting(len(duplicate_ids), logical, allocated, unknown)
 
 

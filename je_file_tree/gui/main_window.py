@@ -313,6 +313,11 @@ class MainWindow(QMainWindow):
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
         if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
             return
+        if self.results.outcome.result.hard_links is not None or self._actions["count_hard_links"].isChecked():
+            root = self.results.outcome.result.root
+            self._trash_rescans.clear()
+            self.start_scan(root.path, exact_allocation=exact_allocation)
+            return
         if node.parent is None:
             self.start_scan(node.path, exact_allocation=exact_allocation)
             return
@@ -431,7 +436,8 @@ class MainWindow(QMainWindow):
         moved_size = format_size(sum(node.size for node in moved), self._unit)
         if moved:
             self._analyser = None
-            self.results.forget(moved)
+            if self.results.outcome is None or self.results.outcome.result.hard_links is None:
+                self.results.forget(moved)
         if failed:
             message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
                        tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
@@ -728,6 +734,7 @@ class MainWindow(QMainWindow):
         self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
         self._actions["capture_owners"].setChecked(read_flag(self.settings, "capture_owners", False))
         self._actions["exact_allocation"].setChecked(read_flag(self.settings, "exact_allocation", False))
+        self._actions["count_hard_links"].setChecked(read_flag(self.settings, "count_hard_links", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_unit(self._unit)
@@ -813,6 +820,7 @@ class MainWindow(QMainWindow):
             ("capture_file_times", None, lambda: None),
             ("capture_owners", None, lambda: None),
             ("exact_allocation", None, lambda: None),
+            ("count_hard_links", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
@@ -847,6 +855,9 @@ class MainWindow(QMainWindow):
         self._actions["exact_allocation"].setVisible(elevation.supported())
         self._actions["exact_allocation"].toggled.connect(
             lambda checked: self.settings.setValue("exact_allocation", checked))
+        self._actions["count_hard_links"].setCheckable(True)
+        self._actions["count_hard_links"].toggled.connect(
+            lambda checked: self.settings.setValue("count_hard_links", checked))
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
         self._actions["shell_integration"].setVisible(shell_integration.supported())
@@ -903,7 +914,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
-        for key in ("capture_file_times", "capture_owners", "exact_allocation"):
+        for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
             options_menu.addAction(self._actions[key])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
@@ -1201,7 +1212,8 @@ class MainWindow(QMainWindow):
                            gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
                            file_times=self._actions["capture_file_times"].isChecked(),
                            windows_owners=self._actions["capture_owners"].isChecked(),
-                           exact_windows_allocation=exact_allocation or self._actions["exact_allocation"].isChecked())
+                           exact_windows_allocation=exact_allocation or self._actions["exact_allocation"].isChecked(),
+                           count_hard_links=self._actions["count_hard_links"].isChecked())
 
     def configure_workers(self) -> None:
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""

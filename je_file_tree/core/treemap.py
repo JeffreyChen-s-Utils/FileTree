@@ -170,14 +170,14 @@ def _opened(node: Node, inner: Rect, header: float, min_side: float) -> tuple[fl
     A folder stays one tile when it is empty, has too little room, or when every entry in it would
     be too small for a tile of its own: a single group tile filling it would only repeat the folder.
     """
-    if not node.is_dir or not node.children or node.size <= 0:
+    if not node.is_dir or not node.children or node.accounted_size <= 0:
         return None
     strip = _strip(inner, header)
     body = Rect(inner.x, inner.y + strip, inner.width, inner.height - strip)
     if min(body.width, body.height) < min_side:
         return None
-    largest = max(child.size for child in node.children)
-    if largest * body.area / node.size < min_side * min_side:
+    largest = max(child.accounted_size for child in node.children)
+    if largest * body.area / node.accounted_size < min_side * min_side:
         return None
     return strip, body
 
@@ -195,18 +195,18 @@ def _place_children(folder: Node, area: Rect, min_side: float) -> list[tuple[Nod
     (folder, rectangle, group) when there are at least two of them.
     Rectangles narrower than ``min_side`` are dropped.
     """
-    if folder.size <= 0 or area.area <= 0:
+    if folder.accounted_size <= 0 or area.area <= 0:
         return []
     min_area = min_side * min_side
-    scale = area.area / folder.size
+    scale = area.area / folder.accounted_size
     entries: list[tuple[int, Node | None]] = []
     count = rest = 0
     for child in folder.children:
-        if child.size * scale >= min_area:
-            entries.append((child.size, child))
-        elif child.size > 0:
+        if child.accounted_size * scale >= min_area:
+            entries.append((child.accounted_size, child))
+        elif child.accounted_size > 0:
             count += 1
-            rest += child.size
+            rest += child.accounted_size
     if rest > 0:
         entries.append((rest, None))
     entries.sort(key=_entry_size, reverse=True)  # stays right after a deletion shrank a folder

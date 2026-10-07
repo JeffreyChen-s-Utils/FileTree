@@ -6,7 +6,7 @@
 
 ![FileTree 顯示一個使用者資料夾：左邊是資料夾樹，右邊是方塊圖](../docs/images/main_window_zh-TW.png)
 
-Python API 提供選用的 `ScanOptions(count_hard_links=True)`：`Node.accounted_size` 與 `Node.accounted_allocated` 對觀察到的每個硬連結識別碼只計一次，歸入記錄路徑排序的第一個名稱。具名 `size`／`allocated` 與檔案數保持不變；未知或不一致的記錄仍保留具名估計值。沿用既有 stat 中繼資料，不新增 OS 查詢，也不讀取內容。變更記錄樹後，請在背景工作重新執行 `account_hard_links`。GUI／圖表／CLI／匯出整合仍待完成。
+**選項 → 觀察到的硬連結只計一次** 預設關閉，設定會保存並由後續掃描記錄。另提供計入的邏輯／磁碟分配總量，保留具名檔案長度、分配與數量。摘要顯示計入總量、觀察到的別名及未知記錄；標題選單提供預設隱藏的 **計入大小／計入磁碟大小** 欄位。觀察到的路徑排序第一個名稱計入位元組，其他名稱僅在計入欄位記為零。圖表及圖例使用計入總量；最大檔案／搜尋／類型／檔齡／擁有者列表及上層／磁碟占比保留具名計量。未知／不一致中繼資料保留具名估計，共用資料區段與資料夾中繼資料仍未知。此模式的分支重掃及移到資源回收筒後會重掃完整範圍，原計入名稱離開後轉由剩餘名稱計入。執行中的工作保留原選項。CSV 新增 `accounted_size_bytes`、`accounted_allocated_bytes` 與 `hard_link_accounting`（0／1）；資料夾 JSON 新增計入值及模式旗標，保存比較／歷史仍保留具名 `size`。HTML／XLSX 報告保留具名表格，另有計入的項目／摘要欄位。命令列接受 `--count-hard-links`，輸出計入位元組總量與 `hard_link_accounting` 中繼資料。停用時，計入欄位沿用具名估計。Python API 使用 `ScanOptions(count_hard_links=True)` 與 `Node.accounted_size/accounted_allocated`；變更記錄樹後請在背景工作重新執行 `account_hard_links`。沿用既有 stat，不增加 OS／內容讀取。原生自建兩個名稱的測試保留 2 MiB 具名總量、1 MiB 計入總量、兩個實際檔案長度及一個別名。
 
 **選項 → 量測 Windows 逐檔磁碟大小** 預設關閉，套用至後續完整／分支掃描，啟用後請重新掃描。此功能以不跟隨連結的中繼資料控制代碼查詢 `FILE_STANDARD_INFO`，核對完整的 64 位元磁碟／128 位元檔案識別碼（Python 3.12 之前使用舊版 stat 識別碼）、大小與修改時間；即使未顯示一般壓縮旗標，也能量測一般檔案與 XPRESS／WOF 的分配大小。已知雲端／離線檔案仍不查詢並記為零，不支援、權限不足或記錄已變更時採用已說明的大小估計值。逐檔查詢會增加掃描時間，不讀取檔案內容；共用資料區段與資料夾中繼資料仍未知，硬連結仍按各名稱計算。預設掃描對一般檔案保留簇估計值。原生自建測試檔案通過 NTFS／XPRESS8K 壓縮及解壓縮內容核對，逐檔量測的重新掃描記錄了 2 MiB XPRESS 檔案的 73,728 位元組分配大小，該檔案未顯示一般壓縮旗標。
 
@@ -200,6 +200,7 @@ Windows 的「**檔案 → 已安裝程式…**」列出最多 1,000 個解除�
 je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json
 je-file-tree-cli scan D:\ --compare old.json --limit 20
 python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
+python -m je_file_tree.cli scan D:\ --count-hard-links
 ```
 
 結束代碼：**0** 涵蓋範圍完整、**1** 不完整（包含排除及無法讀取的項目）、**2** 參數錯誤、**3** 掃描／比較／匯出 I/O 錯誤或儲存的掃描格式無效、**130** 已中斷。Ctrl+C 會停止掃描並匯出已讀取的部分；再次按 Ctrl+C 則立即中止。每份匯出獨立完成原子寫入，後續匯出失敗不會撤銷先前完成的報告。命令列不提供移除或自動清理。

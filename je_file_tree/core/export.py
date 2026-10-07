@@ -22,24 +22,30 @@ from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
 
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
-                  "error")
-FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified", "accessed", "created")
+                  "error", "accounted_size_bytes", "accounted_allocated_bytes", "hard_link_accounting")
+FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified", "accessed", "created",
+                "accounted_size_bytes", "accounted_allocated_bytes", "hard_link_accounting")
 JSON_FORMAT = "file-tree/1"  # also what a saved scan must say to be compared (core/compare.py)
 
 
 def export_folders_csv(root: Node, target: str | os.PathLike[str],
                        max_depth: int | None = None) -> int:
-    """Write one row per folder (``root`` included, down to ``max_depth`` levels); return the row count."""
+    """Write folder rows with named/countable bytes and a 0/1 accounting flag; return the row count.
+
+    Include ``root`` and descend to ``max_depth`` levels when supplied.
+    """
     rows = ([node.path, node.size, node.allocated, round(node.share_of_parent(), 6), node.file_count,
-             node.dir_count, _iso_time(node.modified), node.error or ""]
+             node.dir_count, _iso_time(node.modified), node.error or "", node.accounted_size, node.accounted_allocated,
+             int(_has_accounting(node))]
             for node in _folders(root, max_depth))
     return _write_csv(target, FOLDER_COLUMNS, rows)
 
 
 def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> int:
-    """Write one row per file in ``files``, in the given order; return the row count."""
+    """Write files in given order with named/counted bytes and a 0/1 mode flag; return the row count."""
     rows = ([node.path, node.size, node.allocated, _iso_time(node.modified), _iso_time(node.accessed or 0.0),
-             _iso_time(node.created or 0.0)] for node in files)
+             _iso_time(node.created or 0.0), node.accounted_size, node.accounted_allocated,
+             int(_has_accounting(node))] for node in files)
     return _write_csv(target, FILE_COLUMNS, rows)
 
 
@@ -48,6 +54,15 @@ def export_table_csv(header: Sequence[str], rows: Iterable[Sequence[str]],
     """Atomically save displayed table text as UTF-8/BOM CSV, escaping spreadsheet formulas."""
     return _write_csv(target, tuple(spreadsheet_text(cell) for cell in header),
                       ([spreadsheet_text(cell) for cell in row] for row in rows))
+
+
+def _has_accounting(node: Node) -> bool:
+    current: Node | None = node
+    while current is not None:
+        if current.accounting is not None:
+            return True
+        current = current.parent
+    return False
 
 
 def spreadsheet_text(cell: str) -> str:
@@ -61,8 +76,10 @@ def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | Non
 
     The file doubles as a saved scan to compare a later scan with (``core/compare.py``); ``saved`` is
     when it was written.
+    Named ``size`` remains the comparison basis; counted fields and the mode flag are additive.
     """
-    header = json.dumps({"format": JSON_FORMAT, "saved": _iso_time(time.time())}, ensure_ascii=False)
+    header = json.dumps({"format": JSON_FORMAT, "saved": _iso_time(time.time()),
+                         "hard_link_accounting": root.accounting is not None}, ensure_ascii=False)
     with _atomic_file(target, encoding="utf-8") as stream:
         stream.write(header[:-1] + ', "root": ')
         stream.writelines(_folder_json(root, max_depth))
@@ -89,7 +106,8 @@ def _folder_json(root: Node, max_depth: int | None) -> Iterator[str]:
     while node is not None:
         give_way()
         fields: dict[str, Any] = dict(name=node.name, size=node.size, allocated=node.allocated,
-                                     files=node.file_count, folders=node.dir_count, modified=_iso_time(node.modified))
+                                     files=node.file_count, folders=node.dir_count, modified=_iso_time(node.modified),
+                                     accounted_size=node.accounted_size, accounted_allocated=node.accounted_allocated)
         if node.error:
             fields["error"] = node.error
         children = iter(child for child in node.children if child.is_dir and not child.is_link)

@@ -57,16 +57,16 @@ def layout(root: Node | None, *, expanded: frozenset[int] = frozenset(),
             continue
         folders = (child for child in node.children if child.is_dir and not child.is_link)
         top = heapq.nlargest(offset + min(limit, max(0, free - 1)), folders,
-                             key=lambda child: child.allocated)
+                             key=lambda child: child.accounted_allocated)
         shown = top[offset:]
         total = 0
         total_size = 0
         for child in node.children:
             if child.is_dir and not child.is_link:
                 total += 1
-                total_size += child.allocated
+                total_size += child.accounted_allocated
         hidden = total - len(top)
-        remainder = total_size - sum(child.allocated for child in top)
+        remainder = total_size - sum(child.accounted_allocated for child in top)
         if hidden and free > len(shown):
             pending.append((None, index, depth + 1, hidden, remainder))
         for child in reversed(shown):

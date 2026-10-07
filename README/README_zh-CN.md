@@ -6,7 +6,7 @@
 
 ![FileTree 显示一个用户文件夹：左边是文件夹树，右边是方块图](../docs/images/main_window_zh-CN.png)
 
-Python API 提供可选的 `ScanOptions(count_hard_links=True)`：`Node.accounted_size` 与 `Node.accounted_allocated` 对观察到的每个硬链接标识只计一次，计入记录路径排序的第一个名称。具名 `size`／`allocated` 与文件数保持不变；未知或不一致的记录仍保留具名估计值。沿用现有 stat 元数据，不增加 OS 查询，也不读取内容。改变记录树后，请在后台任务重新执行 `account_hard_links`。GUI／图表／CLI／导出集成仍待完成。
+**选项 → 观察到的硬链接只计一次** 默认关闭，设置会保存并由后续扫描记录。另提供计入的逻辑／磁盘分配总量，保留具名文件长度、分配与数量。摘要显示计入总量、观察到的别名及未知记录；标题菜单提供默认隐藏的 **计入大小／计入磁盘大小** 列。观察到的路径排序第一个名称计入字节，其他名称仅在计入列记为零。图表及图例使用计入总量；最大文件／搜索／类型／文件年龄／所有者列表及上级／磁盘占比保留具名计量。未知／不一致元数据保留具名估计，共享数据区段与文件夹元数据仍未知。此模式的分支重扫及移到回收站后会重扫完整范围，原计入名称离开后转由剩余名称计入。运行中的任务保留原选项。CSV 增加 `accounted_size_bytes`、`accounted_allocated_bytes` 与 `hard_link_accounting`（0／1）；文件夹 JSON 增加计入值及模式标志，保存比较／历史仍保留具名 `size`。HTML／XLSX 报告保留具名表格，另有计入的条目／摘要列。命令行接受 `--count-hard-links`，输出计入字节总量与 `hard_link_accounting` 元数据。停用时，计入列沿用具名估计。Python API 使用 `ScanOptions(count_hard_links=True)` 与 `Node.accounted_size/accounted_allocated`；改变记录树后请在后台任务重新执行 `account_hard_links`。沿用现有 stat，不增加 OS／内容读取。原生自建两个名称的测试保留 2 MiB 具名总量、1 MiB 计入总量、两个实际文件长度及一个别名。
 
 **选项 → 测量 Windows 逐文件磁盘大小** 默认关闭，应用到后续完整／分支扫描，启用后请重新扫描。此功能以不跟随链接的元数据句柄查询 `FILE_STANDARD_INFO`，核对完整的 64 位卷／128 位文件标识（Python 3.12 之前使用旧版 stat 标识）、大小与修改时间；即使未显示普通压缩标志，也能测量普通文件与 XPRESS／WOF 的分配大小。已知云端／离线文件仍不查询并记为零，不支持、权限不足或记录已变化时采用已说明的大小估计值。逐文件查询会增加扫描时间，不读取文件内容；共享数据区段与文件夹元数据仍未知，硬链接仍按各名称计算。默认扫描对普通文件保留簇估计值。原生自建测试文件通过 NTFS／XPRESS8K 压缩及解压缩内容核对，逐文件测量的重新扫描记录了 2 MiB XPRESS 文件的 73,728 字节分配大小，该文件未显示普通压缩标志。
 
@@ -200,6 +200,7 @@ Windows 的“**文件 → 已安装程序…**”列出最多 1,000 个卸载�
 je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json
 je-file-tree-cli scan D:\ --compare old.json --limit 20
 python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
+python -m je_file_tree.cli scan D:\ --count-hard-links
 ```
 
 退出代码：**0** 覆盖范围完整、**1** 不完整（包含排除及无法读取的项目）、**2** 参数错误、**3** 扫描／比较／导出 I/O 错误或保存的扫描格式无效、**130** 已中断。Ctrl+C 会停止扫描并导出已读取的部分；再次按 Ctrl+C 则立即中止。每份导出独立完成原子写入，后续导出失败不会撤销先前完成的报告。命令行不提供删除或自动清理。
