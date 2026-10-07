@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "menu_theme": "Theme",
+    "theme_system": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+
     "chart_access_keys": ("Arrow keys select rendered entries. Enter opens a folder; Backspace goes up. "
                           "Use the folder tree for grouped or hidden entries."),
     "chart_access_tree_keys": ("Up/Down selects cards; Right/Left expands/collapses folders. "
@@ -677,6 +682,11 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "menu_theme": "主題",
+    "theme_system": "系統",
+    "theme_light": "淺色",
+    "theme_dark": "深色",
+
     "chart_access_keys": ("方向鍵選取已繪製項目；Enter 開啟資料夾，Backspace 返回上層。"
                           "合併或未顯示的項目可使用資料夾樹查看。"),
     "chart_access_tree_keys": "上／下選取卡片，右／左展開或收合資料夾。Enter 開啟資料夾，Backspace 返回上層。",
@@ -1276,6 +1286,11 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "menu_theme": "主题",
+    "theme_system": "系统",
+    "theme_light": "浅色",
+    "theme_dark": "深色",
+
     "chart_access_keys": ("方向键选择已绘制条目；Enter 打开文件夹，Backspace 返回上级。"
                           "合并或未显示的条目可使用文件夹树查看。"),
     "chart_access_tree_keys": "上／下选择卡片，右／左展开或折叠文件夹。Enter 打开文件夹，Backspace 返回上级。",

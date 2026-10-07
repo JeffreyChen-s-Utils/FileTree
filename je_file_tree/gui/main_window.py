@@ -47,6 +47,7 @@ from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcom
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
+from je_file_tree.gui.themes import ThemeMenu
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
 # How often the tree of a running scan is refreshed.
@@ -614,6 +615,7 @@ class MainWindow(QMainWindow):
         self.path_edit.setToolTip(tr("path_placeholder"))
         self.welcome.retranslate()
         self.results.retranslate()
+        self.theme_menu.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
     def _remember(self, path: str) -> None:
@@ -758,6 +760,7 @@ class MainWindow(QMainWindow):
             action.triggered.connect(lambda _checked=False, chosen=code: self.change_language(chosen))
             self._language_actions[code] = action
         view_menu.addSeparator()
+        self.theme_menu = ThemeMenu(view_menu, self.settings)
         view_menu.addAction(self._actions["hidden"])
         view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])

@@ -37,7 +37,8 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, 
 from je_file_tree.core.node import Node
 from je_file_tree.core.treemap import Rect, Tile, layout
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.age_colours import age_colour, age_text_colour
+from je_file_tree.gui.age_colours import age_colour
+from je_file_tree.gui.colours import MIN_TEXT_CONTRAST, contrast, readable_ink
 
 # One colour per file-type group (every key of analysis.CATEGORIES), readable on
 # light and dark themes alike.
@@ -241,7 +242,9 @@ class TreemapWidget(QWidget):
             return
         node = tile.node
         colour = self._colour(node, tile.depth)
-        if min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir and self._colours != BY_AGE:
+        ink = readable_ink(colour)
+        if (min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir and self._colours != BY_AGE
+                and min(contrast(ink, colour.lighter(135)), contrast(ink, colour.darker(115))) >= MIN_TEXT_CONTRAST):
             gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
             gradient.setColorAt(0.0, colour.lighter(135))
             gradient.setColorAt(1.0, colour.darker(115))
@@ -253,8 +256,7 @@ class TreemapWidget(QWidget):
         if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
             return
         size = format_size(node.size, self.unit)
-        painter.setPen(age_text_colour(colour) if self._colours == BY_AGE else
-                       QColor("#000000") if node.is_dir else QColor("#ffffff"))
+        painter.setPen(ink)
         if tile.header:
             strip = QRectF(rect.x() + 3, rect.y() + 2, rect.width() - 6, tile.header)
             self._draw_label(painter, strip, f"{node.name}  {size}", Qt.AlignmentFlag.AlignVCenter)

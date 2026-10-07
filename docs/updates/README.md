@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-29 | 2026-10-07 | System, light and dark themes with readable chart labels | #done #themes #charts | [2026-10](2026-10.md) |
 | U-20261007-28 | 2026-10-07 | Accessible chart descriptions and keyboard navigation | #done #accessibility #exports | [2026-10](2026-10.md) |
 | U-20261007-27 | 2026-10-07 | Explain Windows-managed space and reject direct moves | #done #windows #safety | [2026-10](2026-10.md) |
 | U-20261007-26 | 2026-10-07 | Locate extension bytes by containing folder off the UI thread | #done #file-types | [2026-10](2026-10.md) |

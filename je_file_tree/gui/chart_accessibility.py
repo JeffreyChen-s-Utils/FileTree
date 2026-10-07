@@ -62,6 +62,8 @@ class ChartAccessibility(QObject):
         """Handle chart-only keys; modified shortcuts and Tree diagram's existing navigation pass through."""
         if event.type() == QEvent.Type.FocusIn:
             self.refresh()
+        if event.type() in (QEvent.Type.PaletteChange, QEvent.Type.StyleChange):
+            self.chart.invalidate()
         if (not isinstance(event, QKeyEvent) or event.type() != QEvent.Type.KeyPress
                 or event.modifiers() & _SHORTCUT_MODIFIERS):
             return False

@@ -8,10 +8,10 @@ from PySide6.QtGui import QColor
 
 from je_file_tree.core.analysis import AGES, age_of
 from je_file_tree.core.node import Node
+from je_file_tree.gui.colours import readable_ink
 
 AGE_COLOURS = dict(zip(AGES, ("#d7e9f4", "#aacfe2", "#7caac7", "#527fa4", "#315a80"), strict=True))
 UNKNOWN_AGE_COLOUR = "#b9b9b9"
-_LIGHT_LABEL_LIMIT = .55
 
 
 def age_colour(node: Node, now: float) -> QColor:
@@ -23,4 +23,4 @@ def age_colour(node: Node, now: float) -> QColor:
 
 def age_text_colour(colour: QColor) -> QColor:
     """Keep chart labels readable across the light-to-dark age palette."""
-    return QColor("#17202a" if colour.lightnessF() > _LIGHT_LABEL_LIMIT else "#ffffff")
+    return readable_ink(colour)

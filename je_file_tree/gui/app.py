@@ -15,6 +15,7 @@ from je_file_tree.gui import elevation
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.scan_worker import pace_workers
+from je_file_tree.gui.themes import theme_controller
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
@@ -26,6 +27,7 @@ def create_window(settings: QSettings, folder: str | None = None) -> MainWindow:
     if language not in LANGUAGES:
         language = match_language(QLocale.system().name())
     set_language(language)
+    theme_controller().apply(str(settings.value('theme', 'system')))
     apply_qt_translation(language)
     window = MainWindow(settings)
     window.setWindowIcon(app_icon())

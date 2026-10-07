@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
+palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice
+and startup restores it before constructing windows. Palette/style events discard chart caches.
+`colours` selects label ink by sRGB contrast; treemap shading is retained only when its endpoints
+meet the same minimum contrast. Sunburst/age labels share this logic; bars use palette text roles.
+
 `chart_accessibility` attaches one QObject event filter per chart, exposing translated accessible
 names, current-root/selection facts and keyboard instructions. It navigates only cached/bounded layout
 nodes, coordinates normal node-click selection, scrolls bar/card selections into view and leaves

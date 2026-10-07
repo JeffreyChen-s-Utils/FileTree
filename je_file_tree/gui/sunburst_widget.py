@@ -28,7 +28,8 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.core.sunburst import Segment, layout, segment_at
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.age_colours import age_colour, age_text_colour
+from je_file_tree.gui.age_colours import age_colour
+from je_file_tree.gui.colours import readable_ink
 from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, BY_TYPE, COLOUR_MODES, colour_for
 
 RINGS = 4  # at most; fewer when the tree is shallower, so the rings always fill the space
@@ -274,7 +275,7 @@ class SunburstWidget(QWidget):
         point = QPointF(centre.x() + radius * math.sin(angle), centre.y() - radius * math.cos(angle))
         width = min(segment.span * 2 * math.pi * radius, ring * 1.6)
         box = QRectF(point.x() - width / 2, point.y() - ring / 2, width, ring)
-        painter.setPen(age_text_colour(self._colour(segment)) if self._colours == BY_AGE else QColor("#000000"))
+        painter.setPen(readable_ink(self._colour(segment)))
         text = painter.fontMetrics().elidedText(segment.node.name, Qt.TextElideMode.ElideRight, int(width))
         painter.drawText(box, Qt.AlignmentFlag.AlignCenter, text)
 
