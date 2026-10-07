@@ -21,6 +21,13 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.live_compare` matches exact relative names from two fresh scanner trees iteratively, preserves
+unknown missing paths under unreadable scopes, and bounds displayed rows to 10,000 while keeping the
+complete count. Explicit requested pairs reuse snapshot-guarded full-file hashing and revalidate both
+paths after both reads. Metadata equality never establishes content equality. The independent modal
+LiveCompareDialog owns/joins gentle scan/hash and CSV export workers, rejects canceled/closed replies,
+and offers no copy, move or synchronization action.
+
 `tools/linux_desktop` is a separate native desktop test harness: a digest-pinned container wraps Xvfb
 and a private D-Bus session. A separate Qt service declares the strict FileManager1 string-array/string
 signature; the client introspects it and verifies an actual wire call. Owned Trash fixtures go through

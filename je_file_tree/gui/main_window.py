@@ -35,6 +35,7 @@ from je_file_tree.core.system_files import system_file
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
+from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -718,6 +719,7 @@ class MainWindow(QMainWindow):
             ("compare", None, self.choose_saved_scan),
             ("recent_actions", None, self.show_recent_actions),
             ("special_files", None, self.show_special_files),
+            ("live_compare", None, self.compare_live_folders),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -754,8 +756,8 @@ class MainWindow(QMainWindow):
         export_menu.addAction(self._actions["export_list"])
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
-        file_menu.addAction(self._actions["recent_actions"])
-        file_menu.addAction(self._actions["special_files"])
+        for key in ("recent_actions", "special_files", "live_compare"):
+            file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
         file_menu.addAction(self._actions["elevate"])
@@ -838,6 +840,7 @@ class MainWindow(QMainWindow):
         self._actions["stop"].setEnabled(scanning)
         self._actions["open"].setEnabled(self._trash_worker is None)
         self._actions["cleanup_policy"].setEnabled(not scanning)
+        self._actions["live_compare"].setEnabled(not scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
@@ -907,6 +910,23 @@ class MainWindow(QMainWindow):
         dialog = SpecialFilesDialog(outcome.result.root, self._unit,
                                     partial=outcome.partial or bool(outcome.result.errors), parent=self)
         dialog.selected.connect(self.results.select_node)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
+
+    def compare_live_folders(self) -> None:
+        """Choose two existing folders for an independent read-only comparison."""
+        if self._worker is not None or self._trash_worker is not None:
+            return
+        left = QFileDialog.getExistingDirectory(self, tr("compare_choose_left"), self._last_path or "")
+        if not left:
+            return
+        right = QFileDialog.getExistingDirectory(self, tr("compare_choose_right"), left)
+        if not right:
+            return
+        dialog = LiveCompareDialog((left, right), self._unit, self)
         try:
             dialog.exec()
         finally:

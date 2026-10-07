@@ -65,6 +65,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-45 | 2026-10-07 | Compare two live folders with explicit stable content verification | #done #comparison #exports | [2026-10](2026-10.md) |
+| U-20261007-44 | 2026-10-07 | Verify native Linux desktop behavior with retained wire and drag evidence | #snapshot #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-43 | 2026-10-07 | Target the owned Thunar row in client coordinates | #incident #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-42 | 2026-10-07 | Verify native bus, Trash and fallback and correct Thunar startup | #incident #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-41 | 2026-10-07 | Supply native desktop account identity and inspect retained artifacts | #incident #linux #desktop | [2026-10](2026-10.md) |

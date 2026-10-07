@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [UNVERIFIED] Finish and inspect `tools/linux_desktop`'s real Thunar drag test, including preserving the source folder. macOS [BLOCKED]: no Mac or macOS VM available from the owner.
+- **#4** [BLOCKED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation and CJK rendering on macOS; no Mac or macOS VM is available from the owner.
 
 ### Safety
 
@@ -65,7 +65,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#68** (P2) Quick filter in the tree: type to show only the rows whose name matches, within the folders already expanded; a proxy model over `FolderTreeModel` that respects the live model and its persistent indexes (`je_file_tree/gui/tree_model.py` `_relayout`).
 - **#69** (P3) Several scans at once: result tabs, each its own scan, to look at two drives side by side; the window's single `ResultsView` becomes one per tab, with the scan worker per tab.
 - **#83** (P2) Same-volume file management: add batch *Move to folder* and *Rename* from the tree, Search and Largest files, with a preview of every source and destination. On the same volume, use atomic rename where supported; reject moves into descendants, protected destinations and path collisions, offer explicit skip/rename choices for existing names, and never silently overwrite. Keep the original in place on failure; cancel between files and rescan both affected parents. Cross-volume moves remain #22's verified-copy workflow.
-- **#84** (P2) Compare two live folders: a read-only side-by-side view that matches relative paths and reports only-left, only-right, different size/time and byte-identical files (hash only requested pairs on a worker with Stop). Use it before #22's migration and for checking a backup; do not equate equal timestamps with equal contents. Export the differences, and make any later copy/move a separate, reviewed action rather than a one-click sync. Test Unicode/case sensitivity, links, permission errors and a file changing during hashing.
 
 ### Distribution
 
