@@ -471,6 +471,22 @@ The operation worker rescans affected parents outside the current root
 and reports counts/errors; after joining, MainWindow invalidates capacity/old analyser replies and
 rebuilds the current root, refreshing both affected parents within it. Native macOS remains unverified.
 
+`core.verified_copy` prepares exclusive ordinary-folder copy plans, including cross-volume targets,
+and returns CopyProof observations after complete name/count/length comparison and SHA-256 comparison
+below 64 MiB. Larger streams remain length-only. Reverification is mandatory before the existing
+approved MainWindow Trash route; core copy APIs never remove/Trash/redirect originals. Protected
+ordinary sources can be read, without granting Trash approval. Links/special/cloud/reparse/incomplete/
+changed/mounted sources and protected/descendant/colliding targets are refused. Partial copies are
+retained and named, cancellation preserves originals and failure stops the batch.
+`core.copy_io` anchors directories and verifies no-follow source descriptors/path metadata across reads,
+uses exclusive creation and bounded chunk reads, rejects destination filesystem/Linux mount changes,
+and applies metadata after children. `core.copy_platform` wraps exclusive native Windows CopyFileExW
+with PROGRESS_STOP (keeps partial data), bounded ADS queries/comparison, and macOS descriptor fcopyfile
+with bounded resource-fork/attribute comparison. POSIX xattrs copy/compare strictly; native APIs have no
+unsafe fallback. Files retain platform-supported metadata; Windows directory security inherits its
+destination and POSIX setuid/setgid/sticky bits are omitted. GUI/optional original-path redirection and
+native macOS validation remain pending. Concurrency is observational, not transactional.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are

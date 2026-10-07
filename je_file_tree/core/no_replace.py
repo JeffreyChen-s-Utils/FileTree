@@ -12,7 +12,7 @@ from pathlib import Path
 import stat
 import sys
 
-from je_file_tree.core.compression_ops import _kernel, _pin
+from je_file_tree.core.compression_ops import _kernel
 from je_file_tree.core.snapshot import pack_snapshot, unpack_snapshot
 
 _UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
@@ -50,6 +50,20 @@ def _identity(stamp: DirectoryStamp, info: os.stat_result) -> None:
 
 
 @contextmanager
+def _directory_pin(kernel, stamp: DirectoryStamp) -> Iterator[None]:
+    _identity(stamp, os.lstat(stamp.path))
+    handle = kernel.CreateFileW(stamp.path, 0x80000000, 3, None, 3, 0x02200000, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        # Child changes alter directory timestamps, not the captured directory identity/scope.
+        _identity(stamp, os.lstat(stamp.path))
+        yield
+    finally:
+        kernel.CloseHandle(handle)
+
+
+@contextmanager
 def anchored_directory(stamps: Sequence[DirectoryStamp]) -> Iterator[int | None]:
     """Pin Windows ancestors against rename/delete, or open POSIX components without following links."""
     if not stamps:
@@ -58,8 +72,7 @@ def anchored_directory(stamps: Sequence[DirectoryStamp]) -> Iterator[int | None]
         with ExitStack() as stack:
             kernel = _kernel()
             for stamp in stamps:
-                stack.enter_context(_pin(kernel, stamp.path))
-                _identity(stamp, os.lstat(stamp.path))
+                stack.enter_context(_directory_pin(kernel, stamp))
             yield None
     else:
         descriptor = os.open(stamps[0].path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)

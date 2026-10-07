@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import threading
+from types import SimpleNamespace
 
 import pytest
 
@@ -184,3 +185,19 @@ def test_deep_folder_change_after_preview_preserves_source(tmp_path, monkeypatch
     result = moves.execute_namespace(plan)
     assert len(result.failed) == 1 and not result.moved
     assert (folder / "deep").read_bytes() == b"after" and not (target / "folder").exists()
+
+
+def test_directory_pin_ignores_child_changes_but_retains_identity(tmp_path):
+    directory = tmp_path.resolve()
+    stamp = no_replace.directory_stamps(str(directory))[-1]
+    calls = []
+
+    def open_handle(path, access, share, _security, disposition, flags, _template):
+        assert (path, access, share, disposition, flags) == (str(directory), 0x80000000, 3, 3, 0x02200000)
+        (directory / "new-child").write_bytes(b"ambient child change")
+        return 123
+
+    kernel = SimpleNamespace(CreateFileW=open_handle, CloseHandle=calls.append)
+    with no_replace._directory_pin(kernel, stamp):
+        assert (directory / "new-child").exists()
+    assert calls == [123]

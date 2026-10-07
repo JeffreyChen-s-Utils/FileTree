@@ -238,3 +238,29 @@ concurrent filesystem mutation is not transactional. Native macOS remains unveri
 POSIX semantics: [Linux exclusive rename](https://www.man7.org/linux/man-pages/man2/rename.2.html),
 [Apple rename flags/signature](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/stdio.h).
 Windows behavior: [os.rename](https://docs.python.org/3/library/os.html#os.rename).
+
+`verified_copy.prepare_copy(root, nodes, directory, *, collision="skip", cancel=None)` returns a
+frozen NamespacePlan or None on cancellation. Ordinary folders only; raw selections are bounded to
+1,000, outermost pairs retain eligibility reasons and literal reviewed destinations. Protected
+ordinary sources may be read, but their later Trash approval remains the existing protected flow.
+Linked/special/cloud/reparse/incomplete/changed/mounted sources and protected/descendant/colliding
+destinations are refused. Explicit suffix choices never change during execution.
+`copy_folders(plan, *, cancel=None, progress=None)` exclusively creates folders/files and compares full
+child topology, counts, lengths and every main file/Windows ADS smaller than 64 MiB via SHA-256.
+At/above the threshold, contents are length-only. Empty folders remain; hard-link names become separate
+copies. Native Windows CopyFileExW preserves file metadata/ADS and PROGRESS_STOP retains partial data.
+Failed/unsupported ADS enumeration prevents verification; directory streams are unsupported.
+POSIX xattrs copy/compare strictly. Native macOS fcopyfile copies metadata/resource forks; native attrs
+below 64 MiB compare values, larger values compare length only, with a 64 KiB attribute-name inventory.
+Windows directory security inherits the destination; POSIX setuid/setgid/sticky bits are omitted.
+Parent descriptors/Windows handles and path/descriptor snapshots reject links/replacements. Checked
+Linux descriptor mount IDs reject same-device destination binds; other POSIX same-device validation
+remains unknown. Failure stops the batch and preserves every original; partial paths remain visible.
+`CopyResult` exposes verified CopyProofs, skipped/failed rows, partial paths and canceled.
+`verify_copy(proof, *, cancel=None)` rechecks source coverage, captured destination root/volume and all
+comparisons. Proofs are observations, never deletion permission or future-stability guarantees: repeat
+verification immediately before the existing separately approved MainWindow.move_to_trash worker.
+No API here trashes/deletes/redirects originals. Concurrent mutation remains nontransactional; GUI
+integration is pending and native macOS remains unverified.
+Native references: [Windows CopyFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexw),
+[Apple fcopyfile](https://github.com/apple-oss-distributions/copyfile/blob/main/copyfile.3).
