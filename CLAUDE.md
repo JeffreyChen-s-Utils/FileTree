@@ -103,6 +103,18 @@ tool default.
   freedesktop restoration, only that recognized, identity-checked current-user `.trashinfo` receipt
   may be removed from its anchored private OS-bin `info` scope. Changed receipts or cleanup errors
   retain metadata and remain visible; this exception never authorizes deleting recorded source paths.
+  Explicit duplicate *Link the extra copies* may replace only reviewed ordinary extra files with
+  hard links to their explicitly kept file on the same mounted volume. Rehash complete main data,
+  every named stream and supported extended-attribute payload; refuse protected, changed, linked,
+  cloud/special, unknown and already hard-linked originals. Retain each captured old copy under an
+  exclusive operation-owned backup name in its anchored original parent, publish the captured new
+  alias without overwriting arrivals, and reverify complete equality before retiring only that exact
+  captured backup. Windows retirement uses its identity-checked DELETE handle; POSIX uses the
+  anchored parent descriptor and immediate no-follow identity checks. Cleanup may also unlink only
+  an identity-checked temporary hard-link alias created by this operation. Never delete an unrelated
+  arrival, directory or recorded history path. Failure attempts exclusive rollback; retain/report
+  actual backup/alias paths if rollback or cleanup fails. Approval explains that old data is not kept
+  in Trash and all names share future data/metadata changes. Concurrency remains observational.
   Scan-history retention may remove only recognized FileTree history JSON under its application-owned
   history directory, after validating its format/root bucket/name. It never removes recorded source
   paths. Retention anchors POSIX directories by descriptor and pins Windows directory handles against

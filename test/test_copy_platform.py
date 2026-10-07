@@ -70,3 +70,28 @@ def test_missing_mac_native_metadata_interface_refuses_without_fallback(monkeypa
         copy_platform.mac_copy(10, 20, None)
     with pytest.raises(OSError, match="unavailable"):
         copy_platform.mac_xattrs(10, 100)
+
+
+def test_mac_aggregate_attribute_cap_refuses_before_reading_excess_value(monkeypatch):
+    reads = []
+
+    def names(_fd, buffer, _size, _flags):
+        value = b"first\0second\0"
+        if buffer is not None:
+            ctypes.memmove(buffer, value, len(value))
+        return len(value)
+
+    def attribute(_fd, name, buffer, size, _position, _flags):
+        if buffer is not None:
+            reads.append(name)
+            ctypes.memmove(buffer, b"abcd", size)
+        return 4
+
+    library = SimpleNamespace(flistxattr=names, fgetxattr=attribute)
+    monkeypatch.setattr(ctypes, "CDLL", lambda *_args, **_kwargs: library)
+    with pytest.raises(ValueError, match="byte bound"):
+        copy_platform.mac_xattrs(10, 10, total_limit=6)
+    assert reads == [b"first"]
+    reads.clear()
+    assert copy_platform.mac_xattrs(10, 10) == ((b"first", 4, b"abcd"), (b"second", 4, b"abcd"))
+    assert reads == [b"first", b"second"]

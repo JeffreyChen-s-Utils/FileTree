@@ -361,9 +361,32 @@ are copied before future checks; original inputs remain untouched. Preview reads
 containment, every scan/handle/parent/device/mount observation and then compares complete main data
 with SHA-256 and the recorded BLAKE2 duplicate digest. Every Windows named data stream is fully
 hashed, irrespective of length; names/lengths are checked before/after. POSIX attributes must exactly
-match, including native macOS resource forks below 64 MiB; larger native attributes are refused, not
+match, including native macOS resource forks below 64 MiB; aggregate native attribute payload is
+capped at 64 MiB before allocation. Larger native attributes are refused, not
 accepted from length alone. LinkVerification exposes pair, digest and bytes_read (both payloads and
 Windows ADS). Unknown/unavailable/changed metadata, content mismatches and cancellation raise
 OSError/ValueError while leaving payloads untouched. This is read-only evidence, never authorization
 for later replacement/deletion/linking; a mutation executor must recheck at its operation boundary.
-The executor and GUI approval remain pending, and macOS native behavior remains unverified.
+Native macOS behavior remains unverified.
+
+`duplicate_link_ops.execute_links(plan, *, cancel=None, progress=None)` executes only an explicitly
+reviewed plan while the caller keeps its scan tree stable. It fully rechecks each original group and
+each pair before linking; subsequent extras accept only the keeper's observed own link-count/ctime
+changes. Same-volume native hard links and native exclusive renames retain the old extra under a
+unique sibling backup and publish without overwriting arrivals. Complete main data, every Windows
+ADS and supported attribute payload are compared again before retiring only that captured backup.
+Windows retirement uses an identity-checked DELETE handle and FileDispositionInfo (one BOOLEAN),
+with DELETE-sharing ADS readers; POSIX uses the anchored parent descriptor. There is no copy,
+overwrite, directory-removal or arbitrary original-path deletion fallback. These native contracts
+follow [SetFileInformationByHandle](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfileinformationbyhandle)
+and [FILE_DISPOSITION_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_disposition_info).
+
+LinkResult exposes outcomes, affected keeper/extra parents and canceled. LinkOutcome exposes pair,
+linked, error and retained paths. A published alias remains linked=True on later verification or
+retirement failure. Cancellation stops unstarted work; rollback is exclusive, and collisions preserve
+arrivals and report actual retained backup/temporary paths. Cleanup refuses a temporary alias that
+could be the last name. An error stops remaining extras in its group. Old copies are not kept in
+Trash; edits and metadata/security changes through one linked name affect every name. Callers must
+obtain explicit approval and refresh affected scan observations; no freed-space amount is guaranteed.
+Concurrency remains observational. Native owned Windows fixtures verified multiple aliases, full
+ADS retirement, cancellation, rollback, arrivals and partial publication. GUI review remains pending.

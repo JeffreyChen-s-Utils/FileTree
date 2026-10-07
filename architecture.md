@@ -536,7 +536,18 @@ mutations. It freezes path/scan/handle/parent observations and limits selection 
 refusing protected/changed/special/cloud/already hard-linked decisions and other device/mount rows.
 Full verification rereads both main files and every Windows ADS without a large-file length fallback,
 checks the original duplicate digest, strict POSIX xattrs and bounded complete native resource forks.
-Cancellation never grants mutation authority. A replacement executor and GUI review remain pending.
+Native macOS attribute payload has a 64 MiB aggregate cap; unavailable complete values are refused.
+Cancellation never grants mutation authority. `core.duplicate_link_ops` executes explicitly reviewed
+plans with fresh complete group/pair verification, anchored same-volume temporary hard links,
+exclusive old-copy backups and exclusive publication. `core.link_io` permits retirement only of the
+captured owned backup after complete re-verification and temporary-alias cleanup with another live
+keeper name. Windows pins DELETE handles and uses disposition-on-close plus DELETE-sharing ADS
+readers; POSIX unlinks only from the captured parent descriptor. Own keeper link-count/ctime changes
+are carried forward; unrelated changes stop the group. Exclusive rollback never overwrites arrivals.
+Outcomes retain actual published state and backup/alias paths after cancellation or failure. Both
+keeper and extra parents need a fresh scan; freed capacity is unknown. The scoped CLAUDE exception
+requires explicit review explaining shared future data/metadata and no Trash copy. Native owned
+Windows multiple-copy/ADS/rollback/cancel/collision tests passed. GUI review remains pending.
 
 ## 3. Entry points and public interfaces
 

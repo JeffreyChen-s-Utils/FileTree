@@ -1,6 +1,7 @@
 """Read-only exact hard-link replacement previews and complete duplicate-payload verification."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass, replace
 import hashlib
 import os
@@ -146,7 +147,8 @@ def _digests(stream: BinaryIO, cancel: threading.Event | None) -> tuple[bytes, b
     return sha.digest(), duplicate.digest(), total
 
 
-def _streams(pair: LinkPair, cancel: threading.Event | None) -> int:
+def _streams(pair: LinkPair, cancel: threading.Event | None, *,
+              opener: Callable[[str, str], AbstractContextManager[BinaryIO]] = open) -> int:
     before = windows_streams(pair.keeper_path)
     if before != windows_streams(pair.copy_path):
         raise ValueError("Duplicate alternate-stream names/lengths differ")
@@ -154,7 +156,7 @@ def _streams(pair: LinkPair, cancel: threading.Event | None) -> int:
     for name, _size in before:
         if name == "::$DATA":
             continue
-        with open(pair.keeper_path + name, "rb") as source, open(pair.copy_path + name, "rb") as copied:
+        with opener(pair.keeper_path + name, "rb") as source, opener(pair.copy_path + name, "rb") as copied:
             first, _, size = _digests(source, cancel)
             second, _, other = _digests(copied, cancel)
             if first != second or size != other:
@@ -167,7 +169,8 @@ def _streams(pair: LinkPair, cancel: threading.Event | None) -> int:
 
 def _attributes(source: int, target: int) -> None:
     if sys.platform == "darwin":
-        first, second = mac_xattrs(source, _ATTRIBUTE_LIMIT), mac_xattrs(target, _ATTRIBUTE_LIMIT)
+        first = mac_xattrs(source, _ATTRIBUTE_LIMIT, total_limit=_ATTRIBUTE_LIMIT)
+        second = mac_xattrs(target, _ATTRIBUTE_LIMIT, total_limit=_ATTRIBUTE_LIMIT)
         if first != second or any(value is None for _name, _size, value in first):
             raise ValueError("Duplicate native attributes/resource forks differ or exceed full-verification bounds")
     elif hasattr(os, "listxattr"):

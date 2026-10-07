@@ -164,8 +164,13 @@ def copy_xattrs(source_fd: int, target_fd: int) -> None:
             os.setxattr(target_fd, name, os.getxattr(source_fd, name))
 
 
-def mac_xattrs(descriptor: int, hash_limit: int) -> tuple[tuple[bytes, int, bytes | None], ...]:
-    """Compare native attribute names/lengths and bounded values; large resource forks stay length-only."""
+def mac_xattrs(descriptor: int, hash_limit: int, *,
+               total_limit: int | None = None) -> tuple[tuple[bytes, int, bytes | None], ...]:
+    """Read native attribute names/lengths and bounded values; optionally cap aggregate payload bytes.
+
+    Large resource forks stay length-only unless the caller refuses unavailable values. An explicit
+    aggregate cap rejects excess before allocating the next value; existing copy callers omit it.
+    """
     library = ctypes.CDLL(None, use_errno=True)
     if not hasattr(library, "flistxattr") or not hasattr(library, "fgetxattr"):
         raise OSError(errno.ENOSYS, "Native attribute verification unavailable")
@@ -180,13 +185,16 @@ def mac_xattrs(descriptor: int, hash_limit: int) -> tuple[tuple[bytes, int, byte
     names = ctypes.create_string_buffer(size)
     if library.flistxattr(descriptor, names, size, 0) != size:
         raise OSError("Native attribute names changed")
-    result = []
+    result, total = [], 0
     for name in sorted(names.raw.split(b"\0")):
         if not name:
             continue
         length = library.fgetxattr(descriptor, name, None, 0, 0, 0)
         if length < 0:
             raise OSError("Native attribute length unavailable")
+        total += length
+        if total_limit is not None and total > total_limit:
+            raise ValueError("Native attribute payload exceeds the complete-verification byte bound")
         value = None
         if length < hash_limit:
             buffer = ctypes.create_string_buffer(length)
