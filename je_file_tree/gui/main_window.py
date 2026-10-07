@@ -45,6 +45,7 @@ from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.programs import ProgramsDialog
 from je_file_tree.gui.file_times import FileTimesDialog
 from je_file_tree.gui.bin_labels import BinLabels, bin_key
+from je_file_tree.gui.compression import CompressionDialog
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
@@ -270,6 +271,8 @@ class MainWindow(QMainWindow):
             entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
+            if elevation.supported() and self._worker is None and self._trash_worker is None:
+                entries.append(("menu_compression", lambda: self.show_compression(node)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
         movable = [entry for entry in _movable(picked) if system_file(entry.path) is None]
@@ -288,6 +291,20 @@ class MainWindow(QMainWindow):
         """Open the selected entry's Windows Properties, reporting shell failures."""
         if not shell_integration.show_properties(node.path, int(self.winId())):
             QMessageBox.warning(self, tr("menu_properties"), tr("properties_failed", path=node.path))
+
+    def show_compression(self, node: Node) -> None:
+        """Review recorded compression candidates without changing file contents or attributes."""
+        outcome = self.results.outcome
+        if (not elevation.supported() or self._worker is not None or self._trash_worker is not None
+                or outcome is None or not node.is_dir or node.is_link or not node.is_in(outcome.result.root)):
+            return
+        dialog = CompressionDialog(node, self._unit, self, partial=outcome.partial)
+        dialog.selected.connect(self.results.select_node)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def rescan_folder(self, node: Node) -> None:
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""

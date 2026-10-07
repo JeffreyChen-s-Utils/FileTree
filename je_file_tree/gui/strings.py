@@ -9,6 +9,23 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "menu_compression": "NTFS compression estimate…",
+    "compression_reading": "Reviewing recorded compression candidates…",
+    "compression_summary": (
+        "{count}/{total} files are type candidates; showing {shown}; logical {logical}, named allocation {allocated}. "
+        "Potential saving: 0–{allocated}; no fixed compression rate is predicted. "
+        "{unknown} files have unknown metadata."
+    ),
+    "compression_volume": "Filesystem: {filesystem}; allocation unit: {unit}",
+    "compression_unknown": "Unknown",
+    "compression_ntfs_only": "NTFS was not confirmed; native compression is unavailable for this scope.",
+    "compression_partial": "Incomplete scan: omitted/unreadable data is outside this estimate.",
+    "compression_hint": (
+        "Read-only type estimate: logs, text, code and possibly uncompressed image formats. "
+        "Extensions do not prove compressibility. Hidden/system, compressed/sparse, reparse/cloud/offline and unknown "
+        "records are omitted. Named allocation can be estimated or shared by hard links, so it is not guaranteed "
+        "recoverable space. No payload is read. Double-click selects the recorded file; Ctrl+C copies rows."
+    ),
     "action_capture_owners": "Capture Windows file owners",
     "action_capture_owners_tip": "Off by default; adds owner metadata queries to future scans; enable and rescan",
     "tab_users": "Users",
@@ -993,6 +1010,22 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "menu_compression": "NTFS 壓縮估算…",
+    "compression_reading": "正在檢查已記錄的壓縮候選項目…",
+    "compression_summary": (
+        "{count}/{total} 個檔案為類型候選，顯示 {shown} 個；邏輯大小 {logical}，具名磁碟分配 {allocated}。"
+        "可能節省 0–{allocated}，不預測固定壓縮率。{unknown} 個檔案的中繼資料未知。"
+    ),
+    "compression_volume": "檔案系統：{filesystem}；分配單位：{unit}",
+    "compression_unknown": "未知",
+    "compression_ntfs_only": "無法確認 NTFS，此範圍不能進行原生壓縮。",
+    "compression_partial": "掃描不完整：略過／無法讀取的資料不在此估算範圍。",
+    "compression_hint": (
+        "唯讀類型估算：日誌、文字、程式碼與可能未壓縮的影像格式。副檔名不能證明可壓縮程度。"
+        "不含隱藏／系統、壓縮／稀疏、重新解析／雲端／離線或中繼資料未知的項目。"
+        "具名磁碟分配可能是估計值或由硬連結共用，不保證可回收空間；不讀取檔案內容。"
+        "按兩下選取已記錄的檔案，Ctrl+C 複製列表。"
+    ),
     "action_capture_owners": "記錄 Windows 檔案擁有者",
     "action_capture_owners_tip": "預設關閉；後續掃描增加擁有者中繼資料查詢，啟用後請重新掃描",
     "tab_users": "使用者",
@@ -1877,6 +1910,22 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "menu_compression": "NTFS 压缩估算…",
+    "compression_reading": "正在检查已记录的压缩候选项…",
+    "compression_summary": (
+        "{count}/{total} 个文件为类型候选，显示 {shown} 个；逻辑大小 {logical}，具名磁盘分配 {allocated}。"
+        "可能节省 0–{allocated}，不预测固定压缩率。{unknown} 个文件的元数据未知。"
+    ),
+    "compression_volume": "文件系统：{filesystem}；分配单位：{unit}",
+    "compression_unknown": "未知",
+    "compression_ntfs_only": "无法确认 NTFS，此范围不能进行原生压缩。",
+    "compression_partial": "扫描不完整：跳过／无法读取的数据不在此估算范围。",
+    "compression_hint": (
+        "只读类型估算：日志、文本、代码与可能未压缩的图像格式。扩展名不能证明可压缩程度。"
+        "不含隐藏／系统、压缩／稀疏、重解析／云端／离线或元数据未知的项。"
+        "具名磁盘分配可能是估计值或由硬链接共享，不保证可回收空间；不读取文件内容。"
+        "双击选择已记录的文件，Ctrl+C 复制列表。"
+    ),
     "action_capture_owners": "记录 Windows 文件所有者",
     "action_capture_owners_tip": "默认关闭；后续扫描增加所有者元数据查询，启用后请重新扫描",
     "tab_users": "用户",

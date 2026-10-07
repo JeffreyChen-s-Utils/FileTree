@@ -303,6 +303,14 @@ directory and atomically saves JSON evidence. Native NTFS/APFS, compression, clo
 extents remain unverified; this harness does not promote the ledger
 or recovery ranges to guarantees.
 
+`core.compression.compression_plan` surveys recorded extension-based candidates on a worker, excludes
+hidden/system/compressed/sparse/reparse/cloud/offline/unknown records and keeps the largest 1,000 files
+with full counts. Potential savings are only 0..recorded candidate allocation, not a predicted rate or
+recoverable-space guarantee. Windows filesystem/cluster queries retain unknown state; no file payloads
+are read. `gui.compression.CompressionDialog` owns/cancels/joins its preview worker, reuses numeric
+tables/Ctrl+C and routes exact recorded-file activation back to ResultsView. The Windows folder menu
+offers this read-only estimate; native compression/uncompression operations remain pending.
+
 `core.owner_id` captures regular-file POSIX uid from the existing stat, or optional Windows owner SID
 through OWNER_SECURITY_INFORMATION/GetNamedSecurityInfoW with LocalFree ownership. Windows capture
 skips cloud/offline/link records and rechecks no-follow metadata after querying; failures become unknown
