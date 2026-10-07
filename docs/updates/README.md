@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-56 | 2026-10-07 | Retained scan history and size-over-time comparison | #done #37 #history #gui | [2026-10](2026-10.md) |
 | U-20261007-55 | 2026-10-07 | Native ext4 capacity and recovery evidence | #snapshot #75 #76 #tests | [2026-10](2026-10.md) |
 | U-20261007-54 | 2026-10-07 | Isolated ext4 capacity and recovery probe | #snapshot #75 #76 #ci | [2026-10](2026-10.md) |
 | U-20261007-53 | 2026-10-07 | Configurable scan concurrency and UNC guidance | #snapshot #scanner #network #35 | [2026-10](2026-10.md) |

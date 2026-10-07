@@ -9,6 +9,33 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_history": "Scan history…",
+    "action_history_tip": "Review this root's size over time and compare with an earlier scan",
+    "action_history_settings": "Scan history settings…",
+    "action_history_settings_tip": "Enable local scan metadata and set its global retention limit",
+    "history_enable": "Keep completed full scans locally",
+    "history_settings_hint": "History stores folder names, paths, totals and coverage, never file contents. "
+                             "Default: enabled, 1 GiB total across all roots. Only recognized history metadata "
+                             "is removed, oldest first. Disabling keeps existing history readable. Changes apply "
+                             "to future full scans; a lower limit takes effect on the next save.",
+    "history_limit": "Total history limit",
+    "history_time": "Scan time",
+    "history_logical": "Logical bytes",
+    "history_allocated": "Allocated named bytes",
+    "history_coverage": "Coverage",
+    "history_incomplete": "Incomplete; known data only",
+    "history_complete": "Complete recorded coverage",
+    "history_chart": "Logical folder size over time",
+    "history_chart_range": "{first}: {before}; {last}: {after}",
+    "history_empty": "No retained scans for this root",
+    "history_compare": "Compare selected scan with current results",
+    "history_reading": "Reading local scan history…",
+    "history_hint": "The latest 1,000 retained full scans for this root. Stopped scans and branch rescans are "
+                    "not saved. Incomplete scans describe known data only: missing folders do not prove deletion. "
+                    "Totals count hard-link names separately; differences are metadata, not content verification.",
+    "history_summary": "Showing {shown} of {count} scans; {invalid} invalid/unavailable metadata files",
+    "history_failed": "Cannot read history: {reason}",
+    "history_save_failed": "The scan completed, but history could not be saved: {reason}",
     "action_scan_workers": "Scan workers…",
     "action_scan_workers_tip": "Choose concurrency for new scans; higher is not always faster",
     "workers_prompt": "Workers for new scans (1–32). The default is {default}. Slow network shares may benefit "
@@ -866,6 +893,31 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_history": "掃描歷史…",
+    "action_history_tip": "查看此根目錄大小隨時間的變化，並與先前掃描比較",
+    "action_history_settings": "掃描歷史設定…",
+    "action_history_settings_tip": "啟用本機掃描中繼資料並設定整體保留上限",
+    "history_enable": "在本機保留已完成的整棵掃描",
+    "history_settings_hint": "歷史保留資料夾名稱、路徑、容量與涵蓋範圍，不含檔案內容。預設啟用，所有根目錄合計 "
+                             "1 GiB。只依時間移除辨識為歷史的中繼資料。關閉後仍可查看既有歷史。變更適用於未來的"
+                             "整棵掃描；降低上限會在下次儲存時套用。",
+    "history_limit": "歷史總容量上限",
+    "history_time": "掃描時間",
+    "history_logical": "邏輯大小",
+    "history_allocated": "依名稱計算的配置量",
+    "history_coverage": "涵蓋範圍",
+    "history_incomplete": "不完整；僅含已知資料",
+    "history_complete": "記錄範圍完整",
+    "history_chart": "資料夾邏輯大小隨時間的變化",
+    "history_chart_range": "{first}：{before}；{last}：{after}",
+    "history_empty": "此根目錄沒有保留的掃描",
+    "history_compare": "將所選掃描與目前結果比較",
+    "history_reading": "正在讀取本機掃描歷史…",
+    "history_hint": "顯示此根目錄最近 1,000 筆保留的整棵掃描，不儲存停止的掃描及局部重掃。不完整掃描僅描述"
+                    "已知資料，缺少資料夾不代表已刪除。總量分別計入硬連結名稱；差異是中繼資料，不是內容驗證。",
+    "history_summary": "顯示 {shown}／{count} 筆掃描；{invalid} 個無效或無法讀取的中繼資料檔",
+    "history_failed": "無法讀取歷史：{reason}",
+    "history_save_failed": "掃描已完成，但無法儲存歷史：{reason}",
     "action_scan_workers": "掃描執行緒數…",
     "action_scan_workers_tip": "選擇新掃描的並行數，較高不一定較快",
     "workers_prompt": "新掃描執行緒數（1–32），預設為 {default}。慢速網路共用可能受益於較多執行緒；"
@@ -1640,6 +1692,31 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_history": "扫描历史…",
+    "action_history_tip": "查看此根目录大小随时间的变化，并与先前扫描比较",
+    "action_history_settings": "扫描历史设置…",
+    "action_history_settings_tip": "启用本地扫描元数据并设置整体保留上限",
+    "history_enable": "在本地保留已完成的整个扫描",
+    "history_settings_hint": "历史保留文件夹名称、路径、容量与覆盖范围，不含文件内容。默认启用，所有根目录合计 "
+                             "1 GiB。只按时间移除识别为历史的元数据。关闭后仍可查看已有历史。变化适用于未来的"
+                             "整个扫描；降低上限会在下次保存时应用。",
+    "history_limit": "历史总容量上限",
+    "history_time": "扫描时间",
+    "history_logical": "逻辑大小",
+    "history_allocated": "按名称计算的分配量",
+    "history_coverage": "覆盖范围",
+    "history_incomplete": "不完整；仅含已知数据",
+    "history_complete": "记录范围完整",
+    "history_chart": "文件夹逻辑大小随时间的变化",
+    "history_chart_range": "{first}：{before}；{last}：{after}",
+    "history_empty": "此根目录没有保留的扫描",
+    "history_compare": "将所选扫描与当前结果比较",
+    "history_reading": "正在读取本地扫描历史…",
+    "history_hint": "显示此根目录最近 1,000 条保留的整个扫描，不保存停止的扫描及局部重扫。不完整扫描仅描述"
+                    "已知数据，缺少文件夹不代表已删除。总量分别计入硬链接名称；差异是元数据，而非内容验证。",
+    "history_summary": "显示 {shown}／{count} 条扫描；{invalid} 个无效或无法读取的元数据文件",
+    "history_failed": "无法读取历史：{reason}",
+    "history_save_failed": "扫描已完成，但无法保存历史：{reason}",
     "action_scan_workers": "扫描线程数…",
     "action_scan_workers_tip": "选择新扫描的并行数，较高不一定较快",
     "workers_prompt": "新扫描线程数（1–32），默认值为 {default}。慢速网络共享可能受益于更多线程；"

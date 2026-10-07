@@ -20,6 +20,7 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     """
     reached: list[str] = []
     from je_file_tree.gui import main_window
+    from je_file_tree.gui import history
     from je_file_tree.core import trash_size
 
     emptied: list[str] = []
@@ -30,6 +31,8 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         monkeypatch.setattr(trash_size._shell32(), "SHEmptyRecycleBinW", forbid_live_empty)
 
     monkeypatch.setattr(main_window, "journal_folder", lambda: tmp_path / "journal")
+    monkeypatch.setattr(history, "history_folder", lambda: tmp_path / "history")
+    monkeypatch.setattr(main_window, "history_folder", lambda: tmp_path / "history")
     monkeypatch.setattr(elevation, "run_as_admin",
                         lambda program, _parameters, _folder: reached.append(program) and False)
     yield

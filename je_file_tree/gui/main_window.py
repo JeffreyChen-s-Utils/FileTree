@@ -38,6 +38,8 @@ from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
+from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_history, history_folder, history_limit
+from je_file_tree.core.history import ScanHistory
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
@@ -159,7 +161,7 @@ class MainWindow(QMainWindow):
         self._analyser = None
         self._last_path = path
         self.path_edit.setText(path)
-        worker = ScanWorker(path, self._scan_options(), self)
+        worker = ScanWorker(path, self._scan_options(), self, history=configured_history(self.settings))
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -169,6 +171,8 @@ class MainWindow(QMainWindow):
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
         worker.cancelled.connect(lambda outcome: self._is_current(worker) and self._scan_cancelled(outcome))
         worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
+        worker.history_failed.connect(lambda reason: self._is_current(worker) and not self._closing
+                                      and self.statusBar().showMessage(tr("history_save_failed", reason=reason)))
         worker.finished.connect(worker.deleteLater)
         self._worker = worker
         self.results.begin_scan()
@@ -765,6 +769,8 @@ class MainWindow(QMainWindow):
             ("special_files", None, self.show_special_files),
             ("live_compare", None, self.compare_live_folders),
             ("git_history", None, self.show_git_history),
+            ("history", None, self.show_history),
+            ("history_settings", None, self.configure_history),
             ("projects", None, self.show_projects),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
@@ -807,7 +813,7 @@ class MainWindow(QMainWindow):
             export_menu.addAction(self._actions[key])
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
-        for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects"):
+        for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -842,6 +848,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["cleanup_policy"])
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
+        options_menu.addAction(self._actions["history_settings"])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -905,7 +912,7 @@ class MainWindow(QMainWindow):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
-        for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects"):
+        for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects", "history"):
             self._actions[key].setEnabled(has_results and not scanning)
         for key in ("export_report_html", "export_report_xlsx"):
             self._actions[key].setEnabled(has_results and not scanning and self._trash_worker is None
@@ -914,6 +921,30 @@ class MainWindow(QMainWindow):
                                               and self.results.current_list() is not None)
 
     # --- dialogs ----------------------------------------------------------
+
+    def configure_history(self) -> None:
+        """Persist enable/cap changes only after OK; the running scan retains its captured configuration."""
+        dialog = HistorySettings(self.settings, self)
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self.settings.setValue("history_enabled", dialog.enabled.isChecked())
+                self.settings.setValue("history_limit_mib", dialog.limit.value())
+        finally:
+            dialog.deleteLater()
+
+    def show_history(self) -> None:
+        """Review local history for the full current root and reuse the Changes worker for comparison."""
+        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
+            return
+        root = self.results.outcome.result.root
+        store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
+        dialog = HistoryDialog(store, root.path, self._unit, self)
+        dialog.compare_requested.connect(self.results.compare_saved)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def show_bins(self) -> None:
         """Review OS bin metadata and Windows single-drive emptying after two explicit questions."""

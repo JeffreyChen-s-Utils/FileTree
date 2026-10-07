@@ -58,6 +58,7 @@ from je_file_tree.core.analysis import (
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.capacity import CapacityLedger
 from je_file_tree.core.node import Node
+from je_file_tree.core.compare import SavedScan
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.core.type_locations import TypeMatches
 from je_file_tree.gui import elevation
@@ -401,6 +402,11 @@ class ResultsView(QWidget):
         """Compare the scan on screen with the saved scan ``file``; the Changes tab comes forward with the result."""
         self._reveal_changes = True
         self.changes.open(file)
+
+    def compare_saved(self, saved: SavedScan) -> None:
+        """Reuse the Changes tab for a local-history snapshot already loaded on its owned worker."""
+        self._reveal_changes = True
+        self.changes.compare_saved(saved)
 
     def show_search(self) -> None:
         """Bring the Search tab forward with the cursor in its box."""

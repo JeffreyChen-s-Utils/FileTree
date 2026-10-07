@@ -21,6 +21,7 @@ from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
+from je_file_tree.core.history import HistoryCancelledError, ScanHistory
 from je_file_tree.core.pacing import WINDOW
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
 from je_file_tree.core.search import Query, search
@@ -245,14 +246,17 @@ class ScanWorker(QThread):
     failed = Signal(str)
     cancelled = Signal(object)
     analysing = Signal()
+    history_failed = Signal(str)
 
-    def __init__(self, path: str, options: ScanOptions, parent: QObject | None = None) -> None:
+    def __init__(self, path: str, options: ScanOptions, parent: QObject | None = None, *,
+                 history: ScanHistory | None = None) -> None:
         super().__init__(parent)
         self.path = path
         self._options = options
         self._cancel = threading.Event()
         self._pause = threading.Event()
         self._scanning = True
+        self._history = history
 
     def cancel(self) -> None:
         """Ask the scan to stop; ``cancelled`` follows shortly."""
@@ -285,4 +289,22 @@ class ScanWorker(QThread):
         if self._cancel.is_set():
             self.cancelled.emit(self._analyse(result, partial=True))
             return
-        self.succeeded.emit(self._analyse(result))
+        outcome = self._analyse(result)
+        if not self._save_history(outcome):
+            self.cancelled.emit(analyse(result, partial=True))
+            return
+        self.succeeded.emit(outcome)
+
+    def _save_history(self, outcome: ScanOutcome) -> bool:
+        if self._cancel.is_set():
+            return False
+        if self._history is not None:
+            try:
+                self._history.save(outcome.result.root, cancel=self._cancel)
+            except HistoryCancelledError:
+                return False
+            except (OSError, ValueError, UnicodeError, RecursionError) as error:
+                self.history_failed.emit(str(error))
+                return not self._cancel.is_set()
+            return True  # Once published, a complete saved scan and its outcome stay complete.
+        return not self._cancel.is_set()

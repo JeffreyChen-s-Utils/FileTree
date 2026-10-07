@@ -63,6 +63,11 @@ class ChangesPanel(QWidget):
         if self._root is not None:
             self._run(CompareWorker(self._root, file=file, parent=self))
 
+    def compare_saved(self, saved: SavedScan) -> None:
+        """Compare with worker-loaded local history, including deeply nested saved trees."""
+        if self._root is not None:
+            self._run(CompareWorker(self._root, saved=saved, parent=self))
+
     def set_root(self, root: Node | None) -> None:
         """Compare this tree from now on (None while a scan runs: the list waits for the result)."""
         self._root = root

@@ -207,6 +207,20 @@ manual risk cannot be downgraded, and no custom executable rules are supported.
 
 ### Seeing what grew
 
+**File → Scan history…** shows this root's retained size-over-time line chart and up to 1,000 scans.
+Select an earlier scan to open the existing Changes tab without choosing a file; Ctrl+C copies rows.
+History is enabled by default with a **1 GiB total cap across all roots**. **Options → Scan history
+settings…** disables future saves or changes the cap (1–16384 MiB); a lower cap applies on the next save.
+Existing history remains readable when disabled. Full scans save folder paths/names, totals and coverage
+as compatible saved-scan JSON under the application's local data directory, `history/<root-path-hash>/`;
+no file contents are stored. Stopped scans and branch rescans are excluded. Finished scans with read
+errors are marked incomplete: missing folders do not prove deletion. Named allocation includes separate
+hard-link names; comparison describes metadata, not verified contents. Oldest recognized history
+metadata is removed to meet the cap, across all roots; linked directories/files and foreign metadata
+are refused. A single snapshot exceeding the cap is skipped with a visible error while the scan still
+completes. Storage/read failures remain visible; Stop/close joins the owned reader. History is local,
+does not schedule scans and never removes recorded source files.
+
 Save a scan with **File → Export → Folder tree (JSON)**. Later, after a new scan, choose **File → Compare with a
 saved scan…** and open that file: a **Changes** tab lists every folder that changed, with its size then and
 now, the biggest growth first; new folders say *new* and removed ones *gone*. The comparison follows further

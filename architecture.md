@@ -21,6 +21,23 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.history.ScanHistory` writes stable completed full trees on the existing ScanWorker, before
+publishing its outcome. Compatible file-tree/1 JSON has a bounded first-line owned history header and
+one serialization fragment per line; history's reader uses an iterative stack for deep trees. Root
+buckets are SHA-256 of normalized absolute selected paths. Defaults are enabled and a global 1 GiB cap;
+QSettings options are captured for each future scan. Stopped scans and branch rescans do not save; read
+errors are recorded as incomplete. Save failures report separately and preserve successful scan results.
+After atomic publication, retention completes and the completed outcome stays complete even if Stop
+arrives late. Oversized snapshots fail before publication. Oldest validated owned metadata is removed
+across all buckets under the journal's native file-lock helper, never its recorded source paths. POSIX
+retention is descriptor-relative with O_NOFOLLOW; Windows root/bucket handles use GENERIC_READ and no
+FILE_SHARE_DELETE to pin paths and reject reparse points. Unrecognized/linked/damaged metadata is retained
+and reported, not removed to satisfy the cap. Lower caps apply on the next save; disabled history remains
+readable. `gui.history` owns bounded header/tree readers, a palette-based line chart, a read-only copyable
+table and settings dialog. Selecting history loads a stable SavedScan on the dialog worker, closes/joins,
+then reuses CompareWorker and the existing Changes tab. Stop/close rejects queued replies. History does
+not schedule scans or authorize cleanup.
+
 MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded default on invalid values) and
 passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
 subsequent workers; welcome text explains UNC account/coverage behavior without initiating network I/O.

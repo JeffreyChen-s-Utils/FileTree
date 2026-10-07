@@ -83,6 +83,10 @@ tool default.
   Retention may permanently remove FileTree's own recognized operation-journal segments under its
   application data directory; it never applies to scanned user entries. Atomic temporary files may
   also be removed after a failed write.
+  Scan-history retention may remove only recognized FileTree history JSON under its application-owned
+  history directory, after validating its format/root bucket/name. It never removes recorded source
+  paths. Retention anchors POSIX directories by descriptor and pins Windows directory handles against
+  rename/delete; linked directories and linked metadata are rejected.
   Isolated validation tools may remove only disposable fixtures they created in a fresh owned scratch
   directory or its private test-volume image. They must refuse existing volumes/bins and the host mount
   namespace; this never authorizes removing scanned user entries.
