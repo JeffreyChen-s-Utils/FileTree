@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.system_files` recognizes anchored Windows-managed namespaces and returns stable explanation/tool
+keys. Details displays translated guidance with explicit GUI-only tool launch (fixed settings URIs or
+absolute System32 executables, no cleanup commands). MainWindow hides/filters direct managed targets;
+operations rejects managed resolved paths and managed descendants even after general protection approval.
+Recognition never relies on an arbitrary basename, and extended local Windows path prefixes are normalized.
+
 `core.type_locations` computes largest matching files and direct containing-folder totals in one
 cancellable iterative pass. Both heaps are bounded at 1,000; the denominator includes all matching
 bytes, while nested folders do not overlap. TypeLocationsWorker replaces the GUI-thread type/age

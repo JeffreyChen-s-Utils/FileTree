@@ -31,6 +31,7 @@ from je_file_tree.core.operations import MoveResult
 from je_file_tree.core.operation_journal import JournalApproval, OperationJournal
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.core.system_files import system_file
 from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
@@ -233,7 +234,7 @@ class MainWindow(QMainWindow):
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
-        movable = _movable(picked)
+        movable = [entry for entry in _movable(picked) if system_file(entry.path) is None]
         if movable:
             menu.addSeparator()
             text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
@@ -289,6 +290,13 @@ class MainWindow(QMainWindow):
         if outcome.result.warnings:
             self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
+    def _without_managed(self, nodes: list[Node]) -> list[Node]:
+        blocked = [node for node in nodes if system_file(node.path) is not None]
+        if blocked:
+            lines = '\n'.join(f"{node.path}: {tr('trash_skip_system_managed')}" for node in blocked)
+            QMessageBox.warning(self, tr('trash_confirm_title'), tr('trash_skipped', names=lines))
+        return [node for node in nodes if node not in blocked]
+
     def _summary_ready(self, summary: Summary) -> None:
         self.results.apply_summary(summary)
 
@@ -307,6 +315,9 @@ class MainWindow(QMainWindow):
         chosen = _movable(nodes)
         root = self.results.tree_model.root
         if not chosen or root is None or self._worker is not None or self._trash_worker is not None:
+            return
+        chosen = self._without_managed(chosen)
+        if not chosen:
             return
         reasons = self.results.cleanup.reasons_for(chosen)
         if reasons:

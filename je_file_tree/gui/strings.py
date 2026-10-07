@@ -9,6 +9,42 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "system_file_hibernate": ("Hibernation and Fast Startup state. Windows manages this file. An "
+                              "administrator can disable hibernation with powercfg /hibernate off, which "
+                              "also removes Hibernate and may affect Fast Startup. FileTree only opens "
+                              "power settings."),
+    "system_file_pagefile": ("Virtual memory backing file. Windows can manage its size automatically. "
+                             "Review Virtual memory under Performance settings on the Advanced tab; "
+                             "reducing it can affect applications and crash dumps."),
+    "system_file_swapfile": ("Windows swap backing file, including suspended app data. Windows manages "
+                             "it together with virtual memory. Review system memory settings instead of "
+                             "removing it."),
+    "system_file_old": ("Previous Windows installation. Review Previous Windows installation(s) in "
+                        "Disk Cleanup → Clean up system files. Removing it prevents going back to th"
+                        "at installation."),
+    "system_file_recycle": ("Deleted entries still take disk space until the Recycle Bin is emptied. "
+                            "Review the Recycle Bin or Storage Sense; emptying is permanent."),
+    "system_file_restore": ("System metadata, restore points and shadow copies. Review System "
+                            "Protection → Configure to set the restore-point limit. Backup-owned shadow "
+                            "copies may need their own backup tools; unread bytes remain unknown."),
+    "system_file_winsxs": ("Windows component store. Many entries share hard links with Windows files, "
+                           "so per-name totals can overstate distinct storage. Use Windows Update "
+                           "Cleanup in Disk Cleanup → Clean up system files; do not remove components m"
+                           "anually."),
+    "system_file_updates": ("Windows Update download data. Review Windows Update and temporary files "
+                            "using Disk Cleanup → Clean up system files. Leave update services to manage"
+                            " active downloads."),
+    "system_file_delivery": ("Delivery Optimization download cache for Windows updates and apps. Review "
+                             "Delivery Optimization Files in Disk Cleanup; Windows manages active "
+                             "transfers."),
+    "system_tool_power": "Open power settings…",
+    "system_tool_memory": "Open advanced system settings…",
+    "system_tool_cleanup": "Open Disk Cleanup…",
+    "system_tool_storage": "Open Storage Sense…",
+    "system_tool_restore": "Open System Protection…",
+    "system_tool_failed": "The Windows tool could not be opened.",
+    "trash_skip_system_managed": "Windows manages this entry; use its system tool in Details instead",
+
     "type_locations_title": "Containing folders (up to 1,000)",
     "type_location_size": "Matching size",
     "type_locations_tip": ("Totals include matching files directly in each folder; "
@@ -634,6 +670,33 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "system_file_hibernate": ("休眠與快速啟動狀態，由 Windows 管理。系統管理員可使用 powercfg /hibernate o"
+                              "ff 關閉休眠，這也會移除休眠功能，並可能影響快速啟動。FileTree 僅開啟電源設"
+                              "定。"),
+    "system_file_pagefile": ("虛擬記憶體的分頁檔，Windows 可自動管理大小。在進階系統設定的效能設定中查看"
+                             "虛擬記憶體；縮小可能影響應用程式與損毀傾印。"),
+    "system_file_swapfile": ("Windows 的交換檔，包含暫停的應用程式資料，由系統與虛擬記憶體一併管理。請查"
+                             "看系統記憶體設定，不要直接移除。"),
+    "system_file_old": ("先前的 Windows 安裝。在磁碟清理的「清理系統檔」中審查先前的 Windows 安裝；"
+                        "移除後將無法返回該安裝。"),
+    "system_file_recycle": "已刪除項目在清空資源回收筒前仍占用空間。請查看資源回收筒或儲存空間感知；清空是永久刪除。",
+    "system_file_restore": ("系統中繼資料、還原點與陰影複製。在系統保護的「設定」中調整還原點容量上限。"
+                            "備份工具管理的陰影複製可能需要各自的備份工具；未讀取的大小仍未知。"),
+    "system_file_winsxs": ("Windows 元件存放區。許多項目與 Windows 檔案共用硬式連結，因此逐名稱加總可能"
+                           "高估實際儲存空間。請使用磁碟清理的「清理系統檔」與 Windows Update 清理，不"
+                           "要手動移除元件。"),
+    "system_file_updates": ("Windows Update 下載資料。在磁碟清理的「清理系統檔」中審查更新及暫存檔案，進"
+                            "行中的下載交由更新服務管理。"),
+    "system_file_delivery": ("Windows 更新與應用程式的傳遞最佳化下載快取。請在磁碟清理中審查傳遞最佳化檔"
+                             "案，進行中的傳輸由 Windows 管理。"),
+    "system_tool_power": "開啟電源設定…",
+    "system_tool_memory": "開啟進階系統設定…",
+    "system_tool_cleanup": "開啟磁碟清理…",
+    "system_tool_storage": "開啟儲存空間感知…",
+    "system_tool_restore": "開啟系統保護…",
+    "system_tool_failed": "無法開啟 Windows 工具。",
+    "trash_skip_system_managed": "此項目由 Windows 管理，請使用詳細資訊中的系統工具",
+
     "type_locations_title": "所在資料夾（最多 1,000 個）",
     "type_location_size": "符合類型的大小",
     "type_locations_tip": "統計各資料夾直接包含的符合類型檔案；子資料夾分開列出，不重複計算。",
@@ -1200,6 +1263,32 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "system_file_hibernate": ("休眠与快速启动状态，由 Windows 管理。管理员可使用 powercfg /hibernate off "
+                              "关闭休眠，这也会移除休眠功能，并可能影响快速启动。FileTree 仅打开电源设置。"),
+    "system_file_pagefile": ("虚拟内存的分页文件，Windows 可自动管理大小。在高级系统设置的性能设置中查看"
+                             "虚拟内存；缩小可能影响应用程序与崩溃转储。"),
+    "system_file_swapfile": ("Windows 的交换文件，包含暂停的应用数据，由系统与虚拟内存一并管理。请查看系"
+                             "统内存设置，不要直接移除。"),
+    "system_file_old": ("以前的 Windows 安装。在磁盘清理的“清理系统文件”中审查以前的 Windows 安装；"
+                        "移除后将无法返回该安装。"),
+    "system_file_recycle": "已删除条目在清空回收站前仍占用空间。请查看回收站或存储感知；清空是永久删除。",
+    "system_file_restore": ("系统元数据、还原点与卷影副本。在系统保护的“配置”中调整还原点容量上限。备份"
+                            "工具管理的卷影副本可能需要各自的备份工具；未读取的大小仍未知。"),
+    "system_file_winsxs": ("Windows 组件存储。许多条目与 Windows 文件共用硬链接，因此逐名称汇总可能高估"
+                           "实际存储空间。请使用磁盘清理的“清理系统文件”与 Windows 更新清理，不要手动移"
+                           "除组件。"),
+    "system_file_updates": ("Windows 更新下载数据。在磁盘清理的“清理系统文件”中审查更新及临时文件，进行"
+                            "中的下载交由更新服务管理。"),
+    "system_file_delivery": ("Windows 更新与应用的传递优化下载缓存。请在磁盘清理中审查传递优化文件，进行"
+                             "中的传输由 Windows 管理。"),
+    "system_tool_power": "打开电源设置…",
+    "system_tool_memory": "打开高级系统设置…",
+    "system_tool_cleanup": "打开磁盘清理…",
+    "system_tool_storage": "打开存储感知…",
+    "system_tool_restore": "打开系统保护…",
+    "system_tool_failed": "无法打开 Windows 工具。",
+    "trash_skip_system_managed": "此条目由 Windows 管理，请使用详细信息中的系统工具",
+
     "type_locations_title": "所在文件夹（最多 1,000 个）",
     "type_location_size": "匹配类型的大小",
     "type_locations_tip": "统计各文件夹直接包含的匹配类型文件；子文件夹单独列出，不重复计算。",

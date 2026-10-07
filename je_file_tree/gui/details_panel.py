@@ -14,6 +14,7 @@ from je_file_tree.core.node import Node
 from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.system_files import SystemFileInfo
 
 
 class DetailsWorker(QThread):
@@ -59,6 +60,8 @@ class DetailsPanel(QWidget):
         body = QWidget()
         body_layout = QVBoxLayout(body)
         body_layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.system_info = SystemFileInfo(self)
+        body_layout.addWidget(self.system_info)
         for widget in (self.path_label, self.facts, self.distribution):
             widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
             body_layout.addWidget(widget)
@@ -100,6 +103,7 @@ class DetailsPanel(QWidget):
         """Refresh labels, dates and units without repeating the traversal."""
         self.toggle.setText(tr('details_title'))
         node = self.node
+        self.system_info.set_node(node)
         self.path_label.setText(node.path if node is not None else tr('details_empty'))
         fields = () if node is None else (
             ('column_size', format_size(node.size, self.unit)),

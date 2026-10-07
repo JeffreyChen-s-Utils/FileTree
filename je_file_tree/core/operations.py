@@ -12,6 +12,7 @@ from je_file_tree.core.lock_holders import LockReport
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.protected import Protection, protection_of
 from je_file_tree.core.snapshot import Snapshot, stat_snapshot, unpack_snapshot
+from je_file_tree.core.system_files import system_file
 
 
 @dataclass(slots=True)
@@ -76,6 +77,8 @@ def _check_location(node: Node, root: Node, places: Sequence[Protection], approv
     except ValueError:
         return "outside"
     current = protection_of(os.path.join(parent, node.name), places)
+    if system_file(os.path.join(parent, node.name)) is not None:
+        return 'system_managed'
     if current != approved:
         return "protected"
     return None
@@ -104,6 +107,8 @@ def _check_subtree(node: Node, cancel: threading.Event | None) -> str | None:
 
 
 def _check_node(node: Node, *, identity_only: bool = False) -> str | None:
+    if not identity_only and system_file(node.path) is not None:
+        return 'system_managed'
     if node.snapshot is None:
         return "unverified"
     if not identity_only and node.error is not None:
