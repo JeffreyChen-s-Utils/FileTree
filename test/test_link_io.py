@@ -14,8 +14,9 @@ from je_file_tree.core.snapshot import stat_snapshot
 
 def _published(tmp_path):
     root, group = _fixture(tmp_path)
-    pair = duplicate_links.prepare_links(root, [group]).pairs[0]
-    duplicate_links.verify_link_pair(duplicate_links.prepare_links(root, [group]), pair)
+    plan = duplicate_links.prepare_links(root, [group])
+    pair = plan.pairs[0]
+    duplicate_links.verify_link_pair(plan, pair)
     temporary = os.path.join(root.path, ".filetree-link-" + uuid.uuid4().hex + ".tmp")
     backup = os.path.join(root.path, ".filetree-copy-" + uuid.uuid4().hex + ".bak")
     os.link(pair.keeper_path, temporary)

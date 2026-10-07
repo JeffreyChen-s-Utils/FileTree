@@ -269,7 +269,7 @@ bind mount，并测试打开文件夹前后新增挂载。也测量 1,001 个文
 python tools/validate_linux_volume.py --evidence volume-evidence
 ```
 
-独立的 Windows CI 作业会以管理员执行 `validate_windows_volume.py`，原生证据仍待运行确认。工具建立全新 512 MiB VHDX 与随机标识符，只从其有效原生 handle 获取物理磁盘编号，仅格式化空白 RAW、非启动／系统的虚拟磁盘，并由 Windows 分配驱动器盘符。每次测试操作都重新核对设备映射与卷 GUID。它比较容量、精确分配、硬链接、压缩与稀疏文件的回收估计，再只测试私有回收站的默认拒绝、新项目到达、两次确认的原生清空及 GUI 等待／更新。不接受已有镜像、磁盘、驱动器或回收站；分离失败会保留临时目录，清理也核对记录的临时目录／镜像身份。实际云端提供程序、共享区块、保留字节及 APFS 仍需其他证据。JSON 保留七天。只在已提升权限的可丢弃 Windows 测试机执行；不请求 UAC：
+独立的 Windows CI 作业会以管理员执行 `validate_windows_volume.py`，原生证据仍待运行确认。工具建立全新 512 MiB VHDX 与随机标识符，只从其有效原生 handle 获取物理磁盘编号，仅格式化空白 RAW、非启动／系统的虚拟磁盘，并由 Windows 分配驱动器盘符。每次测试操作都重新核对设备映射与卷 GUID。它比较容量、精确分配、硬链接、压缩与稀疏文件的回收估计，再只测试私有回收站的默认拒绝、新项目到达、两次确认的原生清空及 GUI 等待／更新。不接受已有镜像、磁盘、驱动器或回收站；分离失败会保留临时目录，清理也核对记录的临时目录／镜像身份。实际云端提供程序、共享区块、保留字节及 APFS 仍需其他证据。后续原生检查失败时也会保留已完成阶段的 JSON；只有完整证据确认分离与清理。JSON 保留七天。只在已提升权限的可丢弃 Windows 测试机执行；不请求 UAC：
 
 ```powershell
 py -3 tools/validate_windows_volume.py --output windows-volume.json

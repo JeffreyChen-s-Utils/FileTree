@@ -591,7 +591,9 @@ the drive letter. Every validation mutation rechecks handle/device mapping and O
 It verifies No, changed approvals, two questions, close guards and metadata refresh. Detach joins
 before captured scratch/image cleanup; a failed detach retains the image. The dedicated Windows CI
 job saves JSON for seven days. Native volume proof remains pending; provider placeholders, shared
-extents, independent reserved bytes and APFS stay unverified/unknown.
+extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
+failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
+application's bool/tuple-compatible Qt Trash receipt adapter.
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
 documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.

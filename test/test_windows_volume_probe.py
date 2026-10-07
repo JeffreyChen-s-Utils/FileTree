@@ -8,6 +8,7 @@ import pytest
 
 from je_file_tree.core import virtual_disk_info as native
 from tools import windows_owned_volume as volumes
+from tools import windows_bin_probe as bins
 
 
 def test_existing_image_is_preserved_before_native_creation(tmp_path):
@@ -112,3 +113,22 @@ def test_private_format_script_refuses_host_and_nonempty_disks():
     assert "$disk.IsBoot -or $disk.IsSystem" in script and "$disk.PartitionStyle -ne 'RAW'" in script
     assert "$disk.NumberOfPartitions -ne 0" in script and "$disk.Size -ne 536870912" in script
     assert "Clear-Disk" not in script and "Remove-Partition" not in script
+
+
+@pytest.mark.parametrize("tuple_result", [False, True])
+def test_private_bin_fixture_reuses_bool_and_tuple_qt_receipts(tmp_path, monkeypatch, tuple_result):
+    from je_file_tree.gui import file_actions
+    (tmp_path / "owned-bin-fixtures").mkdir()
+    volume = SimpleNamespace(root=tmp_path)
+    monkeypatch.setattr(bins, "verify_volume", lambda _volume: None)
+    calls = []
+    def moved(path):
+        source = Path(path)
+        assert source.parent == tmp_path / "owned-bin-fixtures"
+        assert source.name == "owned.bin" and source.read_bytes().startswith(b"owned bin payload")
+        calls.append(path)
+        source.unlink()
+        return (True, str(tmp_path / "owned-trash")) if tuple_result else True
+    monkeypatch.setattr(file_actions.QFile, "moveToTrash", moved)
+    bins._trash(volume, "owned.bin")
+    assert calls == [str(tmp_path / "owned-bin-fixtures" / "owned.bin")]

@@ -125,6 +125,11 @@ def _savings(volume: OwnedVolume, root: Path) -> dict:
             "compressed": {"size": compressed.size, "allocated": compressed.allocated}}
 
 
+def _save(output: Path, evidence: dict) -> None:
+    with _atomic_file(output, encoding="utf-8") as stream:
+        json.dump(evidence, stream, ensure_ascii=False, indent=2)
+
+
 def main() -> int:
     """Run only an administrator-owned private image; no input disk/path selector or UAC prompt."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -136,11 +141,16 @@ def main() -> int:
                     "volume_id": volume.volume_id, "capacity": _ledger(volume), "savings": _savings(volume, root),
                     "cloud_placeholders": "unavailable: actual provider required",
                     "shared_extents": "unknown", "reserved_bytes": "not independently measured"}
+        evidence["phase"] = "capacity_and_savings"
+        evidence["owned_disk_detached_and_removed"] = False
+        _save(args.output, evidence)
         evidence["bin"] = bin_proof(volume)
+        evidence["phase"] = "private_bin"
+        _save(args.output, evidence)
         evidence["capacity_after_empty"] = _ledger(volume)
     evidence["owned_disk_detached_and_removed"] = True
-    with _atomic_file(args.output, encoding="utf-8") as stream:
-        json.dump(evidence, stream, ensure_ascii=False, indent=2)
+    evidence["phase"] = "complete"
+    _save(args.output, evidence)
     return 0
 
 

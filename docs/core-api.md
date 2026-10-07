@@ -465,4 +465,6 @@ and the private-bin allocation subset. The native bin proof confines surveys and
 responses to that drive while actual Shell query/Trash/emptying, approval recheck and GUI worker
 lifetime/refresh remain native. No real user bin is queried or emptied. Detachment failure retains
 the scratch image; successful cleanup checks captured directory/image identities. Actual provider
-placeholders, shared extents, independent reserved bytes and APFS remain unmeasured.
+placeholders, shared extents, independent reserved bytes and APFS remain unmeasured. Phase JSON is
+saved before later native checks; only complete evidence confirms detachment/cleanup. Fixture Trash
+uses the application's bool/tuple-compatible Qt receipt adapter.

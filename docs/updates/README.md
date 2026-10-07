@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-22 | 2026-10-08 | Preserve partial NTFS evidence and compatible Qt receipts | #incident #ntfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-21 | 2026-10-08 | Private Windows NTFS validation tooling | #implementation #ntfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-20 | 2026-10-08 | Read-only native VHD and VHDX information | #implementation #virtual-disks #native | [2026-10-b](2026-10-b.md) |
 | U-20261008-19 | 2026-10-08 | Bounded read-only virtual-disk and WSL/Docker discovery | #implementation #virtual-disks #core | [2026-10-b](2026-10-b.md) |

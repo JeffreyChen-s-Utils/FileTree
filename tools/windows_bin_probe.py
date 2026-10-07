@@ -6,7 +6,6 @@ import shutil
 import time
 from unittest.mock import patch
 
-from PySide6.QtCore import QFile
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from je_file_tree.core.allocation import allocation_unit
@@ -14,6 +13,7 @@ from je_file_tree.core.capacity import capacity_ledger
 from je_file_tree.core.scanner import ScanOptions, scan
 from je_file_tree.core.trash_size import trash_usage, _shell32
 from je_file_tree.gui import bin_dialog as bins
+from je_file_tree.gui.file_actions import trash_receipt
 from je_file_tree.gui.volumes import Volume, VolumesWorker
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
@@ -39,10 +39,10 @@ def _trash(volume: OwnedVolume, name: str) -> None:
     require(not path.exists(), "Refusing an existing bin fixture source")
     with path.open("xb") as stream:
         stream.write(b"owned bin payload\n" * (_BYTES // 18))
-    success, destination = QFile.moveToTrash(str(path))
-    require(success and not path.exists(), "Native Trash did not move the owned fixture")
-    if destination:
-        require(Path(destination).is_relative_to(volume.root), "Owned Trash escaped its private volume")
+    receipt = trash_receipt(str(path))
+    require(receipt.success and not path.exists(), "Native Trash did not move the owned fixture")
+    if receipt.destination:
+        require(Path(receipt.destination).is_relative_to(volume.root), "Owned Trash escaped its private volume")
 
 
 def _row(volume: OwnedVolume) -> Volume:
