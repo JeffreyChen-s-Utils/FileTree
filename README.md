@@ -317,7 +317,10 @@ systems retain device-boundary detection. Linux keeps each directory descriptor 
 metadata reads, checks its mount ID and recorded identity, and refuses a completed result if relevant
 mount points or the root mount change. Rescan after the error; failed scans do not enter history.
 Unrelated mount changes outside the selected scope are ignored. Linux requires readable proc mount
-metadata with mount IDs (kernel 3.15 or later). This is not a transactional filesystem snapshot.
+metadata with mount IDs (kernel 3.15 or later). On kernel 5.8+ with libc support, a checked statx
+descriptor query avoids opening/parsing a proc file for each folder; unsupported/denied/missing results
+fall back to fdinfo. The returned statx mask must confirm the mount ID. This is not a transactional
+filesystem snapshot.
 An owned static same-device bind mount in a private Linux namespace has passed CI; CI also probes
 live binds before and after opening a folder, and records the cost of guarded folder reads.
 

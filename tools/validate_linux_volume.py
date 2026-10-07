@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from je_file_tree.core.capacity import capacity_ledger  # noqa: E402
 from je_file_tree.core.duplicates import estimate_duplicate_savings, find_duplicates  # noqa: E402
 from je_file_tree.core.export import _atomic_file  # noqa: E402
-from je_file_tree.core import scanner  # noqa: E402
+from je_file_tree.core import mounts, scanner  # noqa: E402
 from je_file_tree.core.mounts import MOUNT_BOUNDARY, MountChangedError, MountSurvey  # noqa: E402
 from je_file_tree.core.scanner import ScanOptions, scan  # noqa: E402
 from je_file_tree.core.savings import estimate_savings  # noqa: E402
@@ -233,6 +233,13 @@ def descriptor_cost(root: Path) -> dict[str, object]:
     """Measure guarded versus path-based folder reads on the same warm-cache owned fixture."""
     selected = root / "timing"
     selected.mkdir()
+    descriptor = os.open(selected, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        proc_id = mounts._proc_mount(descriptor)
+        statx_id = mounts._statx_mount(descriptor)
+        require(statx_id is None or statx_id == proc_id, "Native statx/fdinfo mount IDs disagree")
+    finally:
+        os.close(descriptor)
     for number in range(1000):
         folder = selected / str(number)
         folder.mkdir()
@@ -260,6 +267,7 @@ def descriptor_cost(root: Path) -> dict[str, object]:
                             "Descriptor timing scan did not match the fixture")
         measurements[str(workers)] = {label: statistics.median(values) for label, values in times.items()}
     return {"folders": 1001, "files": 2000, "repeats": 5, "median_seconds_by_workers": measurements,
+            "backend": "statx" if statx_id is not None else "fdinfo", "mount_id_backends_agree": True,
             "comparison": "Only folder listing strategy differs; both retain initial/final mount surveys."}
 
 

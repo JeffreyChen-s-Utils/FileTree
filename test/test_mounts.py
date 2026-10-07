@@ -169,9 +169,41 @@ def test_mount_change_in_final_progress_callback_is_checked_before_return(tmp_pa
 
 @pytest.mark.parametrize("contents", ["", "mnt_id: invalid\n", "mnt_id: 2\nmnt_id: 3\n", "x" * 4097])
 def test_missing_or_invalid_descriptor_mount_id_is_not_assumed_safe(monkeypatch, contents):
+    monkeypatch.setattr(mounts, "_statx_mount", lambda _fd: None)
     monkeypatch.setattr(mounts, "open", lambda _path, **_kwargs: StringIO(contents), raising=False)
     with pytest.raises(MountChangedError):
         mounts.descriptor_mount(12)
+
+
+@pytest.mark.parametrize("status, mask, value, expected", [(0, 0x1000, 42, 42), (0, 0, 42, None),
+                                                           (0, 0x1000, 0, None), (-1, 0x1000, 42, None)])
+def test_statx_requires_a_supported_nonzero_mount_id_and_only_queries_open_descriptor(
+        monkeypatch, status, mask, value, expected):
+    import ctypes
+
+    def query(fd, path, flags, requested, result):
+        assert fd == 12 and path == b"" and flags == 0x5800 and requested == 0x1000
+        structure = ctypes.cast(result, ctypes.POINTER(mounts._Statx)).contents
+        structure.mask, structure.mount_id = mask, value
+        return status
+
+    monkeypatch.setattr(mounts, "_statx_function", lambda: query)
+    assert ctypes.sizeof(mounts._Statx) == 256 and mounts._Statx.mount_id.offset == 144
+    assert mounts._statx_mount(12) == expected
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux native statx/fdinfo mount IDs")
+def test_native_descriptor_backends_agree_and_fallback_preserves_guard(tmp_path, monkeypatch):
+    fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        proc = mounts._proc_mount(fd)
+        native = mounts._statx_mount(fd)
+        assert native is None or native == proc
+        assert mounts.descriptor_mount(fd) == proc
+        monkeypatch.setattr(mounts, "_statx_function", lambda: None)
+        assert mounts.descriptor_mount(fd) == proc
+    finally:
+        os.close(fd)
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux directory descriptors")

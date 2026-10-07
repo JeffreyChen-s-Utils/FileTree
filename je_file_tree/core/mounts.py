@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import os
 import errno
+import ctypes
+import functools
 import posixpath
 import re
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from je_file_tree.core.snapshot import unpack_snapshot
 
@@ -22,6 +24,40 @@ _ESCAPE_PATTERN = re.compile(r"\\(040|011|012|134)")
 _MIN_PREFIX = 6
 _SUFFIX_FIELDS = 4
 _FDINFO_LIMIT = 4096
+_STATX_MNT_ID = 0x1000
+_DESCRIPTOR_FLAGS = 0x1000 | 0x800 | 0x4000  # AT_EMPTY_PATH | AT_NO_AUTOMOUNT | AT_STATX_DONT_SYNC
+
+
+class _Statx(ctypes.Structure):
+    """Fixed 256-byte Linux UAPI layout; only the field mask and mount ID are consumed."""
+
+    _fields_ = [("mask", ctypes.c_uint32), ("_prefix", ctypes.c_ubyte * 140),
+                ("mount_id", ctypes.c_uint64), ("_tail", ctypes.c_ubyte * 104)]
+
+
+@functools.cache
+def _statx_function() -> Any:
+    if not sys.platform.startswith("linux"):
+        return None
+    library = ctypes.CDLL(None, use_errno=True)
+    try:
+        function = library.statx
+    except AttributeError:
+        return None  # Older libc: descriptor fdinfo still supplies a checked mount ID.
+    function.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_uint, ctypes.POINTER(_Statx)]
+    function.restype = ctypes.c_int
+    return function
+
+
+def _statx_mount(fd: int) -> int | None:
+    function = _statx_function()
+    if function is None:
+        return None
+    result = _Statx()
+    status = function(fd, b"", _DESCRIPTOR_FLAGS, _STATX_MNT_ID, ctypes.byref(result))
+    if status != 0 or not result.mask & _STATX_MNT_ID or not result.mount_id:
+        return None  # Unsupported/denied/absent result falls back to fdinfo, never to an assumed ID.
+    return result.mount_id
 
 
 class MountChangedError(OSError):
@@ -32,7 +68,17 @@ class MountChangedError(OSError):
 
 
 def descriptor_mount(fd: int) -> int:
-    """Read Linux's mount ID for an already opened directory; missing IDs are unsafe."""
+    """Read a checked Linux directory mount ID with statx (5.8+), falling back to proc fdinfo.
+
+    A 1,001-folder measurement found fdinfo overhead of 21/95 ms with one/four workers
+    (U-20261007-61). Statx avoids opening/parsing an extra proc file per folder.
+    The requested result mask must confirm the mount ID; missing IDs remain unsafe.
+    """
+    value = _statx_mount(fd)
+    return value if value is not None else _proc_mount(fd)
+
+
+def _proc_mount(fd: int) -> int:
     with open(f"/proc/self/fdinfo/{fd}", encoding="utf-8") as stream:
         contents = stream.read(_FDINFO_LIMIT + 1)
     matches = re.findall(r"^mnt_id:\s*([0-9]+)$", contents, re.MULTILINE)

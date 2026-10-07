@@ -268,7 +268,11 @@ and decoding escaped whitespace/backslashes exactly once. The immutable director
 rebased for ancestor aliases and shared by crawler threads. A `MountSurvey` opens each Linux directory
 with O_DIRECTORY/O_NOFOLLOW and holds that descriptor through fd-based scandir and all entry stat calls.
 A transient entry adapter retains original display/exclusion paths while metadata remains descriptor
-relative. Per-folder proc fdinfo mount IDs reject new same-device mounts before reading their contents;
+relative. Per-folder mount IDs reject new same-device mounts before reading their contents. Linux 5.8+
+uses libc statx with AT_EMPTY_PATH/NO_AUTOMOUNT/DONT_SYNC and only STATX_MNT_ID requested, validating
+the returned mask and nonzero ID. Its fixed UAPI buffer is 256 bytes, mount ID at offset 144. Absent
+libc symbol, unsupported/denied queries or missing masks fall back to checked proc fdinfo; no assumed
+ID can bypass the guard. The native probe verifies both backends agree and records the active backend;
 fstat device/inode checks reject replaced queued folders. Descriptors close on success, errors and stop.
 Unreadable roots retain incomplete coverage. A final scope/root-mount check refuses changed namespaces
 with `MountChangedError`; the GUI translates it, produces no successful outcome and writes no history.
