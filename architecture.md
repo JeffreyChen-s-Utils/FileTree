@@ -512,7 +512,14 @@ attempt exclusive rollback; failure reports the actual retained original/Trash l
 restoration removes only its captured recognized `.trashinfo`; metadata failure reports restored=True
 and a retained receipt, never a false payload-preservation claim. The rule in CLAUDE permits only
 this scoped receipt cleanup, never payload deletion. Native fixture proof runs without Qt/elevation
-in its own Linux CI job. Windows Shell restore and the ephemeral status-bar Undo remain pending.
+in its own Linux CI job. `core.recycle_shell` owns a bounded current-user Shell enumeration, exact canonical original-path /
+payload-identity matching and canonical `undelete` through a native context menu. It owns STA COM
+initialization, interface/string/menu release and native collision UI without answering it.
+`core.windows_restore` captures bounded no-follow payload/receipt/parent observations, rechecks them
+before invocation and observes actual restored identity/location and receipt cleanup. It performs
+no manual Windows payload or receipt deletion; retained receipts and unconfirmed native completion
+remain visible. Native fresh CJK-folder validation confirmed identity/hash/empty-folder restoration
+and recorded this Shell's retained receipt. The ephemeral status-bar Undo remains pending.
 
 ## 3. Entry points and public interfaces
 

@@ -295,8 +295,33 @@ actual original/Trash locations. RestoreResult exposes restored, source, trashed
 receipt_retained. Only a successful restoration permits removal of its unchanged recognized receipt;
 cleanup failure is restored=True with an error and retained metadata. Cancellation stops before native
 rename; native rename/rollback/receipt cleanup is joined rather than interrupted. Concurrency remains
-observational. Windows Shell `undelete` and the GUI's expiring Undo are separate pending integration.
+observational. The GUI's expiring Undo remains pending integration.
 Specification: [freedesktop Trash](https://specifications.freedesktop.org/trash/1.0/).
 
 Cancellation before native restoration returns restored=False, receipt_retained=True and a nonempty
 error detail, including exceptions without a message.
+
+
+`windows_restore.prepare_windows_restore(origin, *, actual=None, cancel=None)` captures a frozen
+WindowsRestorePlan using only the current-user Recycle Bin Shell namespace. The native original-name
+and deleted-from properties and payload identity must exactly match TrashOrigin. An actual Qt
+receipt restricts lookup; without one, the bounded 100k-item enumeration must yield a unique match.
+Payload snapshots are complete and bounded to 100k entries/128 levels; parent anchors, ordinary
+nonlinked/noncloud types and a bounded actual `$I` receipt snapshot are required. Receipt contents
+are never parsed into action authority.
+
+`restore_windows(plan, *, window=0, cancel=None)` rechecks all observations and vacant original path,
+then invokes only the matched Shell item's canonical `undelete` in an owned STA. Interfaces,
+strings and context-menu resources are released on every exit. The native call requests synchronous
+execution; a bounded 15s observation verifies actual identity/location and receipt cleanup. Receipt
+waiting does not repeatedly traverse a restored payload. Native collision/error dialogs are left to
+the user; no answer or suppression is automated. Return fields use RestoreResult: observed restored
+payloads remain restored=True even if receipt cleanup or payload verification reports an error.
+Unconfirmed returns explicitly warn that native work may still be active. No manual Windows payload
+rename, receipt deletion, overwrite, copy or rollback fallback exists. Native validation of a freshly
+owned CJK folder confirmed identity, hash and empty-directory preservation; this Shell retained its
+receipt, truthfully reported with an error. Portable tests cover delayed cleanup and retained-receipt
+timeouts, collisions, changed observations, cancellation and native resource lifetimes.
+
+Reference: [canonical Shell restore](https://devblogs.microsoft.com/oldnewthing/20110901-00/?p=9753),
+[invocation flags](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/ns-shobjidl_core-cminvokecommandinfo).
