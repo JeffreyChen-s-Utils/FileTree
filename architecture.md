@@ -502,6 +502,18 @@ root. MainWindow tracks path dialogs and joins them on parent close before destr
 TrashWorker retains MoveResult before queued delivery; parent close joins it and reports late copy
 verification/redirect failures before dismissing the window.
 
+
+`core.trash_restore` freezes pre-Trash origin/parent identities and prepares only actual recognized
+current-user freedesktop destinations with matching percent-decoded Path/DeletionDate receipts.
+Linux descriptors/mount IDs anchor files/info/original parents; iterative complete payload snapshots
+reuse bounded no-follow bin inventory (100k entries/128 levels), without traversing other bin items.
+An explicitly selected plan is fully rechecked before native exclusive restore. Post-rename changes
+attempt exclusive rollback; failure reports the actual retained original/Trash locations. Successful
+restoration removes only its captured recognized `.trashinfo`; metadata failure reports restored=True
+and a retained receipt, never a false payload-preservation claim. The rule in CLAUDE permits only
+this scoped receipt cleanup, never payload deletion. Native fixture proof runs without Qt/elevation
+in its own Linux CI job. Windows Shell restore and the ephemeral status-bar Undo remain pending.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are

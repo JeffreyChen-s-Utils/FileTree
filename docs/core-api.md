@@ -274,3 +274,26 @@ or deletion fallback exists; native junction failure may leave an empty original
 The caller retains successful Trash receipts and reports redirect errors separately; never claim
 an original was preserved after an already successful Trash. MoveResult.copy_errors holds
 source, copied destination, verify/redirect phase and literal error details.
+
+
+`trash_restore.capture_origin(path, snapshot)` checks an existing scanned entry against its recorded
+stable snapshot and captures no-follow parent identities **before** the OS Trash call. After successful
+Trash, `prepare_restore(origin, trashed, volume, *, cancel=None)` requires its actual current-user
+private recognized freedesktop files/info destination on the mounted Linux volume. No other bin
+payload is enumerated. Top-level identity/size/mtime/type/attributes/link count must match the original;
+only the OS move's ctime change is allowed. Entire payload/receipt observations are bounded to 100k
+entries/128 levels. `receipt_destination(contents, *, topdir=None)` strictly decodes Path/DeletionDate,
+refusing malformed escapes/NUL/dot traversal/duplicates/missing dates/oversized metadata; relative
+paths require a mounted topdir and home-Trash paths remain absolute. Parsed paths never grant action
+authority; they must exactly match the captured original.
+
+`restore(plan, *, cancel=None)` is an explicit caller-approved native exclusive same-volume restore,
+with no copy/overwrite/deletion fallback. Current uid, recognized scope, original/files/info identities,
+mount IDs, exact receipt and every no-follow payload snapshot are rechecked. Occupied/arriving original
+paths are refused. Unexpected post-rename observations attempt exclusive rollback; errors identify
+actual original/Trash locations. RestoreResult exposes restored, source, trashed, error and
+receipt_retained. Only a successful restoration permits removal of its unchanged recognized receipt;
+cleanup failure is restored=True with an error and retained metadata. Cancellation stops before native
+rename; native rename/rollback/receipt cleanup is joined rather than interrupted. Concurrency remains
+observational. Windows Shell `undelete` and the GUI's expiring Undo are separate pending integration.
+Specification: [freedesktop Trash](https://specifications.freedesktop.org/trash/1.0/).

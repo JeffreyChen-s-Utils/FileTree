@@ -98,6 +98,11 @@ tool default.
   Retention may permanently remove FileTree's own recognized operation-journal segments under its
   application data directory; it never applies to scanned user entries. Atomic temporary files may
   also be removed after a failed write.
+  Explicit undo of a successful Trash move may exclusively restore its captured payload to its exact
+  original path. It never overwrites an existing entry or deletes payloads. After successful native
+  freedesktop restoration, only that recognized, identity-checked current-user `.trashinfo` receipt
+  may be removed from its anchored private OS-bin `info` scope. Changed receipts or cleanup errors
+  retain metadata and remain visible; this exception never authorizes deleting recorded source paths.
   Scan-history retention may remove only recognized FileTree history JSON under its application-owned
   history directory, after validating its format/root bucket/name. It never removes recorded source
   paths. Retention anchors POSIX directories by descriptor and pins Windows directory handles against
