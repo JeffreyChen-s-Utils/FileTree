@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-72 | 2026-10-07 | Canonical owned scratch paths for Windows short-name compression probes | #88 #incident #windows | [2026-10](2026-10.md) |
 | U-20261007-71 | 2026-10-07 | Remote push rejection retained with explicit CI follow-up | #88 #incident #distribution | [2026-10](2026-10.md) |
 | U-20261007-70 | 2026-10-07 | Confirmed exact-file NTFS and XPRESS compression with scoped native validation | #23 #done #windows #gui | [2026-10](2026-10.md) |
 | U-20261007-69 | 2026-10-07 | Optional guarded Windows per-file allocation including unflagged XPRESS | #23 #measurement #windows | [2026-10](2026-10.md) |

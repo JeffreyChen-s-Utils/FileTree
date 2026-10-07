@@ -107,7 +107,7 @@ def main() -> int:
     if sys.platform != "win32":
         raise RuntimeError("Native Windows validation required")
     with tempfile.TemporaryDirectory(prefix="filetree-compression-validation-") as scratch:
-        owned = Path(scratch).absolute()
+        owned = Path(scratch).resolve(strict=True)
         if file_system(str(owned)) != "NTFS":
             raise RuntimeError("Fresh owned fixture is not on NTFS")
         evidence = {"private_fixture": True, "ntfs": _case(owned, "ntfs"),
