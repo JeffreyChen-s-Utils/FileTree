@@ -1082,7 +1082,7 @@ def test_cancelling_cleanup_review_never_opens_trash_confirmation(
     age_tree(tmp_path)
     _scanned(window, qapp, tmp_path)
     _wait(qapp, lambda: not window.results.cleanup.busy)
-    node = window.results.tree_model.root.children[0]
+    node = _child(window.results.tree_model.root, "memory.dmp")
     reviewed, questions, moved = [], [], []
 
     def cancel(dialog):
@@ -1103,7 +1103,7 @@ def test_replacing_the_selected_scan_while_review_is_open_invalidates_the_batch(
     age_tree(tmp_path)
     _scanned(window, qapp, tmp_path)
     _wait(qapp, lambda: not window.results.cleanup.busy)
-    node = window.results.tree_model.root.children[0]
+    node = _child(window.results.tree_model.root, "memory.dmp")
     warnings, moved = [], []
 
     def replace_scan(dialog):
