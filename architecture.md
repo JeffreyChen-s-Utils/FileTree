@@ -21,6 +21,24 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.archives` reads guarded ZIP directory metadata and builds an iterative virtual inventory,
+separate from real Node.children. Third-party 7z/RAR adapters in `archive_formats.py` keep the core
+stdlib-only; they use metadata listing APIs, never extraction, CRC testing or external commands.
+RAR requires an unrar/bsdtar PATH entry and otherwise remains a plain file with a tooltip reason.
+No preview hydrates known cloud placeholders or follows source links. Physical metadata reads have a
+32 MiB cumulative budget; encoded 7z headers also have a declared decoded-size guard before decoding.
+Inventories cap entries/names/depth and reject member links, unsafe paths and conflicts with visible
+omission counts. Declared uncompressed bytes are separate from allocation and verified content.
+FolderTreeModel exposes expandable completed archive files and attaches display-only children through
+an overlay; NODE_ROLE and node(index) return None for virtual rows, preventing all filesystem actions.
+Charts, lists, history and exports continue traversing only real scan children. Virtual rows are marked
+in all languages, have no allocation/share/date fields and are hidden while the real-entry text filter
+is active. ArchiveController owns at most two lazy workers; the source context menu can stop a read.
+New scans and tree edits invalidate replies/overlays, and close joins current decoder calls. Failed,
+unavailable and encrypted-header archives remain plain files with reasons; a rescan permits retry.
+Installed py7zr/rarfile decoder dependencies are collected by Nuitka; Windows 3.12 executable releases
+install verified pinned wheels from .github/requirements/archives.txt outside the publishing job.
+
 `core.programs` reads only fixed HKLM/HKCU uninstall keys in both registry views, including optional
 EstimatedSize KiB and InstallLocation, never uninstall command fields. It deduplicates mirrored records,
 limits enumeration to 20,000 keys per view and reports inaccessible/omitted entries. Recognized scanned

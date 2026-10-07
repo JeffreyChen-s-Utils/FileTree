@@ -76,6 +76,7 @@ from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, wait_for
+from je_file_tree.gui.archives import ArchiveController
 from je_file_tree.gui.search_panel import SearchPanel
 from je_file_tree.gui.tables import (
     SORT_ROLE,
@@ -150,6 +151,7 @@ class ResultsView(QWidget):
     def __init__(self, parent: QWidget | None = None, *, settings: QSettings | None = None) -> None:
         super().__init__(parent)
         self.tree_model = FolderTreeModel(self)
+        self.archives = ArchiveController(self.tree_model, self)
         self.largest_model = LargestFilesModel(self)
         self.types_model = FileTypesModel(self)
         self.problems_model = ProblemsModel(self)
@@ -823,6 +825,7 @@ class ResultsView(QWidget):
         """Wait for list computations still running (before the window closes)."""
         self._stop_focused()
         self.tree_filter.shutdown()
+        self.archives.shutdown()
         for worker in self._list_workers.copy():
             wait_for(worker)
 

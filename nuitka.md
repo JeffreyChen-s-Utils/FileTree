@@ -17,6 +17,8 @@ Printing and view PDF export import PySide6.QtPrintSupport, collected by the exi
 
 Excel reports import `openpyxl` outside the stdlib-only core. Install `requirements.txt` before compiling; Nuitka follows this import and its `et-xmlfile` dependency. The executable release installs the universal wheels at verified hashes from `.github/requirements/reports.txt`, independently of the publishing job's tooling lock. HTML embeds Qt-encoded PNGs and needs no browser or image dependency.
 
+Archive previews lazily import `py7zr` and `rarfile` outside the stdlib-only core. Install `requirements.txt` before compiling; Nuitka follows the adapter imports and their decoder dependencies. Windows Python 3.12 release wheels are pinned with verified hashes in `.github/requirements/archives.txt`. External RAR tools are not bundled: `unrar` or `bsdtar` must be on PATH; previews never run them or extract files.
+
 ### 1.1 Python packages (every system)
 
 Use a virtual environment so the build contains only what FileTree needs:

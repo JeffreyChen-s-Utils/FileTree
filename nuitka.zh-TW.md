@@ -14,6 +14,8 @@
 
 Excel 報告在僅使用標準程式庫的核心之外匯入 `openpyxl`。編譯前先安裝 `requirements.txt`，Nuitka 會收集此匯入與其 `et-xmlfile` 相依套件。執行檔發行依 `.github/requirements/reports.txt` 的已驗證雜湊安裝通用 wheel，與發布工作使用的工具鎖定檔獨立。HTML 內嵌 Qt 編碼的 PNG，不需要瀏覽器或影像相依套件。
 
+壓縮檔預覽在僅使用標準程式庫的核心之外，按需匯入 `py7zr` 與 `rarfile`。編譯前安裝 `requirements.txt`，Nuitka 會依配接器匯入收集解碼相依套件。Windows Python 3.12 發行 wheel 依 `.github/requirements/archives.txt` 的已驗證雜湊鎖定。未附帶外部 RAR 工具：PATH 須有 `unrar` 或 `bsdtar`；預覽不會執行這些工具或解壓縮。
+
 ### 1.1 Python 套件（每個系統都要）
 
 用虛擬環境，編出來的程式才只包含 FileTree 需要的東西：

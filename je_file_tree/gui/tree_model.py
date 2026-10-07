@@ -19,11 +19,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QPalette
 from PySide6.QtWidgets import QApplication, QStyle
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
+from je_file_tree.core.archives import VirtualEntry
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import EXCLUDED, NOT_SCANNED
 from je_file_tree.core.snapshot import unpack_snapshot
@@ -67,6 +68,9 @@ def sort_key(column: int) -> Callable[[Node], Any]:
 class FolderTreeModel(QAbstractItemModel):
     """Shows one scanned tree: the scanned folder is the single top-level row."""
 
+    archive_requested = Signal(object)
+    archives_invalidated = Signal()
+
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._root: Node | None = None
@@ -78,6 +82,9 @@ class FolderTreeModel(QAbstractItemModel):
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._icons: dict[str, QIcon] = {}
+        self._archives: dict[Node, list[VirtualEntry]] = {}
+        self._archive_done: set[Node] = set()
+        self._archive_errors: dict[Node, str] = {}
         self._texts: dict[int, Callable[[Node], str]] = {
             NAME: lambda node: node.name,
             SIZE: lambda node: format_size(node.size, self._unit),
@@ -124,6 +131,7 @@ class FolderTreeModel(QAbstractItemModel):
     def set_root(self, root: Node | None, *, live: bool = False) -> None:
         """Show a new tree (or nothing); ``live`` while the scan is still filling it in."""
         self.beginResetModel()
+        self.invalidate_archives()
         self._root = root
         self._drive_total = None
         self._live = live and root is not None
@@ -165,7 +173,11 @@ class FolderTreeModel(QAbstractItemModel):
         self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, len(COLUMN_KEYS) - 1)
 
     def node(self, index: ModelIndex) -> Node | None:
-        """The node behind an index (None for the invisible root)."""
+        """The real filesystem node; virtual archive entries never authorize file actions."""
+        entry = self._entry(index)
+        return None if isinstance(entry, VirtualEntry) else entry
+
+    def _entry(self, index: ModelIndex) -> Node | None:
         if not index.isValid():
             return None
         return index.internalPointer()
@@ -191,6 +203,7 @@ class FolderTreeModel(QAbstractItemModel):
         row = self._row_of(node)
         if row < 0:
             return
+        self._relayout(self.invalidate_archives)
         self.beginRemoveRows(parent_index, row, row)
         node.detach()
         self._orders.pop(id(parent), None)
@@ -211,7 +224,7 @@ class FolderTreeModel(QAbstractItemModel):
             return QModelIndex()
         if not parent.isValid():
             return self.createIndex(0, column, self._root) if row == 0 else QModelIndex()
-        folder = self.node(parent)
+        folder = self._entry(parent)
         children = self._ordered(folder) if folder is not None else []
         if not 0 <= row < len(children):
             return QModelIndex()
@@ -219,7 +232,7 @@ class FolderTreeModel(QAbstractItemModel):
 
     def parent(self, index: ModelIndex = QModelIndex()) -> QModelIndex:  # noqa: B008
         """Qt: the index of the folder that holds ``index``."""
-        node = self.node(index)
+        node = self._entry(index)
         if node is None or node.parent is None:
             return QModelIndex()
         return self.index_for(node.parent)
@@ -232,7 +245,7 @@ class FolderTreeModel(QAbstractItemModel):
             return 1
         if parent.column() != 0:
             return 0
-        node = self.node(parent)
+        node = self._entry(parent)
         return len(self._ordered(node)) if node is not None else 0
 
     def columnCount(self, parent: ModelIndex = QModelIndex()) -> int:  # noqa: B008
@@ -243,8 +256,54 @@ class FolderTreeModel(QAbstractItemModel):
         """Qt: whether ``parent`` can be expanded (cheaper than counting rows)."""
         if not parent.isValid():
             return self._root is not None
+        node = self._entry(parent)
+        return parent.column() == 0 and node is not None and (bool(self._ordered(node)) or self.canFetchMore(parent))
+
+    def canFetchMore(self, parent: ModelIndex) -> bool:
+        """Offer archive expansion only for completed, recorded regular-file entries."""
         node = self.node(parent)
-        return parent.column() == 0 and node is not None and bool(self._ordered(node))
+        return bool(parent.column() == 0 and not self._live and node is not None
+                    and not node.is_dir and not node.is_link and node.error is None and node.snapshot is not None
+                    and node not in self._archives and node not in self._archive_done
+                    and node.name.lower().endswith((".zip", ".7z", ".rar")))
+
+    def fetchMore(self, parent: ModelIndex) -> None:
+        """Request metadata on expansion; the controller owns worker execution."""
+        if self.canFetchMore(parent):
+            node = self.node(parent)
+            self.set_archive(node, [VirtualEntry(tr("archive_loading"), False, parent=node)])
+            self.archive_requested.emit(node)
+
+    def set_archive(self, node: Node, children: list[VirtualEntry]) -> None:
+        """Replace display-only children without changing scan totals or real children."""
+        index = self.index_for(node)
+        if not index.isValid():
+            return
+        old = self._archives.get(node, [])
+        if old:
+            self.beginRemoveRows(index, 0, len(old) - 1)
+            self._archives.pop(node, None)
+            self._clear_caches()
+            self.endRemoveRows()
+        self._archive_done.add(node)
+        if children:
+            self.beginInsertRows(index, 0, len(children) - 1)
+            self._archives[node] = children
+            self._clear_caches()
+            self.endInsertRows()
+        self.dataChanged.emit(index, index)
+
+    def invalidate_archives(self) -> None:
+        """Invalidate metadata replies before any real tree replacement or mutation."""
+        self.archives_invalidated.emit()
+        self._archives.clear()
+        self._archive_done.clear()
+        self._archive_errors.clear()
+
+    def archive_error(self, node: Node, reason: str) -> None:
+        """Leave unavailable archives as plain files and expose failure in their tooltip."""
+        self._archive_errors[node] = reason[:500]
+        self.set_archive(node, [])
 
     def headerData(self, section: int, orientation: Qt.Orientation,
                    role: int = Qt.ItemDataRole.DisplayRole) -> Any:
@@ -259,10 +318,12 @@ class FolderTreeModel(QAbstractItemModel):
 
     def data(self, index: ModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
         """Qt: what a cell shows."""
-        node = self.node(index)
+        node = self._entry(index)
         handler = self._roles.get(role)
         if node is None or handler is None:
             return None
+        if isinstance(node, VirtualEntry):
+            return self._virtual_data(node, index.column(), role)
         return handler(node, index.column())
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
@@ -283,7 +344,7 @@ class FolderTreeModel(QAbstractItemModel):
         """
         self.layoutAboutToBeChanged.emit()
         persistent = self.persistentIndexList()
-        nodes = [(self.node(index), index.column()) for index in persistent]
+        nodes = [(self._entry(index), index.column()) for index in persistent]
         change()
         self._clear_caches()
         replacements = [self._index_at(node, column_number) for node, column_number in nodes]
@@ -298,7 +359,10 @@ class FolderTreeModel(QAbstractItemModel):
         Expanded folders and the selection that were inside the old branch are
         dropped; everywhere else they follow their nodes as after a sort.
         """
-        self._relayout(lambda: old.replace_with(new))
+        def change() -> None:
+            self.invalidate_archives()
+            old.replace_with(new)
+        self._relayout(change)
 
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
         if node is None or self._root is None or not node.is_in(self._root):
@@ -315,12 +379,13 @@ class FolderTreeModel(QAbstractItemModel):
 
     def _ordered(self, folder: Node) -> list[Node] | tuple[()]:
         """``folder``'s children in the current sort order (a frozen copy while the scan is live)."""
-        if not folder.children or (self._is_default_order() and not self._live):
-            return folder.children
+        children = self._archives.get(folder, folder.children)
+        if not children or (self._is_default_order() and not self._live):
+            return children
         cached = self._orders.get(id(folder))
         if cached is None:
             descending = self._sort_order == Qt.SortOrder.DescendingOrder
-            cached = sorted(list(folder.children), key=sort_key(self._sort_column), reverse=descending)
+            cached = sorted(list(children), key=sort_key(self._sort_column), reverse=descending)
             self._orders[id(folder)] = cached
         return cached
 
@@ -359,6 +424,19 @@ class FolderTreeModel(QAbstractItemModel):
             return ""  # the file and folder counts are for folders only
         return format_count(node.file_count if column == FILES else node.dir_count)
 
+    def _virtual_data(self, node: VirtualEntry, column: int, role: int) -> Any:
+        if role == Qt.ItemDataRole.DisplayRole:
+            texts = {NAME: tr("archive_virtual_name", name=node.name),
+                     SIZE: format_size(node.size, self._unit) if node.member else ""}
+            return texts.get(column, "")
+        if role == Qt.ItemDataRole.ToolTipRole:
+            return tr("archive_virtual_hint")
+        if role == Qt.ItemDataRole.DecorationRole and column == NAME:
+            return self._icon(node)
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            return _RIGHT if column in _NUMERIC_COLUMNS else None
+        return None
+
     def _tooltip(self, node: Node) -> str:
         if node.error == NOT_SCANNED:
             return tr("tooltip_not_scanned", path=node.path)
@@ -368,7 +446,9 @@ class FolderTreeModel(QAbstractItemModel):
             return tr("tooltip_unreadable", path=node.path, reason=problem_text(node.error))
         if node.is_link:
             return tr("tooltip_link", path=node.path)
-        return node.path
+        extra = (tr("archive_failed", reason=self._archive_errors[node]) if node in self._archive_errors
+                 else tr("archive_virtual_hint") if node in self._archives else "")
+        return node.path + ("\n" + extra if extra else "")
 
     def _icon(self, node: Node) -> QIcon:
         if node.error == EXCLUDED:

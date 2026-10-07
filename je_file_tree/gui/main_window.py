@@ -268,6 +268,8 @@ class MainWindow(QMainWindow):
         ]
         if shell_integration.supported():
             entries.append(("menu_properties", lambda: self.show_properties(node)))
+        if self.results.archives.busy(node):
+            entries.append(("archive_stop", lambda: self.results.archives.stop(node)))
         if node.is_dir and not node.is_link:
             entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))

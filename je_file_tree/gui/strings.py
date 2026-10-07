@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "archive_loading": "Reading archive metadata…",
+    "archive_virtual_name": "{name} [virtual]",
+    "archive_virtual_hint": ("Archive member: declared uncompressed size, outside disk totals. "
+                             "No file actions or extraction."),
+    "archive_failed": "Preview unavailable: {reason}",
+    "archive_rejected": "Omitted {count} unsafe, linked or conflicting members",
+    "archive_empty": "No previewable members",
+    "archive_stopped": "Archive preview stopped; inventory incomplete",
+    "archive_busy": "Two archive reads are already running; rescan to retry",
+    "archive_stop": "Stop reading this archive",
     "action_count_hard_links": (
         "Count observed hard links once"
     ),
@@ -1064,6 +1074,15 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "archive_loading": "正在讀取壓縮檔中繼資料…",
+    "archive_virtual_name": "{name}［虛擬］",
+    "archive_virtual_hint": "壓縮檔內容：宣告的未壓縮大小，不計入磁碟總量。不提供檔案操作或解壓縮。",
+    "archive_failed": "無法預覽：{reason}",
+    "archive_rejected": "已略過 {count} 個不安全、連結或衝突的項目",
+    "archive_empty": "沒有可預覽的項目",
+    "archive_stopped": "壓縮檔預覽已停止；內容清單不完整",
+    "archive_busy": "已有兩個壓縮檔讀取工作；重新掃描後可重試",
+    "archive_stop": "停止讀取此壓縮檔",
     "action_count_hard_links": (
         "觀察到的硬連結只計一次"
     ),
@@ -2009,6 +2028,15 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "archive_loading": "正在读取压缩文件元数据…",
+    "archive_virtual_name": "{name}［虚拟］",
+    "archive_virtual_hint": "压缩文件内容：声明的未压缩大小，不计入磁盘总量。不提供文件操作或解压。",
+    "archive_failed": "无法预览：{reason}",
+    "archive_rejected": "已跳过 {count} 个不安全、链接或冲突的项目",
+    "archive_empty": "没有可预览的项目",
+    "archive_stopped": "压缩文件预览已停止；内容列表不完整",
+    "archive_busy": "已有两个压缩文件读取任务；重新扫描后可重试",
+    "archive_stop": "停止读取此压缩文件",
     "action_count_hard_links": (
         "观察到的硬链接只计一次"
     ),

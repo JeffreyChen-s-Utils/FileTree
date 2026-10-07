@@ -20,6 +20,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
 | `hard_links` | `account_hard_links(root, *, cancel=None)`; `ScanOptions(count_hard_links=False)` | Optional `ScanResult.hard_links` describes `.aliases`, `.logical_overcount`, `.allocation_overcount`, `.unknown`; worker-only recorded-stat accounting without OS/payload queries; `Node.accounted_size/accounted_allocated` preserve named size/allocation; lexical first observed name contributes, proven aliases count zero; inconsistent/unknown groups stay named; reapply after tree mutation; canceled surveys retain previous accounting |
+| `archives` | `read_archive(node, *, reader=zip_members, cancel=None)` | Worker-only guarded ZIP metadata by default; injected readers yield `ArchiveMember`; `ArchiveInventory.children` contains display-only `VirtualEntry` trees, `.files`/`.size` declared totals and `.rejected` omissions; real children/totals unchanged, no extraction; `ArchiveCancelledError` on Stop, OSError on changed/unavailable/unsafe metadata |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
 | `duplicates` | `find_duplicates(root, *, min_size=..., workers=4, progress=None, cancel=None)` | `DuplicateResult.groups`, `.files_read`, `.bytes_read`, `.skipped`; each `DuplicateGroup` has `.size`, `.files`, `.extra` (logical extra-copy size) |
 | `compare` | `load_saved(path)`, `compare(root, saved)` | `SavedScan.root`, `.saved`, `.folders`, `.size`; `FolderChange.path`, `.node`, `.before`, `.after`, `.change` |
@@ -51,6 +52,13 @@ mappings retain the original report columns. Counts and capacity recovery remain
 once-per-observed-identity accounting does not measure shared extents or directory metadata.
 
 ## Runnable example
+
+Archive adapters outside the core use [py7zr's metadata list API](https://py7zr.readthedocs.io/en/latest/api.html)
+and [rarfile's header inventory API](https://rarfile.readthedocs.io/api.html). They never call extraction
+or test member CRCs. `MetadataReader` limits cumulative physical reads to 32 MiB; inventories cap
+100,000 entries, 1,024-character names and 128 levels. These are inventory limits, not a guarantee of
+decoder peak memory or header validity; cancellation waits through the decoder's current call.
+Virtual entries must never authorize filesystem actions or be inserted into real scan children.
 
 This example creates its own temporary fixture and reports, then cleans up that fixture. Replace the
 fixture creation with your own existing path to inspect real data; keep report files outside the scan.
