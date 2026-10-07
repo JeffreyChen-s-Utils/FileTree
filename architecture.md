@@ -560,6 +560,18 @@ rescan, invalidating keeper/extra snapshots, capacity and duplicate decisions. N
 CJK/ADS GUI proof verified three aliases, independent original audit identities and full-root refresh;
 native Linux CI passed the same owned workflow, audits and complete-root refresh. Native macOS validation remains #4.
 
+`core.virtual_disks` discovers recorded virtual-disk extension candidates and bounded current-user
+WSL/default Docker locations from `core.virtual_disk_sources`. Iterative per-folder pacing and a
+1,000-row largest-file heap retain full discovered/error/omitted counts without retaining every
+candidate. Recorded node observations are estimates; outside-provider final-file no-follow metadata
+and guarded Windows allocation queries preserve unknown/missing/cloud/link/change state. Paths
+merge provider labels but never grant stopped-state/format/ownership or mutation authority. Guest
+used bytes and virtual capacity stay unknown; no header/guest reads, launches, mounts or commands.
+Native Windows inventory found two backing files without guest launches. The 100,000-candidate
+in-memory fixture measured 2.853 seconds and 544,072 additional peak traced bytes for 1,000 rows.
+Native information/compaction and its GUI review remain #59; unsupported formats need their own
+backend rather than passing them to VHD-only Windows tools.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are

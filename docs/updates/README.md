@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-19 | 2026-10-08 | Bounded read-only virtual-disk and WSL/Docker discovery | #implementation #virtual-disks #core | [2026-10-b](2026-10-b.md) |
 | U-20261008-18 | 2026-10-08 | Duplicate hard-link workflow validated on Windows and Linux | #done #duplicates #verification | [2026-10-b](2026-10-b.md) |
 | U-20261008-17 | 2026-10-08 | Reviewed duplicate-link GUI, durable audits and full-root refresh | #implementation #duplicates #gui | [2026-10-b](2026-10-b.md) |
 | U-20261008-16 | 2026-10-08 | Exclusive duplicate-link executor and scoped native retirement | #implementation #duplicates #hard-links | [2026-10-b](2026-10-b.md) |

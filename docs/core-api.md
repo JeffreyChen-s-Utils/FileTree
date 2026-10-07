@@ -404,4 +404,35 @@ late partial/retained paths in plain text. MainWindow serializes path dialogs wi
 expires old Undo offers, then fully rescans the unchanged current root after any attempted batch.
 Both keeper and extra snapshots, capacity and duplicate observations refresh; replaced roots cannot
 receive an old refresh. Native Windows CJK/ADS GUI evidence verified three aliases, original audit
-identities and full-root refresh. Native Linux CI passed the same fresh owned GUI/native workflow, audits and full-root refresh.
+identities and full-root refresh. Native Linux CI passed the same fresh owned GUI/native workflow,
+audits and full-root refresh.
+
+`virtual_disks.find_virtual_disks(root, *, registrations=None, partial=False, cancel=None)` returns
+VirtualDisks(rows, count, issues, incomplete), or None on cancellation. It walks recorded folders
+iteratively with per-folder pacing; extension candidates include VHD/VHDX/VMDK/VDI/QCOW2. It keeps a
+heap of at most 1,000 largest backing-file rows, while counting all discovered entries and recording
+unknown rows, omissions/provider errors and incomplete scan coverage. Registrations may explicitly
+override provider discovery with at most 1,000 DiskRegistration entries. Exact normalized paths merge
+provider labels into scan rows without copying/modifying the scan tree. Scanned observations remain
+recorded estimates; outside provider paths use final-file no-follow metadata and guarded Windows
+allocation queries. Missing/linked/cloud/changed external entries remain visible with unknown sizes.
+
+VirtualDisk exposes path, kind, source, name, node (None outside the scan), size, allocated, snapshot,
+issue, distro, guest_used and virtual_size. The last two remain None: file length/provider allocation
+never proves used guest bytes or virtual capacity. Discovery opens no disk headers/guest payload,
+starts no command/VM, and grants no compaction authority. Provider labels do not prove format,
+ownership or stopped state; future operations must independently recheck every native observation.
+`virtual_disk_sources.registered_disks(*, cancel=None)` returns DiskRegistrations(rows, issues), or
+None on cancellation. It reads at most 256 HKCU WSL registrations, requires a known WSL2 version,
+literal name/absolute BasePath/literal VHDX basename, and preserves registry failures/omissions.
+It adds only existing inferred default Docker disk paths; custom paths require scanning their folder.
+Non-Windows supplies no implicit provider paths. These locations follow Microsoft's
+[WSL disk-location guidance](https://learn.microsoft.com/en-us/windows/wsl/disk-space)
+and Docker's [default WSL storage location](https://docs.docker.com/desktop/features/wsl/).
+
+Native read-only Windows discovery observed two existing WSL/Docker backing files with no guest
+launches/commands. A 100,000-candidate in-memory fixture retained 1,000 rows in 2.853 seconds with
+544,072 additional peak traced bytes; no filesystem or guest was accessed. Compaction/GUI review
+remains pending. DiskPart and Optimize-VHD apply to supported VHD formats, not VMDK/VDI/QCOW2:
+[DiskPart requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk),
+[Optimize-VHD requirements](https://learn.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd).

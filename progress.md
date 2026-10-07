@@ -23,7 +23,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Windows space explained
 
-- **#59** (P2) Virtual disks: find `.vhdx`, `.vhd`, `.vmdk`, `.vdi` and `.qcow2` files, WSL distributions' `ext4.vhdx` and Docker Desktop's disk image, show how much each takes against how much its contents use, and compact them from FileTree: WSL through `wsl --shutdown` then `wsl --manage <distro> --set-sparse true` (or `diskpart compact vdisk` on older WSL), Hyper-V disks through `Optimize-VHD`, others through `diskpart`, each only after checking that the machine or distribution is stopped and after a question that says so; administrator rights through the existing restart (`je_file_tree/gui/elevation.py`). Fixed programs and a generated `diskpart` script file, no shell.
+- **#59** (P2) Finish virtual-disk native information and GUI review/compaction using `core.virtual_disks` discovery. Keep guest-used bytes unknown unless explicitly measured; never start a guest for an automatic inventory. VHD/VHDX execution must freshly confirm valid dynamic type, exact file/parent identity and a detached/stopped machine; WSL/Docker also need trusted runtime state. Review fixed-program commands with default-No approval, existing administrator restart, joined native calls and truthful partial/unknown savings. Windows DiskPart/Optimize-VHD cannot compact VMDK/VDI/QCOW2; show those formats as unsupported until a suitable fixed backend is available. Verify only owned private disks; native compaction validation needs unavailable administrator access.
 
 ### Scanning
 
