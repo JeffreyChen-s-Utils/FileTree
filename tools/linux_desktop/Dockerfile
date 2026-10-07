@@ -1,5 +1,9 @@
 FROM python:3.12-slim-bookworm@sha256:2ed6491b93cd49272ee6de2b5a38440c3448360322c089fc23e370722d74179d
 
+ARG DESKTOP_UID=1001
+ARG DESKTOP_GID=1001
+RUN if ! getent group "$DESKTOP_GID"; then groupadd --gid "$DESKTOP_GID" filetree; fi \
+    && if ! getent passwd "$DESKTOP_UID"; then useradd --no-create-home --uid "$DESKTOP_UID" --gid "$DESKTOP_GID" filetree; fi
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dbus dbus-x11 xvfb xdg-utils fonts-noto-cjk libegl1 libgl1 libfontconfig1 \
     libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-image0 \

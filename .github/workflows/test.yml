@@ -19,7 +19,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Build isolated desktop probe
-      run: docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
+      run: docker build --build-arg DESKTOP_UID="$(id -u)" --build-arg DESKTOP_GID="$(id -g)" -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
     - name: Test native desktop behavior
       shell: bash
       run: |

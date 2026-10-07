@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-41 | 2026-10-07 | Supply native desktop account identity and inspect retained artifacts | #incident #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-40 | 2026-10-07 | Exercise external Thunar drag on the isolated X11 desktop | #snapshot #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-39 | 2026-10-07 | Preserve dragged folders and probe the native folder fallback | #snapshot #desktop #safety | [2026-10](2026-10.md) |
 | U-20261007-38 | 2026-10-07 | Reject masked native desktop failures and missing evidence | #incident #linux #ci | [2026-10](2026-10.md) |

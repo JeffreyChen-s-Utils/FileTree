@@ -51,7 +51,9 @@ def check_bus(app: QApplication, evidence: Path, scratch: Path) -> dict[str, obj
         command = [sys.executable, "/workspace/tools/linux_desktop/manager.py", str(output)]
         service = subprocess.Popen(command, stdout=log, stderr=log)  # noqa: S603 # nosec B603 - own script
         try:
-            pump(app, lambda: output.with_suffix(".ready").exists())
+            pump(app, lambda: output.with_suffix(".ready").exists() or service.poll() is not None)
+            require(output.with_suffix(".ready").exists(),
+                    "Strict service failed before becoming ready; see manager.log")
             bus = QDBusConnection.sessionBus()
             message = QDBusMessage.createMethodCall("org.freedesktop.FileManager1", "/org/freedesktop/FileManager1",
                                                     "org.freedesktop.DBus.Introspectable", "Introspect")

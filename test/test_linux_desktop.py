@@ -30,6 +30,7 @@ def test_desktop_job_uses_a_read_only_repository_and_small_container():
     workflow = (_ROOT / ".github/workflows/test.yml").read_text(encoding="utf-8")
     assert '--memory=1g --cpus=2 -v "$PWD:/workspace:ro"' in workflow
     assert '--user "$(id -u):$(id -g)"' in workflow
+    assert '--build-arg DESKTOP_UID="$(id -u)" --build-arg DESKTOP_GID="$(id -g)"' in workflow
     assert "linux-desktop-evidence" in workflow and "if: always()" in workflow
     assert "shell: bash" in workflow
     ignore = (_ROOT / "tools/linux_desktop/Dockerfile.dockerignore").read_text(encoding="utf-8")

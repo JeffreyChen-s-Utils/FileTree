@@ -192,7 +192,7 @@ python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 
 Linux 桌面 CI 检查使用全新容器、Xvfb／X11 与独立会话总线，验证严格的 `ShowItems(as, s)` 服务、专用测试文件的完整回收站流程、总线断开时通过记录用 `xdg-open` 打开文件夹的备用流程，以及原生繁体中文字型绘制。失败时也保存日志、证明 JSON 与截图；产物不完整即判定失败。项目只读挂载，运行限制为 1 GB 内存及两个 CPU。可在已启动 Docker 的 Linux shell 重现：
 
 ```bash
-docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
+docker build --build-arg DESKTOP_UID="$(id -u)" --build-arg DESKTOP_GID="$(id -g)" -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
 mkdir -p desktop-evidence
 docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
 ```
