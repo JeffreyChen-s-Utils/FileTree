@@ -140,6 +140,9 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 - *Largest files*, *File types* and *Age* cover the whole scan; *Selected folder only*, at the top right of
   those tabs, makes them follow the folder selected in the tree.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
+- Clean-up shows known bytes and counts of skipped, inaccessible and unread folders; omitted bytes are
+  unknown. An incomplete branch is never suggested as a whole or as empty. *Select all* is disabled for
+  incomplete scans; rescan the relevant branch before cleaning it. Refreshing clears stale suggestions.
 - To leave folders out of every scan, list them in *View → Skip while scanning*: a name such as
   `node_modules` or `*.cache` skips every folder of that name, a path skips one folder. Skipped folders are
   listed greyed out, with size 0.

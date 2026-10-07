@@ -19,6 +19,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import PurePath
 
+from je_file_tree.core.coverage import Coverage, coverage_of
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.pacing import give_way
 
@@ -76,13 +77,14 @@ class CleanupGroup:
 
 
 def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | None = None,
-                 cancel: threading.Event | None = None) -> list[CleanupGroup] | None:
+                 cancel: threading.Event | None = None, coverage: Coverage | None = None) -> list[CleanupGroup] | None:
     """The clean-up groups beneath ``root`` (empty folders included), the largest group first.
 
     None when ``cancel`` is set before the walk is done (checked once per folder).
     """
     matcher = _Matcher(rules, time.time() if now is None else now)
-    found = _walk(root, matcher, cancel)
+    coverage = coverage or coverage_of(root)
+    found = _walk(root, matcher, cancel, coverage)
     if found is None:
         return None
     claimed = {id(node) for nodes in found.values() for node in nodes}
@@ -95,7 +97,8 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
     return groups
 
 
-def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None) -> dict[str, list[Node]] | None:
+def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None,
+          coverage: Coverage) -> dict[str, list[Node]] | None:
     """Every entry beneath ``root`` a rule matches, by group; None when cancelled."""
     found: dict[str, list[Node]] = defaultdict(list)
     stack: list[tuple[Node, tuple[str, ...]]] = [(root, _parts(root.path))]
@@ -104,21 +107,21 @@ def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None) -> dict
             return None
         give_way()
         folder, parts = stack.pop()
-        stack.extend(_visit(folder, parts, matcher, found))
+        stack.extend(_visit(folder, parts, matcher, found, coverage))
     return found
 
 
 def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
-           found: dict[str, list[Node]]) -> list[tuple[Node, tuple[str, ...]]]:
+           found: dict[str, list[Node]], coverage: Coverage) -> list[tuple[Node, tuple[str, ...]]]:
     """Put ``folder``'s matching entries in ``found``; returns the subfolders still to look into."""
     names = {child.name.casefold() for child in folder.children}
     deeper: list[tuple[Node, tuple[str, ...]]] = []
     for child in folder.children:
-        if child.is_link:
+        if child.is_link or child.error is not None:
             continue
         if child.is_dir:
             child_parts = (*parts, child.name.casefold())
-            key = matcher.folder_key(child_parts, names)
+            key = matcher.folder_key(child_parts, names) if coverage.can_clean(child) else None
             if key is None and child.children:
                 deeper.append((child, child_parts))  # a matching folder is suggested whole, not entered
         else:

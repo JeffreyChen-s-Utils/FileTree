@@ -909,6 +909,27 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
     assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
 
 
+def test_incomplete_cleanup_disables_bulk_selection_and_discards_stale_rows(
+        window: MainWindow, qapp: QApplication, tmp_path: Path) -> None:
+    make_tree(tmp_path, {"memory.dmp": b"x", "node_modules": {"skipped": {"file": b"important"}}})
+    outcome = analyse(scan(tmp_path, options=ScanOptions(exclude=("skipped",))))
+    window.results.show_outcome(outcome)
+    panel = window.results.cleanup
+    _wait(qapp, lambda: not panel.busy)
+    assert [group.key for group in panel.groups] == ["crash_dumps"]
+    assert not panel.select_all.isEnabled()
+    assert "Omitted bytes are unknown" in panel.coverage_banner.text()
+    panel.select_all_entries()
+    assert _selected_in(panel.view) == []
+    panel.refresh()
+    assert panel.groups == [] and panel.model.rowCount() == 0
+    assert not panel.select_group.isEnabled()
+    _wait(qapp, lambda: not panel.busy)
+    panel.set_root(outcome.result.root, partial=True)
+    _wait(qapp, lambda: not panel.busy)
+    assert not panel.select_all.isEnabled()
+
+
 def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qapp: QApplication,
                                                           tmp_path: Path) -> None:
     label = ElidedLabel()

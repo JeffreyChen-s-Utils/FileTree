@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
 
 import pytest
 
 from conftest import make_tree
 from je_file_tree.core.cleanup import EMPTY_FOLDERS, Rule, empty_folders, find_cleanup
-from je_file_tree.core.scanner import EXCLUDED, ScanOptions, scan
+from je_file_tree.core.coverage import coverage_of
+from je_file_tree.core import scanner
+from je_file_tree.core.scanner import EXCLUDED, ScanCancelledError, ScanOptions, scan
 
 OLD = 1_600_000_000  # far more than 90 days before the tests run
 
@@ -80,3 +83,69 @@ def test_folders_not_known_to_be_empty(tmp_path: Path) -> None:
     assert skipped.error == EXCLUDED
     assert [node.name for node in empty_folders(root)] == ["plain"], "a skipped folder was never read"
     assert empty_folders(scan(tmp_path / "plain").root) == [], "the scanned folder itself is not suggested"
+
+
+def test_a_matching_folder_with_an_excluded_branch_is_not_suggested(tmp_path: Path) -> None:
+    make_tree(tmp_path, {"node_modules": {"unread": {"valuable.txt": b"content"}, "known.js": b"x"}})
+    root = scan(tmp_path, options=ScanOptions(exclude=("unread",))).root
+    coverage = coverage_of(root)
+    assert not coverage.complete
+    assert coverage.skipped_folders == 1
+    assert not coverage.can_clean(root.children[0])
+    assert find_cleanup(root) == []
+
+
+def test_a_matching_folder_with_an_inaccessible_branch_is_not_suggested(tmp_path: Path, monkeypatch) -> None:
+    make_tree(tmp_path, {"node_modules": {"locked": {"private": b"x"}}})
+    original = os.scandir
+
+    def denied(path):
+        if os.fspath(path).endswith("locked"):
+            raise PermissionError(13, "denied")
+        return original(path)
+
+    monkeypatch.setattr(os, "scandir", denied)
+    root = scan(tmp_path).root
+    assert coverage_of(root).inaccessible_folders == 1
+    assert find_cleanup(root) == []
+
+
+def test_live_and_cancelled_branches_cannot_look_empty(tmp_path: Path) -> None:
+    make_tree(tmp_path, {"node_modules": {"file": b"x"}})
+    cancel = threading.Event()
+
+    def cancel_before_read(root):
+        assert root.error == scanner.NOT_SCANNED
+        assert not coverage_of(root).complete
+        assert find_cleanup(root) == []
+        cancel.set()
+
+    with pytest.raises(ScanCancelledError) as caught:
+        scan(tmp_path, cancel=cancel, on_root=cancel_before_read)
+    root = caught.value.partial.root
+    assert coverage_of(root).pending_folders == 1
+    assert find_cleanup(root) == []
+
+
+def test_hidden_omissions_cannot_turn_a_folder_into_a_cleanup_candidate(tmp_path: Path) -> None:
+    make_tree(tmp_path, {"node_modules": {".hidden": b"important"}})
+    root = scan(tmp_path, options=ScanOptions(include_hidden=False)).root
+    assert coverage_of(root).skipped_folders == 1
+    assert find_cleanup(root) == []
+
+
+def test_stat_failures_cannot_turn_a_matching_folder_into_an_empty_one(tmp_path: Path, monkeypatch) -> None:
+    make_tree(tmp_path, {"node_modules": {"private": b"x"}})
+    original = scanner._entry_node
+
+    def failed(entry, options, read, allocation, excluded):
+        if entry.name == "private":
+            read.errors.append((entry.path, scanner.ACCESS_DENIED))
+            return None
+        return original(entry, options, read, allocation, excluded)
+
+    monkeypatch.setattr(scanner, "_entry_node", failed)
+    root = scan(tmp_path).root
+    assert root.children[0].error == scanner.PARTIAL_FOLDER
+    assert coverage_of(root).inaccessible_folders == 1
+    assert find_cleanup(root) == []

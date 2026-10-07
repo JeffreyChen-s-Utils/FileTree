@@ -15,6 +15,7 @@ from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
 from je_file_tree.core.cleanup import find_cleanup
+from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
@@ -133,7 +134,7 @@ class ExportWorker(QThread):
 class CleanupWorker(QThread):
     """Looks for clean-up suggestions off the GUI thread; emits ``done(list[CleanupGroup])`` unless stopped."""
 
-    done = Signal(object)
+    done = Signal(object, object)
 
     def __init__(self, root: Node, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -146,9 +147,10 @@ class CleanupWorker(QThread):
 
     def run(self) -> None:
         """Thread body."""
-        groups = find_cleanup(self._root, cancel=self._cancel)
+        coverage = coverage_of(self._root)
+        groups = find_cleanup(self._root, cancel=self._cancel, coverage=coverage)
         if groups is not None:
-            self.done.emit(groups)
+            self.done.emit(groups, coverage)
 
 
 class CompareWorker(QThread):

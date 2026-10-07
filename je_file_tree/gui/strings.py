@@ -9,6 +9,14 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "coverage_complete": ("Coverage: {size} known in {known} folders; skipped {skipped}, "
+                          "inaccessible {denied}, pending {pending}."),
+    "coverage_partial": ("Incomplete coverage: {size} known in {known} folders; skipped {skipped}, inaccessible "
+                         "{denied}, pending {pending}. Omitted bytes are unknown. "
+                         "Rescan incomplete branches before cleanup; "
+                         "Select all is disabled."),
+    "problem_hidden_omitted": "Hidden entries were omitted; their size is unknown.",
+    "problem_partial_folder": "Some entries could not be read; this folder is incomplete.",
     "app_title": "FileTree",
     "about_text": "<h3>FileTree {version}</h3><p>See where your disk space goes.</p>"
                   "<p>MIT License · © 2026 JE-Chen</p>",
@@ -403,6 +411,12 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "coverage_complete": ("涵蓋範圍：{known} 個資料夾，已知 {size}；"
+                          "略過 {skipped}、無法讀取 {denied}、未掃描 {pending}。"),
+    "coverage_partial": ("涵蓋範圍不完整：{known} 個資料夾，已知 {size}；略過 {skipped}、無法讀取 {denied}、"
+                         "未掃描 {pending}。略過的位元組數未知。清理前請重新掃描不完整的分支；已停用全部選取。"),
+    "problem_hidden_omitted": "已略過隱藏項目，大小未知。",
+    "problem_partial_folder": "部分項目無法讀取，資料夾內容不完整。",
     "app_title": "FileTree",
     "about_text": "<h3>FileTree {version}</h3><p>看看磁碟空間都用到哪裡去了。</p>"
                   "<p>MIT 授權 · © 2026 JE-Chen</p>",
@@ -770,6 +784,12 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "coverage_complete": ("覆盖范围：{known} 个文件夹，已知 {size}；"
+                          "跳过 {skipped}、无法读取 {denied}、未扫描 {pending}。"),
+    "coverage_partial": ("覆盖范围不完整：{known} 个文件夹，已知 {size}；跳过 {skipped}、无法读取 {denied}、"
+                         "未扫描 {pending}。跳过的字节数未知。清理前请重新扫描不完整的分支；已禁用全部选择。"),
+    "problem_hidden_omitted": "已跳过隐藏项目，大小未知。",
+    "problem_partial_folder": "部分项目无法读取，文件夹内容不完整。",
     "app_title": "FileTree",
     "about_text": "<h3>FileTree {version}</h3><p>看看磁盘空间都用到哪里去了。</p>"
                   "<p>MIT 许可证 · © 2026 JE-Chen</p>",

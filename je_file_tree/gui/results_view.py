@@ -259,7 +259,7 @@ class ResultsView(QWidget):
             self.select_node(root)
         self.search.set_root(root)
         self.duplicates.set_root(root)
-        self.cleanup.set_root(root)
+        self.cleanup.set_root(root, partial=outcome.partial)
         self.changes.set_root(root)
         self._update_texts()
         self.selection_changed.emit(self.selected_node())  # its size is final now

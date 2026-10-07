@@ -6,6 +6,7 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from je_file_tree.core.cleanup import CleanupGroup
+from je_file_tree.core.coverage import Coverage
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.gui import grouped_list
@@ -29,6 +30,11 @@ class CleanupPanel(QWidget):
         self.status.setWordWrap(True)
         # a long line would otherwise claim its whole width and squeeze the folder tree beside the tabs
         self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.coverage_banner = QLabel()
+        self.coverage_banner.setWordWrap(True)
+        self.coverage_banner.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self._coverage: Coverage | None = None
+        self._partial = False
         self.select_all = QPushButton()
         self.select_group = QPushButton()
         self.select_all.clicked.connect(self.select_all_entries)
@@ -45,6 +51,7 @@ class CleanupPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
+        layout.addWidget(self.coverage_banner)
         layout.addWidget(self.view, 1)
         self.retranslate()
 
@@ -58,10 +65,12 @@ class CleanupPanel(QWidget):
         """Whether a search for suggestions is running whose result will be shown."""
         return self._current is not None
 
-    def set_root(self, root: Node | None) -> None:
+    def set_root(self, root: Node | None, *, partial: bool = False) -> None:
         """Suggest from ``root`` (None while a scan runs: the list waits)."""
         self.stop()
         self._root = root
+        self._coverage = None
+        self._partial = partial
         self._groups = []
         self._rebuild()
         self.refresh()
@@ -71,8 +80,11 @@ class CleanupPanel(QWidget):
         self.stop()
         if self._root is None:
             return
+        self._groups = []
+        self._coverage = None
+        self._rebuild()
         worker = CleanupWorker(self._root, self)
-        worker.done.connect(lambda groups: self._show(worker, groups))
+        worker.done.connect(lambda groups, coverage: self._show(worker, groups, coverage))
         worker.finished.connect(lambda: self._running.discard(worker))
         worker.finished.connect(worker.deleteLater)
         self._current = worker
@@ -90,10 +102,13 @@ class CleanupPanel(QWidget):
 
     def select_all_entries(self) -> None:
         """Select every suggested entry, ready for Delete."""
-        grouped_list.select_entries(self.model, self.view, skip_first=False)
+        if self.select_all.isEnabled():
+            grouped_list.select_entries(self.model, self.view, skip_first=False)
 
     def select_current_group(self) -> None:
         """Select the entries of the group the cursor is in."""
+        if not self.select_group.isEnabled():
+            return
         index = self.view.currentIndex()
         if not index.isValid():
             return
@@ -111,11 +126,12 @@ class CleanupPanel(QWidget):
         self.select_group.setText(tr("cleanup_select_group"))
         self._rebuild()
 
-    def _show(self, worker: CleanupWorker, groups: list[CleanupGroup]) -> None:
+    def _show(self, worker: CleanupWorker, groups: list[CleanupGroup], coverage: Coverage) -> None:
         if worker is not self._current:
             return
         self._current = None
         self._groups = groups
+        self._coverage = coverage
         self._rebuild()
 
     def _rebuild(self) -> None:
@@ -127,9 +143,19 @@ class CleanupPanel(QWidget):
 
     def _update_status(self) -> None:
         has_entries = bool(self._groups) and self._current is None
-        self.select_all.setEnabled(has_entries)
+        self.select_all.setEnabled(has_entries and not self._partial and self._coverage is not None
+                                   and self._coverage.complete)
         self.select_group.setEnabled(has_entries)
         self.status.setText(self._status_text())
+        coverage = self._coverage
+        self.coverage_banner.setVisible(coverage is not None)
+        if coverage is not None:
+            key = "coverage_complete" if coverage.complete and not self._partial else "coverage_partial"
+            self.coverage_banner.setText(tr(key, size=format_size(coverage.known_bytes, self.unit),
+                                            known=format_count(coverage.known_folders),
+                                            skipped=format_count(coverage.skipped_folders),
+                                            denied=format_count(coverage.inaccessible_folders),
+                                            pending=format_count(coverage.pending_folders)))
 
     def _status_text(self) -> str:
         if self._current is not None:

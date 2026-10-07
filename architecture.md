@@ -21,6 +21,9 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core/coverage.py` surveys folder coverage on the cleanup worker, marking incomplete branches and all
+their ancestors unsafe to remove as a whole. Unseen bytes remain unknown.
+
 ## 3. Entry points and public interfaces
 
 - `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`
@@ -120,6 +123,13 @@ endings (indexed by their last name) and each file against their name patterns, 
 folder whole without looking inside it, then adds `empty_folders` (only folders known to be empty, the
 outermost); it runs again after a move to the Recycle Bin or a folder rescan. The rules are data
 (`cleanup.RULES`). *Duplicates* is the page below; both list their groups with `grouped_list`.
+
+Before matching, `coverage_of` checks excluded, unread and inaccessible folders and propagates unknown
+coverage to ancestors. Folder nodes start with `NOT_SCANNED`; successful reads clear it, hidden omissions
+and failed entry stats leave the parent incomplete. A matching incomplete folder is never proposed whole;
+empty-folder detection also requires successful reads. The worker returns coverage with its groups;
+the panel displays a coverage banner and disables bulk selection on partial scans. Refresh discards old
+rows immediately and ignores replaced workers; acting on incomplete branches requires their rescan.
 
 **Duplicates.** The Duplicates page (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
 `DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are

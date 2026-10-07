@@ -55,6 +55,8 @@ _WINDOWS_PATH_TOO_LONG = 206  # ERROR_FILENAME_EXCED_RANGE
 # ``Node.error`` of a folder the scan never got to because it was stopped.
 NOT_SCANNED = "not scanned: the scan was stopped first"
 EXCLUDED = "excluded: skipped by the exclusions"
+HIDDEN_OMITTED = "excluded: hidden entries omitted"
+PARTIAL_FOLDER = "incomplete: some entries could not be read"
 
 
 class ScanCancelledError(Exception):
@@ -131,7 +133,7 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
         raise NotADirectoryError(root_path)
     options = options or ScanOptions()
     started = time.monotonic()
-    root = Node(name=root_path, is_dir=True, children=[])
+    root = Node(name=root_path, is_dir=True, children=[], error=NOT_SCANNED)
     if on_root is not None:
         on_root(root)
     crawler = _Crawler(root, root_path, options, cancel)
@@ -285,8 +287,12 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
             continue
         child.parent = folder
         children.append(child)
-        if child.is_dir and not child.is_link and child.error is None:
+        if child.is_dir and not child.is_link and child.error == NOT_SCANNED:
             read.subfolders.append((child, entry.path))
+    if read.errors:
+        folder.error = HIDDEN_OMITTED if all(reason == HIDDEN_OMITTED for _, reason in read.errors) else PARTIAL_FOLDER
+    else:
+        folder.error = None
     return read
 
 
@@ -301,6 +307,7 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
         read.errors.append((entry.path, _describe(error)))
         return None
     if not options.include_hidden and _is_hidden(entry.name, info):
+        read.errors.append((entry.path, HIDDEN_OMITTED))
         return None
     if entry.is_symlink() or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
         return Node(name=entry.name, is_dir=_points_to_folder(entry), modified=info.st_mtime,
@@ -318,7 +325,8 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
 def _folder_node(entry: os.DirEntry[str], modified: float, excluded: Excluded | None) -> Node:
     """A folder to read, or, when the exclusions match it, one that is listed but never read."""
     skipped = excluded is not None and excluded(entry.name, entry.path)
-    return Node(name=entry.name, is_dir=True, modified=modified, error=EXCLUDED if skipped else None, children=[])
+    return Node(name=entry.name, is_dir=True, modified=modified,
+                error=EXCLUDED if skipped else NOT_SCANNED, children=[])
 
 
 def _is_hidden(name: str, info: os.stat_result) -> bool:
