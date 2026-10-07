@@ -61,6 +61,14 @@ empty and changed totals are rejected. The modal view blocks Stop/close/activati
 call executes, joins owned threads and refreshes capacity/bins on completion or partial failure.
 Welcome, Clean up and View share this entry point. No scanned path deletion is added.
 
+`gui.bin_labels.BinLabels` owns cancellable metadata-query threads independently of scans and cleanup
+suggestions. Manual Refresh, completed Trash operations and bin-manager close query at most 256 ready
+mounted roots off the GUI thread, prioritizing the current scan's Qt-resolved drive. Labels begin
+unqueried, distinguish partial/unknown totals from zero, and show known amounts/errors as plain text.
+Welcome caches per-root values; Clean up receives only its scan's drive. Unit/language changes reformat
+cached values without OS queries. Replacement/full scan cancels and invalidates old replies; closing
+joins all owned threads. No bin totals are summed into tree accounting or cleanup eligibility.
+
 `core.trash_size` exposes read-only Windows SHQueryRecycleBinW totals or iterative POSIX logical
 payload inventories with cancellation, omitted metadata and explicit incomplete/error states.
 `core.allocation.allocation_unit` distinguishes known Windows clusters/POSIX fragment granularity
@@ -289,7 +297,7 @@ allocation, logical Trash payload versus ledger receipt/payload allocation, and 
 for duplicate copies, both hard-link removals and sparse files. A real same-device directory bind mount
 must be omitted with incomplete coverage. Live same-device binds created before opening a queued folder
 must prevent traversal; binds created after opening must leave metadata pinned to the original folder
-and prevent successful publication. CI also records five-run medians for guarded versus path-based
+and prevent successful publication. CI records interleaved five-run medians for statx-guarded, fdinfo-guarded and path-based
 folder reads over 1,001 folders/2,000 files, with one/four workers. The child unmounts before the parent removes the owned scratch
 directory and atomically saves JSON evidence. Native NTFS/APFS, compression, cloud placeholders, shared
 extents remain unverified; this harness does not promote the ledger

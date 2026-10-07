@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
@@ -11,9 +11,11 @@ from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.coverage import Coverage
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import grouped_list
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.cleanup_text import explanation
+from je_file_tree.gui.bin_labels import bin_caption
 from je_file_tree.gui.scan_worker import CleanupWorker, wait_for
 
 
@@ -26,6 +28,7 @@ class CleanupPanel(QWidget):
 
     review_requested = Signal(object)
     bins_requested = Signal()
+    bin_refresh_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -46,6 +49,13 @@ class CleanupPanel(QWidget):
         self.select_group = QPushButton()
         self.bins = QPushButton()
         self.bins.clicked.connect(self.bins_requested)
+        self.bin_refresh = QPushButton()
+        self.bin_refresh.clicked.connect(self.bin_refresh_requested)
+        self.bin_totals = QLabel()
+        self.bin_totals.setTextFormat(Qt.TextFormat.PlainText)
+        self.bin_totals.setWordWrap(True)
+        self.bin_totals.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self._bin_root, self._bin_usage = "", None
         self.select_all.clicked.connect(self.select_all_entries)
         self.select_group.clicked.connect(self.select_current_group)
         self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._group_button())
@@ -63,6 +73,10 @@ class CleanupPanel(QWidget):
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
         layout.addWidget(self.coverage_banner)
+        bin_bar = QHBoxLayout()
+        bin_bar.addWidget(self.bin_totals, 1)
+        bin_bar.addWidget(self.bin_refresh)
+        layout.addLayout(bin_bar)
         layout.addWidget(self.view, 1)
         self.retranslate()
 
@@ -80,6 +94,7 @@ class CleanupPanel(QWidget):
         """Suggest from ``root`` (None while a scan runs: the list waits)."""
         self.stop()
         self._root = root
+        self.set_bin_metadata("", None)
         self._coverage = None
         self._partial = partial
         self._groups = []
@@ -102,6 +117,11 @@ class CleanupPanel(QWidget):
         self._running.add(worker)
         self._update_status()
         worker.start()
+
+    def set_bin_metadata(self, root: str, usage: TrashUsage | None) -> None:
+        """Show the scanned drive's independently queried bin metadata, outside cleanup suggestions."""
+        self._bin_root, self._bin_usage = root, usage
+        self.bin_totals.setText(bin_caption(root, usage, self.unit))
 
     def set_policy(self, policy: CleanupPolicy) -> None:
         """Apply settings only to proposals; the scan and its accounting remain unchanged."""
@@ -145,6 +165,7 @@ class CleanupPanel(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.unit = unit
+        self.set_bin_metadata(self._bin_root, self._bin_usage)
         self._rebuild()
 
     def retranslate(self) -> None:
@@ -152,6 +173,10 @@ class CleanupPanel(QWidget):
         self.select_all.setText(tr("cleanup_select_all"))
         self.select_group.setText(tr("cleanup_select_group"))
         self.bins.setText(tr("action_bins"))
+        self.bin_refresh.setText(tr("bin_labels_refresh"))
+        self.bin_refresh.setToolTip(tr("bin_labels_hint"))
+        self.bin_totals.setToolTip(tr("bin_labels_hint"))
+        self.set_bin_metadata(self._bin_root, self._bin_usage)
         self._rebuild()
 
     def _show(self, worker: CleanupWorker, groups: list[CleanupGroup], coverage: Coverage) -> None:

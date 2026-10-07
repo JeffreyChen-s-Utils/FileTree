@@ -22,6 +22,7 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     from je_file_tree.gui import main_window
     from je_file_tree.gui import history
     from je_file_tree.core import trash_size
+    from je_file_tree.gui import bin_labels
 
     emptied: list[str] = []
     if os.name == "nt":
@@ -33,6 +34,8 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     monkeypatch.setattr(main_window, "journal_folder", lambda: tmp_path / "journal")
     monkeypatch.setattr(history, "history_folder", lambda: tmp_path / "history")
     monkeypatch.setattr(main_window, "history_folder", lambda: tmp_path / "history")
+    # Automatic label refresh after fixture moves must never query the host user's bins.
+    monkeypatch.setattr(bin_labels, "trash_usage", lambda _root, **_kwargs: trash_size.TrashUsage(0, 0, True))
     monkeypatch.setattr(elevation, "run_as_admin",
                         lambda program, _parameters, _folder: reached.append(program) and False)
     yield

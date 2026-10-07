@@ -65,6 +65,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-66 | 2026-10-07 | Read-only per-drive bin labels on Welcome and Clean up | #21 #gui #snapshot | [2026-10](2026-10.md) |
+| U-20261007-65 | 2026-10-07 | Native same-process mount-query timing evidence | #75 #measurement #validation | [2026-10](2026-10.md) |
 | U-20261007-64 | 2026-10-07 | Compare mount ID backends within one native probe | #validation #75 #perf | [2026-10](2026-10.md) |
 | U-20261007-63 | 2026-10-07 | Query Linux mount IDs through checked statx | #perf #75 #core #validation | [2026-10](2026-10.md) |
 | U-20261007-62 | 2026-10-07 | Capture optional file dates and query recorded age | #done #27 #core #gui #perf | [2026-10](2026-10.md) |

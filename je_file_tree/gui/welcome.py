@@ -13,7 +13,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from je_file_tree.core.formatting import format_size
+from je_file_tree.core.formatting import AUTO_UNIT, format_size
+from je_file_tree.core.trash_size import TrashUsage
+from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
 
 _MAX_RECENT = 6
@@ -32,10 +34,14 @@ class WelcomePage(QWidget):
     scan_requested = Signal(str)
     overview_requested = Signal()
     bins_requested = Signal()
+    bin_refresh_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._recent: list[str] = []
+        self.unit = AUTO_UNIT
+        self._bin_data: dict[str, TrashUsage] = {}
+        self._bin_labels: dict[str, tuple[str, QLabel]] = {}
         self._title = QLabel()
         self._subtitle = QLabel()
         self._choose = QPushButton()
@@ -44,6 +50,8 @@ class WelcomePage(QWidget):
         self._overview.clicked.connect(self.overview_requested)
         self._bins = QPushButton()
         self._bins.clicked.connect(self.bins_requested)
+        self.bin_refresh = QPushButton()
+        self.bin_refresh.clicked.connect(self.bin_refresh_requested)
         self._drives = QGridLayout()
         self._recent_title = QLabel()
         self._recent_box = QVBoxLayout()
@@ -60,6 +68,20 @@ class WelcomePage(QWidget):
         """Re-read the list of drives and how full they are."""
         self._fill_drives()
 
+    def set_bin_metadata(self, rows: dict[str, TrashUsage]) -> None:
+        """Update visible drive labels with copied query results; missing scopes remain unqueried."""
+        self._bin_data = dict(rows)
+        self._update_bin_labels()
+
+    def set_unit(self, unit: str) -> None:
+        """Format cached per-drive bin amounts in the current size unit."""
+        self.unit = unit
+        self._update_bin_labels()
+
+    def _update_bin_labels(self) -> None:
+        for key, (root, label) in self._bin_labels.items():
+            label.setText(bin_caption(root, self._bin_data.get(key), self.unit))
+
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self._title.setText(tr("welcome_title"))
@@ -70,6 +92,8 @@ class WelcomePage(QWidget):
         self._overview.setText(tr("action_volumes"))
         self._overview.setToolTip(tr("action_volumes_tip"))
         self._bins.setText(tr("action_bins"))
+        self.bin_refresh.setText(tr("bin_labels_refresh"))
+        self.bin_refresh.setToolTip(tr("bin_labels_hint"))
         self._recent_title.setText(tr("welcome_recent"))
         self._tip.setText(tr("welcome_tip"))
         self._fill_drives()
@@ -105,6 +129,7 @@ class WelcomePage(QWidget):
         column.addLayout(self._drives)
         column.addWidget(self._overview)
         column.addWidget(self._bins)
+        column.addWidget(self.bin_refresh)
         column.addSpacing(8)
         column.addWidget(self._recent_title)
         column.addLayout(self._recent_box)
@@ -117,6 +142,7 @@ class WelcomePage(QWidget):
 
     def _fill_drives(self) -> None:
         _clear(self._drives)
+        self._bin_labels = {}
         for row, volume in enumerate(drives()):
             used = volume.bytesTotal() - volume.bytesAvailable()
             name = volume.displayName() or volume.rootPath()
@@ -131,10 +157,17 @@ class WelcomePage(QWidget):
             bar.setMaximumHeight(10)
             free = QLabel(tr("welcome_drive_free", free=format_size(volume.bytesAvailable()),
                              total=format_size(volume.bytesTotal())))
-            self._drives.addWidget(button, row, 0)
-            self._drives.addWidget(bar, row, 1)
-            self._drives.addWidget(free, row, 2)
+            self._drives.addWidget(button, row * 2, 0)
+            self._drives.addWidget(bar, row * 2, 1)
+            self._drives.addWidget(free, row * 2, 2)
+            bin_label = QLabel()
+            bin_label.setWordWrap(True)
+            bin_label.setTextFormat(Qt.TextFormat.PlainText)
+            bin_label.setToolTip(tr("bin_labels_hint"))
+            self._bin_labels[bin_key(root)] = (root, bin_label)
+            self._drives.addWidget(bin_label, row * 2 + 1, 0, 1, 3)
         self._drives.setColumnStretch(1, 1)
+        self._update_bin_labels()
 
     def _fill_recent(self) -> None:
         _clear(self._recent_box)

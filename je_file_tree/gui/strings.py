@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "bin_labels_refresh": "Refresh bin totals",
+    "bin_labels_hint": (
+        "Read-only snapshot for up to 256 ready drives, prioritizing the scanned drive. "
+        "POSIX totals are logical payload bytes; unavailable or partial totals never mean zero. "
+        "Scopes can overlap; do not sum them. Refresh to query; this does not prepare cleanup actions."
+    ),
+    "bin_label_scope_unknown": "Recycle Bin for this scan's drive: scope not queried",
+    "bin_label_unqueried": "{root} Recycle Bin: not queried",
+    "bin_label_total": "{root} Recycle Bin: {size}, {count} items",
+    "bin_label_partial": "{root} Recycle Bin: total unknown; known {size}, {count} items",
     "action_file_times": "File times…",
     "action_file_times_tip": "Filter recorded access and creation dates in this scan",
     "action_capture_file_times": "Capture file access/creation times",
@@ -962,6 +972,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "bin_labels_refresh": "更新回收筒大小",
+    "bin_labels_hint": (
+        "唯讀快照，最多查詢 256 個就緒磁碟，優先查詢掃描所在磁碟。"
+        "POSIX 大小為內容的邏輯位元組；無法取得或不完整的總計不代表零。"
+        "範圍可能重疊，請勿加總。按更新才會查詢，此處不會準備清理操作。"
+    ),
+    "bin_label_scope_unknown": "此掃描所在磁碟的資源回收筒：尚未查詢範圍",
+    "bin_label_unqueried": "{root} 資源回收筒：尚未查詢",
+    "bin_label_total": "{root} 資源回收筒：{size}，{count} 個項目",
+    "bin_label_partial": "{root} 資源回收筒：總計未知；已知 {size}，{count} 個項目",
     "action_file_times": "檔案時間…",
     "action_file_times_tip": "依本次掃描記錄的存取與建立時間篩選",
     "action_capture_file_times": "記錄檔案存取／建立時間",
@@ -1816,6 +1836,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "bin_labels_refresh": "刷新回收站大小",
+    "bin_labels_hint": (
+        "只读快照，最多查询 256 个就绪磁盘，优先查询扫描所在磁盘。"
+        "POSIX 大小为内容的逻辑字节；无法获取或不完整的总计不代表零。"
+        "范围可能重叠，请勿累加。点击刷新才会查询，此处不会准备清理操作。"
+    ),
+    "bin_label_scope_unknown": "此扫描所在磁盘的回收站：尚未查询范围",
+    "bin_label_unqueried": "{root} 回收站：尚未查询",
+    "bin_label_total": "{root} 回收站：{size}，{count} 个项目",
+    "bin_label_partial": "{root} 回收站：总计未知；已知 {size}，{count} 个项目",
     "action_file_times": "文件时间…",
     "action_file_times_tip": "按本次扫描记录的访问与创建时间筛选",
     "action_capture_file_times": "记录文件访问／创建时间",

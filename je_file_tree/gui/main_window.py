@@ -33,6 +33,7 @@ from je_file_tree.core.operation_journal import JournalApproval, OperationJourna
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import DEFAULT_WORKERS, ScanOptions
 from je_file_tree.core.system_files import system_file
+from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
@@ -43,6 +44,7 @@ from je_file_tree.core.history import ScanHistory
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.programs import ProgramsDialog
 from je_file_tree.gui.file_times import FileTimesDialog
+from je_file_tree.gui.bin_labels import BinLabels, bin_key
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
@@ -117,6 +119,9 @@ class MainWindow(QMainWindow):
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
         self.results = ResultsView(settings=self.settings)
+        self._bin_labels = BinLabels(self)
+        self._bin_labels.ready.connect(self._bin_metadata_ready)
+        self._bin_labels.busy_changed.connect(lambda _busy: self._update_bin_buttons())
         self.pages = QStackedWidget()
         for page in (self.welcome, self.results):
             self.pages.addWidget(page)
@@ -160,6 +165,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, tr("scan_failed_title"), tr("not_a_folder", path=path))
             return
         self.stop_scan(wait=True)
+        self._bin_labels.stop()
         self._analyser = None
         self._last_path = path
         self.path_edit.setText(path)
@@ -396,6 +402,7 @@ class MainWindow(QMainWindow):
 
     def _trash_finished(self, result: MoveResult) -> None:
         self._trash_worker = None
+        self.refresh_bin_labels()
         if self._closing:
             return
         self.results.setEnabled(True)
@@ -649,6 +656,7 @@ class MainWindow(QMainWindow):
         self._unit = unit
         self.settings.setValue("unit", unit)
         self.results.set_unit(unit)
+        self.welcome.set_unit(unit)
         self._unit_actions[unit].setChecked(True)
 
     def change_language(self, code: str) -> None:
@@ -700,12 +708,14 @@ class MainWindow(QMainWindow):
         self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
+        self.welcome.set_unit(self._unit)
         self.welcome.set_recent(self._recent())
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self._bin_labels.shutdown()
         if self._trash_worker is not None:
             self._trash_worker.cancel()
             wait_for(self._trash_worker)
@@ -891,6 +901,8 @@ class MainWindow(QMainWindow):
         self.welcome.scan_requested.connect(self.start_scan)
         self.welcome.overview_requested.connect(self.show_volumes)
         self.welcome.bins_requested.connect(self.show_bins)
+        self.welcome.bin_refresh_requested.connect(self.refresh_bin_labels)
+        self.results.cleanup.bin_refresh_requested.connect(self.refresh_bin_labels)
         self.results.cleanup.bins_requested.connect(self.show_bins)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.scan_bar.pause_requested.connect(self.pause_scan)
@@ -932,6 +944,25 @@ class MainWindow(QMainWindow):
                                           and not self._analysers)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
+        self._update_bin_buttons()
+
+    def _update_bin_buttons(self) -> None:
+        idle = (not self._closing and not self._bin_labels.busy
+                and self._worker is None and self._trash_worker is None)
+        self.welcome.bin_refresh.setEnabled(idle)
+        self.results.cleanup.bin_refresh.setEnabled(idle and self.results.outcome is not None)
+
+    def refresh_bin_labels(self) -> None:
+        """Refresh read-only drive totals off the GUI thread, retaining the current scan's scope."""
+        if self._closing or self._worker is not None or self._trash_worker is not None:
+            return
+        outcome = self.results.outcome
+        self._bin_labels.refresh(outcome.result.root.path if outcome is not None else "")
+
+    def _bin_metadata_ready(self, rows: dict[str, TrashUsage], root: str) -> None:
+        self.welcome.set_bin_metadata(rows)
+        if self.results.outcome is not None:
+            self.results.cleanup.set_bin_metadata(root, rows.get(bin_key(root)) if root else None)
 
     # --- dialogs ----------------------------------------------------------
 
@@ -997,6 +1028,7 @@ class MainWindow(QMainWindow):
         finally:
             dialog.shutdown()
             dialog.deleteLater()
+            self.refresh_bin_labels()
 
     def show_volumes(self) -> None:
         """Show mounted volumes and scan an explicitly activated root."""
