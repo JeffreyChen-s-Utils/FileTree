@@ -298,7 +298,10 @@ class MainWindow(QMainWindow):
             lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
             QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
             return
-        worker = TrashWorker(root, chosen, self._protected, approvals, self)
+        if self.results.duplicates.running:
+            self.results.duplicates.stop(wait=True)
+        decisions = self.results.duplicates.decisions_for(chosen)
+        worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions)
         worker.done.connect(self._trash_finished)
         worker.finished.connect(worker.deleteLater)
         self._trash_worker = worker

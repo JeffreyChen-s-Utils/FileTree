@@ -86,3 +86,22 @@ def test_progress_and_stop(copies: Path) -> None:
     stopped.set()
     with pytest.raises(DuplicateSearchCancelledError):
         find_duplicates(root, min_size=1, cancel=stopped)
+
+
+def test_a_file_changing_during_hashing_is_skipped(tmp_path, monkeypatch) -> None:
+    from je_file_tree.core.duplicates import _Reader
+
+    make_tree(tmp_path, {"first": LONG, "second": LONG})
+    root = scan(tmp_path).root
+    original = _Reader._read_into
+
+    def mutate_after_read(self, hasher, stream, limit):
+        amount = original(self, hasher, stream, limit)
+        if os.path.basename(stream.name) == "first":
+            with open(stream.name, "ab") as output:
+                output.write(b"change")
+        return amount
+
+    monkeypatch.setattr(_Reader, "_read_into", mutate_after_read)
+    result = find_duplicates(root, min_size=1)
+    assert result.groups == [] and result.skipped == 1

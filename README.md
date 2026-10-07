@@ -30,7 +30,7 @@ the window.
   caches, build output that can be rebuilt, old installers in Downloads and empty folders — grouped, with
   what deleting each kind does.
 - **Duplicates** (in *Clean up*): files with the same content, grouped, with the space the extra copies take; select the
-  extra copies with one click and move them to the Recycle Bin.
+  extra copies after explicitly choosing the kept copy, and move them to the Recycle Bin.
 - **Compare with an earlier scan**: save a scan as JSON, and later see which folders grew, shrank,
   appeared or disappeared since.
 - **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
@@ -96,8 +96,8 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Chart | *Treemap*: one rectangle per file, sized by space used; each folder has a strip with its name and size, and tiles show their size. The files of a folder too small to see or point at share one grey, hatched tile (*12 more*, with their size); double-click it to show that folder on its own. *Levels* sets how many levels are drawn (2 at first, up to all), *Colours* colours by file type (the legend is under it) or by top-level folder. *Bars*: one bar per entry of the folder shown, largest first, with its size and share of the folder. *Sunburst*: the folder in the centre and each deeper level as a ring, the angles by size, each top-level folder in its own colour; click the centre to go up. *Tree*: expandable folder cards with allocated size and parent share; click the plus sign to open a branch or an “other folders” card to reveal more, choose horizontal or vertical direction, Ctrl+wheel to zoom and use scroll bars to pan. Double-click a folder to focus it and *Up* to go back; all four views follow the same folder, and FileTree remembers the chosen view and tree direction |
 | Largest files | The 1,000 biggest files; type in the filter box to narrow the list, double-click to find a file in the tree |
 | Search | Files and folders whose name contains what you type; a pattern (`*.mp4`) must match the whole name, several are separated by `;` (`*.iso;*.zip`); conditions under the box narrow it down or search on their own: larger or smaller than a size, changed within a week / month / year or not for one, two or five years, a file type, files only or folders only; a search can be saved under a name and chosen again later; the 1,000 largest matches are listed with the count and total size of all |
-| Clean up → Suggestions | Found after every scan: temporary files, browser caches, thumbnail caches, crash dumps, package caches (pip, npm, Gradle…), build output that can be rebuilt (`node_modules`, `__pycache__`, `target` beside `Cargo.toml`…), installers in Downloads untouched for 90 days, and empty folders; one group per kind, the largest first, with a tooltip on what deleting it does. *Select this group* or *Select all* opens the review queue before the confirmations |
-| Clean up → Duplicates | Press *Find duplicates*: files of the same size are compared, first by their first 64 KB, then by their whole content (hard links count once). Files under 1 MB are left out unless you choose a smaller size, because reading takes time. Each group lists its copies oldest first; *Select extra copies* selects all but the oldest, ready for Delete |
+| Clean up → Suggestions | Built-in rules require age and path/project evidence. Tooltips explain risk and rebuilding; uncertain groups require manual review and start unchecked. Lower-risk caches can be bulk-selected for review; package stores are excluded. Options → Clean-up policy controls rules, ages and independent exclusions |
+| Clean up → Duplicates | Find same-size files by head/full hashes (hard links count once); default minimum 1 MB. Choose the kept copy explicitly in each group, review its path and estimates, then select checked extras for Delete. Changed, protected, unverified and hard-linked groups remain untouched |
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |
@@ -190,14 +190,17 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
 
-Duplicate totals and group headers label extra-copy sizes as **logical size**. A background estimate
-shows unique allocated space and a conservative recoverable file-data range after emptying Trash,
-for all extra copies and each listed group. The estimate follows the current list and assumes its
-first (oldest) copy remains; review paths before moving anything. Other hard-link names can keep data
-allocated, compressed/sparse files use their allocated size, and cloud-only data is not downloaded.
-Shared extents and directory metadata remain unknown. Stop cancels estimates; a changed scan discards
-old figures. Moving files to Trash does not itself free disk space. Isolated-volume validation is
-pending; choosing the kept copy and rehashing a group before a move are still planned.
+Duplicate totals label extra-copy sizes as **logical size**. Select a file row and press **Keep selected
+copy** for each group; its full kept path is marked. Names, dates and parent folders remain visible.
+Estimates use those choices, show unique allocation and conservative recoverable file data after
+emptying Trash, and leave undecided groups unknown. **Select extra copies** includes only groups that
+pass checks for membership, protection, changes and hard-link aliases (including names outside the
+scan). After confirmation, every member is fully rehashed against the search digest and rechecked
+before that group's moves; a failed check leaves the group untouched and requests a rescan. Stop
+cancels remaining work. Platform move failures can still produce partial batches; Trash is not an
+atomic group operation. Compressed/sparse files use allocation; known cloud placeholders are not
+opened by hashing. Shared extents and directory metadata remain unknown, and moving to Trash does
+not itself free space. Isolated-volume validation remains pending.
 
 ### Capacity details
 

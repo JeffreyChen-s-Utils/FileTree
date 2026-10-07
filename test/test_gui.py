@@ -711,8 +711,14 @@ def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
     assert [len(group.files) for group in panel.groups] == [3, 2]
     assert panel.status.text() == "2 groups of duplicates: 10.1 KB logical size in extra copies."
     assert panel.model.index(0, 0).data().startswith("3 copies × 4.9 KB: 9.8 KB logical extra-copy size.")
-    assert "recoverable file data after emptying Trash 0 B" in panel.estimate.text()
+    assert "undecided groups are unknown" in panel.estimate.text()
     assert panel.model.index(0, 0, panel.model.index(0, 0)).data() == "photo.jpg", "oldest first"
+    assert not panel.select_extra.isEnabled()
+    for row in range(2):
+        panel.view.setCurrentIndex(panel.model.index(0, 0, panel.model.index(row, 0)))
+        panel.choose_kept_copy()
+        _wait(qapp, lambda: not panel.running)
+    assert panel.model.index(0, 0, panel.model.index(0, 0)).data() == "Kept: photo.jpg"
     panel.select_extra_copies()
     picked = _selected_in(panel.view)
     assert sorted(node.name for node in picked) == ["notes.txt", "photo (1).jpg", "photo (2).jpg"]

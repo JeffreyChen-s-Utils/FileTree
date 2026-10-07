@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "duplicates_keep_selected": "Keep selected copy",
+    "duplicates_kept_name": "Kept: {name}",
+    "duplicates_kept_path": "Kept copy: {path}.",
+    "duplicates_choose_keeper": "Choose a kept copy in this group before selecting extras.",
+    "duplicates_group_blocked": "Group left untouched; rescan required: {reason}",
+    "trash_skip_duplicate_choose": "choose the kept copy, then review the group again",
+    "trash_skip_duplicate_keep": "the kept copy was selected; the group was left untouched; rescan",
+    "trash_skip_duplicate_unverified": "no verified hash for this group; rescan and search again",
+    "trash_skip_duplicate_hard_links": "a copy has hard-link aliases; the group was left untouched; rescan",
+    "trash_skip_duplicate_content": "group contents changed or could not be rehashed; rescan and search again",
     "menu_options": "Options",
     "action_cleanup_policy": "Clean-up policy…",
     "action_cleanup_policy_tip": "Enable rules, change minimum ages and exclude paths from clean-up suggestions",
@@ -63,12 +73,10 @@ EN: dict[str, str] = {
         'able file data…'),
     "duplicates_estimate_unavailable": ('Allocation estimate unavailable. Run the'
         ' search again before selecting extras.'),
-    "duplicates_estimate_assumption": ('Estimates assume the first listed (oldes'
-        't) copy remains; review paths before mov'
-        'ing. Other hard-link names may keep data'
-        ' allocated. Shared extents and directory'
-        ' metadata are unknown; moving to Trash d'
-        'oes not free space.'),
+    "duplicates_estimate_assumption": ("Estimates use your explicit kept-copy choices; undecided groups are unknown. "
+                                      "Each group is checked and fully rehashed before moving. Hard-link aliases "
+                                      "block a decision. Shared extents and directory metadata remain unknown; "
+                                      "moving to Trash does not free space."),
     'capacity_details': 'Capacity details',
     'capacity_summary': 'OS used {used}; free {free}; unique allocated estimate {unique}. {status}',
     'capacity_estimated': 'Whole-volume estimate; unaccounted space is shown in Details.',
@@ -312,7 +320,8 @@ EN: dict[str, str] = {
     "duplicates_find": "Find duplicates",
     "duplicates_stop": "Stop",
     "duplicates_select_extra": "Select extra copies",
-    "duplicates_select_extra_tip": "Select every copy but the oldest in each group; then press Delete",
+    "duplicates_select_extra_tip": ("Select extras in groups with a chosen keeper and successful checks; "
+                                    "then press Delete"),
     "duplicates_hint": ("Finds files with the same content anywhere in the scan. Only files of the same size are "
                         "read, but reading takes time, so small files are left out unless you choose a smaller size."),
     "duplicates_starting": "Looking for files of the same size…",
@@ -545,6 +554,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "duplicates_keep_selected": "保留選取的副本",
+    "duplicates_kept_name": "保留：{name}",
+    "duplicates_kept_path": "保留副本：{path}。",
+    "duplicates_choose_keeper": "選取多餘副本前，請先選擇這組要保留的副本。",
+    "duplicates_group_blocked": "此組保持原樣，須重新掃描：{reason}",
+    "trash_skip_duplicate_choose": "請選擇保留副本，再次審查此組",
+    "trash_skip_duplicate_keep": "選到了保留副本，此組保持原樣；請重新掃描",
+    "trash_skip_duplicate_unverified": "此組沒有已驗證的雜湊；請重新掃描並搜尋",
+    "trash_skip_duplicate_hard_links": "副本還有硬連結名稱，此組保持原樣；請重新掃描",
+    "trash_skip_duplicate_content": "此組內容變更或無法重新雜湊；請重新掃描並搜尋",
     "menu_options": "選項",
     "action_cleanup_policy": "清理政策…",
     "action_cleanup_policy_tip": "啟用規則、變更最低檔齡，或排除清理建議的路徑",
@@ -588,9 +607,9 @@ ZH_TW: dict[str, str] = {
                            "{recoverable}。"),
     "duplicates_estimating": ('正在估計不重複配置空間與可回收的檔案資料…'),
     "duplicates_estimate_unavailable": ('配置估計無法取得。選取多餘副本前請重新搜尋。'),
-    "duplicates_estimate_assumption": ('估計假設保留清單中的第一份（最舊）副本，'
-        '移動前請審查路徑。其他硬連結名稱可能仍佔用配置空間。'
-        '共用區塊與資料夾中繼資料未知，移到資源回收筒不會釋放空間。'),
+    "duplicates_estimate_assumption": ("估計依您選擇的保留副本，未決定的群組保持未知。"
+        "移動前會核對並完整重新雜湊整組檔案。有硬連結名稱時不執行決策。"
+        "共用區塊與資料夾中繼資料仍未知，移到資源回收筒不會釋放空間。"),
     'capacity_details': '容量明細',
     'capacity_summary': '系統已用 {used}；可用 {free}；不重複配置估計 {unique}。{status}',
     'capacity_estimated': '整個磁碟的估計；未能歸帳的空間請見明細。',
@@ -815,7 +834,7 @@ ZH_TW: dict[str, str] = {
     "duplicates_find": "尋找重複檔案",
     "duplicates_stop": "停止",
     "duplicates_select_extra": "選取多餘的副本",
-    "duplicates_select_extra_tip": "選取每一組中最舊那份以外的副本，再按 Delete",
+    "duplicates_select_extra_tip": "選取已決定保留副本且核對成功群組的多餘副本，再按 Delete",
     "duplicates_hint": ("在整個掃描範圍內找內容相同的檔案。只會讀取大小相同的檔案，"
                         "但讀取需要時間，所以除非選了較小的大小，否則會略過小檔案。"),
     "duplicates_starting": "正在找大小相同的檔案…",
@@ -1027,6 +1046,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "duplicates_keep_selected": "保留选中的副本",
+    "duplicates_kept_name": "保留：{name}",
+    "duplicates_kept_path": "保留副本：{path}。",
+    "duplicates_choose_keeper": "选中多余副本前，请先选择这组要保留的副本。",
+    "duplicates_group_blocked": "此组保持原样，须重新扫描：{reason}",
+    "trash_skip_duplicate_choose": "请选择保留副本，再次审查此组",
+    "trash_skip_duplicate_keep": "选到了保留副本，此组保持原样；请重新扫描",
+    "trash_skip_duplicate_unverified": "此组没有已验证的哈希；请重新扫描并搜索",
+    "trash_skip_duplicate_hard_links": "副本还有硬链接名称，此组保持原样；请重新扫描",
+    "trash_skip_duplicate_content": "此组内容更改或无法重新哈希；请重新扫描并搜索",
     "menu_options": "选项",
     "action_cleanup_policy": "清理策略…",
     "action_cleanup_policy_tip": "启用规则、更改最低文件年龄，或排除清理建议的路径",
@@ -1071,9 +1100,9 @@ ZH_CN: dict[str, str] = {
                            "{recoverable}。"),
     "duplicates_estimating": ('正在估计不重复分配空间与可回收的文件数据…'),
     "duplicates_estimate_unavailable": ('无法获取分配估计。选择多余副本前请重新搜索。'),
-    "duplicates_estimate_assumption": ('估计假设保留列表中的第一份（最旧）副本，'
-        '移动前请审查路径。其他硬链接名称可能仍占用分配空间。'
-        '共享区块与文件夹元数据未知，移到回收站不会释放空间。'),
+    "duplicates_estimate_assumption": ("估计按您选择的保留副本，未决定的组保持未知。"
+        "移动前会核对并完整重新哈希整组文件。有硬链接名称时不执行决策。"
+        "共享区块与文件夹元数据仍未知，移到回收站不会释放空间。"),
     'capacity_details': '容量明细',
     'capacity_summary': '系统已用 {used}；可用 {free}；不重复分配估计 {unique}。{status}',
     'capacity_estimated': '整个磁盘的估计；无法归账的空间请见明细。',
@@ -1297,7 +1326,7 @@ ZH_CN: dict[str, str] = {
     "duplicates_find": "查找重复文件",
     "duplicates_stop": "停止",
     "duplicates_select_extra": "选中多余的副本",
-    "duplicates_select_extra_tip": "选中每一组中最旧那份以外的副本，再按 Delete",
+    "duplicates_select_extra_tip": "选中已决定保留副本且核对成功组的多余副本，再按 Delete",
     "duplicates_hint": ("在整个扫描范围内查找内容相同的文件。只会读取大小相同的文件，"
                         "但读取需要时间，所以除非选了较小的大小，否则会跳过小文件。"),
     "duplicates_starting": "正在查找大小相同的文件…",

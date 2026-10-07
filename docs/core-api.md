@@ -104,11 +104,15 @@ transactional filesystem snapshot.
 `.logical`, `.allocated`, `.recoverable_min`, `.recoverable_max`, `.free_now`, `.uncertain`. Overlapping
 paths collapse; hard-linked allocation counts once and other surviving names can make recoverable data
 zero. Recovery has no positive guaranteed lower bound; an unknown maximum is `None`, not zero.
-`duplicates.estimate_duplicate_savings` applies this estimate to the current oldest-first extras.
+`duplicates.estimate_duplicate_savings` applies this estimate to each group's explicit `kept` Node;
+use `dataclasses.replace(group, kept=chosen_member)` to make a choice. Undecided groups have an unknown
+recovery maximum, not an implicit oldest keeper. `DuplicateGroup.digest` and `.proofs` record the
+verified search snapshot; `duplicate_decisions.check_group(..., rehash=True)` validates every member
+and rehashes the whole group without changing files. Failed checks require rescanning/searching.
 `capacity.capacity_ledger(root, *, partial=False)` reports OS capacity, coverage and an estimated
 remainder only for compatible complete whole-volume scans. Both estimates still need isolated-volume
-validation and neither authorizes removing files. Duplicate hashing reads file contents and can cause
-a cloud provider to retrieve online data.
+validation and neither authorizes removing files. Duplicate hashing checks snapshots around each read
+and skips known offline/recall placeholders; unrecognized provider states may still trigger retrieval.
 
 Saved JSON (`file-tree/1`) stores folders and aggregate logical sizes, not a restorable file inventory or
 removal authorization. `compare` matches relative folder paths, normalizing case on Windows; it compares

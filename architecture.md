@@ -43,12 +43,17 @@ range after emptying Trash, and current free space. A hard-linked file whose oth
 zero recoverable data. Unknown identities/coverage make recovery unknown; shared extents and directory
 metadata remain outside the estimate. Windows cluster-rounded allocation is explicitly an estimate.
 
-`duplicates.estimate_duplicate_savings` applies the same allocation/recovery rules to the extra copies
-of every group, matching the current oldest-first list, with separate per-group estimates for the
-listed groups. `DuplicateSavingsWorker` keeps this work off the UI thread and supports Stop; replaced
-or pruned groups cancel and discard stale estimates. Every active search/estimate thread is joined on
-close. The displayed extra-copy sum is explicitly logical size. Kept-copy choice and pre-move group
-rehashing remain outstanding; the accounting assumption is visible and does not approve a move.
+`duplicates.estimate_duplicate_savings` uses each group's explicit `kept` copy; undecided groups have
+unknown allocation/recovery. `DuplicateGroup` retains the verified full digest and open-file metadata
+proofs only for its members. Hashing checks no-follow path snapshots and handle identity/metadata
+before/after reading, skipping known cloud placeholders. Windows handle change time is compared to
+itself because path/handle ctime can differ. `DuplicateSavingsWorker` checks every member's coverage,
+membership, protection, hard-link aliases and original proof before extras can be selected.
+`DuplicatesPanel` requires a user choice, marks the kept path, recalculates estimates and discards stale
+workers. After approval, `TrashWorker` fully rehashes and rechecks each group immediately before its
+batch; a failed check skips all selected members and queues a rescan. Platform move failures can still
+produce a partial batch; path-based Trash calls are not an atomic group transaction. All workers join
+on close. The displayed extra-copy sum is explicitly logical; shared extents remain unknown.
 
 `core/capacity.py` builds a worker-computed estimated capacity ledger: OS total/used/available free,
 unique allocation on the root device, hard-link overcount, included Trash allocation seen, foreign

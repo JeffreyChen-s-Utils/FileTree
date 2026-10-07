@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
+from PySide6.QtCore import QItemSelectionModel
+
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import (
     QComboBox,
@@ -24,6 +28,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui import grouped_list
 from je_file_tree.gui.scan_worker import DuplicatesWorker, wait_for
 from je_file_tree.gui.duplicate_savings_worker import DuplicateSavingsWorker
+from je_file_tree.gui.tree_model import NODE_ROLE
 
 MIN_SIZES = (1, 100 * 1024, DEFAULT_MIN_SIZE, 10 * 1024 * 1024, 100 * 1024 * 1024)
 LISTED_GROUPS = 1000
@@ -45,6 +50,7 @@ class DuplicatesPanel(QWidget):
         self.start_button = QPushButton()
         self.stop_button = QPushButton()
         self.select_extra = QPushButton()
+        self.keep_selected = QPushButton()
         self.status = QLabel()
         self.status.setWordWrap(True)
         self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
@@ -67,6 +73,7 @@ class DuplicatesPanel(QWidget):
         self._progress: DuplicateProgress | None = None
         self._stopped = False
         self._assemble()
+        self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._keeper_button())
         self.retranslate()
         self.set_root(None)
 
@@ -132,7 +139,8 @@ class DuplicatesPanel(QWidget):
         for group in self._groups:
             files = [node for node in group.files if node.is_in(root)]
             if len(files) > 1:
-                kept.append(DuplicateGroup(group.size, files))
+                kept.append(replace(group, files=files, kept=group.kept if group.kept in files else None,
+                                    proofs={node: group.proofs[node] for node in files if node in group.proofs}))
         self._groups = kept
         self._savings = None
         self._rebuild()
@@ -140,10 +148,37 @@ class DuplicatesPanel(QWidget):
         self._update()
 
     def select_extra_copies(self) -> None:
-        """Select every file but the oldest of each group, ready for Delete."""
+        """Select extras only in explicitly chosen groups that passed every metadata/protection check."""
         if self.running or self._savings is None:
             return
-        grouped_list.select_entries(self.model, self.view, skip_first=True)
+        self.view.clearSelection()
+        flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+        for row, group in enumerate(self._groups[:LISTED_GROUPS]):
+            if row >= len(self._savings.issues) or self._savings.issues[row] is not None:
+                continue
+            parent = self.model.index(row, 0)
+            for index in range(self.model.rowCount(parent)):
+                item = self.model.index(index, 0, parent)
+                if item.data(NODE_ROLE) is not group.kept:
+                    self.view.selectionModel().select(item, flags)
+        self.view.setFocus()
+
+    def choose_kept_copy(self) -> None:
+        """Make the current file the explicit keeper and recompute estimates/checks on a worker."""
+        index = self.view.currentIndex()
+        node = index.data(NODE_ROLE)
+        row = index.parent().row()
+        if self.running or node is None or not 0 <= row < len(self._groups):
+            return
+        self._groups[row] = replace(self._groups[row], kept=node)
+        self._savings = None
+        self._rebuild()
+        self._start_estimate()
+
+    def decisions_for(self, nodes: list[Node]) -> list[DuplicateGroup]:
+        """All current duplicate groups touched by an approved file selection, including keeper mistakes."""
+        chosen = set(nodes)
+        return [group for group in self._groups if any(node in chosen for node in group.files)]
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
@@ -167,6 +202,7 @@ class DuplicatesPanel(QWidget):
         self.stop_button.setText(tr("duplicates_stop"))
         self.select_extra.setText(tr("duplicates_select_extra"))
         self.select_extra.setToolTip(tr("duplicates_select_extra_tip"))
+        self.keep_selected.setText(tr("duplicates_keep_selected"))
         self._rebuild()
         self._update()
 
@@ -176,15 +212,20 @@ class DuplicatesPanel(QWidget):
         self.start_button.clicked.connect(self.start)
         self.stop_button.clicked.connect(lambda: self.stop())  # noqa: PLW0108 - clicked(bool) must not reach stop()
         self.select_extra.clicked.connect(self.select_extra_copies)
+        self.keep_selected.clicked.connect(self.choose_kept_copy)
         bar = QHBoxLayout()
         bar.setContentsMargins(0, 0, 0, 0)
         for widget in (self._size_label, self.min_size, self.start_button, self.stop_button, self._busy):
             bar.addWidget(widget)
         bar.addStretch(1)
-        bar.addWidget(self.select_extra)
+        decisions = QHBoxLayout()
+        decisions.addStretch(1)
+        decisions.addWidget(self.keep_selected)
+        decisions.addWidget(self.select_extra)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
+        layout.addLayout(decisions)
         layout.addWidget(self.status)
         layout.addWidget(self.estimate)
         layout.addWidget(self.view, 1)
@@ -195,6 +236,15 @@ class DuplicatesPanel(QWidget):
                    sorted(group.files, key=lambda file: (file.modified, file.path)))
                   for position, group in enumerate(self._groups[:LISTED_GROUPS])]
         grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups])
+        for row, (_title, files) in enumerate(groups):
+            kept = self._groups[row].kept
+            for index, node in enumerate(files):
+                if node is kept:
+                    item = self.model.item(row).child(index, 0)
+                    item.setText(tr("duplicates_kept_name", name=node.name))
+                    font = item.font()
+                    font.setBold(True)
+                    item.setFont(font)
 
     # --- a search ---------------------------------------------------------
 
@@ -221,10 +271,15 @@ class DuplicatesPanel(QWidget):
         self.start_button.setEnabled(self._root is not None and not self.running)
         self.stop_button.setEnabled(self.running)
         self._busy.setVisible(self.running)
-        self.select_extra.setEnabled(bool(self._groups) and self._savings is not None and not self.running)
+        eligible = self._savings is not None and any(issue is None for issue in self._savings.issues)
+        self.select_extra.setEnabled(bool(self._groups) and eligible and not self.running)
+        self._keeper_button()
         self.status.setText(self._status_text())
         self.estimate.setVisible(bool(self._groups) and not running)
         self.estimate.setText(self._estimate_text())
+
+    def _keeper_button(self) -> None:
+        self.keep_selected.setEnabled(not self.running and self.view.currentIndex().data(NODE_ROLE) is not None)
 
     def _cancel_estimate(self) -> None:
         if self._estimator is not None:
@@ -268,6 +323,12 @@ class DuplicatesPanel(QWidget):
                    extra=format_size(group.extra, self.unit))
         if self._savings is not None and position < len(self._savings.groups):
             title += " " + self._savings_text(self._savings.groups[position])
+        title += " " + (tr("duplicates_kept_path", path=group.kept.path) if group.kept is not None
+                         else tr("duplicates_choose_keeper"))
+        if self._savings is not None and position < len(self._savings.issues):
+            issue = self._savings.issues[position]
+            if issue is not None and issue != "duplicate_choose":
+                title += " " + tr("duplicates_group_blocked", reason=tr(f"trash_skip_{issue}"))
         return title
 
     def _status_text(self) -> str:

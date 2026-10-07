@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import threading
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -22,6 +23,7 @@ def test_hard_link_name_outside_scan_keeps_extra_copy_allocation(tmp_path: Path)
     os.link(folder / "extra", tmp_path / "outside")
     root = scan(folder).root
     groups = find_duplicates(root, min_size=1).groups
+    groups = [replace(group, kept=next(node for node in group.files if node.name == "keep")) for group in groups]
     value = estimate_duplicate_savings(groups, root)
     assert value.total.logical == 16384 and value.total.allocated > 0
     assert value.total.recoverable_max == 0
@@ -38,7 +40,7 @@ def test_special_files_distinguish_logical_allocated_and_recoverable(tmp_path: P
                                    st_mtime_ns=1, st_ctime_ns=1, st_nlink=1, st_file_attributes=attributes)
             nodes.append(Node(str(index), False, size=info.st_size, allocated=allocated, parent=root,
                               snapshot=pack_snapshot(info)))
-        groups.append(DuplicateGroup(1 << 20, nodes))
+        groups.append(DuplicateGroup(1 << 20, nodes, kept=nodes[0]))
     value = estimate_duplicate_savings(groups, root, limit=2)
     assert value.total.logical == 3 << 20 and value.total.allocated == 12288
     assert value.total.recoverable_min == 0 and value.total.recoverable_max == 12288
