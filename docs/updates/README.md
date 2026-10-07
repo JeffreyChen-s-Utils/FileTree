@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-74 | 2026-10-07 | Compression CI and native owned-file evidence across five Windows runtimes | #88 #done #windows #ci | [2026-10](2026-10.md) |
 | U-20261007-73 | 2026-10-07 | Optional recorded hard-link accounting without changing named file sizes | #32 #snapshot #api #measurement | [2026-10](2026-10.md) |
 | U-20261007-72 | 2026-10-07 | Canonical owned scratch paths for Windows short-name compression probes | #88 #incident #windows | [2026-10](2026-10.md) |
 | U-20261007-71 | 2026-10-07 | Remote push rejection retained with explicit CI follow-up | #88 #incident #distribution | [2026-10](2026-10.md) |
