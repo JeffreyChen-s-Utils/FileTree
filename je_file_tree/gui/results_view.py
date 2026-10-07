@@ -52,7 +52,6 @@ from je_file_tree.core.analysis import (
     extension_of,
     extension_stats,
     files_beneath,
-    largest_matching,
     subtract_ages,
     subtract_stats,
 )
@@ -60,6 +59,7 @@ from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.capacity import CapacityLedger
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanProgress, ScanResult
+from je_file_tree.core.type_locations import TypeMatches
 from je_file_tree.gui import elevation
 from je_file_tree.gui.changes_panel import ChangesPanel
 from je_file_tree.gui.capacity_panel import CapacityPanel
@@ -74,7 +74,7 @@ from je_file_tree.gui.details_panel import DetailsPanel
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
-from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome, wait_for
+from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.search_panel import SearchPanel
 from je_file_tree.gui.tables import (
     SORT_ROLE,
@@ -98,6 +98,7 @@ from je_file_tree.gui.tree_model import (
 from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
 from je_file_tree.gui.tree_diagram import ORIENTATIONS
 from je_file_tree.gui.tree_columns import TreeColumns
+from je_file_tree.gui.type_locations import TypeLocationsModel, TypeLocationsWorker
 
 _LARGEST_SIZE_COLUMN = 1
 # Name starts at 250 px; extra columns use horizontal scrolling.
@@ -207,6 +208,7 @@ class ResultsView(QWidget):
         self._outcome = None
         self.breadcrumbs.set_root(None)
         self.details.set_node(None)
+        self._stop_focused()
         self.charts.set_age_reference(time.time())
         self.capacity.set_ledger(None)
         self.search.set_root(None)
@@ -292,6 +294,7 @@ class ResultsView(QWidget):
         The tree, the treemap, the problems and the summary change at once; the
         lists that need the whole tree follow with ``apply_summary``.
         """
+        self._stop_focused()
         self.capacity.set_ledger(None)
         self.tree_model.set_drive_total(None)
         new = fresh.root
@@ -352,6 +355,8 @@ class ResultsView(QWidget):
         self.charts.set_unit(unit)
         self.details.unit = unit
         self.details.retranslate()
+        self.type_locations_model.unit = unit
+        self.type_locations_model.refresh()
         self.changes.retranslate()
         self.breadcrumbs.retranslate()
 
@@ -403,7 +408,8 @@ class ResultsView(QWidget):
 
     def current_list(self) -> QAbstractItemView | None:
         """The active result list, including filtered/sorted and grouped model order."""
-        lists = {LARGEST_TAB: self.largest_table, SEARCH_TAB: self.search_table, TYPES_TAB: self.types_table,
+        lists = {LARGEST_TAB: self.type_locations_table if self.type_locations_table.hasFocus() else self.largest_table,
+                 SEARCH_TAB: self.search_table, TYPES_TAB: self.types_table,
                  AGE_TAB: self.age_table, CHANGES_TAB: self.changes_table, PROBLEMS_TAB: self.problems_table,
                  CLEANUP_TAB: self.cleanup.view if self.cleanup_pages.currentIndex() == SUGGESTIONS_PAGE
                  else self.duplicates.view}
@@ -427,6 +433,7 @@ class ResultsView(QWidget):
         outcome = self._outcome
         if outcome is None:
             return
+        self._stop_focused()
         self.capacity.set_ledger(None)
         self.tree_model.set_drive_total(None)
         view_root = self.charts.view_root
@@ -485,6 +492,9 @@ class ResultsView(QWidget):
                     [(tr(f"tree_orientation_{mode}"), mode) for mode in ORIENTATIONS],
                     self.charts.tree.orientation)
         self._largest_filter.setPlaceholderText(tr("largest_filter"))
+        self._type_locations_label.setText(tr('type_locations_title'))
+        self._type_locations_label.setToolTip(tr('type_locations_tip'))
+        self.type_locations_model.refresh()
         self.search.retranslate()
         self.duplicates.retranslate()
         self.cleanup.retranslate()
@@ -503,7 +513,8 @@ class ResultsView(QWidget):
         self._scope_button = QToolButton()
         self._scope_timer = QTimer(self)
         self._scope_worker: AnalyseWorker | None = None
-        self._list_workers: set[AnalyseWorker] = set()
+        self._list_workers: set[AnalyseWorker | TypeLocationsWorker] = set()
+        self._focus_worker: TypeLocationsWorker | None = None
 
     def _build_chart_controls(self) -> None:
         self.charts = ChartStack()
@@ -634,7 +645,7 @@ class ResultsView(QWidget):
         self._assemble_chart_tab()
         self._show_all.clicked.connect(self.show_all_largest)
         self._focus_bar.hide()
-        self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self.largest_table), "")
+        self.tabs.addTab(_column(self._focus_bar, self._largest_filter, self._build_type_locations()), "")
         self.tabs.addTab(self.search, "")
         self.cleanup_pages.addTab(self.cleanup, "")
         self.cleanup_pages.addTab(self.duplicates, "")
@@ -654,7 +665,8 @@ class ResultsView(QWidget):
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
         for view in (self.tree, self.largest_table, self.search_table, self.types_table, self.age_table,
-                     self.changes_table, self.problems_table, self.cleanup.view, self.duplicates.view):
+                     self.changes_table, self.problems_table, self.cleanup.view, self.duplicates.view,
+                     self.type_locations_table):
             install_copy(view)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -680,6 +692,24 @@ class ResultsView(QWidget):
         return column
 
     # --- reactions --------------------------------------------------------
+
+    def _build_type_locations(self) -> QWidget:
+        self.type_locations_model = TypeLocationsModel(self)
+        self.type_locations_table, _ = self._build_table(self.type_locations_model, 1)
+        header = self.type_locations_table.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for column, width in ((1, 95), (2, 60), (3, 80)):
+            self.type_locations_table.setColumnWidth(column, width)
+        self.type_locations_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self._type_locations_label = QLabel()
+        self._type_locations_pane = _column(self._type_locations_label, self.type_locations_table)
+        self._type_locations_pane.hide()
+        splitter = QSplitter(Qt.Orientation.Vertical)
+        splitter.addWidget(self.largest_table)
+        splitter.addWidget(self._type_locations_pane)
+        splitter.setSizes([300, 150])
+        return splitter
 
     def _tree_current_changed(self, current: QModelIndex, _previous: QModelIndex) -> None:
         node = self.tree_model.node(current)
@@ -758,12 +788,14 @@ class ResultsView(QWidget):
 
     def wait_for_lists(self) -> None:
         """Wait for list computations still running (before the window closes)."""
+        self._stop_focused()
         for worker in self._list_workers.copy():
             wait_for(worker)
 
     def _show_lists(self, largest: Sequence[Node], extensions: Sequence[ExtensionStat],
                     ages: Sequence[AgeStat]) -> None:
         """Fill the three lists (largest files, types, ages), dropping a type or age focus."""
+        self._stop_focused()
         self._largest_all = list(largest)
         self._focus = None
         self._focus_bar.hide()
@@ -838,6 +870,7 @@ class ResultsView(QWidget):
 
     def show_all_largest(self) -> None:
         """Go back to the largest files of all types and ages (in the scope the lists cover)."""
+        self._stop_focused()
         self._focus = None
         self._focus_bar.hide()
         self.largest_model.set_rows(self._largest_all)
@@ -846,12 +879,39 @@ class ResultsView(QWidget):
         root = self._lists_root()
         if root is None:
             return
+        self._stop_focused()
         self._focus = focus
-        self.largest_model.set_rows(largest_matching(root, keep, LARGEST_FILES_LIMIT))
+        self.largest_model.set_rows([])
+        self._type_locations_pane.setVisible(focus[0] == 'type')
+        worker = TypeLocationsWorker(root, keep, self)
+        worker.done.connect(lambda matches: self._focused_ready(worker, matches))
+        worker.finished.connect(lambda: self._list_workers.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._focus_worker = worker
+        self._list_workers.add(worker)
+        worker.start()
         self._largest_filter.clear()
         self._focus_bar.show()
         self._update_texts()
         self.tabs.setCurrentIndex(LARGEST_TAB)
+
+    def _stop_focused(self) -> None:
+        if self._focus_worker is not None:
+            self._focus_worker.stop()
+        self._focus_worker = None
+        self.type_locations_model.set_rows([])
+        self._type_locations_pane.hide()
+
+    def _focused_ready(self, worker: TypeLocationsWorker, matches: TypeMatches) -> None:
+        if worker is not self._focus_worker or self._outcome is None:
+            return
+        self._focus_worker = None
+        root = self._outcome.result.root
+        if not worker.root.is_in(root):
+            return
+        self.largest_model.set_rows([node for node in matches.files if node.is_in(root)])
+        self.type_locations_model.total = matches.total
+        self.type_locations_model.set_rows([row for row in matches.folders if row.folder.is_in(root)])
 
     def _focus_text(self) -> str:
         kind, value = self._focus or ("", "")

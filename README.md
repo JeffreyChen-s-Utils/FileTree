@@ -25,6 +25,8 @@ Expand **Details** below the folder tree to see the selected entry’s logical s
 
 **File → Export → Current list (CSV)** saves Search, Duplicates, Changes, File types, Age, Largest files, Clean-up suggestions or Problems, with displayed labels, units, filters and sorting. Grouped lists include headings and their entries, even if collapsed. **Ctrl+C** while a list or the folder tree has focus copies its selected rows with column headings as quoted tab-separated text; text fields keep normal copying. Formula-like text is escaped for spreadsheets. CSV capture yields between short GUI batches and streams through a bounded queue to an atomic export worker; changing the list cancels the export and preserves any existing target.
 
+Double-click an extension in **File types** to see its largest files and up to 1,000 **Containing folders**, with matching bytes, file counts and shares of all matching bytes. Folder totals count only files directly inside each folder, so nested folders do not overlap. Both lists are computed together on a cancellable worker and respect **Selected folder only**. Changing the extension, scan or scope discards old replies; **Show all** restores the ordinary list. Age drill-down also runs off the UI thread.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

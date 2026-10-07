@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.type_locations` computes largest matching files and direct containing-folder totals in one
+cancellable iterative pass. Both heaps are bounded at 1,000; the denominator includes all matching
+bytes, while nested folders do not overlap. TypeLocationsWorker replaces the GUI-thread type/age
+drill-down walk. ResultsView rejects obsolete replies on scope/scan/branch changes and exposes the
+folder table alongside matching largest files, with selection, context actions and clipboard support.
+
 `list_transfer` snapshots Qt models only on the GUI thread in ≤128-row / 4 ms turns, observing model
 changes to invalidate mixed captures. Current-list CSV sends text batches over an eight-batch bounded
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.

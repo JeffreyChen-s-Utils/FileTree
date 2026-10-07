@@ -505,7 +505,7 @@ def test_file_replaced_during_confirmation_is_skipped_and_parent_rescanned(
     file.write_bytes(b"old")
     _scanned(window, qapp, tmp_path)
     root = window.results.tree_model.root
-    node = root.children[0]
+    node = _child(root, "chosen")
     warnings, moved, rescanned = [], [], []
 
     def replace_during_question(*_args):
@@ -923,6 +923,7 @@ def test_the_lists_can_cover_the_selected_folder_only(window: MainWindow, qapp: 
     _wait(qapp, lambda: not results._scope_timer.isActive() and results._scope_worker is None)
     assert largest() == ["main.py", "Makefile"]
     results.show_largest_of_type(".jpg")
+    _wait(qapp, lambda: results._focus_worker is None)
     assert largest() == [], "a type's largest files within the folder shown"
     results.show_all_largest()
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
@@ -1178,13 +1179,16 @@ def test_double_clicking_a_type_or_an_age_lists_its_largest_files(window: MainWi
     results = window.results
     assert results.age_model.rowCount() == 5
     results.show_largest_of_type(".jpg")
+    _wait(qapp, lambda: results._focus_worker is None)
     assert [node.name for node in results.largest_model.rows()] == ["a.jpg"]
     assert results.tabs.currentIndex() == 1
     assert "Showing only: .jpg" in results._focus_label.text()
     results.show_largest_of_type("")
+    _wait(qapp, lambda: results._focus_worker is None)
     assert [node.name for node in results.largest_model.rows()] == ["Makefile"]
     assert "(no extension)" in results._focus_label.text()
     results.show_largest_of_age("month")
+    _wait(qapp, lambda: results._focus_worker is None)
     assert len(results.largest_model.rows()) == 6, "the sample files were all written just now"
     results.show_all_largest()
     assert results.largest_model.rowCount() == 6 and results._focus_bar.isHidden()
