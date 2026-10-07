@@ -18,7 +18,7 @@ from je_file_tree.core.snapshot import unpack_snapshot
 
 _LIMIT = 1000
 _TYPES = (CATEGORY_EXTENSIONS["code"] - {".pyc"}) | {
-    ".log", ".txt", ".md", ".csv", ".rtf", ".bmp", ".tif", ".tiff", ".raw", ".psd",
+    ".log", ".txt", ".md", ".csv", ".rtf", ".bmp", ".tif", ".tiff", ".raw", ".psd", ".exe", ".dll",
 }
 _UNSUITABLE = 0x2 | 0x4 | 0x200 | 0x400 | 0x800 | 0x1000 | 0x40000 | 0x400000
 _BUFFER = 1024
@@ -45,12 +45,14 @@ class CompressionPlan:
         return self.filesystem is not None and self.filesystem.casefold() == "ntfs"
 
 
-def compression_plan(root: Node, *, cancel: threading.Event | None = None) -> CompressionPlan | None:
+def compression_plan(root: Node, *, cancel: threading.Event | None = None,
+                     include_compressed: bool = False) -> CompressionPlan | None:
     """Survey recorded text/code/uncompressed-image types without reading file contents.
 
     Extension-based candidates are not proof of compressibility. Unknown snapshots and hidden,
     system, sparse, compressed, reparse/cloud/offline entries are omitted; hard-linked names may
-    overcount allocation. Directory metadata/shared extents remain unknown. Cancellation drops results.
+    overcount allocation. include_compressed lists all safe regular types for restoration, since WOF
+    files may lack compression flags. Directory metadata/shared extents remain unknown. Cancel drops results.
     """
     count = logical = allocated = total = unknown = 0
     incomplete = False
@@ -68,8 +70,9 @@ def compression_plan(root: Node, *, cancel: threading.Event | None = None) -> Co
             unknown += 1
             continue
         info = unpack_snapshot(node.snapshot)
-        if (info.is_link or not stat.S_ISREG(info.mode) or info.attributes & _UNSUITABLE
-                or extension_of(node.name) not in _TYPES):
+        unsuitable = _UNSUITABLE & ~0x800 if include_compressed else _UNSUITABLE
+        if (info.is_link or not stat.S_ISREG(info.mode) or info.attributes & unsuitable
+                or (not include_compressed and extension_of(node.name) not in _TYPES)):
             continue
         count += 1
         logical += node.size

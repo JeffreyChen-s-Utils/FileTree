@@ -309,7 +309,21 @@ with full counts. Potential savings are only 0..recorded candidate allocation, n
 recoverable-space guarantee. Windows filesystem/cluster queries retain unknown state; no file payloads
 are read. `gui.compression.CompressionDialog` owns/cancels/joins its preview worker, reuses numeric
 tables/Ctrl+C and routes exact recorded-file activation back to ResultsView. The Windows folder menu
-offers this read-only estimate; native compression/uncompression operations remain pending.
+offers NTFS/XPRESS8K compression and restoration for only the listed (at most 1,000) files. Restoration
+lists all safe recorded types because WOF flags can be absent. A default-No plain-text question names
+scope/mode/count/size/partial/performance/free-space risks; no command runs before approval.
+`core.compression_ops` checks current fixed local NTFS, recorded folder identity and exact file paths,
+pins all ancestors/files with read/no-delete handles and revalidates snapshots, single-link local
+regular state, protection/system-managed exclusions and allocation. Per-file compact runs from the
+OS system directory without a shell, recursion, wildcards or directory defaults; restoration invokes
+both /u and /u /exe. Owned `CompactWorker` retains failures/partial results. Stop/close terminates,
+waits and joins the current subprocess; the dialog cannot start another operation or select files.
+On attempted operations MainWindow rescans the exact branch/root with a transient per-file allocation
+override, preserving the user's default scan option. Matched before/after known allocation remains
+separate from unknown measurements and is not guaranteed freed capacity.
+`tools/validate_windows_compression.py` creates only fresh owned NTFS fixtures, checks SHA-256 and
+restoration, an owned junction's untouched peer and hard-link refusal, and atomically writes evidence.
+The Windows CI matrix runs this probe on Python 3.10–3.14 and preserves its artifacts.
 
 Optional ScanOptions.exact_windows_allocation routes Windows allocation through no-follow
 FILE_READ_ATTRIBUTES handles and FILE_STANDARD_INFO, validating full FILE_ID_INFO device/inode (or

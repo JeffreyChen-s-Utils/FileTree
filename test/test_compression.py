@@ -62,3 +62,12 @@ def test_unknown_or_foreign_filesystem_is_not_ntfs(monkeypatch):
 def test_non_windows_filesystem_query_never_reaches_native_api(monkeypatch):
     monkeypatch.setattr(compression, "sys", SimpleNamespace(platform="linux"))
     assert compression.file_system("/unused") is None
+
+
+def test_restore_preview_includes_compressed_and_unflagged_executable_types(monkeypatch):
+    _volume(monkeypatch)
+    root = Node("root", True, children=[_node("program.exe"), _node("compressed.zip", attributes=0x800),
+                                       _node("cloud.exe", attributes=0x400000), _node("sparse.log", attributes=0x200)])
+    assert {node.name for node in compression.compression_plan(root).rows} == {"program.exe"}
+    restored = compression.compression_plan(root, include_compressed=True)
+    assert {node.name for node in restored.rows} == {"program.exe", "compressed.zip"}

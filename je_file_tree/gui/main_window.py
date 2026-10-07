@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
 
     # --- scanning ---------------------------------------------------------
 
-    def start_scan(self, path: str) -> None:
+    def start_scan(self, path: str, *, exact_allocation: bool = False) -> None:
         """Scan ``path`` (stopping a scan already running)."""
         if self._trash_worker is not None:
             return
@@ -170,7 +170,8 @@ class MainWindow(QMainWindow):
         self._analyser = None
         self._last_path = path
         self.path_edit.setText(path)
-        worker = ScanWorker(path, self._scan_options(), self, history=configured_history(self.settings))
+        worker = ScanWorker(path, self._scan_options(exact_allocation=exact_allocation), self,
+                            history=configured_history(self.settings))
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -293,7 +294,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, tr("menu_properties"), tr("properties_failed", path=node.path))
 
     def show_compression(self, node: Node) -> None:
-        """Review recorded compression candidates without changing file contents or attributes."""
+        """Review/confirm scoped native operations, then rescan with per-file allocation if attempted."""
         outcome = self.results.outcome
         if (not elevation.supported() or self._worker is not None or self._trash_worker is not None
                 or outcome is None or not node.is_dir or node.is_link or not node.is_in(outcome.result.root)):
@@ -305,16 +306,18 @@ class MainWindow(QMainWindow):
         finally:
             dialog.shutdown()
             dialog.deleteLater()
+        if dialog.changed:
+            self.rescan_folder(node, exact_allocation=True)
 
-    def rescan_folder(self, node: Node) -> None:
+    def rescan_folder(self, node: Node, *, exact_allocation: bool = False) -> None:
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
         if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
             return
         if node.parent is None:
-            self.rescan()
+            self.start_scan(node.path, exact_allocation=exact_allocation)
             return
         self._analyser = None
-        worker = ScanWorker(node.path, self._scan_options(), self)
+        worker = ScanWorker(node.path, self._scan_options(exact_allocation=exact_allocation), self)
         before = node.size
         worker.progressed.connect(
             lambda progress: self._is_current(worker) and self.results.scan_bar.show_progress(progress))
@@ -1193,12 +1196,12 @@ class MainWindow(QMainWindow):
             return [value] if value else []
         return [str(pattern) for pattern in value or []]
 
-    def _scan_options(self) -> ScanOptions:
+    def _scan_options(self, *, exact_allocation: bool = False) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
                            gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
                            file_times=self._actions["capture_file_times"].isChecked(),
                            windows_owners=self._actions["capture_owners"].isChecked(),
-                           exact_windows_allocation=self._actions["exact_allocation"].isChecked())
+                           exact_windows_allocation=exact_allocation or self._actions["exact_allocation"].isChecked())
 
     def configure_workers(self) -> None:
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""

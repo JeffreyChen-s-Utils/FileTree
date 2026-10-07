@@ -9,12 +9,37 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "compression_mode_ntfs": "NTFS compression",
+    "compression_mode_xpress8k": "XPRESS8K compression (rarely modified files)",
+    "compression_mode_uncompress": "Uncompress (NTFS and executable modes)",
+    "compression_apply": "Process listed files…",
+    "compression_restore_summary": (
+        "{count}/{total} recorded files eligible for review; showing {shown}. Compression state may be "
+        "unknown."
+    ),
+    "compression_confirm": (
+        "Scope: {path}\nMode: {mode}\nOnly the {count} listed files ({size} logical), out of {total} "
+        "candidates, will be processed.\n\nCurrent NTFS scope and unchanged files are checked again. Links, "
+        "cloud/offline, sparse, hidden/system, hard-linked and protected files are refused. Directory "
+        "defaults and unlisted files are untouched. Compression can slow writes; XPRESS is for rarely "
+        "modified data. Uncompression needs free disk space. Stop/failure can leave partial "
+        "changes.\n\nClosing this window cancels any current command, waits for it and rescans this folder "
+        "with per-file allocation. Continue?"
+    ),
+    "compression_progress": "Processing {done}/{total} listed files…",
+    "compression_done": (
+        "{done}/{attempted} commands completed; {failures} failures. Known matched file allocation: "
+        "{before} → {after}; {unknown} measurements unknown. Close to rescan; totals are not guaranteed "
+        "freed space. First 20 errors are shown."
+    ),
+    "compression_canceled": "Stopped; earlier or current files may have changed. Close to rescan.",
+    "compression_failed": "Operation failed: {reason}. Partial changes are possible; close to rescan.",
     "action_exact_allocation": "Measure Windows per-file allocation",
     "action_exact_allocation_tip": (
         "Off by default; extra metadata calls for future scans, including XPRESS/WOF files. "
         "Enable and rescan. Known cloud/offline files stay unqueried; failed queries remain estimates."
     ),
-    "menu_compression": "NTFS compression estimate…",
+    "menu_compression": "NTFS compression…",
     "compression_reading": "Reviewing recorded compression candidates…",
     "compression_summary": (
         "{count}/{total} files are type candidates; showing {shown}; logical {logical}, named allocation {allocated}. "
@@ -1015,12 +1040,32 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "compression_mode_ntfs": "NTFS 壓縮",
+    "compression_mode_xpress8k": "XPRESS8K 壓縮（少修改的檔案）",
+    "compression_mode_uncompress": "解壓縮（NTFS 及執行檔模式）",
+    "compression_apply": "處理列表中的檔案…",
+    "compression_restore_summary": "{count}/{total} 個已記錄檔案可供檢查；顯示 {shown} 個。壓縮狀態可能未知。",
+    "compression_confirm": (
+        "範圍：{path}\n模式：{mode}\n僅處理列表中的 {count} 個檔案（邏輯大小 {size}），"
+        "候選項目共 {total} 個。\n\n會重新核對目前 NTFS "
+        "範圍與未變更的檔案。拒絕連結、雲端／離線、稀疏、隱藏／系統、硬連結及受保護檔案。"
+        "不變更資料夾預設值及列表外檔案。壓縮可能降低寫入速度；XPRESS "
+        "適合少修改的資料。解壓縮需要足夠可用空間。停止或失敗可能留下部分變更。\n\n關閉此視窗會取消目前命令、等待結束，再以逐檔磁碟大小量測重新掃描此資料夾。是否繼續？"
+    ),
+    "compression_progress": "正在處理列表中的 {done}/{total} 個檔案…",
+    "compression_done": (
+        "{done}/{attempted} 個命令完成；失敗 {failures} 個。"
+        "核對成功的已知檔案分配：{before} → {after}；未知量測 {unknown} "
+        "個。關閉後重新掃描；總計不保證可釋出空間。顯示前 20 筆錯誤。"
+    ),
+    "compression_canceled": "已停止；先前或目前檔案可能已變更。關閉後重新掃描。",
+    "compression_failed": "操作失敗：{reason}。可能有部分變更，關閉後重新掃描。",
     "action_exact_allocation": "量測 Windows 逐檔磁碟大小",
     "action_exact_allocation_tip": (
         "預設關閉，後續掃描增加中繼資料查詢，包含 XPRESS／WOF 檔案。啟用後請重新掃描。"
         "已知雲端／離線檔案不會查詢，失敗結果仍使用估計值。"
     ),
-    "menu_compression": "NTFS 壓縮估算…",
+    "menu_compression": "NTFS 壓縮…",
     "compression_reading": "正在檢查已記錄的壓縮候選項目…",
     "compression_summary": (
         "{count}/{total} 個檔案為類型候選，顯示 {shown} 個；邏輯大小 {logical}，具名磁碟分配 {allocated}。"
@@ -1920,12 +1965,32 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "compression_mode_ntfs": "NTFS 压缩",
+    "compression_mode_xpress8k": "XPRESS8K 压缩（很少修改的文件）",
+    "compression_mode_uncompress": "解压缩（NTFS 及可执行文件模式）",
+    "compression_apply": "处理列表中的文件…",
+    "compression_restore_summary": "{count}/{total} 个已记录文件可供检查；显示 {shown} 个。压缩状态可能未知。",
+    "compression_confirm": (
+        "范围：{path}\n模式：{mode}\n仅处理列表中的 {count} 个文件（逻辑大小 {size}），"
+        "候选项共 {total} 个。\n\n会重新核对当前 NTFS "
+        "范围与未变化的文件。拒绝链接、云端／离线、稀疏、隐藏／系统、硬链接及受保护文件。"
+        "不改变文件夹默认值及列表外文件。压缩可能降低写入速度；XPRESS "
+        "适合很少修改的数据。解压缩需要足够可用空间。停止或失败可能留下部分更改。\n\n关闭此窗口会取消当前命令、等待结束，再以逐文件磁盘大小测量重新扫描此文件夹。是否继续？"
+    ),
+    "compression_progress": "正在处理列表中的 {done}/{total} 个文件…",
+    "compression_done": (
+        "{done}/{attempted} 个命令完成；失败 {failures} 个。"
+        "核对成功的已知文件分配：{before} → {after}；未知测量 {unknown} "
+        "个。关闭后重新扫描；总计不保证可释放空间。显示前 20 条错误。"
+    ),
+    "compression_canceled": "已停止；先前或当前文件可能已更改。关闭后重新扫描。",
+    "compression_failed": "操作失败：{reason}。可能有部分更改，关闭后重新扫描。",
     "action_exact_allocation": "测量 Windows 逐文件磁盘大小",
     "action_exact_allocation_tip": (
         "默认关闭，后续扫描增加元数据查询，包含 XPRESS／WOF 文件。启用后请重新扫描。"
         "已知云端／离线文件不会查询，失败结果仍使用估计值。"
     ),
-    "menu_compression": "NTFS 压缩估算…",
+    "menu_compression": "NTFS 压缩…",
     "compression_reading": "正在检查已记录的压缩候选项…",
     "compression_summary": (
         "{count}/{total} 个文件为类型候选，显示 {shown} 个；逻辑大小 {logical}，具名磁盘分配 {allocated}。"
