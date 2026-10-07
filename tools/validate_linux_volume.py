@@ -252,13 +252,16 @@ def descriptor_cost(root: Path) -> dict[str, object]:
             yield entries
 
     measurements = {}
+    native_reader = mounts._statx_mount
     for workers in (1, 4):
-        times = {"guarded": [], "path_based": []}
+        times = {"guarded": [], "fdinfo": [], "path_based": []}
         for _repeat in range(5):
             for label, samples in times.items():
                 context = (patch.object(MountSurvey, "listing", path_listing) if label == "path_based"
                            else patch.object(MountSurvey, "listing", MountSurvey.listing))
-                with context:
+                backend = patch.object(mounts, "_statx_mount", lambda _fd: None) if label == "fdinfo" else (
+                    patch.object(mounts, "_statx_mount", native_reader))
+                with context, backend:
                     started = time.monotonic()
                     result = scan(selected, options=ScanOptions(workers=workers))
                     samples.append(time.monotonic() - started)
@@ -268,7 +271,7 @@ def descriptor_cost(root: Path) -> dict[str, object]:
         measurements[str(workers)] = {label: statistics.median(values) for label, values in times.items()}
     return {"folders": 1001, "files": 2000, "repeats": 5, "median_seconds_by_workers": measurements,
             "backend": "statx" if statx_id is not None else "fdinfo", "mount_id_backends_agree": True,
-            "comparison": "Only folder listing strategy differs; both retain initial/final mount surveys."}
+            "comparison": "Listing/backend variants interleave in one process; all retain initial/final surveys."}
 
 
 def probe(scratch: Path, token: str) -> dict[str, object]:
