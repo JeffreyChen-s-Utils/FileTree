@@ -2,7 +2,7 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #75 (account for the space), #76 (finish savings validation), #39, then the P2 items.
+Suggested order: #75 (account for the space), #76 (finish savings validation), then the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
@@ -70,7 +70,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Reports and automation
 
-- **#39** (P1) Command line without a window: `je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json` (and `--compare old.json` printing the biggest changes), for scheduled tasks and scripts. Uses only `je_file_tree.core`, so it runs without a display; a console entry in `pyproject.toml` `[project.scripts]` and a new `je_file_tree/cli.py`; documented exit codes; README section in the three languages.
 - **#40** (P2) Report: one self-contained HTML file with the summary, the top folders, the largest files, types, ages and the three charts as images (the chart widgets' `grab()`), to send to someone; and an Excel (.xlsx) export of the same lists, one sheet each, with `openpyxl` as a new dependency (`requirements.txt`, `pyproject.toml`, and the pinned install in `.github/workflows/release.yml`).
 - **#41** (P3) Print and PDF of the view on screen (`QPrinter`).
 - **#70** (P2) Export any list, copy rows: Search results, Duplicates, Changes, File types and Age to CSV like the existing exports (`je_file_tree/core/export.py`, written on the `ExportWorker`), and Ctrl+C in any list copies the selected rows as tab-separated text for a spreadsheet.

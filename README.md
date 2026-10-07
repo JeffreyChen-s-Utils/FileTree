@@ -163,6 +163,26 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
 - Your language, size unit, window layout and recently scanned folders are remembered (on Windows in the
   registry under `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`).
 
+## Command line without a window
+
+The console entry uses only the core and never imports Qt. It writes the same atomic CSV/JSON exports
+as the window; comparison prints the largest absolute changes, up to `--limit` (1,000 by default).
+Console output is newline-delimited JSON with fixed keys (`file-tree-cli/1`), including scan coverage;
+comparison adds a `changes` record. Errors are JSON on stderr. Two scan workers are the default;
+`--workers`, repeated `--exclude` patterns and `--no-hidden` control the scan.
+
+```bash
+je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json
+je-file-tree-cli scan D:\ --compare old.json --limit 20
+python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
+```
+
+Exit codes: **0** complete coverage, **1** incomplete coverage (including exclusions/unreadable entries),
+**2** invalid arguments, **3** scan/compare/export I/O or invalid saved-scan error, **130** interrupted.
+Ctrl+C stops scanning and exports the partial snapshot; a second Ctrl+C aborts immediately. Each export
+is atomic independently: an export failure does not roll back earlier completed reports. No removal or
+automatic clean-up is available from the console.
+
 ## Development
 
 ```bash

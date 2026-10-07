@@ -44,6 +44,9 @@ content-type = "text/markdown"
 [project.gui-scripts]
 je-file-tree = "je_file_tree.gui.app:run"
 
+[project.scripts]
+je-file-tree-cli = "je_file_tree.cli:main"
+
 [tool.setuptools.packages.find]
 include = ["je_file_tree*"]
 

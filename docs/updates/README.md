@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-05 | 2026-10-07 | Headless console scan exports and comparisons | #done #cli #core #export | [2026-10](2026-10.md) |
 | U-20261007-04 | 2026-10-07 | Review every cleanup proposal before Trash confirmation | #done #safety #gui #allocation | [2026-10](2026-10.md) |
 | U-20261007-03 | 2026-10-07 | Revalidate approved entries before background Trash moves | #done #safety #scanner #gui | [2026-10](2026-10.md) |
 | U-20261007-02 | 2026-10-07 | Incomplete scans cannot propose whole branches for cleanup | #done #safety #scanner #gui | [2026-10](2026-10.md) |

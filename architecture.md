@@ -35,6 +35,11 @@ metadata remain outside the estimate. Windows cluster-rounded allocation is expl
 - `je-file-tree [folder]` (the `gui-scripts` entry `je_file_tree.gui.app:run`), `python start_file_tree.py [folder]`
   and `python -m je_file_tree [folder]`: all three call `app.run()`, which opens the window and scans `folder`
   right away if given (`test/test_start_script.py`).
+- `je-file-tree-cli scan <root>` (`project.scripts`: `je_file_tree.cli:main`) and `python -m je_file_tree.cli`
+  scan/export/compare without Qt imports or a display. Stdout/stderr use fixed newline-delimited JSON;
+  exit codes are 0 complete, 1 partial, 2 arguments, 3 I/O/invalid saved scan, 130 interrupted. SIGINT
+  cancellation returns and exports the partial snapshot; a second signal aborts. Each export is atomic
+  independently. The console offers no filesystem removal.
 - `python tools/build_nuitka.py [--onefile | --app] [Nuitka options]`: compiles `start_file_tree.py` into
   `build/<mode>/`, copying Qt's translation catalogues listed in `qt_translation.CATALOGUES`.
 - `je_file_tree.core.scanner.scan(path, *, options, progress, cancel)` → `ScanResult(root, errors, elapsed)`.

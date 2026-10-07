@@ -107,6 +107,18 @@ python start_file_tree.py
 - 要让某些文件夹每次都不扫描，把它们加进“视图 → 扫描时跳过”：像 `node_modules` 或 `*.cache` 这样的名称会跳过所有同名的文件夹，路径只跳过那一个文件夹。跳过的文件夹会以灰字列出，大小为 0。
 - 语言、大小单位、窗口布局与最近扫描过的文件夹都会记住（Windows 上保存在注册表的 `HKEY_CURRENT_USER\Software\JE-Chen\FileTree`）。
 
+## 不开窗口的命令行
+
+命令行入口只使用核心，不会加载 Qt。CSV／JSON 导出与窗口相同，以原子方式写入；比较会列出绝对变化最大的项目，最多 `--limit` 项（默认 1,000）。标准输出是逐行 JSON，使用固定字段（`file-tree-cli/1`）并包含扫描覆盖范围；比较会增加 `changes` 记录。错误以 JSON 写到 stderr。默认两个工作线程，可用 `--workers`、可重复的 `--exclude` 模式及 `--no-hidden` 控制扫描。
+
+```bash
+je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tree.json
+je-file-tree-cli scan D:\ --compare old.json --limit 20
+python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
+```
+
+退出代码：**0** 覆盖范围完整、**1** 不完整（包含排除及无法读取的项目）、**2** 参数错误、**3** 扫描／比较／导出 I/O 错误或保存的扫描格式无效、**130** 已中断。Ctrl+C 会停止扫描并导出已读取的部分；再次按 Ctrl+C 则立即中止。每份导出独立完成原子写入，后续导出失败不会撤销先前完成的报告。命令行不提供删除或自动清理。
+
 ## 开发
 
 ```bash
