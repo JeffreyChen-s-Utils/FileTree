@@ -11,11 +11,13 @@ from PySide6.QtWidgets import (
 )
 
 from je_file_tree.core.formatting import format_count, format_size, format_time
+from je_file_tree.core.cleanup import DETAILS, CleanupGroup
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.protected import Protection, protection_of
 from je_file_tree.core.savings import Savings, estimate_savings
 from je_file_tree.gui import file_actions
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.cleanup_text import explanation
 from je_file_tree.gui.scan_worker import wait_for
 
 _HEADERS = ("review_select", "column_path", "review_rule", "review_reason", "column_modified",
@@ -27,12 +29,13 @@ class ReviewModel(QAbstractTableModel):
 
     selection_changed = Signal()
 
-    def __init__(self, nodes: list[Node], reasons: dict[Node, str], places: list[Protection],
+    def __init__(self, nodes: list[Node], reasons: dict[Node, str | CleanupGroup], places: list[Protection],
                  unit: str, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.nodes = outermost(nodes)
-        self.checked = set(self.nodes)
         self._reasons = reasons
+        self.checked = {node for node in self.nodes if self._rule(node)[1] is None
+                        or self._rule(node)[1].risk == "low"}
         self._places = places
         self._unit = unit
 
@@ -64,14 +67,20 @@ class ReviewModel(QAbstractTableModel):
             return Qt.CheckState.Checked if node in self.checked else Qt.CheckState.Unchecked
         if role not in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
             return None
-        key = self._reasons.get(node)
-        reason = tr(f"cleanup_{key}_tip") if key is not None else tr("review_manual_reason")
+        key, details = self._rule(node)
+        reason = explanation(key, details) if key is not None else tr("review_manual_reason")
         protection = protection_of(node.path, self._places)
         values = ("", node.path, tr(f"cleanup_{key}") if key else tr("review_manual"), reason,
                   format_time(node.modified), format_size(node.size, self._unit),
                   format_size(node.allocated, self._unit),
                   tr(f"protected_{protection.reason}") if protection else tr("review_not_protected"), reason)
         return values[index.column()]
+
+    def _rule(self, node: Node):
+        reason = self._reasons.get(node)
+        if isinstance(reason, CleanupGroup):
+            return reason.key, reason.details
+        return reason, DETAILS.get(reason)
 
     def setData(self, index: QModelIndex, value, role: int = Qt.ItemDataRole.EditRole) -> bool:
         """Qt: unchecking a row removes it from the eventual batch."""
@@ -111,7 +120,7 @@ class _EstimateWorker(QThread):
 class CleanupReview(QDialog):
     """Review every proposal and its consequences; accepting only returns a selection, never moves it."""
 
-    def __init__(self, nodes: list[Node], reasons: dict[Node, str], places: list[Protection],
+    def __init__(self, nodes: list[Node], reasons: dict[Node, str | CleanupGroup], places: list[Protection],
                  unit: str, root: Node, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(tr("review_title"))

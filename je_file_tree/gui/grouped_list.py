@@ -74,14 +74,15 @@ def select_entries(model: QStandardItemModel, view: QTreeView, *, skip_first: bo
     view.setFocus()
 
 
-def select_group(model: QStandardItemModel, view: QTreeView, row: int) -> None:
+def select_group(model: QStandardItemModel, view: QTreeView, row: int, *, append: bool = False) -> None:
     """Select the entry lines of the group on line ``row``, focusing the view."""
     group = model.index(row, 0)
     count = model.rowCount(group)
     selection = QItemSelection()
     if count:
         selection.select(model.index(0, 0, group), model.index(count - 1, len(COLUMNS) - 1, group))
-    view.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    flag = QItemSelectionModel.SelectionFlag.Select if append else QItemSelectionModel.SelectionFlag.ClearAndSelect
+    view.selectionModel().select(selection, flag)
     view.setFocus()
 
 

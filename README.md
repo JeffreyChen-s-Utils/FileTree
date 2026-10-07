@@ -131,6 +131,14 @@ Parent/child selections collapse to the outermost entry. The background estimate
 allocation once and gives no recovery credit for a file whose other names remain. Recoverable file data
 is a conservative range after emptying Trash; shared extents and directory metadata remain unknown.
 
+Rules explain their category, evidence, minimum age, risk and rebuild instructions. Recent or unknown
+dates disqualify candidates; a folder uses its newest descendant (7 days for caches/builds/temporary
+files/empty folders, 30 for package downloads/crash dumps, 90 for installers). Browser profiles,
+package stores (`.m2/repository`, `.nuget/packages`, `.gradle/caches`) and bare cache/build names are
+excluded. Project outputs require manifest evidence; Python caches require generated-file evidence.
+Temporary files, crash evidence, downloads, build output and empty folders use *Review manually*, start
+unchecked and are excluded from *Select all*. Even a lower-risk cache requires review and confirmation.
+
 ### Seeing what grew
 
 Save a scan with **File → Export → Folder tree (JSON)**. Later, after a new scan, choose **File → Compare with a

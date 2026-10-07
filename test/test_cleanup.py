@@ -39,8 +39,17 @@ def home(tmp_path: Path) -> Path:
         "Empty": {"a": {"b": {}}, "c": {}},
         "Kept": {"x": {}, "file.txt": b"f"},
     })
-    os.utime(root / "Downloads" / "old.msi", (OLD, OLD))
+    age_tree(root)
+    os.utime(root / "Downloads" / "new.msi", None)
     return root
+
+
+def age_tree(root: Path) -> None:
+    """Make a fixture inactive, including the directories' own modification times."""
+    for folder, directories, files in os.walk(root, topdown=False):
+        for name in (*directories, *files):
+            os.utime(Path(folder) / name, (OLD, OLD))
+        os.utime(folder, (OLD, OLD))
 
 
 def _groups(root: Path) -> dict[str, list[str]]:
@@ -149,3 +158,43 @@ def test_stat_failures_cannot_turn_a_matching_folder_into_an_empty_one(tmp_path:
     assert root.children[0].error == scanner.PARTIAL_FOLDER
     assert coverage_of(root).inaccessible_folders == 1
     assert find_cleanup(root) == []
+
+
+def test_false_positive_names_profiles_package_stores_and_authored_cache_are_kept(tmp_path: Path) -> None:
+    make_tree(tmp_path, {
+        "Cache": {"notes.txt": b"mine"}, "node_modules": {"source.js": b"mine"},
+        "target": {"goals.txt": b"mine"}, "dist": {"draft.txt": b"mine"},
+        "__pycache__": {"source.py": b"mine"}, ".pytest_cache": {"notes.txt": b"mine"},
+        ".m2": {"repository": {"private.jar": b"offline"}},
+        ".nuget": {"packages": {"private.nupkg": b"offline"}},
+        ".gradle": {"caches": {"private.jar": b"offline"}},
+        ".cache": {"google-chrome": {"Bookmarks": b"state", "Cookies": b"state"}},
+        "Google": {"Chrome": {"User Data": {"Default": {"Bookmarks": b"state", "Cookies": b"state"}}}},
+    })
+    age_tree(tmp_path)
+    assert _groups(tmp_path) == {}
+
+
+def test_one_recent_file_disqualifies_a_whole_cache_folder(home: Path) -> None:
+    cache = home / "AppData/Local/Google/Chrome/User Data/Default/Cache"
+    (cache / "active").write_bytes(b"currently used")
+    assert "browser_cache" not in _groups(home)
+
+
+def test_unknown_or_future_dates_never_qualify(home: Path) -> None:
+    root = scan(home).root
+    for entry in root.iter_nodes():
+        entry.modified = 0
+    assert find_cleanup(root) == []
+    for entry in root.iter_nodes():
+        entry.modified = 4_000_000_000
+    assert find_cleanup(root) == []
+
+
+def test_every_default_rule_has_evidence_risk_age_and_rebuild_instructions() -> None:
+    from je_file_tree.core.cleanup import RULES
+
+    for rule in RULES:
+        assert rule.details.minimum_age > 0
+        assert rule.details.evidence == rule.key and rule.details.rebuild == rule.key
+        assert rule.details.risk in ("low", "manual")

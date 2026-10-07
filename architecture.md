@@ -24,6 +24,12 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 `core/coverage.py` surveys folder coverage on the cleanup worker, marking incomplete branches and all
 their ancestors unsafe to remove as a whole. Unseen bytes remain unknown.
 
+`cleanup.Rule.details` records category, minimum age, risk and stable explanation/rebuild keys.
+The newest descendant disqualifies active folders. Exact cache namespaces and project/generated-file
+evidence replace bare-name guesses; package stores are excluded. Manual-risk groups start unchecked
+in `CleanupReview` and are excluded from bulk selection; `cleanup_text` translates metadata in all
+three languages. `CleanupGroup` carries the effective details through to the review.
+
 `core/savings.py` (also exported from `allocation`) estimates reviewed selections without reading file
 contents: outermost paths, logical bytes, unique hard-link allocation, conservative recoverable file-data
 range after emptying Trash, and current free space. A hard-linked file whose other names remain offers

@@ -12,6 +12,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.gui import grouped_list
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.cleanup_text import explanation
 from je_file_tree.gui.scan_worker import CleanupWorker, wait_for
 
 
@@ -42,6 +43,7 @@ class CleanupPanel(QWidget):
         self.select_group = QPushButton()
         self.select_all.clicked.connect(self.select_all_entries)
         self.select_group.clicked.connect(self.select_current_group)
+        self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._group_button())
         self._root: Node | None = None
         self._groups: list[CleanupGroup] = []
         self._current: CleanupWorker | None = None
@@ -106,8 +108,12 @@ class CleanupPanel(QWidget):
     def select_all_entries(self) -> None:
         """Select every suggested entry, ready for Delete."""
         if self.select_all.isEnabled():
-            grouped_list.select_entries(self.model, self.view, skip_first=False)
-            self.review_requested.emit([node for group in self._groups for node in group.nodes])
+            self.view.clearSelection()
+            groups = [group for group in self._groups if group.details.risk == "low"]
+            for row, group in enumerate(self._groups):
+                if group.details.risk == "low":
+                    grouped_list.select_group(self.model, self.view, row, append=True)
+            self.review_requested.emit([node for group in groups for node in group.nodes])
 
     def select_current_group(self) -> None:
         """Select the entries of the group the cursor is in."""
@@ -120,10 +126,10 @@ class CleanupPanel(QWidget):
         grouped_list.select_group(self.model, self.view, group.row())
         self.review_requested.emit(self._groups[group.row()].nodes)
 
-    def reasons_for(self, nodes: list[Node]) -> dict[Node, str]:
+    def reasons_for(self, nodes: list[Node]) -> dict[Node, CleanupGroup]:
         """Rule keys of current suggestions in a proposed batch, including mixed manual selections."""
         wanted = set(nodes)
-        return {node: group.key for group in self._groups for node in group.nodes if node in wanted}
+        return {node: group for group in self._groups for node in group.nodes if node in wanted}
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
@@ -148,14 +154,16 @@ class CleanupPanel(QWidget):
         titles = [(tr("cleanup_group", title=tr(f"cleanup_{group.key}"), count=format_count(len(group.nodes)),
                       size=format_size(group.size, self.unit)), group.nodes) for group in self._groups]
         grouped_list.fill(self.model, self.view, titles, self.unit,
-                          tips=[tr(f"cleanup_{group.key}_tip") for group in self._groups])
+                          tips=[explanation(group.key, group.details) for group in self._groups])
         self._update_status()
 
     def _update_status(self) -> None:
         has_entries = bool(self._groups) and self._current is None
-        self.select_all.setEnabled(has_entries and not self._partial and self._coverage is not None
+        self.select_all.setEnabled(has_entries and any(group.details.risk == "low" for group in self._groups)
+                                   and not self._partial and self._coverage is not None
                                    and self._coverage.complete)
         self.select_group.setEnabled(has_entries)
+        self._group_button()
         self.status.setText(self._status_text())
         coverage = self._coverage
         self.coverage_banner.setVisible(coverage is not None)
@@ -166,6 +174,12 @@ class CleanupPanel(QWidget):
                                             skipped=format_count(coverage.skipped_folders),
                                             denied=format_count(coverage.inaccessible_folders),
                                             pending=format_count(coverage.pending_folders)))
+
+    def _group_button(self) -> None:
+        index = self.view.currentIndex()
+        row = index.parent().row() if index.parent().isValid() else index.row()
+        manual = 0 <= row < len(self._groups) and self._groups[row].details.risk == "manual"
+        self.select_group.setText(tr("cleanup_review_manual" if manual else "cleanup_select_group"))
 
     def _status_text(self) -> str:
         if self._current is not None:

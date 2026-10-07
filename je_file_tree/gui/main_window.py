@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from je_file_tree import __version__
 from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
+from je_file_tree.core.cleanup import CleanupGroup
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.operations import MoveResult
@@ -294,7 +295,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(tr("trash_running"))
         worker.start()
 
-    def _review_cleanup(self, nodes: list[Node], reasons: dict[Node, str], root: Node) -> list[Node]:
+    def _review_cleanup(self, nodes: list[Node], reasons: dict[Node, CleanupGroup], root: Node) -> list[Node]:
         dialog = CleanupReview(nodes, reasons, self._protected, self._unit, root, self)
         try:
             return dialog.selected_nodes() if dialog.exec() == QDialog.DialogCode.Accepted else []

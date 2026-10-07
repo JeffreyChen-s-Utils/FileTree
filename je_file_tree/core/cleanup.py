@@ -16,7 +16,7 @@ import re
 import threading
 import time
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePath
 
 from je_file_tree.core.coverage import Coverage, coverage_of
@@ -28,6 +28,18 @@ _DAY = 86400.0
 
 
 @dataclass(frozen=True, slots=True)
+class RuleDetails:
+    """Stable explanation keys, minimum age and risk; manual rules never permit bulk selection."""
+
+    category: str = "temporary"
+    minimum_age: float = 0
+    risk: str = "manual"
+    evidence: str = "manual"
+    rebuild: str = "manual"
+    rebuildable: bool = False
+
+
+@dataclass(frozen=True, slots=True)
 class Rule:
     """One kind of clean-up: what to recognise and the group (``key``) it lands in."""
 
@@ -36,34 +48,56 @@ class Rule:
     files: tuple[str, ...] = ()
     beside: tuple[str, ...] = ()
     in_folder: str | None = None
-    unchanged_days: float | None = None
-    rebuildable: bool = False
+    details: RuleDetails = field(default_factory=RuleDetails)
+
+    @property
+    def rebuildable(self) -> bool:
+        """Whether the application can recreate these generated files."""
+        return self.details.rebuildable
+
+
+DETAILS = {
+    "temp": RuleDetails("temporary", 7, "manual", "temp", "temp"),
+    "browser_cache": RuleDetails("cache", 7, "low", "browser_cache", "browser_cache", True),
+    "thumbnails": RuleDetails("cache", 7, "low", "thumbnails", "thumbnails", True),
+    "crash_dumps": RuleDetails("application_state", 30, "manual", "crash_dumps", "crash_dumps"),
+    "package_caches": RuleDetails("cache", 30, "low", "package_caches", "package_caches", True),
+    "build_output": RuleDetails("build", 7, "manual", "build_output", "build_output", True),
+    "old_installers": RuleDetails("downloads", 90, "manual", "old_installers", "old_installers"),
+    EMPTY_FOLDERS: RuleDetails("application_state", 7, "manual", "empty_folders", "empty_folders"),
+}
 
 
 RULES: tuple[Rule, ...] = (
     # The temporary folders are patterns that paths are compared with; nothing is written to them.
-    Rule("temp", folders=("AppData/Local/Temp", "Windows/Temp", "/tmp", "/var/tmp",  # noqa: S108  # NOSONAR
+    Rule("temp", details=DETAILS["temp"],
+         folders=("AppData/Local/Temp", "Windows/Temp", "/tmp", "/var/tmp",  # noqa: S108  # NOSONAR
                           "/private/var/folders/*/*/T")),
-    Rule("browser_cache", folders=(
+    Rule("browser_cache", details=DETAILS["browser_cache"], folders=(
         "Google/Chrome/User Data/*/Cache", "Google/Chrome/User Data/*/Code Cache",
         "Google/Chrome/User Data/*/GPUCache", "Microsoft/Edge/User Data/*/Cache",
         "Microsoft/Edge/User Data/*/Code Cache", "BraveSoftware/Brave-Browser/User Data/*/Cache",
-        "Mozilla/Firefox/Profiles/*/cache2", ".cache/google-chrome", ".cache/chromium", ".cache/mozilla",
-        "Library/Caches/Google/Chrome", "Library/Caches/Firefox")),
-    Rule("thumbnails", folders=(".cache/thumbnails",), files=("thumbcache_*.db",), in_folder="Explorer"),
-    Rule("crash_dumps", folders=("AppData/Local/CrashDumps", "Library/Logs/DiagnosticReports"), files=("*.dmp",)),
-    Rule("package_caches", rebuildable=True, folders=(
+        "Mozilla/Firefox/Profiles/*/cache2", ".cache/google-chrome/*/Cache", ".cache/chromium/*/Cache",
+        ".cache/mozilla/firefox/*/cache2", "Library/Caches/Google/Chrome/*/Cache",
+        "Library/Caches/Firefox/Profiles/*/cache2")),
+    Rule("thumbnails", details=DETAILS["thumbnails"], folders=(".cache/thumbnails",),
+         files=("thumbcache_*.db",), in_folder="Explorer"),
+    Rule("crash_dumps", details=DETAILS["crash_dumps"],
+         folders=("AppData/Local/CrashDumps", "Library/Logs/DiagnosticReports"), files=("*.dmp",)),
+    Rule("package_caches", details=DETAILS["package_caches"], folders=(
         "AppData/Local/pip/Cache", ".cache/pip", "Library/Caches/pip", "AppData/Local/npm-cache",
         "AppData/Roaming/npm-cache", ".npm/_cacache", "AppData/Local/Yarn/Cache", ".cache/yarn",
-        "Library/Caches/Yarn", ".gradle/caches", ".m2/repository", ".nuget/packages",
+        "Library/Caches/Yarn",
         "AppData/Local/NuGet/v3-cache", ".cargo/registry/cache")),
-    Rule("build_output", rebuildable=True, folders=(
-        "node_modules", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox")),
-    Rule("build_output", rebuildable=True, folders=("target",), beside=("Cargo.toml", "pom.xml")),
-    Rule("build_output", rebuildable=True, folders=("build", "dist"),
+    Rule("build_output", details=DETAILS["build_output"], folders=(
+        "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache")),
+    Rule("build_output", details=DETAILS["build_output"], folders=("node_modules",), beside=("package.json",)),
+    Rule("build_output", details=DETAILS["build_output"], folders=(".tox",), beside=("tox.ini", "pyproject.toml")),
+    Rule("build_output", details=DETAILS["build_output"], folders=("target",), beside=("Cargo.toml", "pom.xml")),
+    Rule("build_output", details=DETAILS["build_output"], folders=("build", "dist"),
          beside=("pyproject.toml", "setup.py", "package.json")),
-    Rule("old_installers", files=("*.msi", "*.msix", "*.exe", "*.dmg", "*.pkg", "*.deb", "*.rpm"),
-         in_folder="Downloads", unchanged_days=90),
+    Rule("old_installers", details=DETAILS["old_installers"],
+         files=("*.msi", "*.msix", "*.exe", "*.dmg", "*.pkg", "*.deb", "*.rpm"), in_folder="Downloads"),
 )
 
 
@@ -74,6 +108,7 @@ class CleanupGroup:
     key: str
     nodes: list[Node]
     size: int
+    details: RuleDetails = field(default_factory=RuleDetails)
 
 
 def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | None = None,
@@ -88,10 +123,13 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
     if found is None:
         return None
     claimed = {id(node) for nodes in found.values() for node in nodes}
-    empty = [folder for folder in empty_folders(root) if not _inside(folder, claimed)]  # listed once, in its group
+    empty = [folder for folder in empty_folders(root) if not _inside(folder, claimed)
+             and matcher.old_enough(folder, DETAILS[EMPTY_FOLDERS].minimum_age)]
     if empty:
         found[EMPTY_FOLDERS] = empty
-    groups = [CleanupGroup(key, sorted(nodes, key=lambda node: -node.size), sum(node.size for node in nodes))
+    details = {rule.key: rule.details for rule in rules} | {EMPTY_FOLDERS: DETAILS[EMPTY_FOLDERS]}
+    groups = [CleanupGroup(key, sorted(nodes, key=lambda node: -node.size), sum(node.size for node in nodes),
+                           details[key])
               for key, nodes in found.items()]
     groups.sort(key=lambda group: (-group.size, group.key))
     return groups
@@ -121,7 +159,7 @@ def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
             continue
         if child.is_dir:
             child_parts = (*parts, child.name.casefold())
-            key = matcher.folder_key(child_parts, names) if coverage.can_clean(child) else None
+            key = matcher.folder_key(child_parts, names, child) if coverage.can_clean(child) else None
             if key is None and child.children:
                 deeper.append((child, child_parts))  # a matching folder is suggested whole, not entered
         else:
@@ -139,6 +177,7 @@ def empty_folders(root: Node) -> list[Node]:
     order: list[Node] = []
     stack = [root]
     while stack:
+        give_way()
         folder = stack.pop()
         order.append(folder)
         stack.extend(child for child in folder.children if child.is_dir and not child.is_link)
@@ -166,11 +205,12 @@ class _Matcher:
                 names = "|".join(f"(?:{fnmatch.translate(name)})" for name in rule.files)
                 self._files.append((re.compile(names, re.IGNORECASE), rule))
 
-    def folder_key(self, parts: tuple[str, ...], siblings: set[str]) -> str | None:
+    def folder_key(self, parts: tuple[str, ...], siblings: set[str], node: Node) -> str | None:
         """The group of the folder at ``parts`` (its casefolded path components), or None."""
         candidates = self._folders.get(parts[-1], ())
         for pattern, anchored, rule in candidates:
-            if _ends_with(parts, pattern, anchored) and _has_sign(rule, siblings):
+            if (_ends_with(parts, pattern, anchored) and _has_sign(rule, siblings)
+                    and self.old_enough(node, rule.details.minimum_age) and _has_evidence(node, rule)):
                 return rule.key
         return None
 
@@ -181,10 +221,25 @@ class _Matcher:
                 continue
             if rule.in_folder is not None and folder_name != rule.in_folder.casefold():
                 continue
-            if rule.unchanged_days is not None and not 0 < node.modified <= self._now - rule.unchanged_days * _DAY:
+            if not self.old_enough(node, rule.details.minimum_age):
                 continue
             return rule.key
         return None
+
+    def old_enough(self, node: Node, days: float) -> bool:
+        """Folder.modified is the newest descendant, so a recent file disqualifies the whole folder."""
+        return days == 0 or 0 < node.modified <= self._now - days * _DAY
+
+
+def _has_evidence(node: Node, rule: Rule) -> bool:
+    if rule.key != "build_output":
+        return True
+    if node.name.casefold() == "__pycache__":
+        return bool(node.children) and all(not child.is_dir and child.name.casefold().endswith(".pyc")
+                                          for child in node.children)
+    if node.name.casefold() in (".pytest_cache", ".mypy_cache", ".ruff_cache"):
+        return any(child.name == "CACHEDIR.TAG" and not child.is_dir for child in node.children)
+    return True  # Other build rules require a sibling project manifest and remain manual review.
 
 
 def _ends_with(parts: tuple[str, ...], pattern: tuple[str, ...], anchored: bool) -> bool:

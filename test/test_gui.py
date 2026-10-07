@@ -28,6 +28,7 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QMessageBox, QSizePolicy
 
 from conftest import make_tree
+from test_cleanup import age_tree
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core import pacing
@@ -981,6 +982,7 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
     folder.mkdir()
     make_tree(folder, {"site": {"package.json": b"{}", "node_modules": {"lib.js": b"j" * 400}},
                        "old": {"nothing": {}}, "memory.dmp": b"d" * 50, "keep.txt": b"k"})
+    age_tree(folder)
     _scanned(window, qapp, folder)
     results = window.results
     assert results.tabs.tabText(CLEANUP_TAB) == "Clean up"
@@ -998,7 +1000,11 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
     panel.select_current_group()
     picked = _selected_in(panel.view)
     assert [node.name for node in picked] == ["node_modules"]
-    monkeypatch.setattr(main_window_module.CleanupReview, "exec", lambda _self: QDialog.DialogCode.Accepted)
+    def check_manually(dialog):
+        dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(main_window_module.CleanupReview, "exec", check_manually)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
@@ -1007,12 +1013,13 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
     _wait(qapp, lambda: not panel.busy and [group.key for group in panel.groups] == ["crash_dumps", "empty_folders"])
     monkeypatch.setattr(main_window_module.CleanupReview, "exec", lambda _self: QDialog.DialogCode.Rejected)
     panel.select_all_entries()
-    assert sorted(node.name for node in _selected_in(panel.view)) == ["memory.dmp", "old"]
+    assert not panel.select_all.isEnabled(), "manual groups cannot be bulk-selected"
 
 
 def test_incomplete_cleanup_disables_bulk_selection_and_discards_stale_rows(
         window: MainWindow, qapp: QApplication, tmp_path: Path) -> None:
     make_tree(tmp_path, {"memory.dmp": b"x", "node_modules": {"skipped": {"file": b"important"}}})
+    age_tree(tmp_path)
     outcome = analyse(scan(tmp_path, options=ScanOptions(exclude=("skipped",))))
     window.results.show_outcome(outcome)
     panel = window.results.cleanup
@@ -1036,6 +1043,7 @@ def test_incomplete_cleanup_disables_bulk_selection_and_discards_stale_rows(
 def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
         window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     make_tree(tmp_path, {"memory.dmp": b"dump", "guarded": {"program": b"important"}})
+    age_tree(tmp_path)
     _scanned(window, qapp, tmp_path)
     _wait(qapp, lambda: not window.results.cleanup.busy)
     root = window.results.tree_model.root
@@ -1044,6 +1052,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
     reviewed, moved, questions = [], [], []
 
     def review(dialog):
+        dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
         reviewed.append(dialog.model.data(dialog.model.index(1, 7)))
         dialog.model.setData(dialog.model.index(1, 0), Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
         return QDialog.DialogCode.Accepted
@@ -1063,6 +1072,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
 def test_cancelling_cleanup_review_never_opens_trash_confirmation(
         window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / "memory.dmp").write_bytes(b"dump")
+    age_tree(tmp_path)
     _scanned(window, qapp, tmp_path)
     _wait(qapp, lambda: not window.results.cleanup.busy)
     node = window.results.tree_model.root.children[0]
@@ -1083,12 +1093,14 @@ def test_cancelling_cleanup_review_never_opens_trash_confirmation(
 def test_replacing_the_selected_scan_while_review_is_open_invalidates_the_batch(
         window: MainWindow, qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / "memory.dmp").write_bytes(b"dump")
+    age_tree(tmp_path)
     _scanned(window, qapp, tmp_path)
     _wait(qapp, lambda: not window.results.cleanup.busy)
     node = window.results.tree_model.root.children[0]
     warnings, moved = [], []
 
     def replace_scan(dialog):
+        dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
         window.results.show_outcome(analyse(scan(tmp_path)))
         return QDialog.DialogCode.Accepted
 

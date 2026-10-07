@@ -9,6 +9,28 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "cleanup_review_manual": "Review manually",
+    "cleanup_evidence": ("Category: {category}; minimum age: {days} days; risk: {risk}. "
+                         "Evidence: {evidence} Rebuild / consequence: {rebuild}"),
+    "cleanup_category_temporary": "temporary files",
+    "cleanup_category_cache": "downloaded / generated cache",
+    "cleanup_category_application_state": "application state",
+    "cleanup_category_build": "project build output",
+    "cleanup_category_downloads": "user downloads",
+    "cleanup_risk_low": "lower risk; verify before moving",
+    "cleanup_risk_manual": "manual review; starts unchecked",
+    "cleanup_rebuild_temp": "Close the owning application; temporary data cannot necessarily be recreated.",
+    "cleanup_rebuild_browser_cache": ("Close the browser; it downloads cached pages again. "
+                                      "Profiles and bookmarks are excluded."),
+    "cleanup_rebuild_thumbnails": "Close the file manager; previews are generated again when needed.",
+    "cleanup_rebuild_crash_dumps": "Keep needed crash evidence; a past crash dump cannot be recreated.",
+    "cleanup_rebuild_package_caches": ("Use the package manager to download again; confirm network access. "
+                                      "Package stores are excluded."),
+    "cleanup_rebuild_build_output": ("Verify project contents and dependency locks, then rebuild using the "
+                                    "project's documented commands. Keep authored files."),
+    "cleanup_rebuild_old_installers": ("Keep offline or unavailable installers; download from the publisher "
+                                      "if still available."),
+    "cleanup_rebuild_empty_folders": "Empty folders may still be expected by applications; verify their purpose first.",
     "trash_holder": "{name} (PID {pid})",
     "trash_holders": "{path}: observed open in {programs}. Close the relevant program yourself and retry.",
     "trash_holders_limited": "{path}: process visibility is limited; other holders or causes may be unknown.",
@@ -500,6 +522,23 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "cleanup_review_manual": "手動審查",
+    "cleanup_evidence": "分類：{category}；最低檔齡：{days} 天；風險：{risk}。依據：{evidence} 重建／後果：{rebuild}",
+    "cleanup_category_temporary": "暫存檔案",
+    "cleanup_category_cache": "下載／產生的快取",
+    "cleanup_category_application_state": "應用程式狀態",
+    "cleanup_category_build": "專案建置輸出",
+    "cleanup_category_downloads": "使用者下載",
+    "cleanup_risk_low": "較低風險；移動前仍須確認",
+    "cleanup_risk_manual": "手動審查；預設不勾選",
+    "cleanup_rebuild_temp": "先關閉使用它的應用程式；暫存資料不一定能重建。",
+    "cleanup_rebuild_browser_cache": "先關閉瀏覽器；快取網頁會重新下載。個人設定與書籤不列入。",
+    "cleanup_rebuild_thumbnails": "先關閉檔案總管；需要時會重新產生預覽。",
+    "cleanup_rebuild_crash_dumps": "保留需要的當機證據；過去的當機傾印無法重建。",
+    "cleanup_rebuild_package_caches": "以套件管理工具重新下載，先確認網路可用。套件儲存庫不列入。",
+    "cleanup_rebuild_build_output": "核對專案內容與相依套件鎖定檔，再依專案文件重建。自行撰寫的檔案應保留。",
+    "cleanup_rebuild_old_installers": "保留離線或已無法取得的安裝檔；仍可取得時向發行者重新下載。",
+    "cleanup_rebuild_empty_folders": "應用程式可能仍需要空資料夾；先確認用途。",
     "trash_holder": "{name}（PID {pid}）",
     "trash_holders": "{path}：觀察到 {programs} 開啟此檔案。請自行關閉相關程式後重試。",
     "trash_holders_limited": "{path}：無法完整查詢行程；其他占用程式或失敗原因可能未知。",
@@ -946,6 +985,24 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "cleanup_review_manual": "手动审查",
+    "cleanup_evidence": ("分类：{category}；最低文件年龄：{days} 天；风险：{risk}。"
+                         "依据：{evidence} 重建／后果：{rebuild}"),
+    "cleanup_category_temporary": "临时文件",
+    "cleanup_category_cache": "下载／生成的缓存",
+    "cleanup_category_application_state": "应用程序状态",
+    "cleanup_category_build": "项目构建输出",
+    "cleanup_category_downloads": "用户下载",
+    "cleanup_risk_low": "较低风险；移动前仍须确认",
+    "cleanup_risk_manual": "手动审查；默认不勾选",
+    "cleanup_rebuild_temp": "先关闭使用它的应用程序；临时数据不一定能重建。",
+    "cleanup_rebuild_browser_cache": "先关闭浏览器；缓存网页会重新下载。个人设置与书签不列入。",
+    "cleanup_rebuild_thumbnails": "先关闭文件管理器；需要时会重新生成预览。",
+    "cleanup_rebuild_crash_dumps": "保留需要的崩溃证据；过去的崩溃转储无法重建。",
+    "cleanup_rebuild_package_caches": "用包管理工具重新下载，先确认网络可用。包存储库不列入。",
+    "cleanup_rebuild_build_output": "核对项目内容与依赖锁定文件，再按项目文档重建。自行编写的文件应保留。",
+    "cleanup_rebuild_old_installers": "保留离线或已无法获取的安装文件；仍可获取时向发布者重新下载。",
+    "cleanup_rebuild_empty_folders": "应用程序可能仍需要空文件夹；先确认用途。",
     "trash_holder": "{name}（PID {pid}）",
     "trash_holders": "{path}：观察到 {programs} 打开此文件。请自行关闭相关程序后重试。",
     "trash_holders_limited": "{path}：无法完整查询进程；其他占用程序或失败原因可能未知。",
