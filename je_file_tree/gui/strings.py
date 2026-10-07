@@ -9,6 +9,25 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_special_files": "Cloud and special files…",
+    "action_special_files_tip": "Inspect recorded recall, offline, compressed and sparse file states",
+    "special_states": "Recorded state",
+    "special_content_size": "Full content size",
+    "special_recall": "May recall on access",
+    "special_offline": "Offline",
+    "special_compressed": "Compressed",
+    "special_sparse": "Sparse",
+    "special_allocation_low": "Lower allocation; cause unknown",
+    "special_reading": "Reading recorded file metadata…",
+    "special_hint": ("This list uses scan metadata only: no files are opened or downloaded. Recall/offline flags can "
+                     "describe OneDrive, Dropbox or other providers; the provider and how much is already local cannot "
+                     "be inferred. Full content size is the logical length, including online content; allocation after "
+                     "downloading is unknown. Sparse holes, compression and resident data can reduce allocation. "
+                     "Zero on disk for recall/offline entries is an estimate, not measured cloud allocation. "
+                     "Double-click selects the scanned entry; Ctrl+C copies selected rows."),
+    "special_summary": ("Showing {shown} of {count} matching files. Full content {size}; recorded allocation "
+                        "{allocated}. Unavailable file metadata: {unknown}. Largest 1,000 are retained."),
+    "special_partial": "Scan coverage is incomplete; unseen files remain unknown.",
     "action_shell_integration": "Explorer integration…",
     "action_shell_integration_tip": "Add or remove Scan with FileTree in your Explorer folder menu",
     "shell_enabled": "Add Scan with FileTree to Explorer's folder menu",
@@ -692,6 +711,23 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_special_files": "雲端與特殊檔案…",
+    "action_special_files_tip": "查看已記錄的召回、離線、壓縮及稀疏檔案狀態",
+    "special_states": "已記錄狀態",
+    "special_content_size": "完整內容大小",
+    "special_recall": "存取時可能召回",
+    "special_offline": "離線",
+    "special_compressed": "已壓縮",
+    "special_sparse": "稀疏",
+    "special_allocation_low": "配置較少，原因未知",
+    "special_reading": "正在讀取已記錄的檔案中繼資料…",
+    "special_hint": ("本清單只使用掃描中繼資料，不開啟或下載檔案。召回／離線屬性可能來自 OneDrive、Dropbox "
+                     "或其他服務，無法據此判斷提供者及已在本機的比例。完整內容大小是含線上內容的邏輯長度；"
+                     "下載後的磁碟配置未知。稀疏區段、壓縮及常駐資料都可能減少配置。召回／離線項目的磁碟大小 "
+                     "0 是掃描估計，不是實測雲端配置。按兩下可選取掃描項目；Ctrl+C 複製所選列。"),
+    "special_summary": ("顯示 {count} 個符合檔案中的 {shown} 個。完整內容 {size}；已記錄配置 {allocated}。"
+                        "無法取得檔案中繼資料：{unknown}。保留最大的 1,000 個。"),
+    "special_partial": "掃描範圍不完整；未讀取的檔案仍未知。",
     "action_shell_integration": "檔案總管整合…",
     "action_shell_integration_tip": "在檔案總管的資料夾選單新增或移除「使用 FileTree 掃描」",
     "shell_enabled": "在檔案總管的資料夾選單加入「使用 FileTree 掃描」",
@@ -1306,6 +1342,23 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_special_files": "云端与特殊文件…",
+    "action_special_files_tip": "查看已记录的召回、脱机、压缩及稀疏文件状态",
+    "special_states": "已记录状态",
+    "special_content_size": "完整内容大小",
+    "special_recall": "访问时可能召回",
+    "special_offline": "脱机",
+    "special_compressed": "已压缩",
+    "special_sparse": "稀疏",
+    "special_allocation_low": "分配较少，原因未知",
+    "special_reading": "正在读取已记录的文件元数据…",
+    "special_hint": ("本列表只使用扫描元数据，不打开或下载文件。召回／脱机属性可能来自 OneDrive、Dropbox "
+                     "或其他服务，无法据此判断提供者及已在本机的比例。完整内容大小是含在线内容的逻辑长度；"
+                     "下载后的磁盘分配未知。稀疏区域、压缩及驻留数据都可能减少分配。召回／脱机项目的磁盘大小 "
+                     "0 是扫描估计，不是实测云端分配。双击可选择扫描项目；Ctrl+C 复制选中行。"),
+    "special_summary": ("显示 {count} 个匹配文件中的 {shown} 个。完整内容 {size}；已记录分配 {allocated}。"
+                        "无法获取文件元数据：{unknown}。保留最大的 1,000 个。"),
+    "special_partial": "扫描范围不完整；未读取的文件仍未知。",
     "action_shell_integration": "资源管理器集成…",
     "action_shell_integration_tip": "在资源管理器的文件夹菜单添加或移除“使用 FileTree 扫描”",
     "shell_enabled": "在资源管理器的文件夹菜单添加“使用 FileTree 扫描”",

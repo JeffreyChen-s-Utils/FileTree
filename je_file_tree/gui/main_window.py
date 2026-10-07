@@ -34,6 +34,7 @@ from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.core.system_files import system_file
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
+from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -710,6 +711,7 @@ class MainWindow(QMainWindow):
             ("find", QKeySequence.StandardKey.Find, self._find),
             ("compare", None, self.choose_saved_scan),
             ("recent_actions", None, self.show_recent_actions),
+            ("special_files", None, self.show_special_files),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -747,6 +749,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         file_menu.addAction(self._actions["recent_actions"])
+        file_menu.addAction(self._actions["special_files"])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
         file_menu.addAction(self._actions["elevate"])
@@ -834,7 +837,7 @@ class MainWindow(QMainWindow):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
-        for key in ("print_view", "export_view_pdf"):
+        for key in ("print_view", "export_view_pdf", "special_files"):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
@@ -888,6 +891,20 @@ class MainWindow(QMainWindow):
         if shell_integration.supported():
             dialog = ShellIntegrationDialog(self)
             dialog.exec()
+            dialog.deleteLater()
+
+    def show_special_files(self) -> None:
+        """Explain cloud and special file metadata without reading or downloading any contents."""
+        outcome = self.results.outcome
+        if outcome is None or self._worker is not None or self._trash_worker is not None:
+            return
+        dialog = SpecialFilesDialog(outcome.result.root, self._unit,
+                                    partial=outcome.partial or bool(outcome.result.errors), parent=self)
+        dialog.selected.connect(self.results.select_node)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
             dialog.deleteLater()
 
     def exclusions(self) -> list[str]:

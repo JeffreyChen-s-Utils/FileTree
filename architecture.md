@@ -21,6 +21,13 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.special_files` surveys existing packed snapshot attributes on a cancellable iterative walk,
+giving way per folder and retaining at most 1,000 largest matches plus full matching totals. It uses
+no filesystem reads or new Node fields. The modal GUI SpecialFilesDialog owns/joins its worker,
+rejects canceled/closed replies and supports sorting, clipboard and selection in the existing tree.
+Recall/offline rows expose logical full content length; provider/local-content ratio and allocation
+after download are unknown. Low allocation without flags retains an unknown cause, including on POSIX.
+
 `tools/measure_streams.py` is an independent Windows metadata survey, not a scanner extension.
 It times ordinary gentle scans, bounds its additional file/directory sample and enumerates named
 streams through FindFirstStreamW/FindNextStreamW, always closing search handles. Reparse/changed/error
