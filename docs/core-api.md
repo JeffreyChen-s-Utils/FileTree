@@ -432,7 +432,25 @@ and Docker's [default WSL storage location](https://docs.docker.com/desktop/feat
 
 Native read-only Windows discovery observed two existing WSL/Docker backing files with no guest
 launches/commands. A 100,000-candidate in-memory fixture retained 1,000 rows in 2.853 seconds with
-544,072 additional peak traced bytes; no filesystem or guest was accessed. Compaction/GUI review
-remains pending. DiskPart and Optimize-VHD apply to supported VHD formats, not VMDK/VDI/QCOW2:
+544,072 additional peak traced bytes; no filesystem or guest was accessed.
+
+`virtual_disk_info.inspect_virtual_disk(disk, *, cancel=None)` explicitly queries native Windows
+VHD/VHDX header observations separately from automatic discovery. It requires a captured ordinary
+record without an issue, anchors every nonlinked parent, pins the backing file against rename/delete
+and checks the complete snapshot before opening a native header. System32-only virtdisk.dll uses
+OpenVirtualDisk Version2 GetInfoOnly/ReadOnly, access NONE and NO_PARENTS, never write/attach/detach
+permissions or a fallback. Fixed ABI sizes/offsets are tested independently. Every successful native
+handle closes on success/failure/cancellation. Query sizes/version, Microsoft vendor/device, subtype,
+loaded BOOL and nonzero capacity must be valid; final snapshot/cancellation checks prevent stale replies.
+It returns frozen VirtualDiskInfo(disk, parents, virtual_size, physical_size, subtype, loaded, identifier),
+with dynamic true only for subtype 3 (2 fixed, 4 differencing). A zero identifier becomes None.
+Physical bytes describe the provider, not guest usage or guaranteed reclaimable allocation. Inspection
+permits fixed/differencing/loaded observations but grants no operation approval or stopped-machine
+proof. It launches no guest, command or elevation and never attaches a disk. Fresh owned fixed/dynamic
+VHD/VHDX tests passed natively on Windows without elevation, exact UUIDs and complete unchanged hashes.
+The native structures and flags follow the [Windows SDK header](https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/virtdisk.h)
+and [read-only open parameters](https://learn.microsoft.com/en-us/windows/win32/api/virtdisk/ns-virtdisk-open_virtual_disk_parameters).
+Compaction/GUI review remains pending. DiskPart and Optimize-VHD apply to supported VHD formats,
+not VMDK/VDI/QCOW2:
 [DiskPart requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk),
 [Optimize-VHD requirements](https://learn.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd).

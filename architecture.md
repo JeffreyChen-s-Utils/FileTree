@@ -569,8 +569,15 @@ merge provider labels but never grant stopped-state/format/ownership or mutation
 used bytes and virtual capacity stay unknown; no header/guest reads, launches, mounts or commands.
 Native Windows inventory found two backing files without guest launches. The 100,000-candidate
 in-memory fixture measured 2.853 seconds and 544,072 additional peak traced bytes for 1,000 rows.
-Native information/compaction and its GUI review remain #59; unsupported formats need their own
-backend rather than passing them to VHD-only Windows tools.
+Explicit `core.virtual_disk_info` queries captured ordinary VHD/VHDX headers separately, through
+System32-only virtdisk.dll. Nonlinked parent anchors/file pins plus complete before/after snapshots
+guard Version2 GetInfoOnly/ReadOnly access NONE and NO_PARENTS. Fixed ABI/version/size/device/vendor/
+subtype/loaded checks reject unknown native state and all handles close. Frozen observations expose
+provider physical bytes, virtual capacity, disk UUID and fixed/dynamic/differencing/mounted state;
+they grant no compaction or stopped-machine authority. Guests remain unopened and their usage unknown.
+Native owned fixed/dynamic VHD/VHDX fixtures passed without elevation, exact UUIDs/unchanged full hashes.
+Compaction and its GUI review remain #59; unsupported formats need their own backend rather than
+passing them to VHD-only Windows tools.
 
 ## 3. Entry points and public interfaces
 
