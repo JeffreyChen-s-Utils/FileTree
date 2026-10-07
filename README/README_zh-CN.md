@@ -215,6 +215,16 @@ docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/work
 
 工具也会操作实际的 Thunar 至 FileTree X11 拖动，检查扫描路径及原始文件的标识与内容，并保留拖动前后的桌面截图。macOS 验证需要另外的环境。
 
+Linux CI 也会在私有挂载命名空间建立自己的 64 MiB ext4 映像，检查保留容量、硬链接分配、
+回收站逻辑大小与账本分配量的不同范围、重复文件与稀疏文件的实际回收空间，以及同设备
+bind mount。只移除刚建立的一次性测试数据，拒绝已有磁盘与用户的回收站。JSON 证据保留
+七天。压缩、真正云端占位文件、NTFS／APFS、共享区块与扫描期间挂载变化仍需另外验证。
+在 Linux 安装依赖并可使用非交互 sudo 后执行：
+
+```bash
+python tools/validate_linux_volume.py --evidence volume-evidence
+```
+
 ## 许可证
 
 MIT——详见 [LICENSE](../LICENSE)。

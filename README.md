@@ -339,6 +339,17 @@ docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/work
 
 The probe also drives a real Thunar-to-FileTree X11 drag, checks the scanned path and preserves the original file's identity and contents. Before/after desktop captures are retained. macOS verification requires a separate environment.
 
+Linux CI also creates its own 64 MiB ext4 loop image in a private mount namespace. It checks reserved
+capacity, hard-link allocation, the differing logical Trash and allocated ledger scopes, duplicate
+recovery, sparse-file recovery and a real same-device bind mount. Only newly created disposable fixtures
+are removed; existing volumes and user bins are refused. JSON evidence is retained for seven days.
+Compression, actual cloud placeholders, NTFS/APFS, shared extents and live mount changes need separate
+validation. With dependencies installed and noninteractive sudo available on Linux:
+
+```bash
+python tools/validate_linux_volume.py --evidence volume-evidence
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

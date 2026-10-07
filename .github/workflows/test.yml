@@ -100,3 +100,13 @@ jobs:
         QT_QPA_PLATFORM: offscreen
         PYTHONFAULTHANDLER: "1"
       run: python -m pytest -v --tb=short -p no:unraisableexception
+    - name: Validate isolated ext4 capacity and recovery
+      run: python tools/validate_linux_volume.py --evidence volume-evidence
+    - name: Preserve volume evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: linux-volume-evidence
+        path: volume-evidence/
+        if-no-files-found: warn
+        retention-days: 7

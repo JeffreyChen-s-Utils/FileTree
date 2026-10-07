@@ -242,6 +242,16 @@ incomplete and the ledger counts those mounts without attributing their contents
 stops before directory traversal. Explicit mount roots remain scannable. Live mount-table changes,
 isolated bind namespaces and test-volume reconciliation still require validation.
 
+`tools/validate_linux_volume.py` launches a fixed `sudo unshare --mount --propagation private` probe
+on the Linux test runner. It refuses the host namespace and nonfresh scratch roots, builds only its own
+64 MiB ext4 loop image, flushes fixtures and compares statvfs reservations, st_blocks, unique hard-link
+allocation, logical Trash payload versus ledger receipt/payload allocation, and measured free changes
+for duplicate copies, both hard-link removals and sparse files. A real same-device directory bind mount
+must be omitted with incomplete coverage. The child unmounts before the parent removes the owned scratch
+directory and atomically saves JSON evidence. Native NTFS/APFS, compression, cloud placeholders, shared
+extents and mount changes during scanning remain unverified; this harness does not promote the ledger
+or recovery ranges to guarantees.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
