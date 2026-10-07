@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-39 | 2026-10-07 | Preserve dragged folders and probe the native folder fallback | #snapshot #desktop #safety | [2026-10](2026-10.md) |
 | U-20261007-38 | 2026-10-07 | Reject masked native desktop failures and missing evidence | #incident #linux #ci | [2026-10](2026-10.md) |
 | U-20261007-37 | 2026-10-07 | Restore isolated native Linux desktop checks and retained evidence | #snapshot #linux #desktop #ci | [2026-10](2026-10.md) |
 | U-20261007-36 | 2026-10-07 | Observe native idle transitions in the Qt gate regression | #incident #tests #pacing | [2026-10](2026-10.md) |

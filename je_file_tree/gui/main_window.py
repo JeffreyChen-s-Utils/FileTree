@@ -680,16 +680,22 @@ class MainWindow(QMainWindow):
     # --- drag and drop ----------------------------------------------------
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        """Qt: accept a folder dragged from the file manager."""
-        if _dropped_folder(event.mimeData().urls()) is not None:
-            event.acceptProposedAction()
+        """Qt: accept a folder reference as Copy so the source must keep its files."""
+        if event.possibleActions() & Qt.DropAction.CopyAction and _dropped_folder(event.mimeData().urls()) is not None:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        """Qt: scan the dropped folder."""
+        """Qt: scan a copied folder reference, never acknowledge a source-removing Move."""
         folder = _dropped_folder(event.mimeData().urls())
-        if folder is not None:
-            event.acceptProposedAction()
+        if folder is not None and event.possibleActions() & Qt.DropAction.CopyAction:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.accept()
             self.start_scan(folder)
+        else:
+            event.ignore()
 
     # --- building ---------------------------------------------------------
 

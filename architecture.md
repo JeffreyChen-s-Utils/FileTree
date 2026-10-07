@@ -27,6 +27,9 @@ signature; the client introspects it and verifies an actual wire call. Owned Tra
 MainWindow review, protection, journal and QFile, checking freedesktop path/content receipts. Native CJK
 glyph support and a screenshot provide rendering evidence. CI mounts the repo read-only, limits runtime
 resources and retains evidence even on failures. This tooling introduces no application dependency.
+An isolated disconnected-bus process exercises QDesktopServices with a logging xdg-open to verify
+the containing-folder fallback. MainWindow accepts dropped folder references only as Copy, rejecting
+Move-only sources so scan initiation never authorizes a file manager to remove its original.
 
 `core.special_files` surveys existing packed snapshot attributes on a cancellable iterative walk,
 giving way per folder and retaining at most 1,000 largest matches plus full matching totals. It uses

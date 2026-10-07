@@ -112,6 +112,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 1. **Choose what to scan**: click *Choose a folder…* or one of the drives on the start page, drag a
    folder onto the window, or type a path in the box at the top and press Enter. You can also start a
    scan from the command line: `je-file-tree D:\Projects` (or `python start_file_tree.py D:\Projects`).
+   Dropping a folder scans it in place and accepts only the Copy action, preserving the source even when Shift requests Move.
 2. **Watch it fill in**: the tree appears right away and the biggest folders move to the top while
    FileTree works; the largest files and file types follow when the scan ends. *Stop* (or Esc) ends the
    scan at any time and keeps what was read so far, marked as incomplete.
@@ -312,12 +313,12 @@ JSON exports stream to a temporary sibling, keeping additional memory small even
 python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
 ```
 
-The Linux desktop CI probe uses a fresh container, Xvfb/X11 and a private session bus to check a strict `ShowItems(as, s)` service, the complete owned-fixture Trash workflow and native Traditional Chinese font rendering. It keeps logs, proof JSON and screenshots even on failure. The repository is mounted read-only; runtime is capped at 1 GB and two CPUs. To reproduce from a Linux shell with Docker running:
+The Linux desktop CI probe uses a fresh container, Xvfb/X11 and a private session bus to check a strict `ShowItems(as, s)` service, the complete owned-fixture Trash workflow, the disconnected-bus folder fallback through a logging `xdg-open`, and native Traditional Chinese font rendering. It keeps logs, proof JSON and screenshots even on failure; incomplete artifacts fail the job. The repository is mounted read-only; runtime is capped at 1 GB and two CPUs. To reproduce from a Linux shell with Docker running:
 
 ```bash
 docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
 mkdir -p desktop-evidence
-docker run --rm --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
+docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
 ```
 
 This harness supplies concrete evidence; a real file-manager drag and macOS verification remain separate checks.

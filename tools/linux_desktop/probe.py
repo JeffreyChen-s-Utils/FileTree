@@ -108,6 +108,40 @@ def check_trash(app: QApplication, window: main_window.MainWindow, scratch: Path
         main_window.CleanupReview.exec, QMessageBox.question = original_review, original_question
 
 
+def check_fallback(app: QApplication, evidence: Path, scratch: Path) -> dict[str, object]:
+    """Verify the native desktop fallback opens the parent with Unicode preserved."""
+    binary = scratch / "bin"
+    binary.mkdir()
+    record = scratch / "xdg-open.json"
+    executable = binary / "xdg-open"
+    executable.write_text(f"#!{sys.executable}\nimport json, os, sys\n"
+                          "from je_file_tree.core.export import _atomic_file\n"
+                          "with _atomic_file(os.environ['FILETREE_XDG_LOG'], encoding='utf-8') as out:\n"
+                          "    json.dump(sys.argv[1:], out)\n", encoding="utf-8")
+    executable.chmod(0o700)
+    folder = scratch / "備援 資料,夾"
+    folder.mkdir()
+    target = folder / "test.txt"
+    target.write_text("owned fallback", encoding="utf-8")
+    environment = dict(os.environ, DBUS_SESSION_BUS_ADDRESS=f"unix:path={scratch}/absent-bus",
+                       FILETREE_XDG_LOG=str(record), PATH=f"{binary}:{os.environ['PATH']}")
+    command = [sys.executable, "/workspace/tools/linux_desktop/fallback.py", str(target), str(record)]
+    with (evidence / "fallback.log").open("w", encoding="utf-8") as log:
+        child = subprocess.Popen(command, env=environment, stdout=log, stderr=log)  # noqa: S603 # nosec B603
+        try:
+            pump(app, lambda: child.poll() is not None)
+            require(child.returncode == 0, "Native desktop fallback process failed")
+        finally:
+            if child.poll() is None:
+                child.terminate()
+            child.wait(timeout=10)
+    arguments = json.loads(record.read_text(encoding="utf-8"))
+    require(len(arguments) == 1, "Fallback did not preserve a single folder argument")
+    actual = QUrl(arguments[0]).toLocalFile() or arguments[0]
+    require(actual == str(folder), f"Fallback opened the wrong folder: {arguments}")
+    return {"disconnected_bus": True, "parent_folder_preserved": True, "arguments": arguments}
+
+
 def main() -> int:
     """Run only owned fixtures; emit proof and a native Traditional Chinese screenshot."""
     evidence, scratch = Path(sys.argv[1]), Path(os.environ["HOME"])
@@ -122,7 +156,8 @@ def main() -> int:
     try:
         proof, failures = {}, []
         for name, check in (("dbus", lambda: check_bus(app, evidence, scratch)),
-                            ("trash", lambda: check_trash(app, window, scratch))):
+                            ("trash", lambda: check_trash(app, window, scratch)),
+                            ("fallback", lambda: check_fallback(app, evidence, scratch))):
             try:
                 proof[name] = check()
             except (OSError, RuntimeError, ValueError, ET.ParseError) as error:

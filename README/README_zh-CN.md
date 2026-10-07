@@ -86,6 +86,7 @@ python start_file_tree.py
 ## 使用方法
 
 1. **选择要扫描的地方**：在起始页点“选择文件夹…”或其中一个磁盘、把文件夹拖到窗口上，或在上方的输入框输入路径后按 Enter。也可以从命令行直接开始扫描：`je-file-tree D:\Projects`（或 `python start_file_tree.py D:\Projects`）。
+   拖动文件夹会在原位置扫描，且只接受复制操作；即使用 Shift 请求移动，也会保留来源。
 2. **边扫边看**：文件夹树会立刻出现，FileTree 一边加总，最大的文件夹一边往上排；最大的文件与文件类型在扫描结束时补上。随时可以点“停止”（或按 Esc）结束扫描，已经读到的部分会留下来并标示为不完整。
 3. **找出占空间的东西**：最大的文件夹排在最上面。点文件夹旁的箭头看里面的内容，或在右边的图表里浏览。
 
@@ -188,12 +189,12 @@ python tools/make_screenshots.py
 python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
 ```
 
-Linux 桌面 CI 检查使用全新容器、Xvfb／X11 与独立会话总线，验证严格的 `ShowItems(as, s)` 服务、专用测试文件的完整回收站流程，以及原生繁体中文字型绘制。失败时也保存日志、证明 JSON 与截图。项目只读挂载，运行限制为 1 GB 内存及两个 CPU。可在已启动 Docker 的 Linux shell 重现：
+Linux 桌面 CI 检查使用全新容器、Xvfb／X11 与独立会话总线，验证严格的 `ShowItems(as, s)` 服务、专用测试文件的完整回收站流程、总线断开时通过记录用 `xdg-open` 打开文件夹的备用流程，以及原生繁体中文字型绘制。失败时也保存日志、证明 JSON 与截图；产物不完整即判定失败。项目只读挂载，运行限制为 1 GB 内存及两个 CPU。可在已启动 Docker 的 Linux shell 重现：
 
 ```bash
 docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
 mkdir -p desktop-evidence
-docker run --rm --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
+docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
 ```
 
 这个工具提供具体证据；实际文件管理器拖放与 macOS 验证仍是分开的检查。
