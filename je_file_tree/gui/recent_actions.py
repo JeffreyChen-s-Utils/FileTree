@@ -85,7 +85,8 @@ class RecentActions(QDialog):
             outcome = record.outcome
             reason = (_record_text(f"cleanup_{record.reason[8:]}", record.reason)
                       if record.reason.startswith("cleanup:") else
-                      tr("journal_reason_duplicates" if record.reason == "duplicates" else "review_manual"))
+                      tr("journal_reason_undo" if record.reason == "undo" else
+                         "journal_reason_duplicates" if record.reason == "duplicates" else "review_manual"))
             values = (record.timestamp, record.source, str(record.identity), reason,
                       tr(f"journal_status_{outcome.status}"),
                       _record_text(f"trash_skip_{outcome.detail}", outcome.detail) if outcome.detail else "",

@@ -11,7 +11,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#52** (P3) Undo GUI: capture `core.trash_restore.TrashOrigin` before successful Trash and prepare frozen freedesktop/Windows plans off-thread; offer *Undo* in the status bar for a few seconds, join an owned restoration worker and rescan source parents. Preserve truthful partial/receipt outcomes and visible native errors, the operation audit, protected-source approval, stale/expired rejection and #22 redirect collisions; GUI lifecycle and native integration remain to verify.
+- **#52** (P3) Verify native Linux private-fixture GUI Undo on CI, including normal pre-Trash origin capture, recognized destination preparation, native restoration, receipt/container preservation and affected-parent rescan; Windows native GUI and portable lifecycle checks are recorded in `docs/updates/`.
 
 ### Freeing space
 

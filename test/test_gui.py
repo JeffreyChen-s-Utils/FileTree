@@ -617,7 +617,9 @@ def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
     assert {child.name for child in root.children} == {"code", "notes.txt"}
     assert {node.name for node in window.results.largest_model.rows()} == {"notes.txt", "main.py", "Makefile"}
     assert not {".bin", ".jpg", ".png"} & {stat.extension for stat in window.results.types_model.rows()}
-    assert window.statusBar().currentMessage() == "Moved 2, skipped 0, failed 1; 750 B moved to the Recycle Bin."
+    assert window.statusBar().currentMessage().startswith(
+        "Moved 2, skipped 0, failed 1; 750 B moved to the Recycle Bin.")
+    assert "Undo unavailable" in window.statusBar().currentMessage(), "mocked successes never moved their source"
 
 
 def test_the_context_menu_acts_on_the_selection_it_was_opened_on(

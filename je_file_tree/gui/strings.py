@@ -9,6 +9,14 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "undo_button": "Undo ({count})",
+    "undo_running": "Restoring captured Trash items…",
+    "undo_done": "Undo: {restored} restored, {failed} failed",
+    "undo_title": "Trash restoration",
+    "undo_result": "{status}\nOriginal: {source}\nTrash: {trashed}\n{reason}",
+    "undo_unavailable": "Undo unavailable for some items: {reason}",
+    "journal_status_restored": "Restored from Trash",
+    "journal_reason_undo": "Explicit Trash undo",
     "menu_move_drive": "Move to another drive…",
     "copy_hint": ("Choose an existing folder on another drive. Originals stay until a separate Trash confirmation. "
                   "Verify file counts, lengths and SHA-256 below 64 MiB; larger payloads are length-only. "
@@ -1178,6 +1186,14 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "undo_button": "復原（{count}）",
+    "undo_running": "正在復原已記錄的資源回收筒項目…",
+    "undo_done": "復原：{restored} 個已復原，{failed} 個失敗",
+    "undo_title": "資源回收筒復原",
+    "undo_result": "{status}\n原位置：{source}\n資源回收筒：{trashed}\n{reason}",
+    "undo_unavailable": "部分項目無法復原：{reason}",
+    "journal_status_restored": "已從資源回收筒復原",
+    "journal_reason_undo": "明確要求復原資源回收筒項目",
     "menu_move_drive": "移到另一個磁碟…",
     "copy_hint": ("選擇另一個磁碟上的現有資料夾。另行確認移入資源回收筒前，保留原始資料。"
                   "核對檔案數、長度及小於 64 MiB 內容的 SHA-256；較大內容僅核對長度。"
@@ -2230,6 +2246,14 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "undo_button": "恢复（{count}）",
+    "undo_running": "正在恢复已记录的回收站项目…",
+    "undo_done": "恢复：{restored} 个已恢复，{failed} 个失败",
+    "undo_title": "回收站恢复",
+    "undo_result": "{status}\n原位置：{source}\n回收站：{trashed}\n{reason}",
+    "undo_unavailable": "部分项目无法恢复：{reason}",
+    "journal_status_restored": "已从回收站恢复",
+    "journal_reason_undo": "明确要求恢复回收站项目",
     "menu_move_drive": "移动到另一个磁盘…",
     "copy_hint": ("选择另一个磁盘上的现有文件夹。另行确认移入回收站前，保留原始数据。"
                   "核对文件数、长度及小于 64 MiB 内容的 SHA-256；更大内容仅核对长度。"

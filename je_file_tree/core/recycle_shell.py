@@ -10,6 +10,7 @@ from typing import Any
 import uuid
 
 from je_file_tree.core.snapshot import stat_snapshot, unpack_snapshot
+from je_file_tree.core.pacing import give_way
 from je_file_tree.core.trash_restore import TrashOrigin, _unchanged
 
 _LIMIT = 100_000
@@ -172,6 +173,7 @@ def recycle_item(origin: TrashOrigin, *, actual: str | None = None,
                                           ctypes.byref(_guid(_IID_ITEM)), ctypes.byref(folder)))
         with _owned(folder), _owned(_bound(folder, _ENUM, _IID_ENUM)) as iterator:
             for _ in range(_LIMIT):
+                give_way()
                 if cancel is not None and cancel.is_set():
                     raise ValueError("Recycle Bin lookup canceled")
                 pointer, fetched = ctypes.c_void_p(), ctypes.c_uint32()

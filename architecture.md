@@ -519,7 +519,16 @@ initialization, interface/string/menu release and native collision UI without an
 before invocation and observes actual restored identity/location and receipt cleanup. It performs
 no manual Windows payload or receipt deletion; retained receipts and unconfirmed native completion
 remain visible. Native fresh CJK-folder validation confirmed identity/hash/empty-folder restoration
-and recorded this Shell's retained receipt. The ephemeral status-bar Undo remains pending.
+and recorded this Shell's retained receipt. `TrashWorker` captures origins before native Trash and prepares complete frozen inverse plans after
+successful receipts. `gui.trash_undo` owns the 8s status-bar offer, frozen root/deadline and timer;
+`gui.undo_worker` owns native restoration and new durable inverse approvals. Original audit records
+remain intact; new undo records have distinct ids/batches and additive restored outcomes. Captured
+parent references avoid GUI tree traversal and detached-path reuse. Offer expiry, new scans/actions,
+path dialogs and close discard authority. MainWindow serializes inverse work with scanning/Trash,
+postpones automatic source-parent rescans while Undo is offered and joins native work before close.
+Late partial/receipt/audit results remain visible in plain text; a replaced tree receives no rescan.
+An occupied copy redirect is refused without removing it. Native Windows owned-fixture GUI proof
+confirmed button/action/hash/empty-folder/audit/rescan behavior; Linux native GUI fixtures run in CI.
 
 ## 3. Entry points and public interfaces
 

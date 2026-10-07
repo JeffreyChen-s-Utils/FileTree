@@ -18,7 +18,9 @@ from je_file_tree.core.operation_journal import JournalApproval, OperationOutcom
 from je_file_tree.core.duplicates import DuplicateGroup
 from je_file_tree.core.duplicate_decisions import check_group
 from je_file_tree.core.protected import Protection
+from je_file_tree.core.trash_restore import TrashOrigin, capture_origin
 from je_file_tree.gui import file_actions
+from je_file_tree.gui.undo_worker import UndoEntry, prepare_undo
 
 
 class TrashWorker(QThread):
@@ -40,6 +42,12 @@ class TrashWorker(QThread):
         self.copy_approval: CopyApproval | None = None
         self._copy_errors: list[tuple[str, str, str, str]] = []
         self.result: MoveResult | None = None
+        self.allow_undo = False
+        self.undo_entries: list[UndoEntry] = []
+        self.undo_errors: list[tuple[str, str]] = []
+        self._origins: dict[str, TrashOrigin] = {}
+        self._origin_errors: dict[str, str] = {}
+        self._paths = {node.path: node for node in nodes}
 
     def cancel(self) -> None:
         """Stop validation and skip every remaining entry."""
@@ -55,6 +63,7 @@ class TrashWorker(QThread):
                                 parents=[node.parent for node in self._nodes if node.parent is not None])
         result.journal_errors.extend(self._audit.errors)
         result.copy_errors.extend(self._copy_errors)
+        self._prepare_undo(result)
         for node in result.failed:
             if self._cancel.is_set():
                 break
@@ -87,7 +96,7 @@ class TrashWorker(QThread):
     def _copy_move(self, path: str) -> MoveReceipt:
         approval = self.copy_approval
         if approval is None:
-            return self._audit.move(path)
+            return self._trash_move(path)
         proof = next((entry for entry in approval.proofs if entry.item.source == path), None)
         if proof is None or not approval.matches(self._root, self._nodes):
             self._copy_errors.append((path, "", "verify", "Copy approval does not match the selected source"))
@@ -97,7 +106,7 @@ class TrashWorker(QThread):
         try:
             with (anchored_directory(proof.item.ancestors), anchored_directory(proof.destination)):
                 verify_copy(proof, cancel=self._cancel)
-                receipt = self._audit.move(path)
+                receipt = self._trash_move(path)
                 if receipt.success and approval.redirect:
                     phase = "redirect"
                     redirect_copy(proof)
@@ -105,6 +114,31 @@ class TrashWorker(QThread):
             self._copy_errors.append((path, proof.item.destination, phase, str(exc)))
             self._cancel.set()
         return receipt
+
+    def _trash_move(self, path: str) -> MoveReceipt:
+        if self.allow_undo and self._audit.approval is not None:
+            try:
+                snapshot = self._paths[path].snapshot
+                if snapshot is None:
+                    raise ValueError("Undo source has no captured scan identity")
+                self._origins[path] = capture_origin(path, snapshot)
+            except (OSError, ValueError) as exc:
+                self._origin_errors[path] = str(exc)
+        return self._audit.move(path)
+
+    def _prepare_undo(self, result: MoveResult) -> None:
+        if not self.allow_undo or self._audit.approval is None:
+            return
+        for node in result.moved:
+            path = node.path  # Nodes are still attached until the GUI receives the completed result.
+            if path not in self._origins:
+                self.undo_errors.append((path, self._origin_errors.get(path, "Undo origin capture unavailable")))
+                continue
+            try:
+                plan = prepare_undo(self._origins[path], result.destinations.get(node), self._cancel)
+                self.undo_entries.append(UndoEntry(plan, self._audit.events[path], node.parent))
+            except (OSError, ValueError) as exc:
+                self.undo_errors.append((path, str(exc)))
 
 
 def _merge(target: MoveResult, source: MoveResult) -> None:

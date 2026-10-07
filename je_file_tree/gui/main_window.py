@@ -64,6 +64,7 @@ from je_file_tree.gui.printing import print_view, save_view_pdf, view_printer
 from je_file_tree.gui.list_transfer import ListCapture, ListStream
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.trash_worker import TrashWorker
+from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
 from je_file_tree.gui.themes import ThemeMenu
@@ -124,6 +125,7 @@ class MainWindow(QMainWindow):
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
         self.results = ResultsView(settings=self.settings)
+        self._undo = TrashUndo(self)
         self._bin_labels = BinLabels(self)
         self._bin_labels.ready.connect(self._bin_metadata_ready)
         self._bin_labels.busy_changed.connect(lambda _busy: self._update_bin_buttons())
@@ -158,12 +160,18 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(tr("policy_saved_invalid"))
         self.results.cleanup.set_policy(self._cleanup_policy)
 
+    @property
+    def operation_busy(self) -> bool:
+        """Serialize source mutations across Trash and an owned native restoration worker."""
+        return self._trash_worker is not None or self._undo.busy
+
     # --- scanning ---------------------------------------------------------
 
     def start_scan(self, path: str, *, exact_allocation: bool = False) -> None:
         """Scan ``path`` (stopping a scan already running)."""
-        if self._trash_worker is not None or self._path_dialogs:
+        if self.operation_busy or self._path_dialogs:
             return
+        self._undo.expire()
         self._trash_rescans.clear()
         path = os.path.abspath(os.path.expanduser(path.strip().strip('"')))
         if not os.path.isdir(path):
@@ -199,7 +207,9 @@ class MainWindow(QMainWindow):
         """Ask the running scan (if any) to stop; with ``wait``, until it has."""
         worker = self._worker
         if worker is None:
-            if self._trash_worker is not None:
+            if self._undo.busy:
+                self._undo.worker.cancel()
+            elif self._trash_worker is not None:
                 self._trash_worker.cancel()
             return
         worker.cancel()
@@ -278,14 +288,14 @@ class MainWindow(QMainWindow):
             entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
-            if elevation.supported() and self._worker is None and self._trash_worker is None:
+            if elevation.supported() and self._worker is None and not self.operation_busy:
                 entries.append(("menu_compression", lambda: self.show_compression(node)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
         movable = [entry for entry in _movable(picked) if system_file(entry.path) is None]
         if movable:
             menu.addSeparator()
-            if self._worker is None and self._trash_worker is None:
+            if self._worker is None and not self.operation_busy:
                 menu.addAction(tr("menu_move_folder")).triggered.connect(lambda: self.show_namespace(picked))
                 menu.addAction(tr("menu_rename")).triggered.connect(lambda: self.show_namespace(picked, rename=True))
                 if any(entry.is_dir and not entry.is_link for entry in movable):
@@ -307,12 +317,13 @@ class MainWindow(QMainWindow):
     def show_namespace(self, nodes: Sequence[Node], *, rename: bool = False) -> None:
         """Review real selected entries; join operations and refresh the current affected scan scope."""
         outcome = self.results.outcome
-        if (outcome is None or self._path_dialogs or self._worker is not None or self._trash_worker is not None
+        if (outcome is None or self._path_dialogs or self._worker is not None or self.operation_busy
                 or not nodes
                 or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
             return
         root = outcome.result.root
         dialog = NamespaceDialog(root, nodes, self._unit, self, rename=rename)
+        self._undo.expire()
         self._path_dialogs.add(dialog)
         try:
             dialog.exec()
@@ -320,6 +331,7 @@ class MainWindow(QMainWindow):
             dialog.shutdown()
             self._path_dialogs.discard(dialog)
             dialog.deleteLater()
+            QTimer.singleShot(0, self._rescan_after_trash)
         if not self._closing and dialog.changed and self.results.outcome is outcome:
             self._analyser = None
             self.results.clear_capacity()
@@ -329,12 +341,13 @@ class MainWindow(QMainWindow):
     def show_copy(self, nodes: Sequence[Node]) -> None:
         """Review copied folders, join the copy worker, then use ordinary protected-folder Trash approval."""
         outcome = self.results.outcome
-        if (outcome is None or self._path_dialogs or self._worker is not None or self._trash_worker is not None
+        if (outcome is None or self._path_dialogs or self._worker is not None or self.operation_busy
                 or not nodes
                 or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
             return
         root = outcome.result.root
         dialog = CopyDialog(root, nodes, self._unit, self)
+        self._undo.expire()
         self._path_dialogs.add(dialog)
         try:
             dialog.exec()
@@ -342,6 +355,7 @@ class MainWindow(QMainWindow):
             dialog.shutdown()
             self._path_dialogs.discard(dialog)
             dialog.deleteLater()
+            QTimer.singleShot(0, self._rescan_after_trash)
         if self._closing or not dialog.changed or self.results.outcome is not outcome:
             return
         self._analyser = None
@@ -349,13 +363,13 @@ class MainWindow(QMainWindow):
         self._bin_labels.refresh()
         if dialog.finish_requested and dialog.approval is not None:
             self.move_to_trash([proof.item.node for proof in dialog.approval.proofs], copies=dialog.approval)
-        if self._trash_worker is None:
+        if not self.operation_busy:
             self.rescan_folder(root)
 
     def show_compression(self, node: Node) -> None:
         """Review/confirm scoped native operations, then rescan with per-file allocation if attempted."""
         outcome = self.results.outcome
-        if (not elevation.supported() or self._worker is not None or self._trash_worker is not None
+        if (not elevation.supported() or self._worker is not None or self.operation_busy
                 or outcome is None or not node.is_dir or node.is_link or not node.is_in(outcome.result.root)):
             return
         dialog = CompressionDialog(node, self._unit, self, partial=outcome.partial)
@@ -370,8 +384,9 @@ class MainWindow(QMainWindow):
 
     def rescan_folder(self, node: Node, *, exact_allocation: bool = False) -> None:
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
-        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
+        if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
+        self._undo.expire()
         if self.results.outcome.result.hard_links is not None or self._actions["count_hard_links"].isChecked():
             root = self.results.outcome.result.root
             self._trash_rescans.clear()
@@ -441,7 +456,7 @@ class MainWindow(QMainWindow):
         """
         chosen = _movable(nodes)
         root = self.results.tree_model.root
-        if (not chosen or root is None or self._worker is not None or self._trash_worker is not None
+        if (not chosen or root is None or self._worker is not None or self.operation_busy
                 or copies is not None and not copies.matches(root, chosen)):
             return
         chosen = self._without_managed(chosen)
@@ -459,7 +474,7 @@ class MainWindow(QMainWindow):
             self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
             return
-        if self._worker is not None or self._trash_worker is not None or self.results.tree_model.root is not root:
+        if self._worker is not None or self.operation_busy or self.results.tree_model.root is not root:
             lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
             QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
             return
@@ -473,6 +488,8 @@ class MainWindow(QMainWindow):
         if copies is not None:
             worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in chosen),
                                                 copies.redirect)
+        self._undo.expire()
+        worker.allow_undo = True
         worker.done.connect(self._trash_finished)
         worker.finished.connect(worker.deleteLater)
         self._trash_worker = worker
@@ -501,6 +518,9 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def _trash_finished(self, result: MoveResult) -> None:
+        worker = self._trash_worker
+        if worker is not None:
+            wait_for(worker)
         self._trash_worker = None
         self.refresh_bin_labels()
         if self._closing:
@@ -526,7 +546,8 @@ class MainWindow(QMainWindow):
         self._report_copy_errors(result)
         done = tr("trash_batch_done", moved=format_count(len(moved)), skipped=format_count(len(result.skipped)),
                   failed=format_count(len(failed)), size=moved_size)
-        self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+        unavailable = self._undo.offer(worker)
+        self.statusBar().showMessage(done + ("\n" + unavailable if unavailable else ""), _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
         QTimer.singleShot(0, self._rescan_after_trash)
 
@@ -553,7 +574,8 @@ class MainWindow(QMainWindow):
         return "\n\n" + "\n".join(lines) if lines else ""
 
     def _rescan_after_trash(self) -> None:
-        if self._worker is not None or not self._trash_rescans:
+        if (self._closing or self.operation_busy or self._worker is not None
+                or self._undo.available or not self._trash_rescans):
             return
         node = self._trash_rescans.pop(0)
         root = self.results.tree_model.root
@@ -623,7 +645,7 @@ class MainWindow(QMainWindow):
     def export_report(self, kind: str) -> None:
         """Export a bounded whole-scan HTML or Excel report through an owned cancellable modal worker."""
         outcome = self.results.outcome
-        if outcome is None or self._worker is not None or self._trash_worker is not None or self._analysers:
+        if outcome is None or self._worker is not None or self.operation_busy or self._analysers:
             return
         target, _ = QFileDialog.getSaveFileName(self, tr("action_export_report_" + kind),
                                                 f"report.{kind}", tr(kind + "_filter"))
@@ -673,7 +695,7 @@ class MainWindow(QMainWindow):
 
     def print_current_view(self) -> None:
         """Offer the system print dialog for one page containing the visible results."""
-        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+        if self.results.outcome is None or self._worker is not None or self.operation_busy:
             return
         image = self.results.grab().toImage()
         printer = view_printer(image)
@@ -689,7 +711,7 @@ class MainWindow(QMainWindow):
 
     def export_view_pdf(self) -> None:
         """Export captured results through Qt's PDF engine on an atomic-writing worker."""
-        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+        if self.results.outcome is None or self._worker is not None or self.operation_busy:
             return
         target, _ = QFileDialog.getSaveFileName(self, tr("action_export_view_pdf"), "view.pdf", tr("pdf_filter"))
         if not target:
@@ -706,7 +728,7 @@ class MainWindow(QMainWindow):
 
     def export_chart(self, kind: str) -> None:
         """Capture the visible chart as PNG, or full bounded bars/rings as vector SVG."""
-        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+        if self.results.outcome is None or self._worker is not None or self.operation_busy:
             return
         charts = self.results.charts
         if kind == "svg" and charts.mode not in SVG_MODES:
@@ -795,6 +817,7 @@ class MainWindow(QMainWindow):
         self.welcome.retranslate()
         self.results.retranslate()
         self.theme_menu.retranslate()
+        self._undo.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
     def _remember(self, path: str) -> None:
@@ -831,6 +854,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self._undo.shutdown()
         for dialog in self._path_dialogs.copy():
             dialog.reject()
         self._bin_labels.shutdown()
@@ -1060,10 +1084,10 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
-        scanning = self._worker is not None or self._trash_worker is not None
+        scanning = self._worker is not None or self.operation_busy
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
-        self._actions["open"].setEnabled(self._trash_worker is None)
+        self._actions["open"].setEnabled(not self.operation_busy)
         self._actions["cleanup_policy"].setEnabled(not scanning)
         self._actions["live_compare"].setEnabled(not scanning)
         self._actions["volumes"].setEnabled(not scanning)
@@ -1077,7 +1101,7 @@ class MainWindow(QMainWindow):
                     "programs", "file_times"):
             self._actions[key].setEnabled(has_results and not scanning)
         for key in ("export_report_html", "export_report_xlsx"):
-            self._actions[key].setEnabled(has_results and not scanning and self._trash_worker is None
+            self._actions[key].setEnabled(has_results and not scanning and not self.operation_busy
                                           and not self._analysers)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
@@ -1085,13 +1109,13 @@ class MainWindow(QMainWindow):
 
     def _update_bin_buttons(self) -> None:
         idle = (not self._closing and not self._bin_labels.busy
-                and self._worker is None and self._trash_worker is None)
+                and self._worker is None and not self.operation_busy)
         self.welcome.bin_refresh.setEnabled(idle)
         self.results.cleanup.bin_refresh.setEnabled(idle and self.results.outcome is not None)
 
     def refresh_bin_labels(self) -> None:
         """Refresh read-only drive totals off the GUI thread, retaining the current scan's scope."""
-        if self._closing or self._worker is not None or self._trash_worker is not None:
+        if self._closing or self._worker is not None or self.operation_busy:
             return
         outcome = self.results.outcome
         self._bin_labels.refresh(outcome.result.root.path if outcome is not None else "")
@@ -1105,7 +1129,7 @@ class MainWindow(QMainWindow):
 
     def show_programs(self) -> None:
         """Review Windows registrations/game names against the current recorded tree on an owned worker."""
-        if (not elevation.supported() or self._worker is not None or self._trash_worker is not None
+        if (not elevation.supported() or self._worker is not None or self.operation_busy
                 or self.results.outcome is None):
             return
         outcome = self.results.outcome
@@ -1129,7 +1153,7 @@ class MainWindow(QMainWindow):
 
     def show_file_times(self) -> None:
         """Query optional recorded file dates on an owned worker, without opening scanned payloads."""
-        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
+        if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
         outcome = self.results.outcome
         dialog = FileTimesDialog(outcome.result.root, self._unit, partial=outcome.partial, parent=self)
@@ -1142,7 +1166,7 @@ class MainWindow(QMainWindow):
 
     def show_history(self) -> None:
         """Review local history for the full current root and reuse the Changes worker for comparison."""
-        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
+        if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
         root = self.results.outcome.result.root
         store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
@@ -1156,7 +1180,7 @@ class MainWindow(QMainWindow):
 
     def show_bins(self) -> None:
         """Review OS bin metadata and exact-scope emptying after two explicit questions."""
-        if self._worker is not None or self._trash_worker is not None:
+        if self._worker is not None or self.operation_busy:
             return
         dialog = BinDialog(self._unit, self)
         dialog.scan_requested.connect(self.start_scan)
@@ -1174,7 +1198,7 @@ class MainWindow(QMainWindow):
 
     def show_volumes(self) -> None:
         """Show mounted volumes and scan an explicitly activated root."""
-        if self._worker is not None or self._trash_worker is not None:
+        if self._worker is not None or self.operation_busy:
             return
         dialog = VolumesDialog(self._unit, self)
         dialog.scan_requested.connect(self.start_scan)
@@ -1213,7 +1237,7 @@ class MainWindow(QMainWindow):
 
     def edit_cleanup_policy(self) -> None:
         """Preview and save clean-up settings independently of scan exclusions."""
-        if self._worker is not None or self._trash_worker is not None:
+        if self._worker is not None or self.operation_busy:
             return
         dialog = CleanupPolicyDialog(self._cleanup_policy, self.results.tree_model.root, self._unit, self)
         try:
@@ -1236,7 +1260,7 @@ class MainWindow(QMainWindow):
     def show_special_files(self) -> None:
         """Explain cloud and special file metadata without reading or downloading any contents."""
         outcome = self.results.outcome
-        if outcome is None or self._worker is not None or self._trash_worker is not None:
+        if outcome is None or self._worker is not None or self.operation_busy:
             return
         dialog = SpecialFilesDialog(outcome.result.root, self._unit,
                                     partial=outcome.partial or bool(outcome.result.errors), parent=self)
@@ -1249,7 +1273,7 @@ class MainWindow(QMainWindow):
 
     def compare_live_folders(self) -> None:
         """Choose two existing folders for an independent read-only comparison."""
-        if self._worker is not None or self._trash_worker is not None:
+        if self._worker is not None or self.operation_busy:
             return
         left = QFileDialog.getExistingDirectory(self, tr("compare_choose_left"), self._last_path or "")
         if not left:
@@ -1267,7 +1291,7 @@ class MainWindow(QMainWindow):
     def show_git_history(self) -> None:
         """Inspect the selected working folder's largest reachable Git history objects."""
         outcome = self.results.outcome
-        if outcome is None or self._worker is not None or self._trash_worker is not None:
+        if outcome is None or self._worker is not None or self.operation_busy:
             return
         node = self.results.selected_node() or outcome.result.root
         folder = node if node.is_dir else node.parent
@@ -1285,7 +1309,7 @@ class MainWindow(QMainWindow):
     def show_projects(self) -> None:
         """Explain recorded project/generated bytes and review only current-policy eligible entries."""
         outcome = self.results.outcome
-        if outcome is None or self._worker is not None or self._trash_worker is not None:
+        if outcome is None or self._worker is not None or self.operation_busy:
             return
         dialog = ProjectsDialog(outcome.result.root, self._unit, self._cleanup_policy,
                                 partial=outcome.partial, parent=self)

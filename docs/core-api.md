@@ -295,7 +295,7 @@ actual original/Trash locations. RestoreResult exposes restored, source, trashed
 receipt_retained. Only a successful restoration permits removal of its unchanged recognized receipt;
 cleanup failure is restored=True with an error and retained metadata. Cancellation stops before native
 rename; native rename/rollback/receipt cleanup is joined rather than interrupted. Concurrency remains
-observational. The GUI's expiring Undo remains pending integration.
+observational. The GUI wraps these captured plans in an expiring explicit offer.
 Specification: [freedesktop Trash](https://specifications.freedesktop.org/trash/1.0/).
 
 Cancellation before native restoration returns restored=False, receipt_retained=True and a nonempty
@@ -325,3 +325,22 @@ timeouts, collisions, changed observations, cancellation and native resource lif
 
 Reference: [canonical Shell restore](https://devblogs.microsoft.com/oldnewthing/20110901-00/?p=9753),
 [invocation flags](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/ns-shobjidl_core-cminvokecommandinfo).
+
+
+The GUI captures TrashOrigin before each actual approved Trash call, prepares frozen native plans
+on its TrashWorker after successful receipts and offers them for 8 seconds. Failed optional capture
+does not reverse or block the original approved Trash; reasons remain visible. GUI-only UndoEntry
+retains the original immutable audit record and affected parent node; native plans never depend on
+a detached Node.path. Expiry/root changes/new accepted actions/close discard offer authority.
+UndoWorker checks expiry again before durable new inverse approvals and mutation, serializes native
+restoration with scans/Trash/path dialogs and retains UndoBatch before queued delivery. Cancellation
+skips unstarted entries; close joins native calls and reports late observed results. Automatic source
+parent rescans wait for offer expiry or inverse completion; a replaced tree never receives a late
+rescan. Parent references avoid a GUI-thread tree walk.
+
+Operation-journal status `restored` is additive to `approved`, `moved`, `skipped`, `failed`; an explicit
+inverse operation has new id/batch/reason `undo` and leaves original Trash records unchanged. Failed
+inverse approval writes prevent restoration; failed outcome writes preserve observed success and
+cancel remaining entries. An approved-only inverse remains unknown after interruption. Recorded
+history is metadata, never authority to restore an arbitrary path. Occupied original-path redirects
+are refused without unlinking them; successful copies remain intact.
