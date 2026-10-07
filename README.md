@@ -158,6 +158,14 @@ python tools/make_screenshots.py
 `tools/make_screenshots.py` redraws the README pictures from a made-up folder, in every language. The
 code layout, the main flows and the design rules are described in [architecture.md](architecture.md).
 
+Measure a whole-drive scan with explicit resource budgets (two workers, 512 MB and 180 seconds by
+default). The report marks a stopped scan as partial; duplicate hashing is limited separately. CSV and
+JSON exports stream to a temporary sibling, keeping additional memory small even for large scans.
+
+```bash
+python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

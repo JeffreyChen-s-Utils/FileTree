@@ -113,6 +113,12 @@ python tools/make_screenshots.py
 
 `tools/make_screenshots.py` 会用一个虚构的文件夹重新绘制 README 里每种语言的图片。代码结构、主要流程与设计规则写在 [architecture.md](../architecture.md)。
 
+整盘扫描可以设置资源预算后测量（默认两个工作线程、512 MB、180 秒）。因预算而停止的扫描会在报告标为不完整；重复文件哈希另有时间限制。CSV 与 JSON 导出以流式写入临时文件，再替换目标文件，大型扫描也不必在内存保留另一份导出数据。
+
+```bash
+python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
+```
+
 ## 许可证
 
 MIT——详见 [LICENSE](../LICENSE)。

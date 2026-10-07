@@ -31,6 +31,8 @@ The core never imports Qt or the GUI (`test/test_layers.py`).
 - `je_file_tree.core.scanner.scan(path, *, options, progress, cancel)` → `ScanResult(root, errors, elapsed)`.
 - `je_file_tree.core.analysis.summarise(root, limit)` → largest files and per-extension totals in one pass.
 - `je_file_tree.core.treemap.layout(root, rect, ...)` → `Tile`s; `export.export_*` write CSV / JSON.
+- `python tools/measure_scale.py <root>` measures real scans with explicit memory/time budgets, optional
+  Qt painting/live-model refresh and bounded duplicate hashing. Partial measurements are identified.
 
 ## 4. Main flows
 
@@ -134,6 +136,10 @@ system is). The Changes tab, hidden until then, lists changed, new and gone fold
 again after each scan, move to the Recycle Bin and folder rescan until *Stop comparing*. Reading and
 comparing took 0.68 s and 0.49 s on 86,000 folders, hence the worker.
 
+**Export.** CSV rows and nested folder JSON stream into a temporary sibling. JSON uses an iterator stack
+proportional to depth, never a second folder tree or a recursive JSON encoder. Only a successful close
+replaces the destination; failure preserves its existing contents and removes the temporary file.
+
 **Taskbar (Windows).** `app.main` first gives the process FileTree's own AppUserModelID (`icon.claim_taskbar_button`), so run from Python its windows get their own taskbar button with FileTree's
 icon instead of being filed under `python.exe`.
 
@@ -187,6 +193,9 @@ any other `pip install`, builds with isolation, or when the lock does not satisf
   when idle, against 80 ms, and up to 2.1 s while the clean-up suggestions ran, before the workers gave way;
   the scan itself took as long either way with an idle window (2.6 s).
 - Memory: about 250 bytes per entry (740,000 entries ≈ 185 MB); only the root stores a full path.
+- System-drive check (U-20261007-01): 2.02 million entries / 57.95 s with two workers, 634 MB resident
+  memory (about 301 incremental bytes/entry); 768 MiB diagnostic budget. Analysis/search about 2 s;
+  compact streaming folder JSON 92.8 MB / 4.33 s. Unreadable branches remain unaccounted.
 - Links are never followed; unreadable folders are recorded, never fatal.
 - Nothing is deleted permanently; every move to the trash is confirmed.
 
