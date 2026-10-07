@@ -9,6 +9,29 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_recent_actions": "Recent actions…",
+    "action_recent_actions_tip": "Inspect retained operation metadata and export a redacted audit report",
+    "journal_time": "Time (UTC)",
+    "journal_source": "Original path",
+    "journal_identity": "Device / file identity",
+    "journal_result": "Result",
+    "journal_detail": "Detail",
+    "journal_destination": "Trash destination",
+    "journal_reason_duplicates": "Explicit duplicate decision",
+    "journal_status_approved": "Unknown outcome (approved only)",
+    "journal_status_moved": "Moved to Trash",
+    "journal_status_skipped": "Skipped",
+    "journal_status_failed": "Platform move failed",
+    "journal_reading": "Reading retained actions…",
+    "journal_hint": ("Latest 500 actions; metadata only, retained for 90 days / 50 MB. An approved-only event "
+                     "has an unknown final outcome. A recorded Trash path does not guarantee restoration."),
+    "journal_summary": "{count} actions shown; {invalid} damaged records and {unavailable} unavailable segments.",
+    "journal_read_failed": "The operation journal could not be read: {reason}",
+    "journal_write_failed": ("Journal writing or retention failed. Remaining moves were stopped where possible; "
+                             "recent actions may be incomplete.\n\n{reason}"),
+    "trash_skip_journal": "the approved action could not be recorded; nothing was moved",
+    "journal_export": "Export redacted CSV…",
+    "journal_exported": "Audit report saved with home-directory prefixes redacted.",
     "duplicate_folder_match": "{copy} = {original} ({size}, {files} files; matching search snapshot)",
     "duplicate_folder_tip": ("Matching names, sizes, verified hashes and empty-folder structure. "
                              "Read-only; not a clean-up approval."),
@@ -557,6 +580,28 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_recent_actions": "最近操作…",
+    "action_recent_actions_tip": "查看保留的操作中繼資料，並匯出隱去個人路徑的稽核報告",
+    "journal_time": "時間（UTC）",
+    "journal_source": "原始路徑",
+    "journal_identity": "磁碟／檔案身分",
+    "journal_result": "結果",
+    "journal_detail": "明細",
+    "journal_destination": "資源回收筒位置",
+    "journal_reason_duplicates": "明確的重複檔案決策",
+    "journal_status_approved": "結果未知（只有確認紀錄）",
+    "journal_status_moved": "已移到資源回收筒",
+    "journal_status_skipped": "已略過",
+    "journal_status_failed": "系統移動失敗",
+    "journal_reading": "正在讀取保留的操作…",
+    "journal_hint": ("最近 500 個操作；僅中繼資料，保留 90 天／50 MB。"
+                     "只有確認紀錄的操作，其最終結果未知。記錄資源回收筒位置不保證可還原。"),
+    "journal_summary": "顯示 {count} 個操作；{invalid} 筆損壞紀錄，{unavailable} 個無法讀取的日誌區段。",
+    "journal_read_failed": "無法讀取操作日誌：{reason}",
+    "journal_write_failed": "日誌寫入或保留管理失敗，已盡可能停止剩餘移動；最近操作可能不完整。\n\n{reason}",
+    "trash_skip_journal": "無法記錄已確認的操作，未移動任何項目",
+    "journal_export": "匯出隱去個人路徑的 CSV…",
+    "journal_exported": "稽核報告已儲存，家目錄前綴已隱去。",
     "duplicate_folder_match": "{copy} = {original}（{size}，{files} 個檔案；搜尋快照相符）",
     "duplicate_folder_tip": "名稱、大小、已驗證雜湊與空資料夾結構相同。僅供比對，不代表可清理。",
     "duplicates_keep_selected": "保留選取的副本",
@@ -1051,6 +1096,28 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_recent_actions": "最近操作…",
+    "action_recent_actions_tip": "查看保留的操作元数据，并导出隐藏个人路径的审计报告",
+    "journal_time": "时间（UTC）",
+    "journal_source": "原始路径",
+    "journal_identity": "磁盘／文件标识",
+    "journal_result": "结果",
+    "journal_detail": "详情",
+    "journal_destination": "回收站位置",
+    "journal_reason_duplicates": "明确的重复文件决策",
+    "journal_status_approved": "结果未知（只有确认记录）",
+    "journal_status_moved": "已移到回收站",
+    "journal_status_skipped": "已跳过",
+    "journal_status_failed": "系统移动失败",
+    "journal_reading": "正在读取保留的操作…",
+    "journal_hint": ("最近 500 个操作；仅元数据，保留 90 天／50 MB。"
+                     "只有确认记录的操作，其最终结果未知。记录回收站位置不保证可还原。"),
+    "journal_summary": "显示 {count} 个操作；{invalid} 条损坏记录，{unavailable} 个无法读取的日志分段。",
+    "journal_read_failed": "无法读取操作日志：{reason}",
+    "journal_write_failed": "日志写入或保留管理失败，已尽可能停止剩余移动；最近操作可能不完整。\n\n{reason}",
+    "trash_skip_journal": "无法记录已确认的操作，未移动任何项目",
+    "journal_export": "导出隐藏个人路径的 CSV…",
+    "journal_exported": "审计报告已保存，主目录前缀已隐藏。",
     "duplicate_folder_match": "{copy} = {original}（{size}，{files} 个文件；搜索快照相符）",
     "duplicate_folder_tip": "名称、大小、已验证哈希与空文件夹结构相同。仅供比较，不代表可清理。",
     "duplicates_keep_selected": "保留选中的副本",

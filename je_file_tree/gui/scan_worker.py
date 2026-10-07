@@ -134,8 +134,8 @@ class ExportWorker(QThread):
         """Thread body."""
         try:
             count = self._write()
-        except OSError as error:
-            self.failed.emit(error.strerror or str(error))
+        except (OSError, ValueError) as error:
+            self.failed.emit(getattr(error, "strerror", None) or str(error))
             return
         self.done.emit(count)
 

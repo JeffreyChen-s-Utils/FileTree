@@ -13,12 +13,15 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 @pytest.fixture(autouse=True)
-def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch):
+def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     """Fail any test that reaches the real UAC prompt (it would wait on the desktop of whoever runs the tests).
 
     A test that needs an answer replaces ``elevation.relaunch_elevated``; the prompt itself counts as declined.
     """
     reached: list[str] = []
+    from je_file_tree.gui import main_window
+
+    monkeypatch.setattr(main_window, "journal_folder", lambda: tmp_path / "journal")
     monkeypatch.setattr(elevation, "run_as_admin",
                         lambda program, _parameters, _folder: reached.append(program) and False)
     yield

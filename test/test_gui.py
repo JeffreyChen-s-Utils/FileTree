@@ -456,7 +456,7 @@ def test_move_to_trash_asks_then_updates_the_results(window: MainWindow, qapp: Q
     _wait(qapp, lambda: window._trash_worker is None)
     assert root.size == 1000
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: trashed.append(path) or True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash([big])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -490,7 +490,7 @@ def test_failed_trash_reports_holders_from_worker(window, qapp, sample_tree, mon
     monkeypatch.setattr(trash_worker, "find_holders", diagnose)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: False)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: False)
     monkeypatch.setattr(window, "rescan_folder", lambda node: None)
     window.move_to_trash([node])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -515,7 +515,7 @@ def test_file_replaced_during_confirmation_is_skipped_and_parent_rescanned(
 
     monkeypatch.setattr(QMessageBox, "question", replace_during_question)
     monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: moved.append(path) or True)
     monkeypatch.setattr(window, "rescan_folder", rescanned.append)
     window.move_to_trash([node])
     _wait(qapp, lambda: window._trash_worker is None and bool(rescanned))
@@ -539,7 +539,7 @@ def test_move_batch_rescans_the_actual_affected_parent(
         Path(path).rename(tmp_path / "moved")
         return True
 
-    monkeypatch.setattr(file_actions, "move_to_trash", moved)
+    monkeypatch.setattr(file_actions, "trash_receipt", moved)
     window.move_to_trash([node])
     _wait(qapp, lambda: window._trash_worker is None and window._worker is None
           and window.results.tree_model.root is not old_root)
@@ -562,7 +562,7 @@ def test_system_and_program_folders_are_asked_about_twice(window: MainWindow, qa
                         or next(answers))
     monkeypatch.setattr(QMessageBox, "question",
                         lambda _parent, _title, text: asked.append(text) or QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: trashed.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: trashed.append(path) or True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash([photos, big])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -597,7 +597,7 @@ def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
     monkeypatch.setattr(QMessageBox, "question",
                         lambda _parent, _title, text: questions.append(text) or QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
-    monkeypatch.setattr(file_actions, "move_to_trash",
+    monkeypatch.setattr(file_actions, "trash_receipt",
                         lambda path: trashed.append(path) or not path.endswith("notes.txt"))
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window._trash_selected()  # what Delete does
@@ -666,7 +666,7 @@ def test_search_finds_entries_anywhere_and_follows_changes_to_the_tree(
     photos = _child(root, "photos")
     assert results.search_model.rows() == [photos]
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash([photos])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -723,7 +723,7 @@ def test_duplicates_are_found_on_request_and_their_extra_copies_trashed(
     picked = _selected_in(panel.view)
     assert sorted(node.name for node in picked) == ["notes.txt", "photo (1).jpg", "photo (2).jpg"]
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash(picked)
     _wait(qapp, lambda: window._trash_worker is None)
@@ -926,7 +926,7 @@ def test_the_lists_can_cover_the_selected_folder_only(window: MainWindow, qapp: 
     assert largest() == [], "a type's largest files within the folder shown"
     results.show_all_largest()
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash([_child(code, "Makefile")])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -1012,7 +1012,7 @@ def test_clean_up_suggestions_are_found_after_a_scan_and_follow_moves(
 
     monkeypatch.setattr(main_window_module.CleanupReview, "exec", check_manually)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda _path: True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda _path: True)
     monkeypatch.setattr(window, 'rescan_folder', lambda _node: None)
     window.move_to_trash(picked)
     _wait(qapp, lambda: window._trash_worker is None)
@@ -1066,7 +1066,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
     monkeypatch.setattr(main_window_module.CleanupReview, "exec", review)
     monkeypatch.setattr(QMessageBox, "question", lambda _parent, _title, text:
                         questions.append(text) or QMessageBox.StandardButton.Yes)
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: moved.append(path) or True)
     monkeypatch.setattr(window, "rescan_folder", lambda _node: None)
     window.move_to_trash([safe, protected])
     _wait(qapp, lambda: window._trash_worker is None)
@@ -1090,7 +1090,7 @@ def test_cancelling_cleanup_review_never_opens_trash_confirmation(
 
     monkeypatch.setattr(main_window_module.CleanupReview, "exec", cancel)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: questions.append(True))
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: moved.append(path) or True)
     window.move_to_trash([node])
     assert reviewed == [node.path] and questions == [] and moved == []
     assert (tmp_path / "memory.dmp").read_bytes() == b"dump"
@@ -1113,7 +1113,7 @@ def test_replacing_the_selected_scan_while_review_is_open_invalidates_the_batch(
     monkeypatch.setattr(main_window_module.CleanupReview, "exec", replace_scan)
     monkeypatch.setattr(QMessageBox, "question", lambda *_args: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: moved.append(path) or True)
     window.move_to_trash([node])
     assert moved == [] and warnings and "outside the current scan" in warnings[0]
 
@@ -1212,3 +1212,4 @@ def test_rescanning_one_folder_swaps_it_in_and_updates_every_list(window: MainWi
     assert results.selected_node() is code, "the selection outside the rescanned folder stays"
     assert "Rescanned photos: 250 B → 950 B" in window.statusBar().currentMessage()
     assert results.tree_model.index(0, 0).data() == str(sample_tree)
+

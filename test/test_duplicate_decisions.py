@@ -101,7 +101,7 @@ def test_trash_worker_leaves_entire_failed_group_untouched(qapp, decision, monke
     else:
         picked.append(group.kept)
     moved, results = [], []
-    monkeypatch.setattr(file_actions, "move_to_trash", lambda path: moved.append(path) or True)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: moved.append(path) or True)
     worker = TrashWorker(root, picked, [], {}, decisions=[group])
     worker.done.connect(results.append)
     worker.start()
@@ -132,7 +132,7 @@ def test_pre_move_rehash_runs_on_worker_and_keeps_only_explicit_copy(qapp, decis
         return True
 
     monkeypatch.setattr(duplicate_decisions, "hash_unchanged", observe)
-    monkeypatch.setattr(file_actions, "move_to_trash", move)
+    monkeypatch.setattr(file_actions, "trash_receipt", move)
     picked = [node for node in group.files if node is not group.kept]
     worker = TrashWorker(root, picked, [], {}, decisions=[group])
     worker.done.connect(results.append)
@@ -141,3 +141,4 @@ def test_pre_move_rehash_runs_on_worker_and_keeps_only_explicit_copy(qapp, decis
     wait_for(worker)
     assert set(moved) == {node.path for node in picked}
     assert group.kept.path not in moved and all(thread != threading.get_ident() for thread in threads)
+

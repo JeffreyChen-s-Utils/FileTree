@@ -154,6 +154,17 @@ and model changes are blocked during the batch; Stop cancels remaining entries a
 These are immediate no-follow checks; Qt's path-based Trash call is not an atomic transaction with the
 identity check, so it does not provide an OS guarantee against concurrent malicious path substitution.
 
+**Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. `TrashWorker`
+writes all approved events before acting and appends each platform result immediately, preserving Qt's
+optional destination in `MoveReceipt`/`MoveResult.destinations`; skipped entries are appended too.
+A failed approval write prevents moves, while a failed result write preserves the observed success,
+cancels remaining moves and warns about incomplete history. `core.operation_journal` owns atomic
+append-only daily/4 MB JSONL segments under Qt's application-local data directory, with native
+cross-process locks, fsync-before-replace and 90-day/50 MB retention of owned segments only.
+`RecentActions` loads metadata on a worker, shows the latest 500 outcomes and reports damaged/unavailable
+segments. An approved-only record is unknown after a crash; it is not a restoration receipt. CSV
+exports are atomic worker writes with home-prefix redaction. Close joins all reads/exports.
+
 **Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
 entries of one folder, the rest on one line), the sunburst (`SunburstWidget`: `core.sunburst.layout`
 gives arcs as fractions of the circle, at most `RINGS` rings, arcs thinner than `min_span` and past

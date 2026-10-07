@@ -19,6 +19,7 @@ import sys
 
 from PySide6.QtCore import QFile, QUrl
 from PySide6.QtGui import QDesktopServices, QGuiApplication
+from je_file_tree.core.operations import MoveReceipt
 
 try:
     from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
@@ -75,6 +76,12 @@ def copy_path(path: str) -> None:
 
 def move_to_trash(path: str) -> bool:
     """Move a file or folder to the Recycle Bin / Trash; False when the system refused."""
+    return trash_receipt(path).success
+
+
+def trash_receipt(path: str) -> MoveReceipt:
+    """Move an approved path, preserving Qt's destination when the platform exposes it."""
     result = QFile.moveToTrash(path)
-    # Static PySide6 overload returns (success, destination); even (False, "") is a truthy tuple.
-    return bool(result[0]) if isinstance(result, tuple) else bool(result)
+    if isinstance(result, tuple):
+        return MoveReceipt(bool(result[0]), result[1] or None)
+    return MoveReceipt(bool(result))

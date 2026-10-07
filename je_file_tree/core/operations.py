@@ -15,6 +15,14 @@ from je_file_tree.core.snapshot import Snapshot, stat_snapshot, unpack_snapshot
 
 
 @dataclass(slots=True)
+class MoveReceipt:
+    """Platform move result with an optional actual Trash destination."""
+
+    success: bool
+    destination: str | None = None
+
+
+@dataclass(slots=True)
 class MoveResult:
     """Separate successes, skipped snapshot entries, platform failures and affected parents."""
 
@@ -23,6 +31,8 @@ class MoveResult:
     failed: list[Node] = field(default_factory=list)
     parents: list[Node] = field(default_factory=list)
     holders: dict[Node, LockReport] = field(default_factory=dict)
+    destinations: dict[Node, str | None] = field(default_factory=dict)
+    journal_errors: list[str] = field(default_factory=list)
 
 
 def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),
@@ -123,7 +133,7 @@ def _changed(node: Node, before: Snapshot, current: Snapshot, identity_only: boo
     return None
 
 
-def move_batch(root: Node, nodes: Sequence[Node], mover: Callable[[str], bool], *,
+def move_batch(root: Node, nodes: Sequence[Node], mover: Callable[[str], bool | MoveReceipt], *,
                places: Sequence[Protection] = (), approved: dict[Node, Protection | None] | None = None,
                cancel: threading.Event | None = None) -> MoveResult:
     """Revalidate and move an approved batch, keeping failed/skipped nodes attached for later rescans."""
@@ -141,8 +151,11 @@ def move_batch(root: Node, nodes: Sequence[Node], mover: Callable[[str], bool], 
             result.skipped.append((node, reason))
             continue
         try:
-            success = mover(node.path)
+            receipt = mover(node.path)
         except OSError:
-            success = False
+            receipt = False
+        success = receipt.success if isinstance(receipt, MoveReceipt) else receipt
+        if success:
+            result.destinations[node] = receipt.destination if isinstance(receipt, MoveReceipt) else None
         (result.moved if success else result.failed).append(node)
     return result

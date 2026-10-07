@@ -131,6 +131,16 @@ Parent/child selections collapse to the outermost entry. The background estimate
 allocation once and gives no recovery credit for a file whose other names remain. Recoverable file data
 is a conservative range after emptying Trash; shared extents and directory metadata remain unknown.
 
+**File → Recent actions** shows the latest 500 approved operations, including moves, skips and failures.
+The journal keeps only time, original path, device/file identity, reason, outcome and the Trash
+destination when Qt provides one; it never stores file contents. Atomic append-only JSONL segments
+live in the application's local data directory under `journal/`, retained for 90 days / 50 MB.
+Approval is written before acting; if it cannot be recorded, the move is skipped. A result-write
+failure stops remaining moves where possible and warns that history may be incomplete. An
+approved-only entry after a crash has an unknown final outcome. The CSV export replaces home-directory
+prefixes with `{HOME}`; a recorded Trash destination does not guarantee restoration. Retention removes
+only FileTree's own journal segments, never scanned files.
+
 Rules explain their category, evidence, minimum age, risk and rebuild instructions. Recent or unknown
 dates disqualify candidates; a folder uses its newest descendant (7 days for caches/builds/temporary
 files/empty folders, 30 for package downloads/crash dumps, 90 for installers). Browser profiles,

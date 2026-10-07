@@ -76,6 +76,9 @@ tool default.
   confirmation. Do not add a permanent delete. Everything that moves entries to the Recycle Bin goes through
   `MainWindow.move_to_trash`, so system and program folders (`je_file_tree/core/protected.py`) always get
   their second question.
+  Retention may permanently remove FileTree's own recognized operation-journal segments under its
+  application data directory; it never applies to scanned user entries. Atomic temporary files may
+  also be removed after a failed write.
 - **Every text goes through `tr()`**; add a key to all three tables in `je_file_tree/gui/strings.py`
   (`test/test_i18n.py` checks keys and placeholders). Traditional Chinese uses Taiwanese wording
   (檔案、資料夾、設定、預設、資源回收筒); Simplified Chinese uses Mainland wording and characters.

@@ -27,6 +27,7 @@ from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting, load_po
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.operations import MoveResult
+from je_file_tree.core.operation_journal import JournalApproval, OperationJournal
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
@@ -39,6 +40,7 @@ from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.trash_worker import TrashWorker
+from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -67,6 +69,7 @@ class MainWindow(QMainWindow):
     def __init__(self, settings: QSettings | None = None) -> None:
         super().__init__()
         self.settings = settings if settings is not None else QSettings()
+        self._journal = OperationJournal(journal_folder())
         self._worker: ScanWorker | None = None
         self._trash_worker: TrashWorker | None = None
         self._trash_rescans: list[Node] = []
@@ -301,7 +304,10 @@ class MainWindow(QMainWindow):
         if self.results.duplicates.running:
             self.results.duplicates.stop(wait=True)
         decisions = self.results.duplicates.decisions_for(chosen)
-        worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions)
+        explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items()}
+        explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
+        audit = JournalApproval(self._journal, explanations)
+        worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
         worker.done.connect(self._trash_finished)
         worker.finished.connect(worker.deleteLater)
         self._trash_worker = worker
@@ -336,6 +342,9 @@ class MainWindow(QMainWindow):
         if result.skipped:
             lines = [f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in result.skipped]
             QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names="\n".join(lines)))
+        if result.journal_errors:
+            QMessageBox.warning(self, tr("action_recent_actions"),
+                                tr("journal_write_failed", reason="\n".join(result.journal_errors)))
         done = tr("trash_batch_done", moved=format_count(len(moved)), skipped=format_count(len(result.skipped)),
                   failed=format_count(len(failed)), size=moved_size)
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
@@ -560,6 +569,7 @@ class MainWindow(QMainWindow):
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("find", QKeySequence.StandardKey.Find, self._find),
             ("compare", None, self.choose_saved_scan),
+            ("recent_actions", None, self.show_recent_actions),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -589,6 +599,7 @@ class MainWindow(QMainWindow):
         for key in ("export_folders", "export_largest", "export_json"):
             export_menu.addAction(self._actions[key])
         file_menu.addAction(self._actions["compare"])
+        file_menu.addAction(self._actions["recent_actions"])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
         file_menu.addAction(self._actions["elevate"])
@@ -733,6 +744,15 @@ class MainWindow(QMainWindow):
     def show_help(self) -> None:
         """Open the how-to-use window."""
         HelpDialog(self).exec()
+
+    def show_recent_actions(self) -> None:
+        """Open the retained metadata trail, without proposing or restoring any entry."""
+        dialog = RecentActions(self._journal, self)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def show_about(self) -> None:
         """Show the version."""
