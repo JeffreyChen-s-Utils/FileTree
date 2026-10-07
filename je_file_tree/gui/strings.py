@@ -9,6 +9,10 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "column_drive_share": "% of drive",
+    "columns_reset": "Reset columns",
+    "drive_share_tip": ("Logical bytes divided by total volume capacity. Hard-link names count separately; "
+                        "this is not allocated or recoverable space. Unknown while capacity is unavailable or stale."),
     "action_recent_actions": "Recent actions…",
     "action_recent_actions_tip": "Inspect retained operation metadata and export a redacted audit report",
     "journal_time": "Time (UTC)",
@@ -580,6 +584,10 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "column_drive_share": "占磁碟比例",
+    "columns_reset": "重設欄位",
+    "drive_share_tip": ("邏輯位元組除以磁碟總容量。硬連結名稱分別計算；不是配置或可回收空間。"
+                        "容量未知或已過期時不顯示比例。"),
     "action_recent_actions": "最近操作…",
     "action_recent_actions_tip": "查看保留的操作中繼資料，並匯出隱去個人路徑的稽核報告",
     "journal_time": "時間（UTC）",
@@ -1096,6 +1104,10 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "column_drive_share": "占磁盘比例",
+    "columns_reset": "重置列",
+    "drive_share_tip": ("逻辑字节除以磁盘总容量。硬链接名称分别计算；不是分配或可回收空间。"
+                        "容量未知或已过期时不显示比例。"),
     "action_recent_actions": "最近操作…",
     "action_recent_actions_tip": "查看保留的操作元数据，并导出隐藏个人路径的审计报告",
     "journal_time": "时间（UTC）",

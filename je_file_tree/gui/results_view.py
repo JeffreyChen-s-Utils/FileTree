@@ -15,7 +15,9 @@ import html
 import os
 from collections.abc import Callable, Mapping, Sequence
 
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, QTimer, Signal
+from PySide6.QtCore import (
+    QItemSelectionModel, QModelIndex, QPoint, QSettings, QSortFilterProxyModel, Qt, QTimer, Signal,
+)
 from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -79,6 +81,7 @@ from je_file_tree.gui.tables import (
 )
 from je_file_tree.gui.tree_model import (
     ALLOCATED,
+    DRIVE_SHARE,
     FILES,
     FOLDERS,
     MODIFIED,
@@ -89,10 +92,11 @@ from je_file_tree.gui.tree_model import (
 )
 from je_file_tree.gui.treemap_widget import BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
 from je_file_tree.gui.tree_diagram import ORIENTATIONS
+from je_file_tree.gui.tree_columns import TreeColumns
 
 _LARGEST_SIZE_COLUMN = 1
-# Name takes the remaining width; these are the other columns, in order.
-_TREE_COLUMN_WIDTHS = {SIZE: 75, ALLOCATED: 75, SHARE: 95, FILES: 55, FOLDERS: 65, MODIFIED: 120}
+# Name starts at 250 px; extra columns use horizontal scrolling.
+_TREE_COLUMN_WIDTHS = {SIZE: 75, ALLOCATED: 75, SHARE: 95, DRIVE_SHARE: 95, FILES: 55, FOLDERS: 65, MODIFIED: 120}
 _LARGEST_COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _LARGEST_FOLDER_COLUMN = 2
 _CHANGE_COLUMN = 3
@@ -132,7 +136,7 @@ class ResultsView(QWidget):
     compare_failed = Signal(str)
     chart_setting_changed = Signal(str, object)  # a setting key and its new value
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None, *, settings: QSettings | None = None) -> None:
         super().__init__(parent)
         self.tree_model = FolderTreeModel(self)
         self.largest_model = LargestFilesModel(self)
@@ -148,7 +152,7 @@ class ResultsView(QWidget):
         self._live_ticks = 0
         self.summary = _summary_label()
         self.capacity = CapacityPanel()
-        self.tree = self._build_tree()
+        self.tree = self._build_tree(settings)
         self._build_chart_controls()
         self._treemap_up = QToolButton()
         self._treemap_path = ElidedLabel()
@@ -245,7 +249,6 @@ class ResultsView(QWidget):
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
         self._outcome = outcome
-        self.capacity.set_ledger(outcome.capacity)
         root = outcome.result.root
         self.scan_bar.hide()
         if self.tree_model.root is root:
@@ -253,6 +256,8 @@ class ResultsView(QWidget):
         else:
             self.tree_model.set_root(root)
             self.tree.expand(self.tree_model.index(0, 0))
+        self.capacity.set_ledger(outcome.capacity)
+        self.tree_model.set_drive_total(outcome.capacity.total if outcome.capacity is not None else None)
         self._scope = None
         self._scope_button.setChecked(False)
         self._show_lists(outcome.largest, outcome.extensions, outcome.ages)
@@ -276,6 +281,7 @@ class ResultsView(QWidget):
         lists that need the whole tree follow with ``apply_summary``.
         """
         self.capacity.set_ledger(None)
+        self.tree_model.set_drive_total(None)
         new = fresh.root
         view_root = self.charts.view_root
         inside_old = view_root is not None and _is_within(view_root, old)
@@ -301,6 +307,7 @@ class ResultsView(QWidget):
         if self._outcome is not None:
             self._outcome = dataclasses.replace(self._outcome, capacity=capacity)
             self.capacity.set_ledger(capacity)
+            self.tree_model.set_drive_total(capacity.total)
 
     def apply_summary(self, summary: Summary) -> None:
         """Show recomputed largest files and per-type and per-age totals for the tree on screen."""
@@ -397,6 +404,7 @@ class ResultsView(QWidget):
         if outcome is None:
             return
         self.capacity.set_ledger(None)
+        self.tree_model.set_drive_total(None)
         view_root = self.charts.view_root
         extensions = outcome.extensions
         ages = outcome.ages
@@ -482,7 +490,7 @@ class ResultsView(QWidget):
         self._tree_orientation_label = QLabel()
         self._tree_orientation_combo = QComboBox()
 
-    def _build_tree(self) -> QTreeView:
+    def _build_tree(self, settings: QSettings | None) -> QTreeView:
         tree = QTreeView()
         tree.setModel(self.tree_model)
         tree.setUniformRowHeights(True)
@@ -491,6 +499,7 @@ class ResultsView(QWidget):
         tree.setAlternatingRowColors(True)
         tree.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         tree.setItemDelegateForColumn(SHARE, ShareBarDelegate(tree))
+        tree.setItemDelegateForColumn(DRIVE_SHARE, ShareBarDelegate(tree))
         tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         tree.customContextMenuRequested.connect(lambda point: self._menu_for(tree, point))
         header = tree.header()
@@ -498,7 +507,9 @@ class ResultsView(QWidget):
         header.setMinimumSectionSize(40)
         for column, width in _TREE_COLUMN_WIDTHS.items():
             tree.setColumnWidth(column, width)
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        tree.setColumnWidth(0, 250)
+        self.tree_columns = TreeColumns(tree, settings)
         tree.selectionModel().currentChanged.connect(self._tree_current_changed)
         tree.selectionModel().selectionChanged.connect(lambda *_: self.selection_changed.emit(self.selected_node()))
         return tree

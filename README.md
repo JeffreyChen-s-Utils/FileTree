@@ -232,6 +232,8 @@ the remainder. NTFS/ext4/APFS test-volume validation is still pending, so the le
 The CLI scan record includes the same figures under `capacity`. Other-device directory mounts are
 listed without traversal; same-device POSIX bind-mount detection is still pending.
 
+Right-click the folder-tree header to choose visible columns; choices are remembered. The name stays visible and starts at a readable width, with horizontal scrolling for extra columns. **% of drive** is optional and divides logical bytes by OS-reported total capacity, alongside **% of parent**. It is unknown until capacity is available, after tree changes and for other-volume entries; hard-link names still count separately, so it does not measure allocated or recoverable space.
+
 ## Command line without a window
 
 The console entry uses only the core and never imports Qt. It writes the same atomic CSV/JSON exports

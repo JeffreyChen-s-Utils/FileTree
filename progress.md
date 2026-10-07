@@ -72,7 +72,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Everyday use
 
 - **#42** (P2) Drive overview: a page with every volume's file system, size, used, free, cluster size and Recycle Bin size (#21), with a free-space bar; double-click scans it. Grows out of the welcome page's drive buttons (`je_file_tree/gui/welcome.py`).
-- **#43** (P2) Column chooser and share of the drive: show or hide tree columns from the header's context menu (remembered), and add a "% of drive" column next to "% of parent" (`je_file_tree/gui/tree_model.py` `COLUMN_KEYS`).
 - **#44** (P2) Windows shell integration: *Scan with FileTree* in Explorer's folder menu (a verb under `HKCU\Software\Classes\Directory\shell`, added and removed from the Options dialog, no administrator rights needed) and *Properties* in FileTree's context menu (`ShellExecuteExW` with the `properties` verb, `je_file_tree/gui/main_window.py:171`).
 - **#45** (P3) Light theme: check the charts and the bar chart's text on a light system theme (every screenshot so far is dark) and offer a light/dark switch.
 - **#46** (P3) Accessibility: the chart widgets are painted, so screen readers see nothing: give them accessible names and descriptions, and keyboard navigation (arrow keys between entries, Enter to open a folder, Backspace to go up).

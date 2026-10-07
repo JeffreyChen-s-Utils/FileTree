@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`TreeColumns` persists optional tree columns by stable keys in QSettings and builds the header menu
+in the current language. The name remains visible with a readable initial width; extra columns scroll.
+`FolderTreeModel` uses the worker-computed capacity ledger for logical percent-of-volume values,
+rejecting unavailable capacity and foreign-device entries. Branch edits invalidate the denominator
+until another ledger arrives; model relayouts preserve existing node indexes.
+
 `core/coverage.py` surveys folder coverage on the cleanup worker, marking incomplete branches and all
 their ancestors unsafe to remove as a whole. Unseen bytes remain unknown.
 

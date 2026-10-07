@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         if self._unit not in _UNITS:
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
-        self.results = ResultsView()
+        self.results = ResultsView(settings=self.settings)
         self.pages = QStackedWidget()
         for page in (self.welcome, self.results):
             self.pages.addWidget(page)

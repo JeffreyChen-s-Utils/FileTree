@@ -26,16 +26,18 @@ from PySide6.QtWidgets import QApplication, QStyle
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import EXCLUDED, NOT_SCANNED
+from je_file_tree.core.snapshot import unpack_snapshot
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.reasons import problem_text
 
-NAME, SIZE, ALLOCATED, SHARE, FILES, FOLDERS, MODIFIED = range(7)
-COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_files", "column_folders",
+NAME, SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, MODIFIED = range(8)
+COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_drive_share",
+               "column_files", "column_folders",
                "column_modified")
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
-_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, FILES, FOLDERS)
+_NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS)
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 
 ModelIndex = QModelIndex | QPersistentModelIndex
@@ -48,6 +50,7 @@ def sort_key(column: int) -> Callable[[Node], Any]:
         SIZE: lambda node: node.size,
         ALLOCATED: lambda node: node.allocated,
         SHARE: lambda node: node.size,
+        DRIVE_SHARE: lambda node: node.size,
         FILES: lambda node: node.file_count,
         FOLDERS: lambda node: node.dir_count,
         MODIFIED: lambda node: node.modified,
@@ -63,6 +66,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._root: Node | None = None
         self._live = False
         self._unit = AUTO_UNIT
+        self._drive_total: int | None = None
         self._sort_column = SIZE
         self._sort_order = Qt.SortOrder.DescendingOrder
         self._orders: dict[int, list[Node]] = {}
@@ -73,15 +77,19 @@ class FolderTreeModel(QAbstractItemModel):
             SIZE: lambda node: format_size(node.size, self._unit),
             ALLOCATED: lambda node: "" if node.is_link else format_size(node.allocated, self._unit),
             SHARE: lambda node: format_share(node.share_of_parent()),
+            DRIVE_SHARE: lambda node: (format_share(share) if (share := self._drive_share(node)) is not None
+                                       else tr("size_unknown")),
             MODIFIED: lambda node: format_time(node.modified),
         }
         self._roles: dict[int, Callable[[Node, int], Any]] = {
             Qt.ItemDataRole.DisplayRole: self._display,
             Qt.ItemDataRole.TextAlignmentRole: lambda _node, column: _RIGHT if column in _NUMERIC_COLUMNS else None,
             Qt.ItemDataRole.DecorationRole: lambda node, column: self._icon(node) if column == NAME else None,
-            Qt.ItemDataRole.ToolTipRole: lambda node, _column: self._tooltip(node),
+            Qt.ItemDataRole.ToolTipRole: lambda node, column: (tr("drive_share_tip") if column == DRIVE_SHARE
+                                                              else self._tooltip(node)),
             NODE_ROLE: lambda node, _column: node,
-            SHARE_ROLE: lambda node, _column: node.share_of_parent(),
+            SHARE_ROLE: lambda node, column: (self._drive_share(node) if column == DRIVE_SHARE
+                                              else node.share_of_parent()),
             Qt.ItemDataRole.ForegroundRole: lambda node, _column: _muted() if node.error == EXCLUDED else None,
         }
 
@@ -101,6 +109,7 @@ class FolderTreeModel(QAbstractItemModel):
         """Show a new tree (or nothing); ``live`` while the scan is still filling it in."""
         self.beginResetModel()
         self._root = root
+        self._drive_total = None
         self._live = live and root is not None
         self._clear_caches()
         self.endResetModel()
@@ -120,6 +129,20 @@ class FolderTreeModel(QAbstractItemModel):
         self._unit = unit
         self.layoutAboutToBeChanged.emit()
         self.layoutChanged.emit()
+
+    def set_drive_total(self, total: int | None) -> None:
+        """Set worker-measured volume capacity; unknown/stale capacity never displays as zero."""
+        self._drive_total = total if total is not None and total > 0 else None
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
+
+    def _drive_share(self, node: Node) -> float | None:
+        root = self._root
+        if self._drive_total is None or root is None or root.snapshot is None or node.snapshot is None:
+            return None
+        if unpack_snapshot(root.snapshot).device != unpack_snapshot(node.snapshot).device:
+            return None
+        return node.size / self._drive_total
 
     def retranslate(self) -> None:
         """Re-read the translated header texts."""
@@ -272,7 +295,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._rows.clear()
 
     def _is_default_order(self) -> bool:
-        return self._sort_column in (SIZE, SHARE) and self._sort_order == Qt.SortOrder.DescendingOrder
+        return self._sort_column in (SIZE, SHARE, DRIVE_SHARE) and self._sort_order == Qt.SortOrder.DescendingOrder
 
     def _ordered(self, folder: Node) -> list[Node] | tuple[()]:
         """``folder``'s children in the current sort order (a frozen copy while the scan is live)."""
