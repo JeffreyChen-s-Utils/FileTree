@@ -582,7 +582,20 @@ columns with literal status/tooltips; unsupported/unknown/errors/counts/coverage
 original scan nodes may activate the tree. Stop/close suppresses late replies and joins both workers;
 MainWindow tracks the dialog to serialize scans/file operations and process deferred rescans after
 close. Six GUI tests and a fresh owned native CJK VHDX GUI proof preserve bytes/identity/UUID.
-Compaction/approval remains #59; unsupported formats need their own backend rather than passing them
+`core.virtual_disk_compaction` prepares a frozen read-only plan and executes one reviewed detached
+dynamic VHD/VHDX through fixed synchronous CompactVirtualDisk (zero blocks, no guest attachment).
+Complete source snapshots/local NTFS/protection and nonlinked parent identities are rechecked before
+writable Version2/NO_PARENTS opening; native UUID/type/detachment/capacity are checked again on that
+same handle. `core.virtual_disk_runtime` captures bounded native process metadata and fixed WSL
+running-list metadata for current-user registrations; known guest/Docker workers, running WSL,
+incomplete sources or changed signatures refuse execution. Conservative absence observations also
+require user stopped-machine review and cannot prevent other programs starting guests. No UAC,
+shutdown, guest launch, arbitrary command or fallback. Attempted/success/allocation/error remain
+separate; active calls join, post-success failure cannot hide completion, zero saving is valid and
+every attempted outcome requires rescan. Native owned blank VHDX proved zero-saving success and
+preserved exact UUID/capacity/file identity/sibling arrivals, with unrelated host runtimes isolated.
+GUI default-No review/durable audit and populated privileged proof remain #59.
+Unsupported formats need their own backend rather than passing them
 to VHD-only Windows tools.
 
 ## 3. Entry points and public interfaces
@@ -596,7 +609,12 @@ the drive letter. Every validation mutation rechecks handle/device mapping and O
 `windows_bin_probe` confines GUI surveys/questions and real native Shell emptying to the owned drive.
 It verifies No, changed approvals, two questions, close guards and metadata refresh. Detach joins
 before captured scratch/image cleanup; a failed detach retains the image. The dedicated Windows CI
-job saves JSON for seven days. Native volume proof remains pending; provider placeholders, shared
+job saves JSON for seven days. Native Windows private-volume proof passed, including exact capacity,
+allocation/hard-link bounds/compression/sparse guards, No/arrival refusal, two questions and one scoped
+native bin-empty call, active-close refusal, joined metadata refresh and owned detach/cleanup. The
+unreadable System Volume Information branch retained incomplete/null remainder; zero OS bin items
+still had observed metadata bytes, so bin allocation remains a subset. Actual per-case recovery,
+provider placeholders, shared
 extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
 failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
 application's bool/tuple-compatible Qt Trash receipt adapter.

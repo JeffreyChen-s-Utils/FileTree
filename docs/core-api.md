@@ -459,14 +459,42 @@ Stop/close cancels replies and joins current calls; MainWindow tracks the owned 
 serializes scans/file operations. Six GUI tests cover no automatic queries, separated observations,
 external/error behavior, both worker lifetimes and routing/serialization. Native fresh owned CJK VHDX
 GUI evidence verified its UUID and unchanged complete file hash/snapshot without attachment/elevation.
-Compaction/approval remains pending. DiskPart and Optimize-VHD apply to supported VHD formats,
+`virtual_disk_compaction.prepare_compaction(disk, *, cancel=None)` adds a read-only frozen
+CompactionPlan(info, runtime) for a detached dynamic VHD/VHDX with an exact UUID. It refuses
+fixed/differencing/unsupported, changed/linked/cloud/protected/system/read-only/compressed/encrypted
+files and nonlocal/non-NTFS backing volumes. Extended local drive paths are pinned; UNC/device
+paths never grant local authority. `virtual_disk_runtime.stopped_runtime` uses bounded native
+Toolhelp process snapshots and, when current-user WSL registrations exist, fixed System32 wsl.exe
+--list --running --quiet with bounded output/timeout. Incomplete registrations, known guest/Docker
+workers, running WSL guests or failed metadata queries refuse execution. It never launches/stops a
+guest. Conservative observations are not a lock against a machine starting; the user must confirm
+the owning machine remains stopped. Docker backend/service processes must be absent even for
+custom files found by scanning. Runtime registration signatures must remain unchanged.
+
+`execute_compaction(plan, *, machine_stopped, cancel=None)` requires literal True after explicit
+default-No review and durable approval audit by the caller. It rechecks captured nonlinked parent
+identities, complete backing snapshot, runtime and read-only native observations before writable
+Version2 access NONE/NO_PARENTS opening. Parent timestamps may change with unrelated sibling
+arrivals; identities remain anchored. The same writable handle freshly verifies native format,
+exact UUID, dynamic subtype, detachment and capacity, then invokes synchronous CompactVirtualDisk
+with flags 0/Version1 reserved 0. No shell, arbitrary program, UAC, attachment, shutdown or fallback.
+The caller joins active calls. Returns CompactionOutcome(attempted, compacted, before, after, error):
+native success remains true even after a failed later observation; unknown allocation remains None.
+A writable open may repair metadata before later failure; every attempted outcome needs a rescan.
+Zero-block compaction may reclaim nothing. Allocation observations do not measure guest usage or
+guarantee free-space recovery. Native fresh blank VHDX execution proved zero-saving success, exact
+UUID/dynamic capacity/detachment and unchanged identity; unrelated sibling arrivals were preserved.
+The owned fixture's runtime was isolated from unrelated host guests; this does not prove privileged
+populated-disk compaction or replace runtime refusal tests. GUI review/audit integration remains #59.
+The fixed native backend follows [CompactVirtualDisk requirements](https://learn.microsoft.com/en-us/windows/win32/api/virtdisk/nf-virtdisk-compactvirtualdisk).
+DiskPart and Optimize-VHD apply to supported VHD formats,
 not VMDK/VDI/QCOW2:
 [DiskPart requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk),
 [Optimize-VHD requirements](https://learn.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd).
 
 Validation tooling is separate from the supported library API. An already elevated disposable Windows
 runner can run `py -3 tools/validate_windows_volume.py --output windows-volume.json`; its native result
-is pending. It accepts no image/disk/bin selector, creates only a new owned VHDX/UUID, validates the
+passed on the administrator Windows CI runner. It accepts no image/disk/bin selector, creates only a new owned VHDX/UUID, validates the
 live native physical mapping and formats only an empty RAW nonboot/non-system virtual disk through
 a fixed script. The OS assigns its drive letter; device and volume GUID are rechecked before fixture
 mutations. It compares OS capacity, FILE_STANDARD_INFO allocation, hard-link/sparse/compressed savings
@@ -479,3 +507,10 @@ saved before later native checks; only complete evidence confirms detachment/cle
 uses the application's bool/tuple-compatible Qt receipt adapter.
 Validation ledger JSON retains scalar coverage counts and the unsafe-folder count, preserving unknown
 buckets without deep-copying or serializing Node authorization graphs.
+Native evidence confirmed exact OS capacity, one/all hard-link bounds, compressed/sparse allocation,
+No preservation, refusal of an arrival between approvals, two literal drive questions, one scoped
+Shell empty call, active close refusal, joined refresh and confirmed owned detach/cleanup. An access
+denied System Volume Information branch correctly retained incomplete coverage/null remainder.
+Bin payload/metadata is a subset of allocation, not an extra total; after emptying, 136 observed
+metadata bytes remained with zero OS items. Actual per-case hard-link/compression/sparse free recovery,
+cloud providers, independently reserved/shared bytes and APFS remain separate validation scope.
