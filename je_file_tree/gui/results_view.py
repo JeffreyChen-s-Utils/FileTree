@@ -134,6 +134,7 @@ class ResultsView(QWidget):
     """
 
     node_menu_requested = Signal(object, object, QPoint)
+    chart_menu_requested = Signal(object, object, QPoint)
     selection_changed = Signal(object)
     elevate_requested = Signal()
     compare_failed = Signal(str)
@@ -719,7 +720,7 @@ class ResultsView(QWidget):
 
     def _emit_menu(self, node: Node | None, point: QPoint) -> None:
         if node is not None:
-            self.node_menu_requested.emit(node, [node], point)
+            self.chart_menu_requested.emit(node, [node], point)
 
     def wait_for_lists(self) -> None:
         """Wait for list computations still running (before the window closes)."""

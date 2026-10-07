@@ -27,6 +27,7 @@ class ChartStack(QStackedWidget):
     node_clicked = Signal(object)
     view_root_changed = Signal(object)
     context_menu_requested = Signal(object, QPoint)
+    mode_changed = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -64,6 +65,11 @@ class ChartStack(QStackedWidget):
         """Show the view ``mode`` (an unknown mode is ignored)."""
         if mode in self._pages:
             self.setCurrentWidget(self._pages[mode])
+            self.mode_changed.emit(mode)
+
+    def current_chart(self) -> QWidget:
+        """The underlying drawing widget (including full bar rows beyond the scroll viewport)."""
+        return self._charts[self.mode]
 
     @property
     def view_root(self) -> Node | None:

@@ -9,6 +9,13 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_export_chart_png": "Chart on screen (PNG)…",
+    "action_export_chart_png_tip": "Save the visible chart, including its current viewport",
+    "action_export_chart_svg": "Bars or sunburst (SVG)…",
+    "action_export_chart_svg_tip": "Save full bounded bars or rings as vector shapes and text",
+    "png_filter": "PNG image (*.png)",
+    "svg_filter": "SVG image (*.svg)",
+    "graphic_exported": "Saved chart: {path}",
     "treemap_colours_age": "By modified age",
     "age_colour_unknown": "Date unknown",
     "age_colour_tip": ("Time since modification. "
@@ -597,6 +604,13 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_export_chart_png": "畫面上的圖表（PNG）…",
+    "action_export_chart_png_tip": "儲存目前可見的圖表範圍",
+    "action_export_chart_svg": "長條圖或放射圖（SVG）…",
+    "action_export_chart_svg_tip": "將有數量上限的完整長條或圓弧儲存為向量圖形與文字",
+    "png_filter": "PNG 圖片 (*.png)",
+    "svg_filter": "SVG 圖片 (*.svg)",
+    "graphic_exported": "已儲存圖表：{path}",
     "treemap_colours_age": "依修改檔齡",
     "age_colour_unknown": "日期未知",
     "age_colour_tip": "距離修改的時間。資料夾依最新的修改記錄著色，無可用日期時為灰色；合併的小項目保持灰色。",
@@ -1128,6 +1142,13 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_export_chart_png": "屏幕上的图表（PNG）…",
+    "action_export_chart_png_tip": "保存当前可见的图表范围",
+    "action_export_chart_svg": "条形图或旭日图（SVG）…",
+    "action_export_chart_svg_tip": "将有数量上限的完整条形或圆弧保存为矢量图形与文字",
+    "png_filter": "PNG 图片 (*.png)",
+    "svg_filter": "SVG 图片 (*.svg)",
+    "graphic_exported": "已保存图表：{path}",
     "treemap_colours_age": "按修改年龄",
     "age_colour_unknown": "日期未知",
     "age_colour_tip": "距离修改的时间。文件夹按最新修改记录着色，无可用日期时为灰色；合并的小项目保持灰色。",

@@ -21,6 +21,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`graphics_export` captures PNG pixels or SVG geometry on the GUI thread, then ExportWorker performs
+PNG encoding and atomic QSaveFile writes with direct-write fallback disabled. PNG captures the current
+chart viewport; SVG renders bounded full bar rows or sunburst paths/text directly, bypassing the ring
+pixmap. File/context actions track supported modes. MainWindow owns and joins each export on close.
+
 Treemap and sunburst share type/folder/modified-age preferences through ChartStack. `age_colours`
 uses `analysis.AGES` and a scan/summary reference time without any extra tree walk. Unusable or future
 dates are grey, grouped treemap tiles retain their separate grey presentation, and age labels choose

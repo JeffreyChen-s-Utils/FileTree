@@ -232,14 +232,22 @@ class SunburstWidget(QWidget):
     # --- drawing -----------------------------------------------------------
 
     def _render(self) -> None:
-        root = self._view_root
-        if root is None:
-            return
         ratio = self.devicePixelRatioF()
         pixmap = QPixmap(max(1, round(self.width() * ratio)), max(1, round(self.height() * ratio)))
         pixmap.setDevicePixelRatio(ratio)
         pixmap.fill(self.palette().base().color())
         painter = QPainter(pixmap)
+        self.draw_vector(painter)
+        painter.end()
+        self._pixmap = pixmap
+
+    def draw_vector(self, painter: QPainter) -> None:
+        """Draw the bounded current rings directly, for lossless SVG output without a cached bitmap."""
+        root = self._view_root
+        if root is None or root.size <= 0:
+            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
+            return
+        painter.fillRect(self.rect(), self.palette().base())
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         border = QPen(self.palette().base().color())
         border.setWidthF(1.0)
@@ -259,8 +267,6 @@ class SunburstWidget(QWidget):
         box = QRectF(centre.x() - inner, centre.y() - inner, 2 * inner, 2 * inner).adjusted(6, 6, -6, -6)
         name = painter.fontMetrics().elidedText(root.name, Qt.TextElideMode.ElideMiddle, int(box.width()))
         painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.size, self.unit)}")
-        painter.end()
-        self._pixmap = pixmap
 
     def _draw_label(self, painter: QPainter, segment: Segment, radius: float, ring: float) -> None:
         angle = (segment.start + segment.span / 2) * 2 * math.pi

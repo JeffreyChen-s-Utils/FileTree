@@ -15,6 +15,8 @@ Use **Pause / Resume** in the scan bar to suspend taking new folders. Current fo
 
 Treemap and Sunburst share **Colours → By modified age**, using the same age ranges as the Age list and a legend from light (recent) to dark (older). Colours use the scan/analysis time, not the current clock while hovering. Folder colour represents its newest recorded modification; unusable/future dates and grouped small tiles are grey. This shows modification age, not last access or whether files are unused.
 
+**File → Export** and the chart context menu can save the chart on screen as **PNG**. PNG includes the current viewport, colour mode and selection. **SVG** is available for Bars and Sunburst: full bounded bar rows or rings are drawn as vector shapes/text, without using the cached sunburst bitmap. PNG encoding and file writes run on an export worker; files are replaced atomically, and closing waits for the export.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

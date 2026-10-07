@@ -64,7 +64,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#40** (P2) Report: one self-contained HTML file with the summary, the top folders, the largest files, types, ages and the three charts as images (the chart widgets' `grab()`), to send to someone; and an Excel (.xlsx) export of the same lists, one sheet each, with `openpyxl` as a new dependency (`requirements.txt`, `pyproject.toml`, and the pinned install in `.github/workflows/release.yml`).
 - **#41** (P3) Print and PDF of the view on screen (`QPrinter`).
 - **#70** (P2) Export any list, copy rows: Search results, Duplicates, Changes, File types and Age to CSV like the existing exports (`je_file_tree/core/export.py`, written on the `ExportWorker`), and Ctrl+C in any list copies the selected rows as tab-separated text for a spreadsheet.
-- **#71** (P2) Save a chart as a picture: PNG of the chart on screen, and SVG for the bars and the sunburst (`QSvgGenerator`), from the chart's context menu and File → Export.
 
 ### Everyday use
 

@@ -38,6 +38,7 @@ from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
+from je_file_tree.gui.graphics_export import SVG_MODES, capture_svg, save_graphic
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
@@ -215,7 +216,7 @@ class MainWindow(QMainWindow):
 
     # --- entry actions ----------------------------------------------------
 
-    def show_menu_for(self, node: Node, picked: Sequence[Node], point: QPoint) -> None:
+    def show_menu_for(self, node: Node, picked: Sequence[Node], point: QPoint, *, chart: bool = False) -> None:
         """Pop up the menu of things to do with ``node``; its *Move to Recycle Bin* takes all of ``picked``."""
         menu = QMenu(self)
         entries: list[tuple[str, Callable[[], object]]] = [
@@ -235,6 +236,10 @@ class MainWindow(QMainWindow):
             text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
                                                                     count=format_count(len(movable)))
             menu.addAction(text).triggered.connect(lambda: self.move_to_trash(movable))
+        if chart:
+            menu.addSeparator()
+            for key in ("export_chart_png", "export_chart_svg"):
+                menu.addAction(self._actions[key])
         menu.exec(point)
 
     def rescan_folder(self, node: Node) -> None:
@@ -444,6 +449,31 @@ class MainWindow(QMainWindow):
 
     # --- export -----------------------------------------------------------
 
+    def export_chart(self, kind: str) -> None:
+        """Capture the visible chart as PNG, or full bounded bars/rings as vector SVG."""
+        if self.results.outcome is None or self._worker is not None or self._trash_worker is not None:
+            return
+        charts = self.results.charts
+        if kind == "svg" and charts.mode not in SVG_MODES:
+            return
+        target, _ = QFileDialog.getSaveFileName(self, tr("action_export_chart_" + kind),
+                                                f"chart.{kind}", tr(kind + "_filter"))
+        if not target:
+            return
+        try:
+            graphic = capture_svg(charts) if kind == "svg" else charts.currentWidget().grab().toImage()
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, tr("export_title"), tr("export_failed", reason=str(error)))
+            return
+        worker = ExportWorker(lambda: save_graphic(target, graphic), self)
+        worker.done.connect(lambda _count: self.statusBar().showMessage(tr("graphic_exported", path=target)))
+        worker.failed.connect(lambda reason: QMessageBox.warning(self, tr("export_title"),
+                                                                 tr("export_failed", reason=reason)))
+        worker.finished.connect(lambda: self._exports.discard(worker))
+        worker.finished.connect(worker.deleteLater)
+        self._exports.add(worker)
+        worker.start()
+
     def export_results(self, kind: str) -> None:
         """Save the results: ``"folders"`` or ``"largest"`` as CSV, ``"json"`` as JSON."""
         outcome = self.results.outcome
@@ -581,6 +611,8 @@ class MainWindow(QMainWindow):
             ("export_folders", None, lambda: self.export_results("folders")),
             ("export_largest", None, lambda: self.export_results("largest")),
             ("export_json", None, lambda: self.export_results("json")),
+            ("export_chart_png", None, lambda: self.export_chart("png")),
+            ("export_chart_svg", None, lambda: self.export_chart("svg")),
             ("trash", QKeySequence.StandardKey.Delete, self._trash_selected),
             ("find", QKeySequence.StandardKey.Find, self._find),
             ("compare", None, self.choose_saved_scan),
@@ -613,7 +645,7 @@ class MainWindow(QMainWindow):
         for key in ("open", "rescan", "stop", "find"):
             file_menu.addAction(self._actions[key])
         export_menu = file_menu.addMenu("")
-        for key in ("export_folders", "export_largest", "export_json"):
+        for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "export_chart_svg"):
             export_menu.addAction(self._actions[key])
         file_menu.addAction(self._actions["compare"])
         file_menu.addAction(self._actions["recent_actions"])
@@ -676,6 +708,8 @@ class MainWindow(QMainWindow):
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.scan_bar.pause_requested.connect(self.pause_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
+        self.results.chart_menu_requested.connect(lambda node, picked, point:
+                                                  self.show_menu_for(node, picked, point, chart=True))
         self.results.apply_chart_settings({key: self.settings.value(key) for key in _CHART_SETTINGS
                                            if self.settings.contains(key)})
         self.results.chart_setting_changed.connect(self.settings.setValue)
@@ -685,6 +719,7 @@ class MainWindow(QMainWindow):
         self.results.compare_failed.connect(
             lambda reason: QMessageBox.warning(self, tr("compare_title"), tr("compare_failed", reason=reason)))
         self.results.selection_changed.connect(self._selection_changed)
+        self.results.charts.mode_changed.connect(lambda _mode: self._update_actions())
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
@@ -694,8 +729,10 @@ class MainWindow(QMainWindow):
         self._actions["open"].setEnabled(self._trash_worker is None)
         self._actions["cleanup_policy"].setEnabled(not scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
-        for key in ("export_folders", "export_largest", "export_json", "trash", "find", "compare"):
+        for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
+        self._actions["export_chart_svg"].setEnabled(has_results and not scanning
+                                                    and self.results.charts.mode in SVG_MODES)
 
     # --- dialogs ----------------------------------------------------------
 

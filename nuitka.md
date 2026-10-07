@@ -9,6 +9,8 @@ longer build. The entry point it compiles is `start_file_tree.py` in the reposit
 > Nuitka builds for the system it runs on: build on Windows for Windows, on macOS for macOS, on Linux for
 > Linux. It cannot cross-compile.
 
+The chart SVG exporter imports PySide6.QtSvg; Nuitka follows this import and includes the Qt SVG library. It uses the same PySide6 dependency as the window.
+
 ## 1. Prepare
 
 ### 1.1 Python packages (every system)

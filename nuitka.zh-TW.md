@@ -6,6 +6,8 @@
 
 > Nuitka 只能編譯出執行它的那個系統的程式：在 Windows 上編 Windows 版、在 macOS 上編 macOS 版、在 Linux 上編 Linux 版，不能交叉編譯。
 
+圖表 SVG 匯出使用 PySide6.QtSvg，Nuitka 會依匯入包含 Qt SVG 程式庫，與視窗使用相同的 PySide6 相依套件。
+
 ## 1. 準備
 
 ### 1.1 Python 套件（每個系統都要）
