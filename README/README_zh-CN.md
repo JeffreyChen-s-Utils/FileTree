@@ -188,6 +188,16 @@ python tools/make_screenshots.py
 python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
 ```
 
+Linux 桌面 CI 检查使用全新容器、Xvfb／X11 与独立会话总线，验证严格的 `ShowItems(as, s)` 服务、专用测试文件的完整回收站流程，以及原生繁体中文字型绘制。失败时也保存日志、证明 JSON 与截图。项目只读挂载，运行限制为 1 GB 内存及两个 CPU。可在已启动 Docker 的 Linux shell 重现：
+
+```bash
+docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
+mkdir -p desktop-evidence
+docker run --rm --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
+```
+
+这个工具提供具体证据；实际文件管理器拖放与 macOS 验证仍是分开的检查。
+
 ## 许可证
 
 MIT——详见 [LICENSE](../LICENSE)。

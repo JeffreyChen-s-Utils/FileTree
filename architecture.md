@@ -21,6 +21,13 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`tools/linux_desktop` is a separate native desktop test harness: a digest-pinned container wraps Xvfb
+and a private D-Bus session. A separate Qt service declares the strict FileManager1 string-array/string
+signature; the client introspects it and verifies an actual wire call. Owned Trash fixtures go through
+MainWindow review, protection, journal and QFile, checking freedesktop path/content receipts. Native CJK
+glyph support and a screenshot provide rendering evidence. CI mounts the repo read-only, limits runtime
+resources and retains evidence even on failures. This tooling introduces no application dependency.
+
 `core.special_files` surveys existing packed snapshot attributes on a cancellable iterative walk,
 giving way per folder and retaining at most 1,000 largest matches plus full matching totals. It uses
 no filesystem reads or new Node fields. The modal GUI SpecialFilesDialog owns/joins its worker,

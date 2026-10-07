@@ -312,6 +312,16 @@ JSON exports stream to a temporary sibling, keeping additional memory small even
 python tools/measure_scale.py C:\ --gui --memory-mb 768 --duplicates-seconds 10 --output scale.json
 ```
 
+The Linux desktop CI probe uses a fresh container, Xvfb/X11 and a private session bus to check a strict `ShowItems(as, s)` service, the complete owned-fixture Trash workflow and native Traditional Chinese font rendering. It keeps logs, proof JSON and screenshots even on failure. The repository is mounted read-only; runtime is capped at 1 GB and two CPUs. To reproduce from a Linux shell with Docker running:
+
+```bash
+docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
+mkdir -p desktop-evidence
+docker run --rm --memory=1g --cpus=2 -v "${PWD}:/workspace:ro" -v "${PWD}/desktop-evidence:/evidence" filetree-desktop-probe
+```
+
+This harness supplies concrete evidence; a real file-manager drag and macOS verification remain separate checks.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

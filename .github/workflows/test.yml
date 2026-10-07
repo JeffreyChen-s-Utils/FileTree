@@ -10,6 +10,28 @@ permissions:
   contents: read
 
 jobs:
+  linux-desktop:
+    runs-on: ubuntu-latest
+    name: Linux desktop / X11 and D-Bus
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Build isolated desktop probe
+      run: docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
+    - name: Test native desktop behavior
+      run: |
+        mkdir -p desktop-evidence
+        docker run --rm --memory=1g --cpus=2 -v "$PWD:/workspace:ro" -v "$PWD/desktop-evidence:/evidence" filetree-desktop-probe 2>&1 | tee desktop-evidence/probe.log
+    - name: Preserve desktop evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: linux-desktop-evidence
+        path: desktop-evidence/
+        if-no-files-found: warn
+        retention-days: 7
   lint:
     runs-on: ubuntu-latest
     name: Lint (ruff)

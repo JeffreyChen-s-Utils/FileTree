@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [UNVERIFIED] Linux: "Show in file manager" asks the file manager over D-Bus (`org.freedesktop.FileManager1.ShowItems`, `je_file_tree/gui/file_actions.py` `show_items`) and falls back to opening the folder, but has not run against a real session bus: whether PySide6 sends the list of URIs as the `as` the interface expects is unchecked. Also unchecked on Linux: moving to the Trash (`QFile.moveToTrash`, freedesktop trash spec), a real drag from a file manager, CJK text under X11. The Docker check described in U-20260926-23 (Debian, Xvfb, `dbus-run-session`, a stand-in file manager with the strict `(as, s)` signature, a logging `xdg-open`) was stopped when the machine ran low on memory; rebuild it under `tools/` and run it when memory allows. macOS [BLOCKED]: no Mac or macOS VM on this machine.
+- **#4** [UNVERIFIED] Run and inspect `tools/linux_desktop`'s Linux CI artifacts: verify the actual `ShowItems(as, s)` wire call, freedesktop Trash receipts and X11 CJK rendering. Add/verify fallback folder opening and a real drag from a file manager, including preserving the source folder. macOS [BLOCKED]: no Mac or macOS VM available from the owner.
 
 ### Safety
 
