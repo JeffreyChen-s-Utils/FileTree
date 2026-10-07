@@ -34,6 +34,7 @@ class Node:
     allocated: int = 0
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
+    snapshot: bytes | None = field(default=None, repr=False)
 
     @property
     def path(self) -> str:

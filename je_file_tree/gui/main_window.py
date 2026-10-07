@@ -9,7 +9,6 @@ from collections.abc import Callable, Sequence
 from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
-    QApplication,
     QDialog,
     QFileDialog,
     QLineEdit,
@@ -25,6 +24,7 @@ from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
+from je_file_tree.core.operations import MoveResult
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
@@ -34,6 +34,7 @@ from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import CHART_TAB, ResultsView
 from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcome, ScanWorker, wait_for
+from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.welcome import WelcomePage
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -62,6 +63,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings if settings is not None else QSettings()
         self._worker: ScanWorker | None = None
+        self._trash_worker: TrashWorker | None = None
+        self._trash_rescans: list[Node] = []
+        self._closing = False
         self._analyser: AnalyseWorker | None = None
         self._exports: set[ExportWorker] = set()
         self._protected = protected_places()  # system and program folders: ask twice before moving them
@@ -97,6 +101,9 @@ class MainWindow(QMainWindow):
 
     def start_scan(self, path: str) -> None:
         """Scan ``path`` (stopping a scan already running)."""
+        if self._trash_worker is not None:
+            return
+        self._trash_rescans.clear()
         path = os.path.abspath(os.path.expanduser(path.strip().strip('"')))
         if not os.path.isdir(path):
             QMessageBox.warning(self, tr("scan_failed_title"), tr("not_a_folder", path=path))
@@ -125,6 +132,8 @@ class MainWindow(QMainWindow):
         """Ask the running scan (if any) to stop; with ``wait``, until it has."""
         worker = self._worker
         if worker is None:
+            if self._trash_worker is not None:
+                self._trash_worker.cancel()
             return
         worker.cancel()
         self.results.scan_bar.stopping()
@@ -166,6 +175,8 @@ class MainWindow(QMainWindow):
     def _scan_ended(self) -> None:
         self._worker = None
         self._live_timer.stop()
+        if self._trash_rescans:
+            QTimer.singleShot(0, self._rescan_after_trash)
 
     def _back_from_scan(self) -> None:
         self.results.end_scan()
@@ -198,7 +209,7 @@ class MainWindow(QMainWindow):
 
     def rescan_folder(self, node: Node) -> None:
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
-        if self._worker is not None or self.results.outcome is None:
+        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
             return
         if node.parent is None:
             self.rescan()
@@ -246,24 +257,56 @@ class MainWindow(QMainWindow):
         never moved. Entries the system refuses to move stay, and are named in a warning.
         """
         chosen = _movable(nodes)
-        if not chosen or self._worker is not None or not self._confirm_protected(chosen):
+        root = self.results.tree_model.root
+        if not chosen or root is None or self._worker is not None or self._trash_worker is not None:
+            return
+        approvals = {node: protection_of(node.path, self._protected) for node in chosen}
+        if not self._confirm_protected(chosen):
             return
         answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
             return
-        moved, failed = _trash_each(chosen)
-        freed = format_size(sum(node.size for node in moved), self._unit)
+        worker = TrashWorker(root, chosen, self._protected, approvals, self)
+        worker.done.connect(self._trash_finished)
+        worker.finished.connect(worker.deleteLater)
+        self._trash_worker = worker
+        self.results.setEnabled(False)
+        self._update_actions()
+        self.statusBar().showMessage(tr("trash_running"))
+        worker.start()
+
+    def _trash_finished(self, result: MoveResult) -> None:
+        self._trash_worker = None
+        if self._closing:
+            return
+        self.results.setEnabled(True)
+        self._update_actions()
+        moved, failed = result.moved, result.failed
+        moved_size = format_size(sum(node.size for node in moved), self._unit)
         if moved:
             self.results.forget(moved)
         if failed:
             message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
                        tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
             QMessageBox.warning(self, tr("trash_confirm_title"), message)
-        if not moved:
-            return
-        done = (tr("trash_done", name=moved[0].name, size=freed) if len(moved) == 1 else
-                tr("trash_done_many", count=format_count(len(moved)), size=freed))
+        if result.skipped:
+            lines = [f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in result.skipped]
+            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names="\n".join(lines)))
+        done = tr("trash_batch_done", moved=format_count(len(moved)), skipped=format_count(len(result.skipped)),
+                  failed=format_count(len(failed)), size=moved_size)
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
+        self._trash_rescans = outermost(result.parents)
+        QTimer.singleShot(0, self._rescan_after_trash)
+
+    def _rescan_after_trash(self) -> None:
+        if self._worker is not None or not self._trash_rescans:
+            return
+        node = self._trash_rescans.pop(0)
+        root = self.results.tree_model.root
+        if root is not None and node.is_in(root):
+            self.rescan_folder(node)
+        if self._worker is None and self._trash_rescans:
+            QTimer.singleShot(0, self._rescan_after_trash)
 
     def _confirm_protected(self, nodes: list[Node]) -> bool:
         """The first of two questions when system or program folders are among ``nodes``: True to go on."""
@@ -415,6 +458,11 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Qt: stop the scan and remember the window layout."""
+        self._trash_rescans.clear()
+        self._closing = True
+        if self._trash_worker is not None:
+            self._trash_worker.cancel()
+            wait_for(self._trash_worker)
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
@@ -548,9 +596,10 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
-        scanning = self._worker is not None
+        scanning = self._worker is not None or self._trash_worker is not None
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
+        self._actions["open"].setEnabled(self._trash_worker is None)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
         for key in ("export_folders", "export_largest", "export_json", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
@@ -637,19 +686,6 @@ def _saved_searches(settings: QSettings) -> dict[str, object]:
 def _movable(nodes: Sequence[Node]) -> list[Node]:
     """What moving ``nodes`` to the Recycle Bin really moves: the outermost entries, never the scanned folder."""
     return outermost(node for node in nodes if node.parent is not None)
-
-
-def _trash_each(nodes: list[Node]) -> tuple[list[Node], list[Node]]:
-    """Move each of ``nodes`` to the Recycle Bin / Trash; returns the moved ones and the refused ones."""
-    moved: list[Node] = []
-    failed: list[Node] = []
-    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-    try:
-        for node in nodes:
-            (moved if file_actions.move_to_trash(node.path) else failed).append(node)
-    finally:
-        QApplication.restoreOverrideCursor()
-    return moved, failed
 
 
 def _safe_name(name: str) -> str:

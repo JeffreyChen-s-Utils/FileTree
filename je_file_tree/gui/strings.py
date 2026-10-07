@@ -9,6 +9,20 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "trash_running": "Revalidating and moving approved entries… Stop cancels remaining entries.",
+    "trash_batch_done": "Moved {moved}, skipped {skipped}, failed {failed}; {size} moved to the Recycle Bin.",
+    "trash_skipped": "These entries were skipped. Rescan their folders before trying again:\n{names}",
+    "trash_skip_outside": "outside the current scan",
+    "trash_skip_unverified": "no verified scan identity",
+    "trash_skip_incomplete": "incomplete scan coverage",
+    "trash_skip_missing": "entry or parent is missing",
+    "trash_skip_unreadable": "entry cannot be read",
+    "trash_skip_link": "entry or parent became a link",
+    "trash_skip_kind": "entry kind changed",
+    "trash_skip_identity": "entry was replaced",
+    "trash_skip_changed": "size, timestamps or folder contents changed",
+    "trash_skip_protected": "resolved path has different protection",
+    "trash_skip_cancelled": "operation cancelled",
     "coverage_complete": ("Coverage: {size} known in {known} folders; skipped {skipped}, "
                           "inaccessible {denied}, pending {pending}."),
     "coverage_partial": ("Incomplete coverage: {size} known in {known} folders; skipped {skipped}, inaccessible "
@@ -411,6 +425,20 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "trash_running": "正在重新核對並移動已核准的項目…按停止可取消剩餘項目。",
+    "trash_batch_done": "已移動 {moved}、略過 {skipped}、失敗 {failed}；共 {size} 移到資源回收筒。",
+    "trash_skipped": "已略過下列項目，請重新掃描資料夾後再試：\n{names}",
+    "trash_skip_outside": "不在目前的掃描範圍",
+    "trash_skip_unverified": "沒有經核對的掃描身分",
+    "trash_skip_incomplete": "掃描涵蓋範圍不完整",
+    "trash_skip_missing": "項目或上層資料夾已不存在",
+    "trash_skip_unreadable": "無法讀取項目",
+    "trash_skip_link": "項目或上層資料夾變成連結",
+    "trash_skip_kind": "項目種類已變更",
+    "trash_skip_identity": "項目已被替換",
+    "trash_skip_changed": "大小、時間或資料夾內容已變更",
+    "trash_skip_protected": "解析後路徑的保護狀態不同",
+    "trash_skip_cancelled": "操作已取消",
     "coverage_complete": ("涵蓋範圍：{known} 個資料夾，已知 {size}；"
                           "略過 {skipped}、無法讀取 {denied}、未掃描 {pending}。"),
     "coverage_partial": ("涵蓋範圍不完整：{known} 個資料夾，已知 {size}；略過 {skipped}、無法讀取 {denied}、"
@@ -784,6 +812,20 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "trash_running": "正在重新核对并移动已批准的项目…点击停止可取消剩余项目。",
+    "trash_batch_done": "已移动 {moved}、跳过 {skipped}、失败 {failed}；共 {size} 移到回收站。",
+    "trash_skipped": "已跳过以下项目，请重新扫描文件夹后再试：\n{names}",
+    "trash_skip_outside": "不在当前的扫描范围",
+    "trash_skip_unverified": "没有经过核对的扫描身份",
+    "trash_skip_incomplete": "扫描覆盖范围不完整",
+    "trash_skip_missing": "项目或父文件夹已不存在",
+    "trash_skip_unreadable": "无法读取项目",
+    "trash_skip_link": "项目或父文件夹变成链接",
+    "trash_skip_kind": "项目类型已变更",
+    "trash_skip_identity": "项目已被替换",
+    "trash_skip_changed": "大小、时间或文件夹内容已变更",
+    "trash_skip_protected": "解析后路径的保护状态不同",
+    "trash_skip_cancelled": "操作已取消",
     "coverage_complete": ("覆盖范围：{known} 个文件夹，已知 {size}；"
                           "跳过 {skipped}、无法读取 {denied}、未扫描 {pending}。"),
     "coverage_partial": ("覆盖范围不完整：{known} 个文件夹，已知 {size}；跳过 {skipped}、无法读取 {denied}、"

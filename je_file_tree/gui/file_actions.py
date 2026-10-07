@@ -75,4 +75,6 @@ def copy_path(path: str) -> None:
 
 def move_to_trash(path: str) -> bool:
     """Move a file or folder to the Recycle Bin / Trash; False when the system refused."""
-    return bool(QFile.moveToTrash(path))
+    result = QFile.moveToTrash(path)
+    # Static PySide6 overload returns (success, destination); even (False, "") is a truthy tuple.
+    return bool(result[0]) if isinstance(result, tuple) else bool(result)

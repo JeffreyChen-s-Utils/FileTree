@@ -12,8 +12,9 @@ the window.
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
-- **Fast, and live**: several folders are read at once; about 740,000 files and folders are scanned in
-  6–8 seconds on an SSD. The tree fills in while the scan runs, biggest folders first, and Stop keeps
+- **Parallel, and live**: several folders are read at once; a two-million-entry Windows system drive
+  took about 208 seconds with file-identity snapshots and two workers. The tree fills in while the scan runs,
+  biggest folders first, and Stop keeps
   what was read so far.
 - **Folder tree** sorted largest first, with the space each entry takes on disk, a bar showing its share of
   its folder, file and folder counts, and the last change inside it.
@@ -34,8 +35,8 @@ the window.
   appeared or disappeared since.
 - **File types** and **Age**: space used per extension and kind (pictures, videos, archives…) and by when
   files last changed; double-click a row to list its largest files.
-- **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; the
-  numbers update immediately, without a rescan.
+- **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; entries
+  are revalidated on a worker before moving and affected folders are rescanned.
 - **Export** the folder list or the largest files to CSV (opens in Excel), or the folder tree to JSON.
 - **English, 繁體中文 and 简体中文**, switchable at any time; a built-in *How to use* guide.
 - Links and junctions are listed but never followed, so nothing is counted twice and a link loop cannot
@@ -106,6 +107,12 @@ FileTree asks once, listing them with their total size. It always asks before mo
 deletes permanently. System and program folders (the Windows folder, Program Files, programs' settings in
 AppData, a user's profile folder, and their counterparts on macOS and Linux) are asked about twice, with the
 reason; temporary folders and caches are not, since they are what a clean-up is for.
+
+Before each move, FileTree checks the scan's file identity, kind, size and timestamps, current parents,
+resolved protection and a folder's contents. Changed, missing or incomplete entries are skipped with
+reasons; moved, skipped and failed counts are separate. *Stop* cancels remaining entries; affected
+parents are rescanned. The status reports bytes moved: free space increases only after emptying the
+Recycle Bin. Recording file identities costs additional scan time and memory, especially on Windows.
 
 ### Seeing what grew
 

@@ -74,12 +74,24 @@ outlines it in the treemap.
 
 **Free space.** Context menu or Delete → a first question when system or program folders are among the entries
 (`protected.protection_of` against `protected_places()`, read once from the environment; the most specific
-place decides, temporary folders are free) → one confirmation → `QFile.moveToTrash` per entry →
-`ResultsView.forget`. The tree and the largest-files list allow several rows to be selected; the entries acted
+place decides, temporary folders are free) → one confirmation → background validation and
+`QFile.moveToTrash` per entry → `ResultsView.forget` → affected-parent rescans. The tree and the largest-files
+list allow several rows to be selected; the entries acted
 on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
 it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the
-largest files, per-type and per-age totals and treemap are updated once, without a rescan. Entries the system
+largest files, per-type and per-age totals and treemap are updated once before the rescans. Entries the system
 refuses stay and are named in a warning.
+
+`Node.snapshot` holds compact packed device/file identity, kind, size, nanosecond timestamps, attributes
+and link count (`core/snapshot.py`). Windows listings lack identity, so the scanner makes an additional
+no-follow stat (10k calls measured at 0.67 s). After confirmation, `TrashWorker` runs `core.operations`:
+ancestors must keep their identity and not become links; resolved protection must match the approval;
+each selected entry and all folder descendants must retain metadata and child names. A changed/missing
+or incomplete entry is skipped; successful, skipped and platform-failed entries are reported separately.
+The GUI detaches only moved entries, keeps failed entries and queues rescans of affected parents. Scans
+and model changes are blocked during the batch; Stop cancels remaining entries and close waits for it.
+These are immediate no-follow checks; Qt's path-based Trash call is not an atomic transaction with the
+identity check, so it does not provide an OS guarantee against concurrent malicious path substitution.
 
 **Chart tab.** `ChartStack` holds the treemap, the bar chart (`BarChartWidget`: the `MAX_BARS` largest
 entries of one folder, the rest on one line), the sunburst (`SunburstWidget`: `core.sunburst.layout`
@@ -206,6 +218,9 @@ any other `pip install`, builds with isolation, or when the lock does not satisf
 - System-drive check (U-20261007-01): 2.02 million entries / 57.95 s with two workers, 634 MB resident
   memory (about 301 incremental bytes/entry); 768 MiB diagnostic budget. Analysis/search about 2 s;
   compact streaming folder JSON 92.8 MB / 4.33 s. Unreadable branches remain unaccounted.
+- With identity snapshots (U-20261007-03), the same system drive takes 207.60 s for 2.02 million entries
+  with two workers, 872 MB resident memory (419 incremental bytes/entry). Snapshot storage is 76 packed
+  bytes / 109-byte Python bytes object plus an 8-byte Node slot. Diagnostic budget: 1 GiB / 240 s.
 - Links are never followed; unreadable folders are recorded, never fatal.
 - Nothing is deleted permanently; every move to the trash is confirmed.
 

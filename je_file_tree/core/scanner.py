@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import errno
 import os
+import stat
 import threading
 import time
 from collections.abc import Callable
@@ -28,6 +29,7 @@ from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
+from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
 
 # Windows reparse tags of links that must not be followed. A junction (and a
 # volume mounted into a folder) is a mount point; ``is_symlink()`` is False for
@@ -134,6 +136,9 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     options = options or ScanOptions()
     started = time.monotonic()
     root = Node(name=root_path, is_dir=True, children=[], error=NOT_SCANNED)
+    root.snapshot = stat_snapshot(root_path)
+    if unpack_snapshot(root.snapshot).is_link:
+        raise NotADirectoryError("scan roots must not be links or junctions")
     if on_root is not None:
         on_root(root)
     crawler = _Crawler(root, root_path, options, cancel)
@@ -301,6 +306,9 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
+        if not info.st_ino:
+            # Windows DirEntry.stat has no identity. Measured 10k lstat calls: 0.67 s (U-20261007-03).
+            info = os.lstat(entry.path)
     except FileNotFoundError:
         return None  # removed while we were scanning
     except OSError as error:
@@ -309,17 +317,20 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
     if not options.include_hidden and _is_hidden(entry.name, info):
         read.errors.append((entry.path, HIDDEN_OMITTED))
         return None
-    if entry.is_symlink() or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
+    snapshot = pack_snapshot(info)
+    if stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
         return Node(name=entry.name, is_dir=_points_to_folder(entry), modified=info.st_mtime,
-                    is_link=True)
-    if entry.is_dir(follow_symlinks=False):
-        return _folder_node(entry, info.st_mtime, excluded)
+                    is_link=True, snapshot=snapshot)
+    if stat.S_ISDIR(info.st_mode):
+        node = _folder_node(entry, info.st_mtime, excluded)
+        node.snapshot = snapshot
+        return node
     allocated = allocation(entry, info)
     read.files += 1
     read.size += info.st_size
     read.allocated += allocated
     return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
-                modified=info.st_mtime)
+                modified=info.st_mtime, snapshot=snapshot)
 
 
 def _folder_node(entry: os.DirEntry[str], modified: float, excluded: Excluded | None) -> Node:
