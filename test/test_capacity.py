@@ -108,6 +108,25 @@ def test_capacity_failure_or_replaced_root_never_produces_a_remainder(tmp_path: 
     assert ledger.status == "capacity_unavailable" and ledger.total is None and ledger.unaccounted is None
 
 
+@pytest.mark.skipif(os.name != "posix", reason="POSIX freedesktop location")
+def test_custom_xdg_bin_matches_inventory_scope_and_relative_settings_fall_back(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    data = tmp_path / "custom-data"
+    payload = data / "Trash" / "files" / "payload"
+    payload.parent.mkdir(parents=True)
+    home.mkdir()
+    payload.write_bytes(b"x" * 4096)
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_DATA_HOME", str(data))
+    root = scan(tmp_path).root
+    ledger = capacity_ledger(root)
+    assert ledger.recycle_bin_complete and ledger.recycle_bin_seen == payload.stat().st_blocks * 512
+    assert not capacity._is_trash(str(home / ".local" / "share" / "Trash"))
+    monkeypatch.setenv("XDG_DATA_HOME", "relative-data")
+    assert not capacity._is_trash(str(data / "Trash"))
+    assert capacity._is_trash(str(home / ".local" / "share" / "Trash"))
+
+
 def test_different_device_mount_is_listed_without_reading_its_contents(tmp_path: Path, monkeypatch) -> None:
     mounted = tmp_path / "mounted"
     mounted.mkdir()

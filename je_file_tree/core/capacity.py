@@ -114,7 +114,11 @@ def _is_trash(path: str) -> bool:
     if os.name == "nt":
         return name.casefold() == "$recycle.bin" and os.path.ismount(os.path.dirname(path))
     home = os.path.expanduser("~").replace("\\", "/").rstrip("/")
-    if normal in (home + "/.Trash", home + "/.local/share/Trash"):
+    data = os.environ.get("XDG_DATA_HOME", home + "/.local/share")
+    if not os.path.isabs(data):
+        data = home + "/.local/share"
+    data = os.path.normpath(data).replace("\\", "/").rstrip("/")
+    if normal in (home + "/.Trash", data + "/Trash"):
         return True
     return (name in (".Trash", ".Trashes") or name.startswith(".Trash-") and name[7:].isdigit()) and (
         os.path.ismount(os.path.dirname(path)))
