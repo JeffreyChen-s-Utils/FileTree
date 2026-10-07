@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [UNVERIFIED] Run and inspect `tools/linux_desktop`'s Linux CI artifacts: verify the actual `ShowItems(as, s)` wire call, freedesktop Trash receipts and X11 CJK rendering. Add/verify fallback folder opening and a real drag from a file manager, including preserving the source folder. macOS [BLOCKED]: no Mac or macOS VM available from the owner.
+- **#4** [UNVERIFIED] Finish and inspect `tools/linux_desktop`'s real Thunar drag test, including preserving the source folder. macOS [BLOCKED]: no Mac or macOS VM available from the owner.
 
 ### Safety
 

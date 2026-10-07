@@ -18,7 +18,7 @@ def pump(app: QApplication, child: subprocess.Popen, *, seconds: float = 10) -> 
         if time.monotonic() > deadline:
             child.terminate()
             child.wait(timeout=10)
-            raise RuntimeError("Native X11 command timed out")
+            raise RuntimeError(f"Native X11 command timed out: {child.args}")
         app.processEvents()
         time.sleep(.01)
     app.processEvents()
@@ -45,10 +45,8 @@ def check_drag(app: QApplication, window: MainWindow, evidence: Path, scratch: P
     before = payload.stat()
     with (evidence / "thunar.log").open("w", encoding="utf-8") as log:
         wm = subprocess.Popen(["/usr/bin/openbox"], stdout=log, stderr=log)  # noqa: S603 # nosec B603
-        manager = subprocess.Popen(["/usr/bin/thunar", "--daemon"], stdout=log, stderr=log)  # noqa: S603 # nosec B603
+        manager = subprocess.Popen(["/usr/bin/thunar", str(parent)], stdout=log, stderr=log)  # noqa: S603 # nosec B603
         try:
-            opener = subprocess.Popen(["/usr/bin/thunar", str(parent)], stdout=log, stderr=log)  # noqa: S603 # nosec B603
-            pump(app, opener)
             identity = xdotool(app, "search", "--sync", "--onlyvisible", "--class", "Thunar").splitlines()[0]
             window.pages.setCurrentIndex(WELCOME_PAGE)
             window.setGeometry(0, 0, 1100, 720)
