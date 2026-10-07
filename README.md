@@ -21,6 +21,8 @@ Treemap and Sunburst share **Colours → By modified age**, using the same age r
 
 The Chart tab has clickable folder breadcrumbs and **Back / Forward** (`Alt+Left` / `Alt+Right`). History keeps up to 100 visits in the current scan; navigating after Back replaces the forward branch. New scans reset history, and rescans discard detached entries. Long paths scroll, with earlier ancestors available from **…**.
 
+Expand **Details** below the folder tree to see the selected entry’s logical size, size on disk, file/folder counts and recorded modification date, plus miniature type and age distributions. The panel remembers whether it is expanded. Distributions run on a cancellable background worker only when expanded after scanning, use recorded entries, and separate unknown/future dates. Selecting elsewhere replaces stale results; closing joins the workers.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

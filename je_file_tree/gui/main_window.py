@@ -612,6 +612,7 @@ class MainWindow(QMainWindow):
         self.results.duplicates.stop(wait=True)
         self.results.cleanup.stop(wait=True)
         self.results.changes.stop(wait=True)
+        self.results.details.stop(wait=True)
         self.results.wait_for_lists()
         for worker in self._analysers.copy():
             wait_for(worker)

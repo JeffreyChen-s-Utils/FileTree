@@ -21,6 +21,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
+Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`
+keeps bounded category/age totals in a cancellable iterative pass, giving way per folder and separating
+unusable dates. New selections/scan roots invalidate old replies; MainWindow joins workers on close.
+
 `breadcrumbs` binds clickable ancestors and a bounded 100-visit folder history to the current scan.
 ChartStack navigation updates all charts and records one visit; stepping history does not append it.
 Detached nodes are pruned after edits, new scans reset references, and deep ancestor paths use a

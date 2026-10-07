@@ -70,6 +70,7 @@ from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
+from je_file_tree.gui.details_panel import DetailsPanel
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.scan_worker import LARGEST_FILES_LIMIT, AnalyseWorker, ScanOutcome, wait_for
@@ -204,6 +205,7 @@ class ResultsView(QWidget):
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
         self.breadcrumbs.set_root(None)
+        self.details.set_node(None)
         self.charts.set_age_reference(time.time())
         self.capacity.set_ledger(None)
         self.search.set_root(None)
@@ -347,6 +349,8 @@ class ResultsView(QWidget):
         self.duplicates.set_unit(unit)
         self.cleanup.set_unit(unit)
         self.charts.set_unit(unit)
+        self.details.unit = unit
+        self.details.retranslate()
         self.changes.retranslate()
         self.breadcrumbs.retranslate()
 
@@ -456,6 +460,7 @@ class ResultsView(QWidget):
         self.age_table.setToolTip(tr("list_files_tip"))
         self.scan_bar.retranslate()
         self._treemap_up.setText(tr("treemap_up"))
+        self.details.retranslate()
         self._treemap_up.setToolTip(tr("treemap_up_tip"))
         for mode, button in self._chart_buttons.items():
             button.setText(tr(f"chart_{mode}"))
@@ -503,6 +508,9 @@ class ResultsView(QWidget):
         self._tree_orientation_combo = QComboBox()
 
     def _build_tree(self, settings: QSettings | None) -> QTreeView:
+        self.details = DetailsPanel(settings, self)
+        self.selection_changed.connect(lambda node: self.details.set_node(
+            node, live=self.tree_model.live, now=self._outcome.now if self._outcome is not None else None))
         tree = QTreeView()
         tree.setModel(self.tree_model)
         tree.setUniformRowHeights(True)
@@ -638,7 +646,7 @@ class ResultsView(QWidget):
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.addWidget(self.tree)
+        splitter.addWidget(self._tree_with_details())
         splitter.addWidget(self.tabs)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
@@ -650,6 +658,14 @@ class ResultsView(QWidget):
         layout.addWidget(self.summary)
         layout.addWidget(self.capacity)
         layout.addWidget(splitter, 1)
+
+    def _tree_with_details(self) -> QWidget:
+        column = QWidget()
+        layout = QVBoxLayout(column)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.tree, 1)
+        layout.addWidget(self.details)
+        return column
 
     # --- reactions --------------------------------------------------------
 

@@ -9,6 +9,14 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "details_title": "Details",
+    "details_empty": "Select an entry to see its details",
+    "details_live": "Distribution is available when scanning finishes.",
+    "details_loading": "Calculating type and age distribution…",
+    "details_recorded": ("Recorded file totals only; unread entries are outside these distributions. "
+                         "Folder modification is the newest recorded date."),
+    "details_bucket": "{label}: {size} · {count} files",
+
     "breadcrumbs_back": "Back (Alt+Left)",
     "breadcrumbs_forward": "Forward (Alt+Right)",
     "breadcrumbs_more": "…",
@@ -617,6 +625,13 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "details_title": "詳細資訊",
+    "details_empty": "選取項目以顯示詳細資訊",
+    "details_live": "掃描完成後可查看分布。",
+    "details_loading": "正在計算類型與檔齡分布…",
+    "details_recorded": "僅統計已讀取的檔案，未讀取項目不在分布內。資料夾修改時間為最新的已記錄日期。",
+    "details_bucket": "{label}：{size} · {count} 個檔案",
+
     "breadcrumbs_back": "返回（Alt+Left）",
     "breadcrumbs_forward": "前進（Alt+Right）",
     "breadcrumbs_more": "…",
@@ -1168,6 +1183,13 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "details_title": "详细信息",
+    "details_empty": "选择条目以显示详细信息",
+    "details_live": "扫描完成后可查看分布。",
+    "details_loading": "正在计算类型与文件年龄分布…",
+    "details_recorded": "仅统计已读取的文件，未读取条目不在分布内。文件夹修改时间为最新的已记录日期。",
+    "details_bucket": "{label}：{size} · {count} 个文件",
+
     "breadcrumbs_back": "返回（Alt+Left）",
     "breadcrumbs_forward": "前进（Alt+Right）",
     "breadcrumbs_more": "…",

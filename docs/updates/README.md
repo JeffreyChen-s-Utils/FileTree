@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-24 | 2026-10-07 | Collapsible selection details and background distributions | #done #details | [2026-10](2026-10.md) |
 | U-20261007-23 | 2026-10-07 | Clickable chart breadcrumbs and navigation history | #done #navigation | [2026-10](2026-10.md) |
 | U-20261007-22 | 2026-10-07 | Print and export the current view to PDF | #done #export #printing | [2026-10](2026-10.md) |
 | U-20261007-21 | 2026-10-07 | Save chart pictures and vector graphics | #done #export #charts | [2026-10](2026-10.md) |
