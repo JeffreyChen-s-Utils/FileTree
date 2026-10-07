@@ -148,6 +148,7 @@ jobs:
           pip install --only-binary :all: "PySide6==6.11.2"
           pip install --require-hashes --only-binary :all: -r .github/requirements/reports.txt
           pip install --require-hashes --only-binary :all: -r .github/requirements/archives.txt
+          pip install --require-hashes --only-binary :all: -r .github/requirements/photos.txt
           pip install --only-binary :all: --no-binary nuitka \
             "nuitka==4.2.2" "ordered-set==4.1.0" "zstandard==0.25.0"
 

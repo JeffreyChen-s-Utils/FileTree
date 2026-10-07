@@ -20,6 +20,7 @@ from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
 from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
+from je_file_tree.core.similar_photos import PhotoSearchCancelledError
 from je_file_tree.core.node import Node
 from je_file_tree.core.mounts import MountChangedError
 from je_file_tree.core.history import HistoryCancelledError, ScanHistory
@@ -205,13 +206,15 @@ class DuplicatesWorker(QThread):
 
     PROGRESS_INTERVAL = 0.1  # seconds between two progress signals
 
-    def __init__(self, root: Node, min_size: int, parent: QObject | None = None) -> None:
+    def __init__(self, root: Node, min_size: int, parent: QObject | None = None,
+                 *, photos: bool = False, distance: int = 4) -> None:
         super().__init__(parent)
         self._root = root
         self._min_size = min_size
         self._cancel = threading.Event()
         self._lock = threading.Lock()
         self._last_report = 0.0
+        self._photos, self._distance = photos, distance
 
     def stop(self) -> None:
         """Ask the search to give up; ``cancelled`` follows."""
@@ -220,13 +223,23 @@ class DuplicatesWorker(QThread):
     def run(self) -> None:
         """Thread body."""
         try:
-            result = find_duplicates(self._root, min_size=self._min_size, progress=self._report, cancel=self._cancel)
-        except DuplicateSearchCancelledError:
+            if self._photos:
+                result = self._find_photos()
+            else:
+                result = find_duplicates(self._root, min_size=self._min_size,
+                                         progress=self._report, cancel=self._cancel)
+        except (DuplicateSearchCancelledError, PhotoSearchCancelledError):
             self.cancelled.emit()
             return
         self.succeeded.emit(result)
 
-    def _report(self, progress: DuplicateProgress) -> None:
+    def _find_photos(self):
+        from je_file_tree.photo_reader import find_similar_photos  # noqa: PLC0415 - lazy image decoder
+
+        return find_similar_photos(self._root, min_size=self._min_size, distance=self._distance,
+                                  cancel=self._cancel, progress=lambda read, skipped: self._report((read, skipped)))
+
+    def _report(self, progress: DuplicateProgress | tuple[int, int]) -> None:
         """Called from the reading threads: passes on at most one progress per ``PROGRESS_INTERVAL``."""
         now = time.monotonic()
         with self._lock:

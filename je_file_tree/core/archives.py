@@ -15,7 +15,7 @@ from typing import BinaryIO
 from je_file_tree.core.duplicates import _check_snapshot
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
-from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot
+from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
 
 MAX_METADATA_BYTES = 32 * 1024 * 1024
 MAX_MEMBERS = 100_000
@@ -109,8 +109,13 @@ def zip_members(stream: MetadataReader) -> Iterable[ArchiveMember]:
 
 @contextmanager
 def _opened(node: Node) -> Iterator[BinaryIO]:
-    _check_snapshot(node, stat_snapshot(node.path))
-    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    current = stat_snapshot(node.path)
+    _check_snapshot(node, current)
+    if not stat.S_ISREG(unpack_snapshot(current).mode):
+        raise ArchiveError("Only regular recorded files can be read")
+    # A FIFO substituted after the path check must not block the worker before fstat can refuse it.
+    flags = (os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+             | getattr(os, "O_NONBLOCK", 0))
     descriptor = os.open(node.path, flags)
     with os.fdopen(descriptor, "rb") as stream:
         before = pack_snapshot(os.fstat(stream.fileno()))

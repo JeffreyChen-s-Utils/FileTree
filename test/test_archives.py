@@ -171,3 +171,13 @@ def test_encrypted_seven_zip_header_is_unavailable(tmp_path):
         archive.writestr(b"own fixture", "data.txt")
     with pytest.raises(ArchiveError):
         read_archive(next(scan(tmp_path).root.iter_files()), reader=seven_zip_members)
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="POSIX FIFOs are unavailable")
+def test_special_archive_source_is_refused_without_opening(tmp_path, monkeypatch):
+    target = tmp_path / "pipe.zip"
+    os.mkfifo(target)
+    source = next(node for node in scan(tmp_path).root.iter_nodes() if node.name == target.name)
+    monkeypatch.setattr(archives.os, "open", lambda *_args, **_kwargs: pytest.fail("Special files cannot be opened"))
+    with pytest.raises(ArchiveError, match="regular"):
+        read_archive(source)

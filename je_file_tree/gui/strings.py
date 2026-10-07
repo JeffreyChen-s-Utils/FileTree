@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "photos_exact": "Exact duplicates",
+    "photos_find": "Find similar photos",
+    "photos_similar": "Similar photos",
+    "photos_distance": "Hash distance (0–16):",
+    "photos_hint": ("Visual candidates only: compare thumbnails and originals. Hash collisions are possible; "
+                    "no automatic keeper, extra-copy selection or recovery estimate. First animation frame."),
+    "photos_group": "{count} images; within {distance} bits of the first image",
+    "photos_running": "Reading images: {read}; skipped/failed: {skipped}",
+    "photos_summary": "{groups} similar-image groups; {read} images read; {skipped} skipped/failed.",
+    "photos_limited": "Limited inventory or display; up to {count} image rows/thumbnails shown.",
     "archive_loading": "Reading archive metadata…",
     "archive_virtual_name": "{name} [virtual]",
     "archive_virtual_hint": ("Archive member: declared uncompressed size, outside disk totals. "
@@ -1074,6 +1084,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "photos_exact": "精確重複檔案",
+    "photos_find": "尋找相似照片",
+    "photos_similar": "相似照片",
+    "photos_distance": "雜湊距離（0–16）：",
+    "photos_hint": ("僅為視覺候選：請比較縮圖與原圖。雜湊可能碰撞；"
+                    "不自動選擇保留副本、多餘副本或估計回收量。動畫只看第一格。"),
+    "photos_group": "{count} 張圖片；與第一張的距離在 {distance} 位元內",
+    "photos_running": "正在讀取圖片：{read}；略過／失敗：{skipped}",
+    "photos_summary": "{groups} 組相似圖片；已讀取 {read} 張；略過／失敗 {skipped} 張。",
+    "photos_limited": "清單或顯示範圍受限；最多顯示 {count} 個圖片列／縮圖。",
     "archive_loading": "正在讀取壓縮檔中繼資料…",
     "archive_virtual_name": "{name}［虛擬］",
     "archive_virtual_hint": "壓縮檔內容：宣告的未壓縮大小，不計入磁碟總量。不提供檔案操作或解壓縮。",
@@ -2028,6 +2048,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "photos_exact": "精确重复文件",
+    "photos_find": "查找相似照片",
+    "photos_similar": "相似照片",
+    "photos_distance": "哈希距离（0–16）：",
+    "photos_hint": ("仅为视觉候选：请比较缩略图与原图。哈希可能碰撞；"
+                    "不自动选择保留副本、多余副本或估计回收量。动画只看第一帧。"),
+    "photos_group": "{count} 张图片；与第一张的距离在 {distance} 位内",
+    "photos_running": "正在读取图片：{read}；跳过／失败：{skipped}",
+    "photos_summary": "{groups} 组相似图片；已读取 {read} 张；跳过／失败 {skipped} 张。",
+    "photos_limited": "列表或显示范围受限；最多显示 {count} 个图片行／缩略图。",
     "archive_loading": "正在读取压缩文件元数据…",
     "archive_virtual_name": "{name}［虚拟］",
     "archive_virtual_hint": "压缩文件内容：声明的未压缩大小，不计入磁盘总量。不提供文件操作或解压。",

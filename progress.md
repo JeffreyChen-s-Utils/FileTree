@@ -23,7 +23,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Finding things
 
 
-- **#57** (P3) Similar photos: near-duplicate images (resized, re-encoded, lightly edited) found by a 64-bit difference hash (`Pillow`, a new dependency: grey 9×8 thumbnail, compare neighbours) and a Hamming distance threshold, in the Duplicates tab as a second kind of group with a thumbnail per file; reading every image is slow, so it runs on the duplicates worker with Stop, from a minimum size, and only over the image types of `analysis.CATEGORY_EXTENSIONS`.
 
 ### Windows space explained
 

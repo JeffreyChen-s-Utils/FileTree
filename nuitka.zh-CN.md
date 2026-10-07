@@ -16,6 +16,8 @@ Excel 报告在仅使用标准库的核心之外导入 `openpyxl`。编译前先
 
 压缩文件预览在仅使用标准库的核心之外，按需导入 `py7zr` 与 `rarfile`。编译前安装 `requirements.txt`，Nuitka 会按适配器导入收集解码依赖包。Windows Python 3.12 发布 wheel 按 `.github/requirements/archives.txt` 的已验证哈希锁定。未附带外部 RAR 工具：PATH 须有 `unrar` 或 `bsdtar`；预览不会运行这些工具或解压。
 
+相似照片搜索只在需要时于仅使用标准库的核心之外导入 `Pillow`。Nuitka 会按图像适配器导入收集原生解码库。Windows Python 3.12 可执行文件构建按 `.github/requirements/photos.txt` 的已验证二进制 wheel 锁定；本地编译前先安装 `requirements.txt`。未附带外部图像程序或模型资源。
+
 ### 1.1 Python 包（每个系统都要）
 
 使用虚拟环境，编出来的程序才只包含 FileTree 需要的东西：

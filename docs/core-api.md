@@ -20,6 +20,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
 | `hard_links` | `account_hard_links(root, *, cancel=None)`; `ScanOptions(count_hard_links=False)` | Optional `ScanResult.hard_links` describes `.aliases`, `.logical_overcount`, `.allocation_overcount`, `.unknown`; worker-only recorded-stat accounting without OS/payload queries; `Node.accounted_size/accounted_allocated` preserve named size/allocation; lexical first observed name contributes, proven aliases count zero; inconsistent/unknown groups stay named; reapply after tree mutation; canceled surveys retain previous accounting |
+| `similar_photos` | `group_similar(signatures, distance=4, *, cancel=None)` | `PhotoSignature(node, value)` holds a 64-bit hash; groups expose `.files` and `.distances` relative to the first representative, not pairwise/equal-content proofs; 0..16-bit threshold, iterative indexed grouping, `PhotoSearchCancelledError` on Stop |
 | `archives` | `read_archive(node, *, reader=zip_members, cancel=None)` | Worker-only guarded ZIP metadata by default; injected readers yield `ArchiveMember`; `ArchiveInventory.children` contains display-only `VirtualEntry` trees, `.files`/`.size` declared totals and `.rejected` omissions; real children/totals unchanged, no extraction; `ArchiveCancelledError` on Stop, OSError on changed/unavailable/unsafe metadata |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
 | `duplicates` | `find_duplicates(root, *, min_size=..., workers=4, progress=None, cancel=None)` | `DuplicateResult.groups`, `.files_read`, `.bytes_read`, `.skipped`; each `DuplicateGroup` has `.size`, `.files`, `.extra` (logical extra-copy size) |
@@ -52,6 +53,14 @@ mappings retain the original report columns. Counts and capacity recovery remain
 once-per-observed-identity accounting does not measure shared extents or directory metadata.
 
 ## Runnable example
+
+The non-core `je_file_tree.photo_reader.find_similar_photos(root, *, min_size=1048576, distance=4,
+cancel=None, progress=None)` uses [Pillow image decoding](https://pillow.readthedocs.io/en/stable/reference/Image.html)
+on guarded recorded sources. `SimilarPhotoResult` has `.groups`, `.files_read`, `.skipped`, `.distance`,
+`.thumbnails` (Node-to-PNG bytes) and `.limited`. Successful signatures cap at 100,000, each source at
+128 MiB/40 million pixels, thumbnails at 1,000; unsupported/changed/cloud/link/oversize images are
+skipped, and cancellation waits through the current decoder call. These are heuristic review hints;
+they cannot be supplied to exact duplicate keeper/savings/rehash decisions. Thumbnails stay in memory.
 
 Archive adapters outside the core use [py7zr's metadata list API](https://py7zr.readthedocs.io/en/latest/api.html)
 and [rarfile's header inventory API](https://rarfile.readthedocs.io/api.html). They never call extraction

@@ -21,6 +21,24 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.similar_photos` groups 64-bit signatures by an observed representative, without transitive
+chains or exact-duplicate authorization. Disjoint d+1 bands guarantee a matching band for distance d;
+the 0..8-bit index preserves the earliest matching representative, with linear fallback for 9..16.
+Six-thousand random signatures, five interleaved runs at distance four: linear 2.36056 s versus bands
+0.04139 s; a measured BK-tree was slower than linear and is absent from the implementation.
+`photo_reader.py` keeps Pillow outside the stdlib-only core and decodes only recorded image categories
+using fixed native formats, guarded source snapshots, EXIF orientation and the first animation frame.
+It compares grey 9x8 neighbour pixels, re-reads only displayed members for memory-only thumbnails,
+refuses changed/link/cloud entries, deduplicates observed hard-link names and caps source bytes,
+pixels, successful signatures and thumbnails. Decoder calls finish before Stop/close can join.
+DuplicatesWorker captures a separate photo mode and threshold; DuplicatesPanel reuses the grouped
+list with bounded icon rows, disables exact keeper/extra selection and recovery estimates, and drops
+photo results on tree edits. Mode changes/new scans invalidate worker identities, all workers join
+at close, and manual file actions retain MainWindow's confirmation/protection/snapshot flow. Hash
+collisions remain possible; group members need not match each other, only their representative.
+Runtime requirements and all three build guides include Pillow; executable releases install a verified
+pinned Windows 3.12 wheel from .github/requirements/photos.txt, outside the publishing job.
+
 `core.archives` reads guarded ZIP directory metadata and builds an iterative virtual inventory,
 separate from real Node.children. Third-party 7z/RAR adapters in `archive_formats.py` keep the core
 stdlib-only; they use metadata listing APIs, never extraction, CRC testing or external commands.

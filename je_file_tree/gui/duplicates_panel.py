@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from PySide6.QtCore import QItemSelectionModel
+from PySide6.QtCore import QItemSelectionModel, QSize
 
-from PySide6.QtGui import QStandardItemModel
+from PySide6.QtGui import QIcon, QImage, QPixmap, QStandardItemModel
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSizePolicy,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -24,6 +25,7 @@ from je_file_tree.core.duplicates import (
 )
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.core.similar_photos import SimilarPhotoResult
 from je_file_tree.core.savings import Savings
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui import grouped_list
@@ -51,6 +53,11 @@ class DuplicatesPanel(QWidget):
         self.folder_matches.setVisible(False)
         self.view = grouped_list.build_view(self.model)
         self.min_size = QComboBox()
+        self.kind = QComboBox()
+        self.distance = QSpinBox()
+        self.distance.setRange(0, 16)
+        self.distance.setValue(4)
+        self._distance_label = QLabel()
         self.start_button = QPushButton()
         self.stop_button = QPushButton()
         self.select_extra = QPushButton()
@@ -74,11 +81,13 @@ class DuplicatesPanel(QWidget):
         self._savings: DuplicateSavings | None = None
         self._groups: list[DuplicateGroup] = []
         self._found: DuplicateResult | None = None
-        self._progress: DuplicateProgress | None = None
+        self._photos: SimilarPhotoResult | None = None
+        self._progress: DuplicateProgress | tuple[int, int] | None = None
         self._stopped = False
         self._assemble()
         self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._keeper_button())
         self.retranslate()
+        self.kind.currentIndexChanged.connect(lambda: self.set_root(self._root))
         self.set_root(None)
 
     # --- public API -------------------------------------------------------
@@ -99,6 +108,7 @@ class DuplicatesPanel(QWidget):
         self._root = root
         self._groups = []
         self._found = None
+        self._photos = None
         self._savings = None
         self._stopped = False
         self._rebuild()
@@ -108,7 +118,8 @@ class DuplicatesPanel(QWidget):
         """Start looking for duplicates of the size chosen or larger."""
         if self._root is None or self.running:
             return
-        worker = DuplicatesWorker(self._root, int(self.min_size.currentData()), self)
+        worker = DuplicatesWorker(self._root, int(self.min_size.currentData()), self,
+                                  photos=self.kind.currentData() == "photos", distance=self.distance.value())
         worker.progressed.connect(lambda progress: worker is self._worker and self._show_progress(progress))
         worker.succeeded.connect(lambda result: worker is self._worker and self._show_result(result))
         worker.cancelled.connect(lambda: worker is self._worker and self._finish(stopped=True))
@@ -137,6 +148,12 @@ class DuplicatesPanel(QWidget):
     def prune(self) -> None:
         """Drop files that are no longer in the tree, and groups left with a single file."""
         root = self._root
+        if self.running:
+            self.stop()
+        if self._photos is not None:
+            self._photos = None
+            self._rebuild()
+            self._update()
         if self._found is not None:
             self._found = replace(self._found, folders=[])
         self.folder_matches.clear()
@@ -197,6 +214,15 @@ class DuplicatesPanel(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self._size_label.setText(tr("duplicates_min_size"))
+        current_kind = self.kind.currentData()
+        self.kind.blockSignals(True)
+        self.kind.clear()
+        self.kind.addItem(tr("photos_exact"), "exact")
+        self.kind.addItem(tr("photos_similar"), "photos")
+        self.kind.setCurrentIndex(max(0, self.kind.findData(current_kind)))
+        self.kind.blockSignals(False)
+        self._distance_label.setText(tr("photos_distance"))
+        self.distance.setToolTip(tr("photos_hint"))
         self.estimate.setToolTip(tr("duplicates_estimate_assumption"))
         current = self.min_size.currentData()
         self.min_size.blockSignals(True)
@@ -223,7 +249,7 @@ class DuplicatesPanel(QWidget):
         self.keep_selected.clicked.connect(self.choose_kept_copy)
         bar = QHBoxLayout()
         bar.setContentsMargins(0, 0, 0, 0)
-        for widget in (self._size_label, self.min_size, self.start_button, self.stop_button, self._busy):
+        for widget in (self.kind, self._size_label, self.min_size, self.start_button, self.stop_button, self._busy):
             bar.addWidget(widget)
         bar.addStretch(1)
         decisions = QHBoxLayout()
@@ -233,6 +259,11 @@ class DuplicatesPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(bar)
+        threshold = QHBoxLayout()
+        threshold.addWidget(self._distance_label)
+        threshold.addWidget(self.distance)
+        threshold.addStretch(1)
+        layout.addLayout(threshold)
         layout.addLayout(decisions)
         layout.addWidget(self.status)
         layout.addWidget(self.estimate)
@@ -241,6 +272,10 @@ class DuplicatesPanel(QWidget):
 
     def _rebuild(self) -> None:
         """Fill the list from ``_groups`` (the most extra space first, up to ``LISTED_GROUPS``), oldest copy first."""
+        if self.kind.currentData() == "photos":
+            self._rebuild_photos()
+            return
+        self.view.setUniformRowHeights(True)
         groups = [(self._group_title(position, group),
                    sorted(group.files, key=lambda file: (file.modified, file.path)))
                   for position, group in enumerate(self._groups[:LISTED_GROUPS])]
@@ -255,6 +290,29 @@ class DuplicatesPanel(QWidget):
                     font.setBold(True)
                     item.setFont(font)
         self._folder_lines()
+
+    def _rebuild_photos(self) -> None:
+        photos = self._photos
+        groups, remaining = [], LISTED_GROUPS
+        if photos is not None:
+            for group in photos.groups[:LISTED_GROUPS]:
+                files = group.files[:remaining]
+                if not files:
+                    break
+                title = tr("photos_group", count=format_count(len(group.files)), distance=photos.distance)
+                groups.append((title, files))
+                remaining -= len(files)
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr("photos_hint")] * len(groups))
+        self.view.setUniformRowHeights(False)
+        self.view.setIconSize(QSize(64, 64))
+        if photos is not None:
+            for row, (_title, files) in enumerate(groups):
+                for index, node in enumerate(files):
+                    data = photos.thumbnails.get(node)
+                    if data:
+                        self.model.item(row).child(index, 0).setIcon(QIcon(QPixmap.fromImage(QImage.fromData(data))))
+        self.folder_matches.clear()
+        self.folder_matches.hide()
 
     def _folder_lines(self) -> None:
         self.folder_matches.clear()
@@ -275,13 +333,14 @@ class DuplicatesPanel(QWidget):
 
     # --- a search ---------------------------------------------------------
 
-    def _show_progress(self, progress: DuplicateProgress) -> None:
+    def _show_progress(self, progress: DuplicateProgress | tuple[int, int]) -> None:
         self._progress = progress
         self._update()
 
-    def _show_result(self, result: DuplicateResult) -> None:
-        self._found = result
-        self._groups = list(result.groups)
+    def _show_result(self, result: DuplicateResult | SimilarPhotoResult) -> None:
+        self._photos = result if isinstance(result, SimilarPhotoResult) else None
+        self._found = result if isinstance(result, DuplicateResult) else None
+        self._groups = list(result.groups) if isinstance(result, DuplicateResult) else []
         self._savings = None
         self._rebuild()
         self._finish(stopped=False)
@@ -295,6 +354,12 @@ class DuplicatesPanel(QWidget):
     def _update(self) -> None:
         running = self._worker is not None
         self.min_size.setEnabled(self._root is not None and not self.running)
+        self.kind.setEnabled(not self.running)
+        photos = self.kind.currentData() == "photos"
+        self.distance.setEnabled(not self.running)
+        self.distance.setVisible(photos)
+        self._distance_label.setVisible(photos)
+        self.start_button.setText(tr("photos_find") if photos else tr("duplicates_find"))
         self.start_button.setEnabled(self._root is not None and not self.running)
         self.stop_button.setEnabled(self.running)
         self._busy.setVisible(self.running)
@@ -302,11 +367,12 @@ class DuplicatesPanel(QWidget):
         self.select_extra.setEnabled(bool(self._groups) and eligible and not self.running)
         self._keeper_button()
         self.status.setText(self._status_text())
-        self.estimate.setVisible(bool(self._groups) and not running)
+        self.estimate.setVisible(bool(self._groups) and not running and not photos)
         self.estimate.setText(self._estimate_text())
 
     def _keeper_button(self) -> None:
-        self.keep_selected.setEnabled(not self.running and self.view.currentIndex().data(NODE_ROLE) is not None)
+        self.keep_selected.setEnabled(self.kind.currentData() != "photos" and not self.running
+                                      and self.view.currentIndex().data(NODE_ROLE) is not None)
 
     def _cancel_estimate(self) -> None:
         if self._estimator is not None:
@@ -359,6 +425,9 @@ class DuplicatesPanel(QWidget):
         return title
 
     def _status_text(self) -> str:
+        return self._photo_status() if self.kind.currentData() == "photos" else self._exact_status()
+
+    def _exact_status(self) -> str:
         if self._worker is not None:
             progress = self._progress
             if progress is None:
@@ -378,4 +447,19 @@ class DuplicatesPanel(QWidget):
             text += " " + tr("duplicates_limited", shown=format_count(LISTED_GROUPS))
         if self._found.skipped:
             text += " " + tr("duplicates_skipped", count=format_count(self._found.skipped))
+        return text
+
+    def _photo_status(self) -> str:
+        if self._worker is not None:
+            read, skipped = self._progress if isinstance(self._progress, tuple) else (0, 0)
+            return tr("photos_running", read=format_count(read), skipped=format_count(skipped))
+        if self._stopped:
+            return tr("duplicates_stopped")
+        if self._photos is None:
+            return tr("photos_hint")
+        result = self._photos
+        text = tr("photos_summary", groups=format_count(len(result.groups)), read=format_count(result.files_read),
+                  skipped=format_count(result.skipped)) + " " + tr("photos_hint")
+        if result.limited or sum(len(group.files) for group in result.groups) > LISTED_GROUPS:
+            text += " " + tr("photos_limited", count=format_count(LISTED_GROUPS))
         return text
