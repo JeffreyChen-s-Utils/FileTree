@@ -139,8 +139,9 @@ def _changed(node: Node, before: Snapshot, current: Snapshot, identity_only: boo
         return "identity"
     if not before.inode:
         return "unverified"
-    if not identity_only and (current.size, current.modified_ns, current.changed_ns) != (
-            before.size, before.modified_ns, before.changed_ns):
+    if not identity_only and (
+            current.size, current.modified_ns, current.changed_ns, current.attributes, current.links) != (
+                before.size, before.modified_ns, before.changed_ns, before.attributes, before.links):
         return "changed"
     return None
 

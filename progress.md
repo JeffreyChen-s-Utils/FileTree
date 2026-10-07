@@ -45,7 +45,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Everyday use
 
 - **#69** (P3) Several scans at once: result tabs, each its own scan, to look at two drives side by side; the window's single `ResultsView` becomes one per tab, with the scan worker per tab.
-- **#83** (P2) Same-volume file management GUI: connect the prepared `core.namespace_moves` plans/execution to batch *Move to folder* and *Rename* from the tree, Search and Largest files, with a preview of every source and destination. On the same volume, use atomic rename where supported; reject moves into descendants, protected destinations and path collisions, offer explicit skip/rename choices for existing names, and never silently overwrite. Keep the original in place on failure; cancel between files and rescan both affected parents. Cross-volume moves remain #22's verified-copy workflow.
 
 ### Distribution
 

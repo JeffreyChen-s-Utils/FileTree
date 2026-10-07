@@ -116,6 +116,26 @@ def test_snapshot_keeps_real_identity_and_link_count(tmp_path: Path) -> None:
     assert first.inode != 0 and first.links == 2
 
 
+@pytest.mark.parametrize("field", ["attributes", "links"])
+def test_new_cloud_state_or_link_count_invalidates_unchanged_content_metadata(tmp_path, monkeypatch, field):
+    file = tmp_path / "file"
+    file.write_bytes(b"data")
+    root = scan(tmp_path).root
+    node = root.children[0]
+    before = unpack_snapshot(node.snapshot)
+    current = SimpleNamespace(st_dev=before.device, st_ino=before.inode, st_size=before.size,
+                              st_mode=before.mode, st_mtime_ns=before.modified_ns, st_ctime_ns=before.changed_ns,
+                              st_file_attributes=before.attributes, st_nlink=before.links)
+    if field == "attributes":
+        current.st_file_attributes |= 0x1000
+    else:
+        current.st_nlink += 1
+    original = operations.stat_snapshot
+    monkeypatch.setattr(operations, "stat_snapshot",
+                        lambda path: pack_snapshot(current) if path == node.path else original(path))
+    assert revalidate(node, root) == "changed"
+
+
 def test_snapshot_supports_filetime_epochs_and_128_bit_file_ids() -> None:
     info = SimpleNamespace(st_dev=1, st_ino=(1 << 127) + 1, st_size=0, st_mode=0o100644,
                            st_mtime_ns=-11_644_473_600 * 1_000_000_000,

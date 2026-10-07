@@ -46,6 +46,7 @@ from je_file_tree.gui.programs import ProgramsDialog
 from je_file_tree.gui.file_times import FileTimesDialog
 from je_file_tree.gui.bin_labels import BinLabels, bin_key
 from je_file_tree.gui.compression import CompressionDialog
+from je_file_tree.gui.namespace_dialog import NamespaceDialog
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
@@ -281,6 +282,9 @@ class MainWindow(QMainWindow):
         movable = [entry for entry in _movable(picked) if system_file(entry.path) is None]
         if movable:
             menu.addSeparator()
+            if self._worker is None and self._trash_worker is None:
+                menu.addAction(tr("menu_move_folder")).triggered.connect(lambda: self.show_namespace(picked))
+                menu.addAction(tr("menu_rename")).triggered.connect(lambda: self.show_namespace(picked, rename=True))
             text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
                                                                     count=format_count(len(movable)))
             menu.addAction(text).triggered.connect(lambda: self.move_to_trash(movable))
@@ -294,6 +298,25 @@ class MainWindow(QMainWindow):
         """Open the selected entry's Windows Properties, reporting shell failures."""
         if not shell_integration.show_properties(node.path, int(self.winId())):
             QMessageBox.warning(self, tr("menu_properties"), tr("properties_failed", path=node.path))
+
+    def show_namespace(self, nodes: Sequence[Node], *, rename: bool = False) -> None:
+        """Review real selected entries; join operations and refresh the current affected scan scope."""
+        outcome = self.results.outcome
+        if (outcome is None or self._worker is not None or self._trash_worker is not None or not nodes
+                or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
+            return
+        root = outcome.result.root
+        dialog = NamespaceDialog(root, nodes, self._unit, self, rename=rename)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
+        if dialog.changed and self.results.outcome is outcome:
+            self._analyser = None
+            self.results.clear_capacity()
+            self._bin_labels.refresh()
+            self.rescan_folder(root)
 
     def show_compression(self, node: Node) -> None:
         """Review/confirm scoped native operations, then rescan with per-file allocation if attempted."""

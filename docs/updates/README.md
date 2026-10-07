@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-07 | 2026-10-08 | Reviewed same-volume move and rename GUI | #83 #done #gui #files #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-06 | 2026-10-08 | Exclusive same-volume namespace core | #83 #files #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-05 | 2026-10-08 | Finder-wide Trash approval and fixed OS emptying | #21 #macos #trash #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-04 | 2026-10-08 | Scoped Linux Trash approval and emptying | #21 #linux #trash #safety | [2026-10-b](2026-10-b.md) |

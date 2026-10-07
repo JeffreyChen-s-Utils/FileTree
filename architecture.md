@@ -460,8 +460,16 @@ fallback. Revalidation refuses protected/unavailable/incomplete/changed sources 
 protected/descendant/colliding/cross-volume targets; outcomes include both affected parents.
 Verified post-rename inode receipts permit subsequent hard-link aliases despite rename ctime changes,
 without changing the captured tree or ordinary Trash validation. An unexpected receipt attempts
-exclusive rollback; failures retain visible paths. Concurrency is not transactional. GUI integration
-and native macOS validation remain pending.
+exclusive rollback; failures retain visible paths. Concurrency is not transactional. `gui.namespace_dialog` owns immutable-request preview and approval
+workers, exposes every outermost pair in a read-only copyable table, invalidates plans on input changes,
+and requires a default-No plain-text question with all eligible pairs in Details. All shared tree,
+Search and Largest context routes preserve exact Node selection and reject detached/root/busy scopes.
+Options freeze during operations; stop/close cancel and join, while identity guards reject old replies.
+Per-item outcomes remain visible, including errors received while closing/joining. Snapshot validation
+also rejects changed cloud attributes/link counts even if content dates and lengths stay the same.
+The operation worker rescans affected parents outside the current root
+and reports counts/errors; after joining, MainWindow invalidates capacity/old analyser replies and
+rebuilds the current root, refreshing both affected parents within it. Native macOS remains unverified.
 
 ## 3. Entry points and public interfaces
 
