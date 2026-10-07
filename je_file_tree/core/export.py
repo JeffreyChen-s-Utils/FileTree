@@ -23,7 +23,7 @@ from je_file_tree.core.pacing import give_way
 
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
                   "error")
-FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified")
+FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified", "accessed", "created")
 JSON_FORMAT = "file-tree/1"  # also what a saved scan must say to be compared (core/compare.py)
 
 
@@ -38,7 +38,8 @@ def export_folders_csv(root: Node, target: str | os.PathLike[str],
 
 def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> int:
     """Write one row per file in ``files``, in the given order; return the row count."""
-    rows = ([node.path, node.size, node.allocated, _iso_time(node.modified)] for node in files)
+    rows = ([node.path, node.size, node.allocated, _iso_time(node.modified), _iso_time(node.accessed or 0.0),
+             _iso_time(node.created or 0.0)] for node in files)
     return _write_csv(target, FILE_COLUMNS, rows)
 
 

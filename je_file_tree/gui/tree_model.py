@@ -30,10 +30,10 @@ from je_file_tree.core.snapshot import unpack_snapshot
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.reasons import problem_text
 
-NAME, SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, MODIFIED = range(8)
+NAME, SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, MODIFIED, ACCESSED, CREATED = range(10)
 COLUMN_KEYS = ("column_name", "column_size", "column_allocated", "column_share", "column_drive_share",
                "column_files", "column_folders",
-               "column_modified")
+               "column_modified", "column_accessed", "column_created")
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
@@ -54,6 +54,8 @@ def sort_key(column: int) -> Callable[[Node], Any]:
         FILES: lambda node: node.file_count,
         FOLDERS: lambda node: node.dir_count,
         MODIFIED: lambda node: node.modified,
+        ACCESSED: lambda node: node.accessed or -1,
+        CREATED: lambda node: node.created or -1,
     }
     return keys[column]
 
@@ -80,13 +82,14 @@ class FolderTreeModel(QAbstractItemModel):
             DRIVE_SHARE: lambda node: (format_share(share) if (share := self._drive_share(node)) is not None
                                        else tr("size_unknown")),
             MODIFIED: lambda node: format_time(node.modified),
+            ACCESSED: lambda node: format_time(node.accessed) if node.accessed is not None else tr("size_unknown"),
+            CREATED: lambda node: format_time(node.created) if node.created is not None else tr("size_unknown"),
         }
         self._roles: dict[int, Callable[[Node, int], Any]] = {
             Qt.ItemDataRole.DisplayRole: self._display,
             Qt.ItemDataRole.TextAlignmentRole: lambda _node, column: _RIGHT if column in _NUMERIC_COLUMNS else None,
             Qt.ItemDataRole.DecorationRole: lambda node, column: self._icon(node) if column == NAME else None,
-            Qt.ItemDataRole.ToolTipRole: lambda node, column: (tr("drive_share_tip") if column == DRIVE_SHARE
-                                                              else self._tooltip(node)),
+            Qt.ItemDataRole.ToolTipRole: self._column_tooltip,
             NODE_ROLE: lambda node, _column: node,
             SHARE_ROLE: lambda node, column: (self._drive_share(node) if column == DRIVE_SHARE
                                               else node.share_of_parent()),
@@ -94,6 +97,11 @@ class FolderTreeModel(QAbstractItemModel):
         }
 
     # --- public API -------------------------------------------------------
+
+    def _column_tooltip(self, node: Node, column: int) -> str:
+        if column in (ACCESSED, CREATED):
+            return tr("file_times_hint")
+        return tr("drive_share_tip") if column == DRIVE_SHARE else self._tooltip(node)
 
     @property
     def root(self) -> Node | None:

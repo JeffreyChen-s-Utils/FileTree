@@ -42,6 +42,7 @@ from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.programs import ProgramsDialog
+from je_file_tree.gui.file_times import FileTimesDialog
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
@@ -696,6 +697,7 @@ class MainWindow(QMainWindow):
         self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
+        self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_recent(self._recent())
@@ -774,6 +776,8 @@ class MainWindow(QMainWindow):
             ("history_settings", None, self.configure_history),
             ("projects", None, self.show_projects),
             ("programs", None, self.show_programs),
+            ("file_times", None, self.show_file_times),
+            ("capture_file_times", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
@@ -797,6 +801,9 @@ class MainWindow(QMainWindow):
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
         self._actions["gentle"].setCheckable(True)
+        self._actions["capture_file_times"].setCheckable(True)
+        self._actions["capture_file_times"].toggled.connect(
+            lambda checked: self.settings.setValue("capture_file_times", checked))
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
         self._actions["shell_integration"].setVisible(shell_integration.supported())
@@ -817,7 +824,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history",
-                    "programs"):
+                    "programs", "file_times"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -853,6 +860,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
+        options_menu.addAction(self._actions["capture_file_times"])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -916,7 +924,8 @@ class MainWindow(QMainWindow):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
-        for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects", "history", "programs"):
+        for key in ("print_view", "export_view_pdf", "special_files", "git_history", "projects", "history",
+                    "programs", "file_times"):
             self._actions[key].setEnabled(has_results and not scanning)
         for key in ("export_report_html", "export_report_xlsx"):
             self._actions[key].setEnabled(has_results and not scanning and self._trash_worker is None
@@ -948,6 +957,19 @@ class MainWindow(QMainWindow):
                 self.settings.setValue("history_enabled", dialog.enabled.isChecked())
                 self.settings.setValue("history_limit_mib", dialog.limit.value())
         finally:
+            dialog.deleteLater()
+
+    def show_file_times(self) -> None:
+        """Query optional recorded file dates on an owned worker, without opening scanned payloads."""
+        if self._worker is not None or self._trash_worker is not None or self.results.outcome is None:
+            return
+        outcome = self.results.outcome
+        dialog = FileTimesDialog(outcome.result.root, self._unit, partial=outcome.partial, parent=self)
+        dialog.selected.connect(self.results.select_node)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
             dialog.deleteLater()
 
     def show_history(self) -> None:
@@ -1110,7 +1132,8 @@ class MainWindow(QMainWindow):
 
     def _scan_options(self) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
-                           gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings))
+                           gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
+                           file_times=self._actions["capture_file_times"].isChecked())
 
     def configure_workers(self) -> None:
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""

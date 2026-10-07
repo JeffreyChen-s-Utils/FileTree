@@ -8,10 +8,10 @@ from PySide6.QtCore import QPoint, QSettings, Qt
 from PySide6.QtWidgets import QMenu, QTreeView
 
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.tree_model import COLUMN_KEYS, DRIVE_SHARE, NAME
+from je_file_tree.gui.tree_model import ACCESSED, COLUMN_KEYS, CREATED, DRIVE_SHARE, NAME
 
 _SETTING = "tree_visible_columns"
-_DEFAULT = [key for column, key in enumerate(COLUMN_KEYS) if column != DRIVE_SHARE]
+_DEFAULT = [key for column, key in enumerate(COLUMN_KEYS) if column not in (DRIVE_SHARE, ACCESSED, CREATED)]
 
 
 class TreeColumns:

@@ -9,6 +9,48 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_file_times": "File times…",
+    "action_file_times_tip": "Filter recorded access and creation dates in this scan",
+    "action_capture_file_times": "Capture file access/creation times",
+    "action_capture_file_times_tip": (
+        "Off by default; adds 16 bytes per regular file to future scans; rescan after ena"
+        "bling"
+    ),
+    "column_accessed": "Recorded access",
+    "column_created": "Created",
+    "file_times_hint": (
+        "Enable Options → Capture file access/creation times, then rescan. Regular files"
+        " only; directory/link and unavailable creation dates remain unknown. Access date"
+        "s can be disabled, delayed or updated by background tools; they never prove actu"
+        "al use. POSIX ctime is not creation time. This view does not prepare cleanup act"
+        "ions."
+    ),
+    "file_times_accessed": "Not opened since… (recorded access date)",
+    "file_times_created": "Created at least… ago",
+    "file_times_mode": "Recorded age mode",
+    "file_times_days": "Days",
+    "file_times_reading": "Filtering recorded file dates…",
+    "file_times_summary": (
+        "{count} matches, {size}; showing {shown}. {unknown}/{total} files have unavailab"
+        "le or future dates."
+    ),
+    "file_times_policy_disabled": (
+        "NTFS reports access updates disabled. Access-age matching is unavailable; creati"
+        "on filtering remains available. Registry settings may require a restart and do n"
+        "ot describe every filesystem."
+    ),
+    "file_times_policy_unknown": (
+        "NTFS access-update configuration is unknown. Access-age matching is unavailable;"
+        " creation filtering remains available."
+    ),
+    "file_times_policy_enabled": (
+        "NTFS registry reports access updates enabled; pending restart, filesystem/provid"
+        "er settings and deferred updates may still affect dates."
+    ),
+    "file_times_policy_platform": (
+        "Filesystem/provider settings may defer or suppress access updates. Treat these d"
+        "ates as recorded metadata."
+    ),
     "action_programs": "Installed programs…",
     "action_programs_tip": "Compare installer/game metadata with installation folders in this scan",
     "program_name": "Program / game",
@@ -920,6 +962,36 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_file_times": "檔案時間…",
+    "action_file_times_tip": "依本次掃描記錄的存取與建立時間篩選",
+    "action_capture_file_times": "記錄檔案存取／建立時間",
+    "action_capture_file_times_tip": "預設關閉；之後掃描每個一般檔案增加 16 bytes；開啟後請重新掃描",
+    "column_accessed": "記錄的存取時間",
+    "column_created": "建立時間",
+    "file_times_hint": (
+        "請開啟「選項 → 記錄檔案存取／建立時間」後重新掃描。只記錄一般檔案；資料夾、連結"
+        "及無法取得的建立時間保持未知。存取時間可能停用、延遲更新，或受背景工具影響，無法"
+        "證明實際使用時間。POSIX ctime 不是建立時間。此檢視不會準備清理操作。"
+    ),
+    "file_times_accessed": "多久未開啟…（依記錄的存取日期）",
+    "file_times_created": "建立至少多久…",
+    "file_times_mode": "記錄時間的篩選模式",
+    "file_times_days": "天數",
+    "file_times_reading": "正在篩選已記錄的檔案時間…",
+    "file_times_summary": (
+        "符合 {count} 個檔案，共 {size}；顯示 {shown} 個。{total} 個檔案中有 {unknown} 個"
+        "時間未知或在未來。"
+    ),
+    "file_times_policy_disabled": (
+        "NTFS 回報已停用存取時間更新，無法依存取時間篩選；仍可依建立時間篩選。登錄設定可"
+        "能需重新啟動，且不代表所有檔案系統。"
+    ),
+    "file_times_policy_unknown": "無法確認 NTFS 存取時間更新設定，無法依存取時間篩選；仍可依建立時間篩選。",
+    "file_times_policy_enabled": (
+        "NTFS 登錄設定回報已啟用存取時間更新；待重新啟動、檔案系統／提供者設定及延遲更新"
+        "仍可能影響日期。"
+    ),
+    "file_times_policy_platform": "檔案系統／提供者設定可能延遲或停用存取時間更新，請將日期視為已記錄的中繼資料。",
     "action_programs": "已安裝程式…",
     "action_programs_tip": "核對安裝程式／遊戲中繼資料與此掃描中的安裝資料夾",
     "program_name": "程式／遊戲",
@@ -1744,6 +1816,36 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_file_times": "文件时间…",
+    "action_file_times_tip": "按本次扫描记录的访问与创建时间筛选",
+    "action_capture_file_times": "记录文件访问／创建时间",
+    "action_capture_file_times_tip": "默认关闭；之后扫描每个普通文件增加 16 bytes；开启后请重新扫描",
+    "column_accessed": "记录的访问时间",
+    "column_created": "创建时间",
+    "file_times_hint": (
+        "请开启“选项 → 记录文件访问／创建时间”后重新扫描。只记录普通文件；文件夹、链接"
+        "及无法获取的创建时间保持未知。访问时间可能停用、延迟更新，或受后台工具影响，无法"
+        "证明实际使用时间。POSIX ctime 不是创建时间。此视图不会准备清理操作。"
+    ),
+    "file_times_accessed": "多久未打开…（按记录的访问日期）",
+    "file_times_created": "创建至少多久…",
+    "file_times_mode": "记录时间的筛选模式",
+    "file_times_days": "天数",
+    "file_times_reading": "正在筛选已记录的文件时间…",
+    "file_times_summary": (
+        "符合 {count} 个文件，共 {size}；显示 {shown} 个。{total} 个文件中有 {unknown} 个"
+        "时间未知或在未来。"
+    ),
+    "file_times_policy_disabled": (
+        "NTFS 报告已停用访问时间更新，无法按访问时间筛选；仍可按创建时间筛选。注册表设置"
+        "可能需重启，且不代表所有文件系统。"
+    ),
+    "file_times_policy_unknown": "无法确认 NTFS 访问时间更新设置，无法按访问时间筛选；仍可按创建时间筛选。",
+    "file_times_policy_enabled": (
+        "NTFS 注册表设置报告已启用访问时间更新；待重启、文件系统／提供者设置及延迟更新仍"
+        "可能影响日期。"
+    ),
+    "file_times_policy_platform": "文件系统／提供者设置可能延迟或停用访问时间更新，请将日期视为已记录的元数据。",
     "action_programs": "已安装程序…",
     "action_programs_tip": "核对安装程序／游戏元数据与此扫描中的安装文件夹",
     "program_name": "程序／游戏",

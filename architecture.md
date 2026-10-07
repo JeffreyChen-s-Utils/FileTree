@@ -291,6 +291,19 @@ directory and atomically saves JSON evidence. Native NTFS/APFS, compression, clo
 extents remain unverified; this harness does not promote the ledger
 or recovery ranges to guarantees.
 
+`ScanOptions.file_times` optionally appends two double timestamps to regular-file snapshots from the
+existing stat: 76→92 bytes, with no Node slots or per-file timestamp syscall. Access/creation properties
+read that suffix, while snapshot validators and live content verification compare stable identity/
+size/change metadata only. Directory/link dates remain absent; POSIX ctime is not birthtime. The core
+file_times query iterates recorded nodes with pacing/cancellation, a 1,000-row heap and full match/unknown
+counts. It reads only the fixed NTFS policy registry value, validating DWORD bits including initialization;
+disabled/unknown NTFS configuration refuses access-age matching, not creation matching. This config is
+not an effective policy guarantee; POSIX/provider timestamp limits remain explicit. The GUI captures the
+off-by-default option for each new full/branch worker, offers hidden tree columns and an owned modal
+read-only File times query with date kind/day controls, Stop/close joining and stale-signal rejection.
+Changed controls cancel/join the previous query. Exact-node activation cannot prepare cleanup. File CSV
+adds optional accessed/created ISO columns (empty if absent); folder-only JSON/history is unchanged.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are

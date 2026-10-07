@@ -65,6 +65,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-62 | 2026-10-07 | Capture optional file dates and query recorded age | #done #27 #core #gui #perf | [2026-10](2026-10.md) |
+| U-20261007-61 | 2026-10-07 | Verify native Linux live mount protections | #snapshot #75 #validation #perf | [2026-10](2026-10.md) |
 | U-20261007-60 | 2026-10-07 | Exercise denied folders through both scan strategies | #fix #75 #tests | [2026-10](2026-10.md) |
 | U-20261007-59 | 2026-10-07 | Guard Linux scans against live mount changes | #snapshot #75 #safety #core | [2026-10](2026-10.md) |
 | U-20261007-58 | 2026-10-07 | Isolate installation-inventory platform tests | #fix #60 #tests | [2026-10](2026-10.md) |

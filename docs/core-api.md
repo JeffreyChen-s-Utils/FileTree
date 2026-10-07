@@ -16,14 +16,15 @@ Capacity and recovery estimates are experimental measurements with the limits de
 
 | Module | Public entry points | Result and meaning |
 |---|---|---|
-| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
-| `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot |
+| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
+| `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now`; extension/category/age records have logical `.size` and `.count` |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
 | `duplicates` | `find_duplicates(root, *, min_size=..., workers=4, progress=None, cancel=None)` | `DuplicateResult.groups`, `.files_read`, `.bytes_read`, `.skipped`; each `DuplicateGroup` has `.size`, `.files`, `.extra` (logical extra-copy size) |
 | `compare` | `load_saved(path)`, `compare(root, saved)` | `SavedScan.root`, `.saved`, `.folders`, `.size`; `FolderChange.path`, `.node`, `.before`, `.after`, `.change` |
 | `history` | `ScanHistory(directory, *, max_bytes=DEFAULT_LIMIT)`, `.save(root, *, cancel=None)`, `.read(root_path, *, limit=1000, cancel=None)`, `load_history(entry, *, cancel=None)` | Application-owned folder metadata only; atomic saved JSON, global oldest-first retention, bounded listing and iterative deep-tree loading; caller keeps the tree stable and excludes stopped scans |
 | `programs` | `registered_programs(*, cancel=None)`, `installed_programs(root, *, partial=False, cancel=None)` | Read-only Windows registrations and bounded game metadata; `Programs.rows`, `.count`, `.issues`; exact recorded-folder matches, separate reported estimates, unknown/unreadable coverage; `None` on cancellation |
+| `file_times` | `files_older_than(root, days, *, clock="accessed", now=None, cancel=None, policy=None)`, `access_policy()` | Bounded recorded-file date query, complete counts/unknowns and NTFS configuration limits; `None` on cancellation |
 | `allocation` | `allocation_for(root)`, `blocks_allocation()`, `windows_allocation(cluster)`, `cluster_size(path)`, `compressed_size(path)` | A file-allocation callable takes `(DirEntry, stat_result)`; Windows-only helpers must be called on Windows |
 | `export` | `export_folders_csv(root, target, max_depth=None)`, `export_files_csv(files, target)`, `export_json(root, target, max_depth=None)` | CSV exports return the row count; JSON returns `None`; all write atomically to an existing destination directory |
 
@@ -91,6 +92,14 @@ or pending data. `compare.SavedScanError` is a `ValueError` for unreadable or in
 Exports propagate `OSError`; their temporary sibling is removed and a pre-existing target is preserved
 if writing fails. Separate exports are independently atomic. Returned nodes reference the original
 tree; do not detach, replace or change them while an analysis is running.
+
+`ScanOptions(file_times=True)` retains optional regular-file access/creation dates from the stat already
+read. `Node.accessed`/`created` return timestamps or None, with no new Node slots; directory/link dates
+and unavailable birthtime are unknown. POSIX ctime is never creation time. `files_older_than(root, days,
+clock="accessed"|"created", cancel=event)` returns up to 1,000 largest matching nodes with full counts,
+known matched bytes and unknown/future-date counts. It does not read scanned payloads or modify entries.
+NTFS disabled/unknown update configurations refuse access-age matching; timestamps never prove use.
+File CSV adds accessed/created ISO dates, empty if absent; folder JSON/history remains folder-only.
 
 ## Size and snapshot semantics
 

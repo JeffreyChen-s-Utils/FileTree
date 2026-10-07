@@ -11,7 +11,7 @@ from je_file_tree.core.duplicates import hash_unchanged
 from je_file_tree.core.export import export_table_csv
 from je_file_tree.core.node import Node
 from je_file_tree.core.pacing import give_way
-from je_file_tree.core.snapshot import stat_snapshot
+from je_file_tree.core.snapshot import stable_snapshot, stat_snapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,7 +115,9 @@ def verify_pair(row: Difference, *, cancel: threading.Event | None = None) -> Di
         return row
     a, b = hash_unchanged(left, cancel=cancel), hash_unchanged(right, cancel=cancel)
     try:
-        unchanged = stat_snapshot(left.path) == left.snapshot and stat_snapshot(right.path) == right.snapshot
+        unchanged = (left.snapshot is not None and right.snapshot is not None
+                     and stat_snapshot(left.path) == stable_snapshot(left.snapshot)
+                     and stat_snapshot(right.path) == stable_snapshot(right.snapshot))
     except OSError:
         unchanged = False
     state = "unavailable" if a is None or b is None or not unchanged else "identical" if a == b else "different_bytes"

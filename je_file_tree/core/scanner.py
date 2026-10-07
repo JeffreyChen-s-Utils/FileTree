@@ -85,6 +85,7 @@ class ScanOptions:
     workers: int = DEFAULT_WORKERS
     exclude: tuple[str, ...] = ()  # folder name patterns and folder paths to skip (see core/exclusions.py)
     gentle: bool = False
+    file_times: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -375,7 +376,7 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
     if not options.include_hidden and _is_hidden(entry.name, info):
         read.errors.append((entry.path, HIDDEN_OMITTED))
         return None
-    snapshot = pack_snapshot(info)
+    snapshot = pack_snapshot(info, file_times=True) if options.file_times else pack_snapshot(info)
     if stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
         return Node(name=entry.name, is_dir=_points_to_folder(entry), modified=info.st_mtime,
                     is_link=True, snapshot=snapshot)

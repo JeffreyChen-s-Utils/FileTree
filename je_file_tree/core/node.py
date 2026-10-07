@@ -6,6 +6,8 @@ import os
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
+from je_file_tree.core.snapshot import snapshot_times
+
 
 @dataclass(slots=True, eq=False)
 class Node:
@@ -35,6 +37,16 @@ class Node:
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
     snapshot: bytes | None = field(default=None, repr=False)
+
+    @property
+    def accessed(self) -> float | None:
+        """Recorded file access time, if optional capture was enabled; it does not prove actual use."""
+        return snapshot_times(self.snapshot)[0]
+
+    @property
+    def created(self) -> float | None:
+        """Recorded file birth time, if the platform provides it and optional capture was enabled."""
+        return snapshot_times(self.snapshot)[1]
 
     @property
     def path(self) -> str:
