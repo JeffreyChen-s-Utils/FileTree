@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-18 | 2026-10-07 | Pause and resume folder scans | #done #scanner #gui | [2026-10](2026-10.md) |
 | U-20261007-17 | 2026-10-07 | Remember tree columns and show share of drive | #done #gui #columns | [2026-10](2026-10.md) |
 | U-20261007-16 | 2026-10-07 | Fix initial journal lock race and timestamp ties | #done #fix #journal | [2026-10](2026-10.md) |
 | U-20261007-15 | 2026-10-07 | Durable operation journal and recent actions | #done #safety #journal | [2026-10](2026-10.md) |

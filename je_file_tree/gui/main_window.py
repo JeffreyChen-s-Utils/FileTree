@@ -139,6 +139,7 @@ class MainWindow(QMainWindow):
         worker.succeeded.connect(lambda outcome: self._is_current(worker) and self._scan_succeeded(outcome))
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
         worker.cancelled.connect(lambda outcome: self._is_current(worker) and self._scan_cancelled(outcome))
+        worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
         worker.finished.connect(worker.deleteLater)
         self._worker = worker
         self.results.begin_scan()
@@ -163,6 +164,11 @@ class MainWindow(QMainWindow):
 
     def _is_current(self, worker: ScanWorker) -> bool:
         return worker is self._worker
+
+    def pause_scan(self, paused: bool) -> None:
+        """Pause or resume the current folder scan while live refreshes keep running."""
+        if self._worker is not None and not self._worker.set_paused(paused):
+            self.results.scan_bar.analysing()
 
     def rescan(self) -> None:
         """Scan the last folder again."""
@@ -242,6 +248,7 @@ class MainWindow(QMainWindow):
             lambda outcome: self._is_current(worker) and self._branch_rescanned(node, outcome, before))
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
         worker.cancelled.connect(lambda _outcome: self._is_current(worker) and self._branch_cancelled())
+        worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
         worker.finished.connect(worker.deleteLater)
         self._worker = worker
         self.results.scan_bar.start()
@@ -656,6 +663,7 @@ class MainWindow(QMainWindow):
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
+        self.results.scan_bar.pause_requested.connect(self.pause_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
         self.results.apply_chart_settings({key: self.settings.value(key) for key in _CHART_SETTINGS
                                            if self.settings.contains(key)})

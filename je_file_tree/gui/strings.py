@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "scan_pause": "Pause",
+    "scan_resume": "Resume",
+    "scan_pause_tip": "Pause new folder reads; current reads finish. Stop works while paused.",
+    "scan_paused": "Paused — {progress}",
+    "scan_analysing": "Folder reads finished; analysing results…",
     "column_drive_share": "% of drive",
     "columns_reset": "Reset columns",
     "drive_share_tip": ("Logical bytes divided by total volume capacity. Hard-link names count separately; "
@@ -584,6 +589,11 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "scan_pause": "暫停",
+    "scan_resume": "繼續",
+    "scan_pause_tip": "暫停取得新資料夾；目前讀取會完成。暫停時仍可停止。",
+    "scan_paused": "已暫停 — {progress}",
+    "scan_analysing": "資料夾讀取完成，正在分析結果…",
     "column_drive_share": "占磁碟比例",
     "columns_reset": "重設欄位",
     "drive_share_tip": ("邏輯位元組除以磁碟總容量。硬連結名稱分別計算；不是配置或可回收空間。"
@@ -1104,6 +1114,11 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "scan_pause": "暂停",
+    "scan_resume": "继续",
+    "scan_pause_tip": "暂停获取新文件夹；当前读取会完成。暂停时仍可停止。",
+    "scan_paused": "已暂停 — {progress}",
+    "scan_analysing": "文件夹读取完成，正在分析结果…",
     "column_drive_share": "占磁盘比例",
     "columns_reset": "重置列",
     "drive_share_tip": ("逻辑字节除以磁盘总容量。硬链接名称分别计算；不是分配或可回收空间。"

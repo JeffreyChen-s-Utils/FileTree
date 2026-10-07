@@ -21,6 +21,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`scan(..., pause=event)` checks the pause event while crawler workers wait for their next folder.
+In-flight reads finish, progress callbacks and live refresh continue, cancellation bypasses the pause,
+and resuming retains the same nodes and totals. `ScanWorker` owns the event; the scan bar forwards
+Pause/Resume through MainWindow. Its analysis phase disables pause and all workers still join on close.
+
 `TreeColumns` persists optional tree columns by stable keys in QSettings and builds the header menu
 in the current language. The name remains visible with a readable initial width; extra columns scroll.
 `FolderTreeModel` uses the worker-computed capacity ledger for logical percent-of-volume values,

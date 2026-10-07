@@ -9,6 +9,8 @@ the window.
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
 
+Use **Pause / Resume** in the scan bar to suspend taking new folders. Current folder reads finish and the live tree keeps refreshing; **Stop** and closing still work while paused. Final analysis cannot be paused. The elapsed time includes pauses; resuming keeps the same scan and counts.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

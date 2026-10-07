@@ -53,7 +53,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#75** (P1) Finish capacity-ledger validation: compare `core.capacity.capacity_ledger` against OS capacity on isolated NTFS, ext4 and APFS test volumes before calling it accurate; verify Recycle Bin attribution and allocation estimates, especially shared extents and reserved capacity. Add same-device POSIX bind-mount boundary detection (different-device mounts are now listed without traversal). The GUI and CLI ledger are estimates; filesystem metadata, omitted bytes and other-volume totals remain unknown. Drive-wide Recycle Bin querying remains #21; tree hard-link accounting remains #32.
 
 - **#63** (P2) Gentle scanning: an option that lowers the scan threads' CPU and I/O priority (Windows `SetThreadPriority` with `THREAD_MODE_BACKGROUND_BEGIN`; Linux `ioprio_set` and `nice`), so a whole-drive scan does not slow other programs (this machine also runs a Discord bot that stalls under load); measure how much longer a scan takes with it.
-- **#64** (P3) Pause and resume a scan: the crawler's workers (`je_file_tree/core/scanner.py` `_take`) wait on a pause event; the scan bar (`je_file_tree/gui/scan_bar.py`) gets *Pause* / *Resume* and the live view keeps refreshing what was read.
 - **#65** (P3) NTFS alternate data streams: data attached to files under another stream name (`FindFirstStreamW`) that no size shows; measure how common and costly reading them is before adding anything.
 
 ### Over time

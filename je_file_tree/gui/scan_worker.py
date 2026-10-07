@@ -244,29 +244,45 @@ class ScanWorker(QThread):
     succeeded = Signal(object)
     failed = Signal(str)
     cancelled = Signal(object)
+    analysing = Signal()
 
     def __init__(self, path: str, options: ScanOptions, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.path = path
         self._options = options
         self._cancel = threading.Event()
+        self._pause = threading.Event()
+        self._scanning = True
 
     def cancel(self) -> None:
         """Ask the scan to stop; ``cancelled`` follows shortly."""
         self._cancel.set()
+        self._pause.clear()
+
+    def set_paused(self, paused: bool) -> bool:
+        """Pause taking new folders; return false after scanning ends or cancellation begins."""
+        if not self._scanning or self._cancel.is_set():
+            return False
+        self._pause.set() if paused else self._pause.clear()
+        return True
+
+    def _analyse(self, result: ScanResult, *, partial: bool = False) -> ScanOutcome:
+        self._scanning = False
+        self.analysing.emit()
+        return analyse(result, partial=partial)
 
     def run(self) -> None:
         """Thread body: scan, analyse, report."""
         try:
             result = scan(self.path, options=self._options, progress=self.progressed.emit,
-                          cancel=self._cancel, on_root=self.started.emit)
+                          cancel=self._cancel, on_root=self.started.emit, pause=self._pause)
         except ScanCancelledError as stopped:
-            self.cancelled.emit(analyse(stopped.partial, partial=True) if stopped.partial else None)
+            self.cancelled.emit(self._analyse(stopped.partial, partial=True) if stopped.partial else None)
             return
         except OSError as error:
             self.failed.emit(error.strerror or str(error))
             return
         if self._cancel.is_set():
-            self.cancelled.emit(analyse(result, partial=True))
+            self.cancelled.emit(self._analyse(result, partial=True))
             return
-        self.succeeded.emit(analyse(result))
+        self.succeeded.emit(self._analyse(result))

@@ -119,13 +119,16 @@ class _FolderRead:
 
 def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  # noqa: PLR0913
          progress: ProgressCallback | None = None, cancel: threading.Event | None = None,
-         progress_interval: float = 0.1, on_root: RootCallback | None = None) -> ScanResult:
+         progress_interval: float = 0.1, on_root: RootCallback | None = None,
+         pause: threading.Event | None = None) -> ScanResult:
     """Scan the folder at ``path`` and return its tree.
 
     ``on_root`` is called once with the (still empty) root before any folder is
     read, for showing the tree while it grows. ``progress`` is called about
     every ``progress_interval`` seconds (and once at the end). Both run on the
     calling thread. Setting ``cancel`` stops the scan within one interval.
+    While ``pause`` is set, workers take no new folders; in-flight folder reads finish.
+    Clearing it resumes within 0.1 seconds. Cancellation works while paused.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
     :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
@@ -141,7 +144,7 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
         raise NotADirectoryError("scan roots must not be links or junctions")
     if on_root is not None:
         on_root(root)
-    crawler = _Crawler(root, root_path, options, cancel)
+    crawler = _Crawler(root, root_path, options, cancel, pause)
     try:
         crawler.run(progress, cancel, progress_interval)
     except ScanCancelledError:
@@ -159,11 +162,12 @@ class _Crawler:
     """Worker threads sharing one stack of folders still to read."""
 
     def __init__(self, root: Node, root_path: str, options: ScanOptions,
-                 cancel: threading.Event | None = None) -> None:
+                 cancel: threading.Event | None = None, pause: threading.Event | None = None) -> None:
         self._options = options
         self._allocation = allocation_for(root_path)
         self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
+        self._pause = pause
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
         self._stopped = False
@@ -236,8 +240,12 @@ class _Crawler:
     def _take(self) -> tuple[Node, str] | None:
         """The next folder to read, or None once there is nothing left anywhere."""
         with self._condition:
-            while not self._pending and self._busy and not self._stopped:
-                self._condition.wait()
+            while not self._stopped and not (self._cancel is not None and self._cancel.is_set()):
+                if not self._pending and not self._busy:
+                    break
+                if ((self._pause is None or not self._pause.is_set()) and self._pending):
+                    break
+                self._condition.wait(0.1)
             cancelled = self._cancel is not None and self._cancel.is_set()
             if self._stopped or cancelled or not self._pending:
                 self._condition.notify_all()
