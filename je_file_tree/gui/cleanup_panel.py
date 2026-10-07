@@ -7,6 +7,7 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from je_file_tree.core.cleanup import CleanupGroup
+from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.coverage import Coverage
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.node import Node
@@ -39,6 +40,7 @@ class CleanupPanel(QWidget):
         self.coverage_banner.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self._coverage: Coverage | None = None
         self._partial = False
+        self._policy = CleanupPolicy()
         self.select_all = QPushButton()
         self.select_group = QPushButton()
         self.select_all.clicked.connect(self.select_all_entries)
@@ -88,7 +90,7 @@ class CleanupPanel(QWidget):
         self._groups = []
         self._coverage = None
         self._rebuild()
-        worker = CleanupWorker(self._root, self)
+        worker = CleanupWorker(self._root, self, policy=self._policy)
         worker.done.connect(lambda groups, coverage: self._show(worker, groups, coverage))
         worker.finished.connect(lambda: self._running.discard(worker))
         worker.finished.connect(worker.deleteLater)
@@ -96,6 +98,11 @@ class CleanupPanel(QWidget):
         self._running.add(worker)
         self._update_status()
         worker.start()
+
+    def set_policy(self, policy: CleanupPolicy) -> None:
+        """Apply settings only to proposals; the scan and its accounting remain unchanged."""
+        self._policy = policy
+        self.refresh()
 
     def stop(self, *, wait: bool = False) -> None:
         """Stop the searches still running; with ``wait``, until their threads have ended."""

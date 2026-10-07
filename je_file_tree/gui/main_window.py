@@ -22,7 +22,8 @@ from PySide6.QtWidgets import (
 from je_file_tree import __version__
 from je_file_tree.core import export
 from je_file_tree.core.analysis import Summary
-from je_file_tree.core.cleanup import CleanupGroup
+from je_file_tree.core.cleanup import DETAILS, CleanupGroup
+from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting, load_policy
 from je_file_tree.core.formatting import AUTO_UNIT, SIZE_UNITS, format_count, format_share, format_size
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.operations import MoveResult
@@ -31,6 +32,7 @@ from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.gui import elevation, file_actions
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
+from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
 from je_file_tree.gui.help_dialog import HelpDialog
 from je_file_tree.gui.i18n import LANGUAGES, current_language, set_language, tr
 from je_file_tree.gui.qt_translation import apply_qt_translation
@@ -49,6 +51,7 @@ _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
 SEARCHES_KEY = "saved_searches"
+CLEANUP_POLICY_KEY = "cleanup_policy"
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
@@ -99,6 +102,15 @@ class MainWindow(QMainWindow):
         self._restore()
         self.retranslate()
         self._update_actions()
+        self._cleanup_policy = CleanupPolicy()
+        if self.settings.contains(CLEANUP_POLICY_KEY):
+            try:
+                self._cleanup_policy = load_policy(self.settings.value(CLEANUP_POLICY_KEY))
+            except (ValueError, RecursionError):
+                self._cleanup_policy = CleanupPolicy(tuple(RuleSetting(key, False, int(details.minimum_age))
+                                                           for key, details in DETAILS.items()))
+                self.statusBar().showMessage(tr("policy_saved_invalid"))
+        self.results.cleanup.set_policy(self._cleanup_policy)
 
     # --- scanning ---------------------------------------------------------
 
@@ -549,6 +561,7 @@ class MainWindow(QMainWindow):
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
             ("exclusions", None, self.edit_exclusions),
+            ("cleanup_policy", None, self.edit_cleanup_policy),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
@@ -599,11 +612,14 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._actions["hidden"])
         view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])
+        options_menu = bar.addMenu("")
+        options_menu.addAction(self._actions["cleanup_policy"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
         help_menu.addAction(self._actions["about"])
         self._menus = {"menu_file": file_menu, "menu_export": export_menu, "menu_view": view_menu,
-                       "menu_unit": unit_menu, "menu_language": language_menu, "menu_help": help_menu}
+                       "menu_unit": unit_menu, "menu_language": language_menu, "menu_help": help_menu,
+                       "menu_options": options_menu}
 
     def _build_toolbar(self) -> None:
         toolbar = QToolBar()
@@ -643,6 +659,7 @@ class MainWindow(QMainWindow):
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
         self._actions["open"].setEnabled(self._trash_worker is None)
+        self._actions["cleanup_policy"].setEnabled(not scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
         for key in ("export_folders", "export_largest", "export_json", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
@@ -675,6 +692,21 @@ class MainWindow(QMainWindow):
         self.settings.setValue(EXCLUSIONS_KEY, dialog.patterns())
         self.statusBar().showMessage(tr("exclusions_saved", count=format_count(len(dialog.patterns()))),
                                      _STATUS_TIMEOUT_MS)
+
+    def edit_cleanup_policy(self) -> None:
+        """Preview and save clean-up settings independently of scan exclusions."""
+        if self._worker is not None or self._trash_worker is not None:
+            return
+        dialog = CleanupPolicyDialog(self._cleanup_policy, self.results.tree_model.root, self._unit, self)
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self._cleanup_policy = dialog.policy()
+                self.settings.setValue(CLEANUP_POLICY_KEY, self._cleanup_policy.dumps())
+                self.results.cleanup.set_policy(self._cleanup_policy)
+                self.statusBar().showMessage(tr("policy_saved"), _STATUS_TIMEOUT_MS)
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def exclusions(self) -> list[str]:
         """The folder name patterns and folder paths that scans skip (the ``exclusions`` setting)."""

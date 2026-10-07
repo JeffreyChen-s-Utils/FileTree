@@ -30,6 +30,13 @@ evidence replace bare-name guesses; package stores are excluded. Manual-risk gro
 in `CleanupReview` and are excluded from bulk selection; `cleanup_text` translates metadata in all
 three languages. `CleanupGroup` carries the effective details through to the review.
 
+`core.cleanup_policy` validates versioned JSON rule enable/age overrides and independent clean-up
+exclusions. Excluded descendants block whole-ancestor proposals while remaining in scan accounting.
+`CleanupPolicyDialog` previews before/after candidates on cancellable workers, invalidates replaced
+replies and requires an unchanged preview to save. MainWindow persists the policy in QSettings and
+refreshes suggestions; invalid stored settings disable every rule until reviewed. No custom commands
+or risk overrides are accepted, and each review receives the effective age metadata.
+
 `core/savings.py` (also exported from `allocation`) estimates reviewed selections without reading file
 contents: outermost paths, logical bytes, unique hard-link allocation, conservative recoverable file-data
 range after emptying Trash, and current free space. A hard-linked file whose other names remain offers

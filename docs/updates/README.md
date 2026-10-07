@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-12 | 2026-10-07 | Preview and persist validated clean-up policy | #done #cleanup #settings | [2026-10](2026-10.md) |
 | U-20261007-11 | 2026-10-07 | Require age and evidence for conservative clean-up rules | #done #cleanup #safety | [2026-10](2026-10.md) |
 | U-20261007-10 | 2026-10-07 | Explain failed Trash moves with observed lock holders | #done #safety | [2026-10](2026-10.md) |
 | U-20261007-09 | 2026-10-07 | Package the standalone Windows folder for releases | #done #build #release #windows | [2026-10](2026-10.md) |

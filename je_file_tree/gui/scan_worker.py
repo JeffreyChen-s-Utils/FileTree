@@ -15,6 +15,7 @@ from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
 from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
 from je_file_tree.core.cleanup import find_cleanup
+from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
 from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
@@ -144,9 +145,10 @@ class CleanupWorker(QThread):
 
     done = Signal(object, object)
 
-    def __init__(self, root: Node, parent: QObject | None = None) -> None:
+    def __init__(self, root: Node, parent: QObject | None = None, *, policy: CleanupPolicy | None = None) -> None:
         super().__init__(parent)
         self._root = root
+        self._policy = policy
         self._cancel = threading.Event()
 
     def stop(self) -> None:
@@ -156,7 +158,7 @@ class CleanupWorker(QThread):
     def run(self) -> None:
         """Thread body."""
         coverage = coverage_of(self._root)
-        groups = find_cleanup(self._root, cancel=self._cancel, coverage=coverage)
+        groups = find_cleanup(self._root, cancel=self._cancel, coverage=coverage, policy=self._policy)
         if groups is not None:
             self.done.emit(groups, coverage)
 

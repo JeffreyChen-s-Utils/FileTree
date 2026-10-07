@@ -16,12 +16,16 @@ import re
 import threading
 import time
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import PurePath
+from typing import TYPE_CHECKING
 
 from je_file_tree.core.coverage import Coverage, coverage_of
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.pacing import give_way
+
+if TYPE_CHECKING:
+    from je_file_tree.core.cleanup_policy import CleanupPolicy
 
 EMPTY_FOLDERS = "empty_folders"
 _DAY = 86400.0
@@ -112,22 +116,31 @@ class CleanupGroup:
 
 
 def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | None = None,
-                 cancel: threading.Event | None = None, coverage: Coverage | None = None) -> list[CleanupGroup] | None:
+                 cancel: threading.Event | None = None, coverage: Coverage | None = None,
+                 policy: CleanupPolicy | None = None) -> list[CleanupGroup] | None:
     """The clean-up groups beneath ``root`` (empty folders included), the largest group first.
 
     None when ``cancel`` is set before the walk is done (checked once per folder).
     """
+    rules = rules if policy is None else policy.rules()
     matcher = _Matcher(rules, time.time() if now is None else now)
+    blocked, omitted = _policy_boundaries(root, policy, cancel)
     coverage = coverage or coverage_of(root)
-    found = _walk(root, matcher, cancel, coverage)
+    found = _walk(root, matcher, cancel, coverage, blocked, omitted)
     if found is None:
         return None
     claimed = {id(node) for nodes in found.values() for node in nodes}
-    empty = [folder for folder in empty_folders(root) if not _inside(folder, claimed)
-             and matcher.old_enough(folder, DETAILS[EMPTY_FOLDERS].minimum_age)]
+    empty_setting = policy.setting(EMPTY_FOLDERS) if policy is not None else None
+    empty_age = empty_setting.minimum_age if empty_setting else DETAILS[EMPTY_FOLDERS].minimum_age
+    empty = [] if empty_setting is not None and not empty_setting.enabled else [
+        folder for folder in empty_folders(root) if folder not in blocked and folder not in omitted
+        and not _inside(folder, claimed) and matcher.old_enough(folder, empty_age)]
+    if cancel is not None and cancel.is_set():
+        return None
     if empty:
         found[EMPTY_FOLDERS] = empty
-    details = {rule.key: rule.details for rule in rules} | {EMPTY_FOLDERS: DETAILS[EMPTY_FOLDERS]}
+    details = {rule.key: rule.details for rule in rules} | {
+        EMPTY_FOLDERS: replace(DETAILS[EMPTY_FOLDERS], minimum_age=empty_age)}
     groups = [CleanupGroup(key, sorted(nodes, key=lambda node: -node.size), sum(node.size for node in nodes),
                            details[key])
               for key, nodes in found.items()]
@@ -136,7 +149,7 @@ def find_cleanup(root: Node, *, rules: tuple[Rule, ...] = RULES, now: float | No
 
 
 def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None,
-          coverage: Coverage) -> dict[str, list[Node]] | None:
+          coverage: Coverage, blocked: set[Node], omitted: set[Node]) -> dict[str, list[Node]] | None:
     """Every entry beneath ``root`` a rule matches, by group; None when cancelled."""
     found: dict[str, list[Node]] = defaultdict(list)
     stack: list[tuple[Node, tuple[str, ...]]] = [(root, _parts(root.path))]
@@ -145,21 +158,24 @@ def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None,
             return None
         give_way()
         folder, parts = stack.pop()
-        stack.extend(_visit(folder, parts, matcher, found, coverage))
+        if folder not in omitted:
+            stack.extend(_visit(folder, parts, matcher, found, coverage, blocked, omitted))
     return found
 
 
 def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
-           found: dict[str, list[Node]], coverage: Coverage) -> list[tuple[Node, tuple[str, ...]]]:
+           found: dict[str, list[Node]], coverage: Coverage, blocked: set[Node],
+           omitted: set[Node]) -> list[tuple[Node, tuple[str, ...]]]:
     """Put ``folder``'s matching entries in ``found``; returns the subfolders still to look into."""
     names = {child.name.casefold() for child in folder.children}
     deeper: list[tuple[Node, tuple[str, ...]]] = []
     for child in folder.children:
-        if child.is_link or child.error is not None:
+        if child.is_link or child.error is not None or child in omitted:
             continue
         if child.is_dir:
             child_parts = (*parts, child.name.casefold())
-            key = matcher.folder_key(child_parts, names, child) if coverage.can_clean(child) else None
+            key = (matcher.folder_key(child_parts, names, child)
+                   if child not in blocked and coverage.can_clean(child) else None)
             if key is None and child.children:
                 deeper.append((child, child_parts))  # a matching folder is suggested whole, not entered
         else:
@@ -167,6 +183,26 @@ def _visit(folder: Node, parts: tuple[str, ...], matcher: _Matcher,
         if key is not None:
             found[key].append(child)
     return deeper
+
+
+def _policy_boundaries(root: Node, policy: CleanupPolicy | None,
+                       cancel: threading.Event | None) -> tuple[set[Node], set[Node]]:
+    blocked: set[Node] = set()
+    omitted: set[Node] = set()
+    if policy is None or not policy.exclusions:
+        return blocked, omitted
+    for node in root.iter_nodes():
+        if cancel is not None and cancel.is_set():
+            break
+        if node.is_dir:
+            give_way()
+        if node.parent in omitted or policy.excludes(node):
+            omitted.add(node)
+            above = node.parent
+            while above is not None and above not in blocked:
+                blocked.add(above)
+                above = above.parent
+    return blocked, omitted
 
 
 def empty_folders(root: Node) -> list[Node]:
@@ -228,7 +264,7 @@ class _Matcher:
 
     def old_enough(self, node: Node, days: float) -> bool:
         """Folder.modified is the newest descendant, so a recent file disqualifies the whole folder."""
-        return days == 0 or 0 < node.modified <= self._now - days * _DAY
+        return 0 < node.modified <= self._now - days * _DAY
 
 
 def _has_evidence(node: Node, rule: Rule) -> bool:

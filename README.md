@@ -139,6 +139,15 @@ excluded. Project outputs require manifest evidence; Python caches require gener
 Temporary files, crash evidence, downloads, build output and empty folders use *Review manually*, start
 unchecked and are excluded from *Select all*. Even a lower-risk cache requires review and confirmation.
 
+**Options → Clean-up policy** enables/disables each rule, sets its minimum age and excludes absolute
+paths or name patterns (one per line). Excluded descendants also prevent suggesting their ancestors
+as a whole. Settings are independent of **Skip while scanning**: excluded clean-up data still counts
+towards disk usage. Defaults preserve the built-in rules until edited. Preview on the current scan
+shows candidates and logical bytes added/removed before Save; an edit invalidates the preview. The
+policy is stored in QSettings and accepts validated version-1 JSON imports only (supported rule keys,
+boolean flags, days 0–36500, exclusions). Invalid saved settings disable suggestions until reviewed;
+manual risk cannot be downgraded, and no custom executable rules are supported.
+
 ### Seeing what grew
 
 Save a scan with **File → Export → Folder tree (JSON)**. Later, after a new scan, choose **File → Compare with a
