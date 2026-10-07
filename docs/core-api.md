@@ -404,4 +404,4 @@ late partial/retained paths in plain text. MainWindow serializes path dialogs wi
 expires old Undo offers, then fully rescans the unchanged current root after any attempted batch.
 Both keeper and extra snapshots, capacity and duplicate observations refresh; replaced roots cannot
 receive an old refresh. Native Windows CJK/ADS GUI evidence verified three aliases, original audit
-identities and full-root refresh. The same fresh owned GUI/native workflow runs in Linux CI.
+identities and full-root refresh. Native Linux CI passed the same fresh owned GUI/native workflow, audits and full-root refresh.

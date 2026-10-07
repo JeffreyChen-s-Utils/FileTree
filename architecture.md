@@ -558,7 +558,7 @@ late partials and retained paths remain visible. MainWindow's operation_busy inc
 dialogs to serialize scan/Trash/Undo; only the same current root receives a complete post-attempt
 rescan, invalidating keeper/extra snapshots, capacity and duplicate decisions. Native Windows owned
 CJK/ADS GUI proof verified three aliases, independent original audit identities and full-root refresh;
-the same owned workflow runs in Linux CI. Native macOS validation remains #4.
+native Linux CI passed the same owned workflow, audits and complete-root refresh. Native macOS validation remains #4.
 
 ## 3. Entry points and public interfaces
 
