@@ -30,7 +30,7 @@ from typing import Any
 from je_file_tree.core.savings import Savings, estimate_savings
 
 __all__ = ["Allocation", "DEFAULT_CLUSTER", "Savings", "allocation_for", "blocks_allocation", "windows_allocation",
-           "cluster_size", "compressed_size", "estimate_savings"]
+           "cluster_size", "allocation_unit", "compressed_size", "estimate_savings"]
 
 Allocation = Callable[["os.DirEntry[str]", os.stat_result], int]
 """Tells the space a file takes on disk from its directory entry and its ``stat`` result."""
@@ -93,15 +93,35 @@ def windows_allocation(cluster: int) -> Allocation:
 
 def cluster_size(path: str) -> int:
     """Bytes per cluster of the volume holding ``path`` (Windows; ``DEFAULT_CLUSTER`` when it cannot be told)."""
+    return _known_cluster(path) or DEFAULT_CLUSTER
+
+
+def allocation_unit(path: str) -> int | None:
+    """Known Windows cluster or POSIX fragment unit; None on failure, not a fallback estimate.
+
+    POSIX reports filesystem allocation granularity, not physical sectors or exact per-file allocation.
+    """
+    if sys.platform == "win32":
+        return _known_cluster(path)
+    if not hasattr(os, "statvfs"):
+        return None
+    try:
+        info = os.statvfs(path)
+    except OSError:
+        return None  # Unsupported/unavailable unit is explicitly shown as unknown by the caller.
+    return info.f_frsize or info.f_bsize or None
+
+
+def _known_cluster(path: str) -> int | None:
     kernel32 = _kernel32()
     volume = ctypes.create_unicode_buffer(_VOLUME_PATH_LENGTH)
     if not kernel32.GetVolumePathNameW(os.path.abspath(path), volume, _VOLUME_PATH_LENGTH):
-        return DEFAULT_CLUSTER
+        return None
     sectors, sector_bytes, free, total = (ctypes.c_ulong() for _ in range(4))
     if not kernel32.GetDiskFreeSpaceW(volume.value, ctypes.byref(sectors), ctypes.byref(sector_bytes),
                                       ctypes.byref(free), ctypes.byref(total)):
-        return DEFAULT_CLUSTER
-    return sectors.value * sector_bytes.value or DEFAULT_CLUSTER
+        return None
+    return sectors.value * sector_bytes.value or None
 
 
 def compressed_size(path: str) -> int | None:

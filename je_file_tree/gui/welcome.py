@@ -30,6 +30,7 @@ class WelcomePage(QWidget):
 
     choose_folder_requested = Signal()
     scan_requested = Signal(str)
+    overview_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -38,6 +39,8 @@ class WelcomePage(QWidget):
         self._subtitle = QLabel()
         self._choose = QPushButton()
         self._drives_title = QLabel()
+        self._overview = QPushButton()
+        self._overview.clicked.connect(self.overview_requested)
         self._drives = QGridLayout()
         self._recent_title = QLabel()
         self._recent_box = QVBoxLayout()
@@ -61,6 +64,8 @@ class WelcomePage(QWidget):
         self._choose.setText(tr("welcome_choose"))
         self._choose.setToolTip(tr("action_open_tip"))
         self._drives_title.setText(tr("welcome_drives"))
+        self._overview.setText(tr("action_volumes"))
+        self._overview.setToolTip(tr("action_volumes_tip"))
         self._recent_title.setText(tr("welcome_recent"))
         self._tip.setText(tr("welcome_tip"))
         self._fill_drives()
@@ -94,6 +99,7 @@ class WelcomePage(QWidget):
         column.addSpacing(8)
         column.addWidget(self._drives_title)
         column.addLayout(self._drives)
+        column.addWidget(self._overview)
         column.addSpacing(8)
         column.addWidget(self._recent_title)
         column.addLayout(self._recent_box)

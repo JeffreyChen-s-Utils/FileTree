@@ -39,6 +39,7 @@ from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.report_dialog import ReportDialog
+from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -749,6 +750,7 @@ class MainWindow(QMainWindow):
             ("live_compare", None, self.compare_live_folders),
             ("git_history", None, self.show_git_history),
             ("projects", None, self.show_projects),
+            ("volumes", None, self.show_volumes),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -795,6 +797,7 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self._actions["quit"])
         view_menu = bar.addMenu("")
+        view_menu.addAction(self._actions["volumes"])
         unit_menu = view_menu.addMenu("")
         units = QActionGroup(self)
         for unit in _UNITS:
@@ -847,6 +850,7 @@ class MainWindow(QMainWindow):
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
+        self.welcome.overview_requested.connect(self.show_volumes)
         self.results.scan_bar.stop_requested.connect(self.stop_scan)
         self.results.scan_bar.pause_requested.connect(self.pause_scan)
         self.results.node_menu_requested.connect(self.show_menu_for)
@@ -872,6 +876,7 @@ class MainWindow(QMainWindow):
         self._actions["open"].setEnabled(self._trash_worker is None)
         self._actions["cleanup_policy"].setEnabled(not scanning)
         self._actions["live_compare"].setEnabled(not scanning)
+        self._actions["volumes"].setEnabled(not scanning)
         self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
@@ -886,6 +891,18 @@ class MainWindow(QMainWindow):
                                               and self.results.current_list() is not None)
 
     # --- dialogs ----------------------------------------------------------
+
+    def show_volumes(self) -> None:
+        """Show mounted volumes and scan an explicitly activated root."""
+        if self._worker is not None or self._trash_worker is not None:
+            return
+        dialog = VolumesDialog(self._unit, self)
+        dialog.scan_requested.connect(self.start_scan)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
 
     def choose_folder(self) -> None:
         """Ask for a folder and scan it."""

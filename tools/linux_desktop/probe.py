@@ -106,7 +106,12 @@ def check_trash(app: QApplication, window: main_window.MainWindow, scratch: Path
         require(bool(receipt["Trash Info"]["DeletionDate"]), "Trash receipt is missing its deletion date")
         trashed = trash / "files" / infos[0].name.removesuffix(".trashinfo")
         require(trashed.read_text(encoding="utf-8") == "owned trash contents", "Trash contents differ")
-        return {"trashinfo": True, "original_path_preserved": True, "contents_preserved": True}
+        from je_file_tree.core.trash_size import trash_usage  # noqa: PLC0415 - native fixture verification
+        usage = trash_usage("/")
+        require(usage is not None and usage.complete and usage.count == 1
+                and usage.size == len(b"owned trash contents"), "Native Trash inventory differs")
+        return {"trashinfo": True, "original_path_preserved": True, "contents_preserved": True,
+                "inventory_count": usage.count, "inventory_bytes": usage.size}
     finally:
         main_window.CleanupReview.exec, QMessageBox.question = original_review, original_question
 

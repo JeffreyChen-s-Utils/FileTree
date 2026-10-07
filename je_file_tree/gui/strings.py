@@ -9,6 +9,26 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_volumes": "Drive overview…",
+    "action_volumes_tip": "Inspect mounted volumes, capacity, allocation units and Recycle Bin totals",
+    "volume_root": "Mounted root",
+    "volume_name": "Volume name",
+    "volume_fs": "Filesystem",
+    "volume_total": "Total",
+    "volume_used": "Used",
+    "volume_free": "Available to you",
+    "volume_cluster": "Allocation unit",
+    "volume_trash": "Recycle Bin bytes",
+    "volume_trash_count": "Bin items",
+    "volume_reading": "Reading mounted volumes and Recycle Bin totals…",
+    "volume_summary": "Showing {shown} mounted volumes out of {count}. Double-click to scan.",
+    "volume_trash_partial": "Unknown total ({known} known)",
+    "volume_hint": "OS capacity snapshot; available space may exclude reservations or quotas. "
+                   "Repeated mounts can share capacity: do not sum rows. Windows allocation units are clusters; "
+                   "POSIX units are filesystem fragments, not optimal transfer sizes. Trash shows OS-reported "
+                   "Windows totals or known POSIX logical payload bytes, not reclaimable space; directory/receipt "
+                   "metadata and shared allocation are excluded. Errors remain unknown. Stop waits for current OS "
+                   "calls; canceled surveys are discarded. Ctrl+C copies rows. No emptying action is provided here.",
     "action_export_report_html": "Scan report (HTML)…",
     "action_export_report_html_tip": "Save a self-contained report with three embedded chart images",
     "action_export_report_xlsx": "Scan report (Excel)…",
@@ -827,6 +847,25 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_volumes": "磁碟總覽…",
+    "action_volumes_tip": "查看已掛載磁碟、容量、配置單位與資源回收筒總量",
+    "volume_root": "掛載根目錄",
+    "volume_name": "磁碟名稱",
+    "volume_fs": "檔案系統",
+    "volume_total": "總量",
+    "volume_used": "已用",
+    "volume_free": "可用空間",
+    "volume_cluster": "配置單位",
+    "volume_trash": "資源回收筒大小",
+    "volume_trash_count": "回收筒項目",
+    "volume_reading": "正在讀取已掛載磁碟與資源回收筒總量…",
+    "volume_summary": "共 {count} 個已掛載磁碟，顯示 {shown} 個。按兩下開始掃描。",
+    "volume_trash_partial": "總量未知（已知 {known}）",
+    "volume_hint": "作業系統容量快照；可用空間可能扣除保留量或配額。重複掛載可能共用容量，不要加總各列。"
+                   "Windows 配置單位是叢集；POSIX 單位是檔案系統片段，不是最佳傳輸大小。"
+                   "回收筒列出 Windows 回報總量或 POSIX 已知邏輯內容大小，非可回收空間，"
+                   "不含資料夾／收據中繼資料與共用配置。"
+                   "錯誤維持未知。停止會等待目前系統呼叫，取消時捨棄檢查結果。Ctrl+C 複製列；此處不提供清空動作。",
     "action_export_report_html": "掃描報告（HTML）…",
     "action_export_report_html_tip": "儲存內嵌三張圖表圖片的獨立報告",
     "action_export_report_xlsx": "掃描報告（Excel）…",
@@ -1566,6 +1605,25 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_volumes": "磁盘总览…",
+    "action_volumes_tip": "查看已挂载磁盘、容量、分配单位与回收站总量",
+    "volume_root": "挂载根目录",
+    "volume_name": "磁盘名称",
+    "volume_fs": "文件系统",
+    "volume_total": "总量",
+    "volume_used": "已用",
+    "volume_free": "可用空间",
+    "volume_cluster": "分配单位",
+    "volume_trash": "回收站大小",
+    "volume_trash_count": "回收站项数",
+    "volume_reading": "正在读取已挂载磁盘与回收站总量…",
+    "volume_summary": "共 {count} 个已挂载磁盘，显示 {shown} 个。双击开始扫描。",
+    "volume_trash_partial": "总量未知（已知 {known}）",
+    "volume_hint": "操作系统容量快照；可用空间可能扣除保留量或配额。重复挂载可能共用容量，不要汇总各行。"
+                   "Windows 分配单位是簇；POSIX 单位是文件系统片段，不是最佳传输大小。"
+                   "回收站列出 Windows 报告总量或 POSIX 已知逻辑内容大小，非可回收空间，"
+                   "不含文件夹／回执元数据与共享分配。"
+                   "错误保持未知。停止会等待当前系统调用，取消时丢弃检查结果。Ctrl+C 复制行；此处不提供清空操作。",
     "action_export_report_html": "扫描报告（HTML）…",
     "action_export_report_html_tip": "保存内嵌三张图表图片的独立报告",
     "action_export_report_xlsx": "扫描报告（Excel）…",

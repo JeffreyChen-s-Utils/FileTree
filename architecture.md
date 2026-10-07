@@ -21,6 +21,14 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.trash_size` exposes read-only Windows SHQueryRecycleBinW totals or iterative POSIX logical
+payload inventories with cancellation, omitted metadata and explicit incomplete/error states.
+`core.allocation.allocation_unit` distinguishes known Windows clusters/POSIX fragment granularity
+from the scanner's fallback estimate. VolumesDialog owns a worker that refreshes Qt storage values,
+retains up to 256 ready mounted roots and complete counts, queries bins and delivers scalar rows to a
+numeric-sort proxy and native free-space delegate. Welcome/View entry points activate the same modal
+flow; double-click joins the worker then asks MainWindow to scan a root. Closing discards late replies.
+
 `core.report` prepares immutable translated scalar tables from the recorded whole scan, with bounded
 largest-folder/file and type lists, complete counts, overlap/coverage notes and cancellable traversal.
 It writes escaped script-free HTML atomically with inline PNG bytes. GUI report adapters capture a
