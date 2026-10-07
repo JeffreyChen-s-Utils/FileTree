@@ -21,10 +21,12 @@ from je_file_tree.core.coverage import coverage_of
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.node import Node
+from je_file_tree.core.mounts import MountChangedError
 from je_file_tree.core.history import HistoryCancelledError, ScanHistory
 from je_file_tree.core.pacing import WINDOW
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
 from je_file_tree.core.search import Query, search
+from je_file_tree.gui.i18n import tr
 
 LARGEST_FILES_LIMIT = 1000
 
@@ -282,6 +284,9 @@ class ScanWorker(QThread):
                           cancel=self._cancel, on_root=self.started.emit, pause=self._pause)
         except ScanCancelledError as stopped:
             self.cancelled.emit(self._analyse(stopped.partial, partial=True) if stopped.partial else None)
+            return
+        except MountChangedError:
+            self.failed.emit(tr("scan_mount_changed"))
             return
         except OSError as error:
             self.failed.emit(error.strerror or str(error))

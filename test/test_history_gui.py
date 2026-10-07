@@ -160,3 +160,22 @@ def test_stop_during_history_serialization_does_not_publish_a_snapshot(qapp, sam
     assert store.read(str(sample_tree)).count == 0
     assert not list(store.directory.rglob(".file-tree-*"))
     worker.deleteLater()
+
+
+def test_mount_change_never_publishes_history_or_a_successful_outcome(qapp, sample_tree, tmp_path, monkeypatch):
+    from je_file_tree.core import scanner
+    from je_file_tree.gui.i18n import tr
+
+    store = ScanHistory(tmp_path / "history")
+    surveys = iter([frozenset(), frozenset({str(sample_tree / "photos")})])
+    monkeypatch.setattr(scanner, "mount_points", lambda: next(surveys))
+    worker = ScanWorker(str(sample_tree), ScanOptions(), history=store)
+    succeeded, failed = [], []
+    worker.succeeded.connect(succeeded.append)
+    worker.failed.connect(failed.append)
+    worker.start()
+    wait_for(worker)
+    qapp.processEvents()
+    assert not succeeded and failed == [tr("scan_mount_changed")]
+    assert store.read(str(sample_tree)).count == 0
+    worker.deleteLater()

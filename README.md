@@ -307,12 +307,17 @@ NTFS/APFS and shared-extent validation remain pending, so the ledger is an estim
 payload bytes differ from the ledger's allocated payload-plus-receipt bytes; neither is an extra bucket.
 The ledger recognizes an absolute custom `XDG_DATA_HOME/Trash`; relative values use the default data folder.
 The CLI scan record includes the same figures under `capacity`. Other-device directory mounts are
-listed without traversal. Linux also snapshots `/proc/self/mountinfo` once per scan and skips exact
+listed without traversal. Linux reads `/proc/self/mountinfo` before traversal and before returning a result, and skips exact
 directory mount points, including same-device bind mounts and roots reached through ancestor aliases.
 Mount boundaries appear in Problems and make omitted bytes unknown; explicitly scanning a mounted
 directory itself is allowed. Missing/malformed mount tables stop the scan before traversal. Other POSIX
-systems retain device-boundary detection. The mount table is not a transaction: changes during a scan
-remain pending. An owned same-device bind mount in a private Linux namespace has passed CI.
+systems retain device-boundary detection. Linux keeps each directory descriptor open through its entry
+metadata reads, checks its mount ID and recorded identity, and refuses a completed result if relevant
+mount points or the root mount change. Rescan after the error; failed scans do not enter history.
+Unrelated mount changes outside the selected scope are ignored. Linux requires readable proc mount
+metadata with mount IDs (kernel 3.15 or later). This is not a transactional filesystem snapshot.
+An owned static same-device bind mount in a private Linux namespace has passed CI; CI also probes
+live binds before and after opening a folder, and records the cost of guarded folder reads.
 
 Right-click the folder-tree header to choose visible columns; choices are remembered. The name stays visible and starts at a readable width, with horizontal scrolling for extra columns. **% of drive** is optional and divides logical bytes by OS-reported total capacity, alongside **% of parent**. It is unknown until capacity is available, after tree changes and for other-volume entries; hard-link names still count separately, so it does not measure allocated or recoverable space.
 
@@ -371,9 +376,10 @@ The probe also drives a real Thunar-to-FileTree X11 drag, checks the scanned pat
 
 Linux CI also creates its own 64 MiB ext4 loop image in a private mount namespace. It checks reserved
 capacity, hard-link allocation, the differing logical Trash and allocated ledger scopes, duplicate
-recovery, sparse-file recovery and a real same-device bind mount. Only newly created disposable fixtures
+recovery, sparse-file recovery, a real same-device bind mount, and live binds before/after opening a folder. Only newly created disposable fixtures
 are removed; existing volumes and user bins are refused. JSON evidence is retained for seven days.
-Compression, actual cloud placeholders, NTFS/APFS, shared extents and live mount changes need separate
+It also measures guarded versus path-based folder reads on 1,001 folders and 2,000 files.
+Compression, actual cloud placeholders, NTFS/APFS and shared extents need separate
 validation. With dependencies installed and noninteractive sudo available on Linux:
 
 ```bash

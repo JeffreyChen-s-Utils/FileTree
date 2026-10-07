@@ -2,6 +2,9 @@
 
 import os
 import sys
+import threading
+from io import StringIO
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -10,9 +13,11 @@ from je_file_tree.core import mounts, scanner
 from je_file_tree.core.capacity import capacity_ledger
 from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.coverage import coverage_of
-from je_file_tree.core.mounts import MOUNT_BOUNDARY, boundary_path, mount_points, parse_mountinfo
+from je_file_tree.core.mounts import (
+    MOUNT_BOUNDARY, MountChangedError, MountSurvey, boundary_path, mount_points, parse_mountinfo,
+)
 from je_file_tree.core.scanner import scan
-from je_file_tree.core.snapshot import unpack_snapshot
+from je_file_tree.core.snapshot import stat_snapshot, unpack_snapshot
 
 
 def _line(point):
@@ -38,7 +43,7 @@ def test_malformed_tables_are_not_treated_as_no_mounts(text):
 def test_mount_survey_is_fresh_and_namespace_specific(tmp_path, monkeypatch):
     table = tmp_path / "mountinfo"
     monkeypatch.setattr(mounts, "_MOUNTINFO", table)
-    monkeypatch.setattr(mounts.sys, "platform", "linux")
+    monkeypatch.setattr(mounts, "sys", SimpleNamespace(platform="linux"))
     table.write_text(_line("/") + _line(r"/mnt/one\040folder"), encoding="utf-8")
     assert mount_points() == {os.path.normpath("/"), os.path.normpath("/mnt/one folder")}
     table.write_text(_line("/mnt/two"), encoding="utf-8")
@@ -52,7 +57,7 @@ def test_mount_survey_is_fresh_and_namespace_specific(tmp_path, monkeypatch):
 
 
 def test_non_linux_does_not_open_proc(monkeypatch):
-    monkeypatch.setattr(mounts.sys, "platform", "win32")
+    monkeypatch.setattr(mounts, "sys", SimpleNamespace(platform="win32"))
     monkeypatch.setattr(mounts, "_MOUNTINFO", Path("does-not-exist"))
     assert mount_points() == frozenset()
 
@@ -72,7 +77,7 @@ def test_same_device_mount_is_not_traversed_or_proposed_for_cleanup(tmp_path, mo
     result = scan(tmp_path)
     root = result.root
     mount = next(child for child in root.children if child.name == "node_modules")
-    assert len(calls) == 1
+    assert len(calls) == 2  # initial boundaries and the check before publishing a completed result
     assert mount.is_link and mount.error == MOUNT_BOUNDARY and mount.children == []
     assert unpack_snapshot(mount.snapshot).device == unpack_snapshot(root.snapshot).device
     assert root.size == 4 and root.file_count == 1
@@ -127,3 +132,104 @@ def test_mount_points_match_a_selected_root_reached_through_an_ancestor_alias(tm
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Actual Linux process mount namespace")
 def test_native_process_mount_table_contains_filesystem_root():
     assert "/" in mount_points()
+
+
+@pytest.mark.parametrize("removed", [False, True])
+def test_mount_added_or_removed_during_scan_prevents_a_completed_result(tmp_path, monkeypatch, removed):
+    target = tmp_path / "mounted"
+    target.mkdir()
+    (target / "payload").write_bytes(b"owned")
+    present, absent = frozenset({str(target)}), frozenset()
+    surveys = iter([present, absent] if removed else [absent, present])
+    monkeypatch.setattr(scanner, "mount_points", lambda: next(surveys))
+    with pytest.raises(MountChangedError, match="scan again"):
+        scan(tmp_path)
+
+
+def test_mount_change_outside_selected_scope_does_not_abort_scan(tmp_path, monkeypatch):
+    selected = tmp_path / "selected"
+    selected.mkdir()
+    (selected / "payload").write_bytes(b"owned")
+    surveys = iter([frozenset(), frozenset({str(tmp_path / "selected-more")})])
+    monkeypatch.setattr(scanner, "mount_points", lambda: next(surveys))
+    assert scan(selected).root.size == 5
+
+
+def test_mount_change_in_final_progress_callback_is_checked_before_return(tmp_path, monkeypatch):
+    current = frozenset()
+    monkeypatch.setattr(scanner, "mount_points", lambda: current)
+
+    def changed(_progress):
+        nonlocal current
+        current = frozenset({str(tmp_path / "new-mount")})
+
+    with pytest.raises(MountChangedError):
+        scan(tmp_path, progress=changed)
+
+
+@pytest.mark.parametrize("contents", ["", "mnt_id: invalid\n", "mnt_id: 2\nmnt_id: 3\n", "x" * 4097])
+def test_missing_or_invalid_descriptor_mount_id_is_not_assumed_safe(monkeypatch, contents):
+    monkeypatch.setattr(mounts, "open", lambda _path, **_kwargs: StringIO(contents), raising=False)
+    with pytest.raises(MountChangedError):
+        mounts.descriptor_mount(12)
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux directory descriptors")
+def test_new_same_device_mount_id_is_rejected_before_reading_queued_folder(tmp_path, monkeypatch):
+    target = tmp_path / "queued"
+    target.mkdir()
+    (target / "private").write_bytes(b"owned")
+    real_mount, record = mounts.descriptor_mount, scanner._record_entries
+    inspected = []
+    calls = 0
+
+    def changed(fd):
+        nonlocal calls
+        calls += 1
+        return real_mount(fd) + int(calls == 3)  # root survey, root read, then queued folder
+
+    def recording(folder, *args):
+        inspected.append(folder.path)
+        return record(folder, *args)
+
+    monkeypatch.setattr(mounts, "descriptor_mount", changed)
+    monkeypatch.setattr(scanner, "_record_entries", recording)
+    with pytest.raises(MountChangedError):
+        scan(tmp_path, options=scanner.ScanOptions(workers=1))
+    assert str(target) not in inspected
+    assert not any(thread.name.startswith("file-tree-scan-") for thread in threading.enumerate())
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux directory descriptors")
+def test_pinned_directory_entries_keep_original_metadata_after_path_replacement(tmp_path):
+    target, relocated = tmp_path / "target", tmp_path / "relocated"
+    target.mkdir()
+    (target / "payload").write_bytes(b"original")
+    snapshot = stat_snapshot(str(target))
+    survey = MountSurvey(str(tmp_path), stat_snapshot(str(tmp_path)), mount_points())
+    with survey.listing(str(target), snapshot) as entries:
+        target.rename(relocated)
+        target.mkdir()
+        (target / "payload").write_bytes(b"new")
+        entry = next(entries)
+        assert entry.path == str(target / "payload")
+        assert entry.stat(follow_symlinks=False).st_size == 8
+        assert entry.stat(follow_symlinks=False).st_ino == (relocated / "payload").stat().st_ino
+    assert (target / "payload").read_bytes() == b"new"
+    with pytest.raises(OSError, match="folder replaced"), survey.listing(str(target), snapshot):
+        pytest.fail("A replaced queued directory must not be read")
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux directory descriptors")
+def test_unreadable_root_remains_an_incomplete_scan_without_traversal(tmp_path, monkeypatch):
+    real_open = mounts.os.open
+
+    def denied(path, *args, **kwargs):
+        if path == str(tmp_path):
+            raise PermissionError(13, "access denied")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(mounts.os, "open", denied)
+    result = scan(tmp_path)
+    assert result.root.error == scanner.ACCESS_DENIED and result.root.children == []
+    assert not coverage_of(result.root).complete and find_cleanup(result.root) == []

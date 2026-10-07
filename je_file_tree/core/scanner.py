@@ -21,14 +21,15 @@ import os
 import stat
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import cast
 
 from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
-from je_file_tree.core.mounts import MOUNT_BOUNDARY, boundary_path, mount_points, rebase_mount_points
+from je_file_tree.core.mounts import MOUNT_BOUNDARY, MountChangedError, MountSurvey, boundary_path, mount_points
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.priority import background_priority
 from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
@@ -136,6 +137,7 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
     :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
+    :raises OSError: when Linux mount boundaries are unknown or change during scanning
     """
     root_path = os.path.abspath(os.fspath(path))
     if not os.path.isdir(root_path):
@@ -160,6 +162,7 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     _add_up(crawler.folders)
     if progress is not None:
         progress(crawler.snapshot())
+    crawler.verify_mounts()
     return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started,
                       warnings=sorted(set(crawler.warnings)))
 
@@ -170,7 +173,7 @@ class _Crawler:
     def __init__(self, root: Node, root_path: str, options: ScanOptions,
                  cancel: threading.Event | None = None, pause: threading.Event | None = None) -> None:
         self._options = options
-        self._mounts = rebase_mount_points(root_path, mount_points())
+        self._mounts = MountSurvey(root_path, cast(bytes, root.snapshot), mount_points())
         self._allocation = allocation_for(root_path)
         self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
@@ -187,6 +190,10 @@ class _Crawler:
         self.warnings: list[str] = []
         self.files = 0
         self.size = 0
+
+    def verify_mounts(self) -> None:
+        """Recheck scope after workers and final aggregation, before publishing a complete scan."""
+        self._mounts.verify(mount_points())
 
     def unread(self) -> list[tuple[Node, str]]:
         """The folders still waiting to be read (after ``run`` has returned or raised)."""
@@ -297,16 +304,37 @@ def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
 
 
 def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation,
-                 excluded: Excluded | None = None, boundaries: frozenset[str] = frozenset()) -> _FolderRead:
+                 excluded: Excluded | None = None,
+                 boundaries: frozenset[str] | MountSurvey = frozenset()) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
-        with os.scandir(path) as entries:
+        listing_context = (boundaries.listing(path, folder.snapshot) if isinstance(boundaries, MountSurvey)
+                           else _path_listing(path))
+        with listing_context as entries:
             listing = list(entries)
+            _record_entries(folder, listing, options, allocation, excluded, boundaries, read)
+    except MountChangedError:
+        raise
     except OSError as error:
         folder.error = _describe(error)
         read.errors.append((path, folder.error))
         return read
+    if read.errors:
+        folder.error = HIDDEN_OMITTED if all(reason == HIDDEN_OMITTED for _, reason in read.errors) else PARTIAL_FOLDER
+    else:
+        folder.error = None
+    return read
+
+
+@contextmanager
+def _path_listing(path: str) -> Iterator[Iterator[os.DirEntry[str]]]:
+    with os.scandir(path) as entries:
+        yield entries
+
+
+def _record_entries(folder: Node, listing: list[os.DirEntry[str]], options: ScanOptions, allocation: Allocation,
+                    excluded: Excluded | None, boundaries: frozenset[str] | MountSurvey, read: _FolderRead) -> None:
     children = cast(list[Node], folder.children)  # folders are always created with a list
     for entry in listing:
         child = _entry_node(entry, options, read, allocation, excluded)
@@ -323,11 +351,6 @@ def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allo
         children.append(child)
         if child.is_dir and not child.is_link and child.error == NOT_SCANNED:
             read.subfolders.append((child, entry.path))
-    if read.errors:
-        folder.error = HIDDEN_OMITTED if all(reason == HIDDEN_OMITTED for _, reason in read.errors) else PARTIAL_FOLDER
-    else:
-        folder.error = None
-    return read
 
 
 def _other_volume(folder: Node, child: Node) -> bool:

@@ -263,22 +263,32 @@ unknown. `gui/capacity_panel.py` shows the ledger and its limits. Tree edits inv
 whole-tree analysis after a branch rescan refreshes it. Replaced analysis signals are ignored and all
 analysis threads are joined at close. CLI scan JSON includes the same ledger. Accuracy validation on
 isolated NTFS/APFS volumes is outstanding; the owned ext4 cases below have passed CI. Different-device mounts are listed without
-traversal. `core.mounts` reads the Linux process namespace once per scan, strictly parsing mountinfo
+traversal. `core.mounts` reads the Linux process namespace before traversal and before publication, strictly parsing mountinfo
 and decoding escaped whitespace/backslashes exactly once. The immutable directory boundary set is
-rebased for ancestor aliases and shared by crawler threads; no per-entry mount syscall is added.
+rebased for ancestor aliases and shared by crawler threads. A `MountSurvey` opens each Linux directory
+with O_DIRECTORY/O_NOFOLLOW and holds that descriptor through fd-based scandir and all entry stat calls.
+A transient entry adapter retains original display/exclusion paths while metadata remains descriptor
+relative. Per-folder proc fdinfo mount IDs reject new same-device mounts before reading their contents;
+fstat device/inode checks reject replaced queued folders. Descriptors close on success, errors and stop.
+Unreadable roots retain incomplete coverage. A final scope/root-mount check refuses changed namespaces
+with `MountChangedError`; the GUI translates it, produces no successful outcome and writes no history.
+Changes outside the selected scope are ignored. Linux requires proc mount IDs (kernel 3.15+). This
+does not provide transactional consistency or change non-Linux directory reads.
 Same-device boundaries are listed as links with a translated omission reason, so coverage remains
 incomplete and the ledger counts those mounts without attributing their contents. An unknown table
-stops before directory traversal. Explicit mount roots remain scannable. Live mount-table changes,
-and other-platform volume reconciliation still require validation. The isolated Linux bind case below passed CI.
+stops before directory traversal. Explicit mount roots remain scannable. Other-platform volume reconciliation still requires validation. The isolated Linux bind case below passed CI.
 
 `tools/validate_linux_volume.py` launches a fixed `sudo unshare --mount --propagation private` probe
 on the Linux test runner. It refuses the host namespace and nonfresh scratch roots, builds only its own
 64 MiB ext4 loop image, flushes fixtures and compares statvfs reservations, st_blocks, unique hard-link
 allocation, logical Trash payload versus ledger receipt/payload allocation, and measured free changes
 for duplicate copies, both hard-link removals and sparse files. A real same-device directory bind mount
-must be omitted with incomplete coverage. The child unmounts before the parent removes the owned scratch
+must be omitted with incomplete coverage. Live same-device binds created before opening a queued folder
+must prevent traversal; binds created after opening must leave metadata pinned to the original folder
+and prevent successful publication. CI also records five-run medians for guarded versus path-based
+folder reads over 1,001 folders/2,000 files, with one/four workers. The child unmounts before the parent removes the owned scratch
 directory and atomically saves JSON evidence. Native NTFS/APFS, compression, cloud placeholders, shared
-extents and mount changes during scanning remain unverified; this harness does not promote the ledger
+extents remain unverified; this harness does not promote the ledger
 or recovery ranges to guarantees.
 
 ## 3. Entry points and public interfaces
