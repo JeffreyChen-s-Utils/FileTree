@@ -9,6 +9,28 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_git_history": "Git history…",
+    "action_git_history_tip": "Inspect the largest objects reachable from all Git references",
+    "git_oid": "Object ID",
+    "git_kind": "Object type",
+    "git_length": "Uncompressed length",
+    "git_type_blob": "File contents (blob)",
+    "git_type_tree": "Directory listing (tree)",
+    "git_type_commit": "Commit",
+    "git_type_tag": "Annotated tag",
+    "git_hint": ("Read-only Git plumbing inspects all refs, keeping the largest 1,000 objects. Sizes are "
+                 "uncompressed lengths, not disk allocation or recoverable space. Names are omitted because "
+                 "Git's object-name hints can be ambiguous. Ctrl+C copies object IDs/rows. Optional locks, "
+                 "automatic maintenance and lazy network fetching are disabled; Git must support --no-lazy-fetch. "
+                 "Repository ownership errors are not bypassed. Stop cancels; gc is never run here."),
+    "git_reading": "Inspecting Git history…",
+    "git_summary": "Showing {shown} of {count} reachable objects; uncompressed total {size}.",
+    "git_gc_loose": ("Git gc may consolidate {count} loose objects, but these largest objects remain reachable "
+                     "from refs and will not be removed. "
+                     "Actual savings and other unreachable/reflog data are unknown."),
+    "git_gc_packed": ("No loose objects to consolidate. Git gc will not remove these objects while refs retain "
+                      "them; other unreachable/reflog data and actual savings were not measured."),
+    "git_failed": "Git inspection failed: {reason}",
     "tree_filter_placeholder": "Filter expanded folders…",
     "tree_filter_hint": ("Match names (case-insensitive) only inside already expanded folders; ancestors stay visible. "
                          "Collapsed contents are not searched. Clear the filter to restore the tree. "
@@ -750,6 +772,26 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_git_history": "Git 歷史…",
+    "action_git_history_tip": "查看所有 Git 參照可達的最大物件",
+    "git_oid": "物件識別碼",
+    "git_kind": "物件類型",
+    "git_length": "解壓後長度",
+    "git_type_blob": "檔案內容（blob）",
+    "git_type_tree": "資料夾清單（tree）",
+    "git_type_commit": "提交",
+    "git_type_tag": "註解標籤",
+    "git_hint": ("唯讀 Git 底層命令查閱所有參照，保留最大的 1,000 個物件。大小是解壓後長度，並非磁碟配置或可回收空間。"
+                 "Git 的物件名稱提示可能有歧義，因此不列名稱。Ctrl+C 複製識別碼／列。"
+                 "停用選用鎖定、自動維護與延遲網路下載；"
+                 "Git 必須支援 --no-lazy-fetch。不繞過存放庫擁有者檢查。可停止；不執行 gc。"),
+    "git_reading": "正在查閱 Git 歷史…",
+    "git_summary": "顯示 {count} 個可達物件中的 {shown} 個；解壓後總量 {size}。",
+    "git_gc_loose": ("Git gc 可能整併 {count} 個鬆散物件，但這些最大物件仍可由參照到達，不會被移除。"
+                     "實際節省量及其他不可達／參照日誌資料仍未知。"),
+    "git_gc_packed": ("沒有可整併的鬆散物件。參照保留這些物件時，Git gc 不會移除它們；"
+                      "其他不可達／參照日誌資料與實際節省量尚未量測。"),
+    "git_failed": "Git 查閱失敗：{reason}",
     "tree_filter_placeholder": "篩選已展開的資料夾…",
     "tree_filter_hint": ("僅在已展開的資料夾比對名稱（不分大小寫），保留上層路徑。不搜尋摺疊的內容。"
                          "清除篩選即可恢復樹狀清單。從圖表／清單選取被隱藏的項目會清除篩選。掃描總量與匯出保持不變。"),
@@ -1417,6 +1459,26 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_git_history": "Git 历史…",
+    "action_git_history_tip": "查看所有 Git 引用可达的最大对象",
+    "git_oid": "对象标识",
+    "git_kind": "对象类型",
+    "git_length": "解压后长度",
+    "git_type_blob": "文件内容（blob）",
+    "git_type_tree": "文件夹列表（tree）",
+    "git_type_commit": "提交",
+    "git_type_tag": "附注标签",
+    "git_hint": ("只读 Git 底层命令检查所有引用，保留最大的 1,000 个对象。大小是解压后长度，并非磁盘分配或可回收空间。"
+                 "Git 的对象名称提示可能有歧义，因此不列名称。Ctrl+C 复制标识／行。"
+                 "禁用可选锁定、自动维护与延迟网络下载；"
+                 "Git 必须支持 --no-lazy-fetch。不绕过仓库所有者检查。可停止；不执行 gc。"),
+    "git_reading": "正在检查 Git 历史…",
+    "git_summary": "显示 {count} 个可达对象中的 {shown} 个；解压后总量 {size}。",
+    "git_gc_loose": ("Git gc 可能合并 {count} 个松散对象，但这些最大对象仍可由引用到达，不会被移除。"
+                     "实际节省量及其他不可达／引用日志数据仍未知。"),
+    "git_gc_packed": ("没有可合并的松散对象。引用保留这些对象时，Git gc 不会移除它们；"
+                      "其他不可达／引用日志数据与实际节省量尚未测量。"),
+    "git_failed": "Git 检查失败：{reason}",
     "tree_filter_placeholder": "筛选已展开的文件夹…",
     "tree_filter_hint": ("仅在已展开的文件夹匹配名称（不区分大小写），保留上层路径。不搜索折叠的内容。"
                          "清除筛选即可恢复树状列表。从图表／列表选择被隐藏的项目会清除筛选。扫描总量与导出保持不变。"),

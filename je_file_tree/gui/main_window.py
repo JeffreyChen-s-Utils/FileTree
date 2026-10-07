@@ -36,6 +36,7 @@ from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
+from je_file_tree.gui.git_history import GitHistoryDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -720,6 +721,7 @@ class MainWindow(QMainWindow):
             ("recent_actions", None, self.show_recent_actions),
             ("special_files", None, self.show_special_files),
             ("live_compare", None, self.compare_live_folders),
+            ("git_history", None, self.show_git_history),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
@@ -756,7 +758,7 @@ class MainWindow(QMainWindow):
         export_menu.addAction(self._actions["export_list"])
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
-        for key in ("recent_actions", "special_files", "live_compare"):
+        for key in ("recent_actions", "special_files", "live_compare", "git_history"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -846,7 +848,7 @@ class MainWindow(QMainWindow):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
                                                     and self.results.charts.mode in SVG_MODES)
-        for key in ("print_view", "export_view_pdf", "special_files"):
+        for key in ("print_view", "export_view_pdf", "special_files", "git_history"):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
@@ -927,6 +929,24 @@ class MainWindow(QMainWindow):
         if not right:
             return
         dialog = LiveCompareDialog((left, right), self._unit, self)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
+
+    def show_git_history(self) -> None:
+        """Inspect the selected working folder's largest reachable Git history objects."""
+        outcome = self.results.outcome
+        if outcome is None or self._worker is not None or self._trash_worker is not None:
+            return
+        node = self.results.selected_node() or outcome.result.root
+        folder = node if node.is_dir else node.parent
+        if folder is None or folder.is_link:
+            return
+        if folder.name == ".git" and folder.parent is not None:
+            folder = folder.parent
+        dialog = GitHistoryDialog(folder.path, self._unit, self)
         try:
             dialog.exec()
         finally:

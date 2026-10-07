@@ -21,6 +21,14 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`core.git_history` pipes fixed read-only rev-list --all object IDs into cat-file metadata, retaining
+only 1,000 largest objects in a heap plus complete counts and a loose-object count. Bounded independent
+stdout/stderr readers prevent pipe deadlocks; cancellation/deadline reaps only owned processes/readers.
+Global Git routing/config environment is excluded, optional locks/maintenance/fsmonitor hooks are off,
+and --no-lazy-fetch prevents missing-object downloads or fails on unsupported Git. Object names and
+recoverable-space estimates are deliberately absent. GitHistoryDialog owns/joins its worker and explains
+that reachable objects survive gc; no repository operations are offered.
+
 `gui.tree_filter` debounces a case-insensitive name query and inspects recorded children only beneath
 expanded nodes on cancellable owned threads. Accepted node identities and ancestors form an O(1)
 membership proxy without Qt recursive descendant filtering. FolderTreeModel owns numeric/name sorting
