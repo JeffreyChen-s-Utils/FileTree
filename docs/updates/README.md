@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-15 | 2026-10-08 | Frozen duplicate-link previews and complete payload checks | #core #duplicates #hardlinks #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-14 | 2026-10-08 | Complete native audited Trash undo verification | #done #undo #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-13 | 2026-10-08 | Expiring audited Trash undo and joined GUI lifetime | #gui #undo #audit #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-12 | 2026-10-08 | Exact Windows Shell undo with observed native outcomes | #core #windows #undo #validation | [2026-10-b](2026-10-b.md) |

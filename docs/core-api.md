@@ -348,3 +348,22 @@ are refused without unlinking them; successful copies remain intact.
 Native Linux GUI CI verified the normal capture/preparation/native-restore/receipt cleanup/container preservation/
 parent-rescan path on newly owned private fixtures. Windows GUI native proof and both nine-job CI runs
 passed; no existing user bin was emptied.
+
+
+`duplicate_links.prepare_links(root, groups, *, cancel=None)` returns a frozen LinkPlan of at most
+1,000 exact extra-copy rows, or None on cancellation. Each DuplicateGroup needs an explicit kept
+member, digest and handle proofs. Protected/changed/unknown/special/linked/cloud/already hard-linked
+members refuse the whole decision; other-device or same-device Linux mount-boundary extras remain
+refused rows. Repeated members across decisions are rejected. Groups/proof maps and paths/snapshots
+are copied before future checks; original inputs remain untouched. Preview reads metadata only.
+
+`verify_link_pair(plan, pair, *, cancel=None)` checks membership, exact frozen paths, current scan
+containment, every scan/handle/parent/device/mount observation and then compares complete main data
+with SHA-256 and the recorded BLAKE2 duplicate digest. Every Windows named data stream is fully
+hashed, irrespective of length; names/lengths are checked before/after. POSIX attributes must exactly
+match, including native macOS resource forks below 64 MiB; larger native attributes are refused, not
+accepted from length alone. LinkVerification exposes pair, digest and bytes_read (both payloads and
+Windows ADS). Unknown/unavailable/changed metadata, content mismatches and cancellation raise
+OSError/ValueError while leaving payloads untouched. This is read-only evidence, never authorization
+for later replacement/deletion/linking; a mutation executor must recheck at its operation boundary.
+The executor and GUI approval remain pending, and macOS native behavior remains unverified.

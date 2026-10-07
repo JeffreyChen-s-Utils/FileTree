@@ -531,6 +531,13 @@ An occupied copy redirect is refused without removing it. Native Windows owned-f
 confirmed button/action/hash/empty-folder/audit/rescan behavior; Native Linux CI verified normal GUI capture, exact private-bin restoration, receipt cleanup/container preservation
 and source-parent rescan on fresh fixtures.
 
+`core.duplicate_links` previews exact explicit-keeper replacement pairs without payload reads or
+mutations. It freezes path/scan/handle/parent observations and limits selection to 1,000 extras,
+refusing protected/changed/special/cloud/already hard-linked decisions and other device/mount rows.
+Full verification rereads both main files and every Windows ADS without a large-file length fallback,
+checks the original duplicate digest, strict POSIX xattrs and bounded complete native resource forks.
+Cancellation never grants mutation authority. A replacement executor and GUI review remain pending.
+
 ## 3. Entry points and public interfaces
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
