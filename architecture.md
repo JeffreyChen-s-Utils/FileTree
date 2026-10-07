@@ -484,8 +484,23 @@ and applies metadata after children. `core.copy_platform` wraps exclusive native
 with PROGRESS_STOP (keeps partial data), bounded ADS queries/comparison, and macOS descriptor fcopyfile
 with bounded resource-fork/attribute comparison. POSIX xattrs copy/compare strictly; native APIs have no
 unsafe fallback. Files retain platform-supported metadata; Windows directory security inherits its
-destination and POSIX setuid/setgid/sticky bits are omitted. GUI/optional original-path redirection and
-native macOS validation remain pending. Concurrency is observational, not transactional.
+destination and POSIX setuid/setgid/sticky bits are omitted. Native macOS validation remains
+pending. Concurrency is observational, not transactional.
+
+`gui.copy_dialog` reuses the owned namespace-preview lifecycle, refuses same-volume GUI pairs,
+shows filename progress and retains CopyResult before queued delivery. Frozen CopyApproval proofs
+are offered only after a successful uncanceled batch. No original Trash follows copying automatically.
+A separate finish action routes through MainWindow.move_to_trash, existing protected-source
+questions, a default-No plain-text copy/Trash confirmation and the existing operation journal.
+TrashWorker anchors copied destinations/source parents, re-verifies immediately before each OS
+Trash, stops remaining moves on failure, and optionally invokes core.copy_approval.redirect_copy
+only after success. Native exclusive junction/symlink creation refuses occupied original paths;
+redirect errors retain the copy/Trash receipt and report paths separately from verification errors.
+Windows may retain an empty source directory on native junction failure. Destination parents
+rescan on the copy worker; source parents rescan after Trash. Declining Trash rescans the current
+root. MainWindow tracks path dialogs and joins them on parent close before destroying scan trees.
+TrashWorker retains MoveResult before queued delivery; parent close joins it and reports late copy
+verification/redirect failures before dismissing the window.
 
 ## 3. Entry points and public interfaces
 

@@ -34,6 +34,7 @@ class MoveResult:
     holders: dict[Node, LockReport] = field(default_factory=dict)
     destinations: dict[Node, str | None] = field(default_factory=dict)
     journal_errors: list[str] = field(default_factory=list)
+    copy_errors: list[tuple[str, str, str, str]] = field(default_factory=list)
 
 
 def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),

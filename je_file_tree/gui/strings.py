@@ -9,6 +9,28 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "menu_move_drive": "Move to another drive…",
+    "copy_hint": ("Choose an existing folder on another drive. Originals stay until a separate Trash confirmation. "
+                  "Verify file counts, lengths and SHA-256 below 64 MiB; larger payloads are length-only. "
+                  "Failures/cancellation retain partial destinations. Up to 1,000 selected folders."),
+    "copy_apply": "Copy and verify reviewed folders…",
+    "copy_redirect": "After successful Trash, leave a junction/symbolic link at each original path",
+    "copy_finish": "Move verified originals to Recycle Bin…",
+    "copy_confirm": ("Copy and verify {count} reviewed folders? {skipped} other pairs will be skipped. "
+                     "Existing names are never overwritten. Originals remain until a separate Trash approval; "
+                     "partial destinations remain on errors or cancellation."),
+    "copy_progress": "Copying/verifying {path}: {done} / {total} files in this folder",
+    "copy_done": "Verified copies: {copied}; skipped: {skipped}; failed: {failed}. Originals retained.",
+    "copy_partial": "Retained partial destination: {path}",
+    "copy_trash_confirm": ("The copied folders will be verified again immediately before each original moves to "
+                           "Trash. Counts/lengths are compared; payloads below 64 MiB are SHA-256 checked. "
+                           "Larger payloads are length-only. A failed check stops the remaining batch. "
+                           "Concurrent changes are not transactional."),
+    "copy_errors": "Copy verification or original-path redirect failed. Review the actual paths in Details.",
+    "copy_verify_failed": "Original retained: {source}\nCopy: {destination}\nVerification refused: {reason}",
+    "copy_redirect_failed": ("Original moved to Trash: {source}\nVerified copy retained: {destination}\n"
+                             "Redirect failed (an empty original-path directory may remain): {reason}"),
+    "namespace_reason_same_volume": "Same volume; use Move to folder",
     "namespace_source_name": "Source name",
     "namespace_destination_name": "Destination name",
     "namespace_closed_errors": ("The stopped/closed operation reported errors. "
@@ -1156,6 +1178,26 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "menu_move_drive": "移到另一個磁碟…",
+    "copy_hint": ("選擇另一個磁碟上的現有資料夾。另行確認移入資源回收筒前，保留原始資料。"
+                  "核對檔案數、長度及小於 64 MiB 內容的 SHA-256；較大內容僅核對長度。"
+                  "失敗／取消會保留部分目的地。最多選取 1,000 個資料夾。"),
+    "copy_apply": "複製並驗證已檢視的資料夾…",
+    "copy_redirect": "成功移入資源回收筒後，在每個原始路徑留下 junction／符號連結",
+    "copy_finish": "將已驗證的原始資料移到資源回收筒…",
+    "copy_confirm": ("要複製並驗證已檢視的 {count} 個資料夾嗎？其餘 {skipped} 組將略過。"
+                     "不覆寫現有名稱。另行確認移入資源回收筒前會保留原始資料；錯誤或取消會保留部分目的地。"),
+    "copy_progress": "正在複製／驗證 {path}：此資料夾 {done}／{total} 個檔案",
+    "copy_done": "已驗證副本：{copied}；略過：{skipped}；失敗：{failed}。原始資料已保留。",
+    "copy_partial": "保留的部分目的地：{path}",
+    "copy_trash_confirm": ("每個原始資料夾移入資源回收筒前，會再次驗證副本。核對數量及長度；"
+                           "小於 64 MiB 的內容以 SHA-256 核對，較大內容僅核對長度。"
+                           "驗證失敗會停止剩餘批次。並行變更不具交易保證。"),
+    "copy_errors": "複製驗證或原始路徑連結失敗。請檢視詳細資料中的實際路徑。",
+    "copy_verify_failed": "原始資料已保留：{source}\n副本：{destination}\n驗證遭拒：{reason}",
+    "copy_redirect_failed": ("原始資料已移入資源回收筒：{source}\n已驗證副本已保留：{destination}\n"
+                             "連結失敗（原始路徑可能留下空資料夾）：{reason}"),
+    "namespace_reason_same_volume": "同一磁碟；請使用移到資料夾",
     "namespace_source_name": "來源名稱",
     "namespace_destination_name": "目的地名稱",
     "namespace_closed_errors": "已停止／關閉的作業回報錯誤。請檢查詳細資料中的來源／目的地路徑。",
@@ -2188,6 +2230,26 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "menu_move_drive": "移动到另一个磁盘…",
+    "copy_hint": ("选择另一个磁盘上的现有文件夹。另行确认移入回收站前，保留原始数据。"
+                  "核对文件数、长度及小于 64 MiB 内容的 SHA-256；更大内容仅核对长度。"
+                  "失败／取消会保留部分目标。最多选择 1,000 个文件夹。"),
+    "copy_apply": "复制并验证已查看的文件夹…",
+    "copy_redirect": "成功移入回收站后，在每个原始路径留下 junction／符号链接",
+    "copy_finish": "将已验证的原始数据移到回收站…",
+    "copy_confirm": ("要复制并验证已查看的 {count} 个文件夹吗？其余 {skipped} 组将跳过。"
+                     "不覆盖现有名称。另行确认移入回收站前会保留原始数据；错误或取消会保留部分目标。"),
+    "copy_progress": "正在复制／验证 {path}：此文件夹 {done}／{total} 个文件",
+    "copy_done": "已验证副本：{copied}；跳过：{skipped}；失败：{failed}。原始数据已保留。",
+    "copy_partial": "保留的部分目标：{path}",
+    "copy_trash_confirm": ("每个原始文件夹移入回收站前，会再次验证副本。核对数量及长度；"
+                           "小于 64 MiB 的内容以 SHA-256 核对，更大内容仅核对长度。"
+                           "验证失败会停止剩余批次。并行变更不具事务保证。"),
+    "copy_errors": "复制验证或原始路径链接失败。请查看详细信息中的实际路径。",
+    "copy_verify_failed": "原始数据已保留：{source}\n副本：{destination}\n验证遭拒：{reason}",
+    "copy_redirect_failed": ("原始数据已移入回收站：{source}\n已验证副本已保留：{destination}\n"
+                             "链接失败（原始路径可能留下空文件夹）：{reason}"),
+    "namespace_reason_same_volume": "同一磁盘；请使用移动到文件夹",
     "namespace_source_name": "源名称",
     "namespace_destination_name": "目标名称",
     "namespace_closed_errors": "已停止／关闭的操作报告错误。请检查详细信息中的源／目标路径。",

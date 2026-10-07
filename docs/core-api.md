@@ -260,7 +260,17 @@ remains unknown. Failure stops the batch and preserves every original; partial p
 `verify_copy(proof, *, cancel=None)` rechecks source coverage, captured destination root/volume and all
 comparisons. Proofs are observations, never deletion permission or future-stability guarantees: repeat
 verification immediately before the existing separately approved MainWindow.move_to_trash worker.
-No API here trashes/deletes/redirects originals. Concurrent mutation remains nontransactional; GUI
-integration is pending and native macOS remains unverified.
+The copy functions never Trash/delete/redirect originals. Concurrent mutation remains nontransactional;
+native macOS remains unverified. The GUI routes separate original Trash approval through MainWindow.
 Native references: [Windows CopyFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexw),
 [Apple fcopyfile](https://github.com/apple-oss-distributions/copyfile/blob/main/copyfile.3).
+
+`copy_approval.CopyApproval(proofs, redirect=False)` freezes proofs selected for separate Trash
+approval. `matches(root, nodes)` refuses unrelated trees, duplicate proofs and changed source paths.
+`redirect_copy(proof)` is only for a successful approved Trash after immediate copy re-verification.
+It anchors source parents/copied destination and captured volume, then exclusively creates a native
+Windows junction or POSIX descriptor-relative symlink at the vacated original path. No overwrite
+or deletion fallback exists; native junction failure may leave an empty original-path directory.
+The caller retains successful Trash receipts and reports redirect errors separately; never claim
+an original was preserved after an already successful Trash. MoveResult.copy_errors holds
+source, copied destination, verify/redirect phase and literal error details.

@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-09 | 2026-10-08 | 跨磁碟複製介面、回收前驗證與選用原位置連結 | #22 #done #GUI #Safety #Copy | [2026-10-b](2026-10-b.md) |
 | U-20261008-08 | 2026-10-08 | Verified exclusive folder-copy core | #22 #copy #files #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-07 | 2026-10-08 | Reviewed same-volume move and rename GUI | #83 #done #gui #files #safety | [2026-10-b](2026-10-b.md) |
 | U-20261008-06 | 2026-10-08 | Exclusive same-volume namespace core | #83 #files #safety | [2026-10-b](2026-10-b.md) |

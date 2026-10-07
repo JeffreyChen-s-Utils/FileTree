@@ -8,6 +8,9 @@ import uuid
 from PySide6.QtCore import QObject, QThread, Signal
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.copy_approval import CopyApproval, redirect_copy
+from je_file_tree.core.no_replace import anchored_directory
+from je_file_tree.core.verified_copy import verify_copy
 from je_file_tree.core.lock_holders import find_holders
 from je_file_tree.core.operations import move_batch
 from je_file_tree.core.operations import MoveReceipt, MoveResult
@@ -34,6 +37,9 @@ class TrashWorker(QThread):
         self._cancel = threading.Event()
         self._decisions = decisions or []
         self._audit = _AuditBatch(audit, self._cancel)
+        self.copy_approval: CopyApproval | None = None
+        self._copy_errors: list[tuple[str, str, str, str]] = []
+        self.result: MoveResult | None = None
 
     def cancel(self) -> None:
         """Stop validation and skip every remaining entry."""
@@ -48,10 +54,12 @@ class TrashWorker(QThread):
             result = MoveResult(skipped=[(node, "journal") for node in self._nodes],
                                 parents=[node.parent for node in self._nodes if node.parent is not None])
         result.journal_errors.extend(self._audit.errors)
+        result.copy_errors.extend(self._copy_errors)
         for node in result.failed:
             if self._cancel.is_set():
                 break
             result.holders[node] = find_holders(node, cancel=self._cancel)
+        self.result = result
         self.done.emit(result)
 
     def _move_checked(self) -> MoveResult:
@@ -73,8 +81,30 @@ class TrashWorker(QThread):
         return result
 
     def _move(self, nodes: list[Node]) -> MoveResult:
-        return move_batch(self._root, nodes, self._audit.move, places=self._places,
+        return move_batch(self._root, nodes, self._copy_move, places=self._places,
                           approved=self._approvals, cancel=self._cancel)
+
+    def _copy_move(self, path: str) -> MoveReceipt:
+        approval = self.copy_approval
+        if approval is None:
+            return self._audit.move(path)
+        proof = next((entry for entry in approval.proofs if entry.item.source == path), None)
+        if proof is None or not approval.matches(self._root, self._nodes):
+            self._copy_errors.append((path, "", "verify", "Copy approval does not match the selected source"))
+            self._cancel.set()
+            return MoveReceipt(False)
+        phase, receipt = "verify", MoveReceipt(False)
+        try:
+            with (anchored_directory(proof.item.ancestors), anchored_directory(proof.destination)):
+                verify_copy(proof, cancel=self._cancel)
+                receipt = self._audit.move(path)
+                if receipt.success and approval.redirect:
+                    phase = "redirect"
+                    redirect_copy(proof)
+        except (OSError, ValueError) as exc:
+            self._copy_errors.append((path, proof.item.destination, phase, str(exc)))
+            self._cancel.set()
+        return receipt
 
 
 def _merge(target: MoveResult, source: MoveResult) -> None:

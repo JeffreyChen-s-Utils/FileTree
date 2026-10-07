@@ -150,7 +150,7 @@ class NamespaceDialog(QDialog):
         value = self.destination.text()
         request = NamespaceRequest(self.root, self.nodes, None if self.rename else value,
                                    value if self.rename else None, self.collision.currentData())
-        worker = NamespacePreviewWorker(request, self)
+        worker = self._preview_worker(request)
         self.worker = worker
         worker.ready.connect(lambda plan: self.worker is worker and self._show(plan))
         worker.failed.connect(lambda reason: self.worker is worker and not worker.cancel.is_set()
@@ -179,15 +179,14 @@ class NamespaceDialog(QDialog):
         question = QMessageBox(QMessageBox.Icon.Question, self.windowTitle(), "",
                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
-        question.setText(tr("namespace_confirm", count=format_count(len(eligible)),
-                            skipped=format_count(len(plan.items) - len(eligible))))
+        question.setText(self._question_text(len(eligible), len(plan.items) - len(eligible)))
         question.setDetailedText("\n\n".join(f"{item.source}\n→ {item.destination}" for item in eligible))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         if (question.exec() != QMessageBox.StandardButton.Yes or self.plan is not plan
                 or self._closed or self.worker.cancel.is_set()):
             return
         self.changed = True
-        worker = NamespaceOperationWorker(plan, self)
+        worker = self._operation_worker(plan)
         self.operation = worker
         for control in (self.destination, self.browse, self.collision, self.preview_button, self.apply_button):
             control.setEnabled(False)
@@ -200,6 +199,15 @@ class NamespaceDialog(QDialog):
         worker.failed.connect(self._failed)
         worker.finished.connect(lambda: not self._closed and self.stop_button.setEnabled(False))
         worker.start()
+
+    def _preview_worker(self, request: NamespaceRequest) -> NamespacePreviewWorker:
+        return NamespacePreviewWorker(request, self)
+
+    def _operation_worker(self, plan: NamespacePlan) -> NamespaceOperationWorker:
+        return NamespaceOperationWorker(plan, self)
+
+    def _question_text(self, count: int, skipped: int) -> str:
+        return tr("namespace_confirm", count=format_count(count), skipped=format_count(skipped))
 
     def _completed(self, result: NamespaceResult) -> None:
         if self._closed:

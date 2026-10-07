@@ -47,6 +47,8 @@ from je_file_tree.gui.file_times import FileTimesDialog
 from je_file_tree.gui.bin_labels import BinLabels, bin_key
 from je_file_tree.gui.compression import CompressionDialog
 from je_file_tree.gui.namespace_dialog import NamespaceDialog
+from je_file_tree.gui.copy_dialog import CopyDialog
+from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
@@ -109,6 +111,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._worker: ScanWorker | None = None
         self._trash_worker: TrashWorker | None = None
+        self._path_dialogs: set[NamespaceDialog] = set()
         self._trash_rescans: list[Node] = []
         self._closing = False
         self._analyser: AnalyseWorker | None = None
@@ -159,7 +162,7 @@ class MainWindow(QMainWindow):
 
     def start_scan(self, path: str, *, exact_allocation: bool = False) -> None:
         """Scan ``path`` (stopping a scan already running)."""
-        if self._trash_worker is not None:
+        if self._trash_worker is not None or self._path_dialogs:
             return
         self._trash_rescans.clear()
         path = os.path.abspath(os.path.expanduser(path.strip().strip('"')))
@@ -285,6 +288,8 @@ class MainWindow(QMainWindow):
             if self._worker is None and self._trash_worker is None:
                 menu.addAction(tr("menu_move_folder")).triggered.connect(lambda: self.show_namespace(picked))
                 menu.addAction(tr("menu_rename")).triggered.connect(lambda: self.show_namespace(picked, rename=True))
+                if any(entry.is_dir and not entry.is_link for entry in movable):
+                    menu.addAction(tr("menu_move_drive")).triggered.connect(lambda: self.show_copy(picked))
             text = tr("action_trash") if len(movable) == 1 else tr("action_trash_many",
                                                                     count=format_count(len(movable)))
             menu.addAction(text).triggered.connect(lambda: self.move_to_trash(movable))
@@ -302,20 +307,49 @@ class MainWindow(QMainWindow):
     def show_namespace(self, nodes: Sequence[Node], *, rename: bool = False) -> None:
         """Review real selected entries; join operations and refresh the current affected scan scope."""
         outcome = self.results.outcome
-        if (outcome is None or self._worker is not None or self._trash_worker is not None or not nodes
+        if (outcome is None or self._path_dialogs or self._worker is not None or self._trash_worker is not None
+                or not nodes
                 or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
             return
         root = outcome.result.root
         dialog = NamespaceDialog(root, nodes, self._unit, self, rename=rename)
+        self._path_dialogs.add(dialog)
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
+            self._path_dialogs.discard(dialog)
             dialog.deleteLater()
-        if dialog.changed and self.results.outcome is outcome:
+        if not self._closing and dialog.changed and self.results.outcome is outcome:
             self._analyser = None
             self.results.clear_capacity()
             self._bin_labels.refresh()
+            self.rescan_folder(root)
+
+    def show_copy(self, nodes: Sequence[Node]) -> None:
+        """Review copied folders, join the copy worker, then use ordinary protected-folder Trash approval."""
+        outcome = self.results.outcome
+        if (outcome is None or self._path_dialogs or self._worker is not None or self._trash_worker is not None
+                or not nodes
+                or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
+            return
+        root = outcome.result.root
+        dialog = CopyDialog(root, nodes, self._unit, self)
+        self._path_dialogs.add(dialog)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            dialog.deleteLater()
+        if self._closing or not dialog.changed or self.results.outcome is not outcome:
+            return
+        self._analyser = None
+        self.results.clear_capacity()
+        self._bin_labels.refresh()
+        if dialog.finish_requested and dialog.approval is not None:
+            self.move_to_trash([proof.item.node for proof in dialog.approval.proofs], copies=dialog.approval)
+        if self._trash_worker is None:
             self.rescan_folder(root)
 
     def show_compression(self, node: Node) -> None:
@@ -399,7 +433,7 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
 
-    def move_to_trash(self, nodes: Sequence[Node]) -> None:
+    def move_to_trash(self, nodes: Sequence[Node], *, copies: CopyApproval | None = None) -> None:
         """Ask once, then move ``nodes`` to the Recycle Bin / Trash and take them out of the results.
 
         An entry inside another of ``nodes`` goes along with its folder; the scanned folder itself is
@@ -407,7 +441,8 @@ class MainWindow(QMainWindow):
         """
         chosen = _movable(nodes)
         root = self.results.tree_model.root
-        if not chosen or root is None or self._worker is not None or self._trash_worker is not None:
+        if (not chosen or root is None or self._worker is not None or self._trash_worker is not None
+                or copies is not None and not copies.matches(root, chosen)):
             return
         chosen = self._without_managed(chosen)
         if not chosen:
@@ -420,7 +455,8 @@ class MainWindow(QMainWindow):
         approvals = {node: protection_of(node.path, self._protected) for node in chosen}
         if not self._confirm_protected(chosen):
             return
-        answer = QMessageBox.question(self, tr("trash_confirm_title"), self._trash_question(chosen))
+        answer = self._confirm_copy_trash(chosen, copies) if copies is not None else QMessageBox.question(
+            self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes:
             return
         if self._worker is not None or self._trash_worker is not None or self.results.tree_model.root is not root:
@@ -434,6 +470,9 @@ class MainWindow(QMainWindow):
         explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
         audit = JournalApproval(self._journal, explanations)
         worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
+        if copies is not None:
+            worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in chosen),
+                                                copies.redirect)
         worker.done.connect(self._trash_finished)
         worker.finished.connect(worker.deleteLater)
         self._trash_worker = worker
@@ -441,6 +480,17 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("trash_running"))
         worker.start()
+
+    def _confirm_copy_trash(self, nodes: list[Node], copies: CopyApproval) -> QMessageBox.StandardButton:
+        question = QMessageBox(QMessageBox.Icon.Question, tr("trash_confirm_title"), "",
+                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
+        question.setTextFormat(Qt.TextFormat.PlainText)
+        question.setText(self._trash_question(nodes) + "\n\n" + tr("copy_trash_confirm")
+                         + ("\n\n" + tr("copy_redirect") if copies.redirect else ""))
+        question.setDetailedText("\n\n".join(f"{proof.item.source}\n→ {proof.item.destination}"
+                                            for proof in copies.proofs if proof.item.node in nodes))
+        question.setDefaultButton(QMessageBox.StandardButton.No)
+        return question.exec()
 
     def _review_cleanup(self, nodes: list[Node], reasons: dict[Node, CleanupGroup], root: Node) -> list[Node]:
         dialog = CleanupReview(nodes, reasons, self._protected, self._unit, root, self)
@@ -473,11 +523,23 @@ class MainWindow(QMainWindow):
         if result.journal_errors:
             QMessageBox.warning(self, tr("action_recent_actions"),
                                 tr("journal_write_failed", reason="\n".join(result.journal_errors)))
+        self._report_copy_errors(result)
         done = tr("trash_batch_done", moved=format_count(len(moved)), skipped=format_count(len(result.skipped)),
                   failed=format_count(len(failed)), size=moved_size)
         self.statusBar().showMessage(done, _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
         QTimer.singleShot(0, self._rescan_after_trash)
+
+    def _report_copy_errors(self, result: MoveResult | None) -> None:
+        if result is not None and result.copy_errors:
+            report = QMessageBox(QMessageBox.Icon.Warning, tr("menu_move_drive"), "",
+                                 QMessageBox.StandardButton.Ok, self)
+            report.setTextFormat(Qt.TextFormat.PlainText)
+            report.setText(tr("copy_errors"))
+            report.setDetailedText("\n\n".join(
+                tr("copy_" + phase + "_failed", source=source, destination=destination, reason=reason)
+                for source, destination, phase, reason in result.copy_errors))
+            report.exec()
 
     def _holder_lines(self, result: MoveResult) -> str:
         lines = []
@@ -769,10 +831,15 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        for dialog in self._path_dialogs.copy():
+            dialog.reject()
         self._bin_labels.shutdown()
         if self._trash_worker is not None:
-            self._trash_worker.cancel()
-            wait_for(self._trash_worker)
+            worker = self._trash_worker
+            worker.cancel()
+            wait_for(worker)
+            self._trash_worker = None
+            self._report_copy_errors(worker.result)
         self.stop_scan(wait=True)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
