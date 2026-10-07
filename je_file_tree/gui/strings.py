@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "breadcrumbs_back": "Back (Alt+Left)",
+    "breadcrumbs_forward": "Forward (Alt+Right)",
+    "breadcrumbs_more": "…",
+    "breadcrumbs_more_tip": "Show earlier ancestors",
+
     "action_print_view": "Print current view…",
     "action_print_view_tip": "Print the visible results on one page through the system print dialog",
     "action_export_view_pdf": "Current view (PDF)…",
@@ -612,6 +617,11 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "breadcrumbs_back": "返回（Alt+Left）",
+    "breadcrumbs_forward": "前進（Alt+Right）",
+    "breadcrumbs_more": "…",
+    "breadcrumbs_more_tip": "顯示上層資料夾",
+
     "action_print_view": "列印目前畫面…",
     "action_print_view_tip": "透過系統列印對話框將可見結果印在一頁上",
     "action_export_view_pdf": "目前畫面（PDF）…",
@@ -1158,6 +1168,11 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "breadcrumbs_back": "返回（Alt+Left）",
+    "breadcrumbs_forward": "前进（Alt+Right）",
+    "breadcrumbs_more": "…",
+    "breadcrumbs_more_tip": "显示上级文件夹",
+
     "action_print_view": "打印当前视图…",
     "action_print_view_tip": "通过系统打印对话框将可见结果打印在一页上",
     "action_export_view_pdf": "当前视图（PDF）…",

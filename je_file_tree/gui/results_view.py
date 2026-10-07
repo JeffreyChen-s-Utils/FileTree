@@ -67,7 +67,7 @@ from je_file_tree.gui.age_colours import AGE_COLOURS, UNKNOWN_AGE_COLOUR
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.delegates import ShareBarDelegate
-from je_file_tree.gui.elided_label import ElidedLabel
+from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
 from je_file_tree.gui.i18n import format_duration, tr
@@ -159,7 +159,7 @@ class ResultsView(QWidget):
         self.tree = self._build_tree(settings)
         self._build_chart_controls()
         self._treemap_up = QToolButton()
-        self._treemap_path = ElidedLabel()
+        self.breadcrumbs = Breadcrumbs()
         self._legend = QLabel()
         self._largest_filter = QLineEdit()
         self._focus_label = QLabel()
@@ -203,6 +203,7 @@ class ResultsView(QWidget):
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
         self._outcome = None
+        self.breadcrumbs.set_root(None)
         self.charts.set_age_reference(time.time())
         self.capacity.set_ledger(None)
         self.search.set_root(None)
@@ -223,6 +224,7 @@ class ResultsView(QWidget):
     def show_live_root(self, root: Node) -> None:
         """Show the tree a running scan is filling in."""
         self.tree_model.set_root(root, live=True)
+        self.breadcrumbs.set_root(root)
         self.tree.expand(self.tree_model.index(0, 0))
         self.charts.set_view_root(root)
         self.select_node(root)
@@ -263,6 +265,7 @@ class ResultsView(QWidget):
             self.tree_model.set_root(root)
             self.tree.expand(self.tree_model.index(0, 0))
         self.capacity.set_ledger(outcome.capacity)
+        self.breadcrumbs.set_root(root)
         self.tree_model.set_drive_total(outcome.capacity.total if outcome.capacity is not None else None)
         self._scope = None
         self._scope_button.setChecked(False)
@@ -345,6 +348,7 @@ class ResultsView(QWidget):
         self.cleanup.set_unit(unit)
         self.charts.set_unit(unit)
         self.changes.retranslate()
+        self.breadcrumbs.retranslate()
 
     def selected_node(self) -> Node | None:
         """The entry the tree's cursor is on."""
@@ -471,6 +475,7 @@ class ResultsView(QWidget):
         self.duplicates.retranslate()
         self.cleanup.retranslate()
         self.changes.retranslate()
+        self.breadcrumbs.retranslate()
         self._problems_hint.setText(tr("problems_hint"))
         self._elevate_button.setText(tr("action_elevate"))
         self._elevate_button.setToolTip(tr("action_elevate_tip"))
@@ -582,7 +587,7 @@ class ResultsView(QWidget):
     def _assemble_chart_tab(self) -> None:
         """The Chart tab: the path and view buttons, the treemap options, the charts and the legend."""
         self._treemap_up.clicked.connect(self.charts.zoom_out)
-        self._treemap_path.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.breadcrumbs.navigate.connect(self.charts.set_view_root)
         self._legend.setWordWrap(True)
         self.charts.node_clicked.connect(self._treemap_clicked)
         self.charts.view_root_changed.connect(self._treemap_root_changed)
@@ -594,7 +599,8 @@ class ResultsView(QWidget):
             self._chart_group.addButton(button)
             button.clicked.connect(lambda _checked=False, chosen=mode: self._choose_chart(chosen))
         self._chart_buttons[self.charts.mode].setChecked(True)
-        chart_bar = _row(self._treemap_up, self._treemap_path)
+        chart_bar = _row(self._treemap_up, self.breadcrumbs)
+        chart_bar.layout().setStretch(1, 1)
         for button in self._chart_buttons.values():
             chart_bar.layout().addWidget(button)
         self._treemap_options = _row(self._levels_label, self._levels_combo, self._colours_label, self._colours_combo)
@@ -700,7 +706,7 @@ class ResultsView(QWidget):
         self.select_node(node)
 
     def _treemap_root_changed(self, node: Node | None) -> None:
-        self._treemap_path.setText(node.path if node is not None else "")
+        self.breadcrumbs.visit(node)
         self._treemap_up.setEnabled(node is not None and node.parent is not None)
 
     def _table_activated(self, table: QAbstractItemView, index: QModelIndex) -> None:

@@ -19,6 +19,8 @@ Treemap and Sunburst share **Colours → By modified age**, using the same age r
 
 **File → Print current view** (`Ctrl+P`) opens the system print dialog. **File → Export → Current view (PDF)** saves one A4 page, with landscape/portrait chosen from the captured view. Both fit the visible results, including the current tab and viewport, inside printable margins without distortion or cropping. They print captured pixels; scroll-hidden entries are outside this view. PDF writes run on an export worker using Qt's PDF engine and atomically replace the requested file; closing waits for completion.
 
+The Chart tab has clickable folder breadcrumbs and **Back / Forward** (`Alt+Left` / `Alt+Right`). History keeps up to 100 visits in the current scan; navigating after Back replaces the forward branch. New scans reset history, and rescans discard detached entries. Long paths scroll, with earlier ancestors available from **…**.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.

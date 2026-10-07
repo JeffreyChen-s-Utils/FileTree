@@ -1135,8 +1135,8 @@ def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qa
     (deep / "x.txt").write_bytes(b"x")
     _scanned(window, qapp, deep)
     results = window.results
-    path_width = results._treemap_path.fontMetrics().horizontalAdvance(str(deep))
-    assert results.tabs.widget(CHART_TAB).minimumSizeHint().width() < path_width, "the path label asks for no width"
+    path_width = results.breadcrumbs.fontMetrics().horizontalAdvance(str(deep))
+    assert results.tabs.widget(CHART_TAB).minimumSizeHint().width() < path_width, "breadcrumbs keep paths bounded"
     assert results.summary.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Ignored
     assert "R&amp;D" in results.summary.text(), "the path is escaped in the rich-text summary"
     assert results.summary.toolTip() == str(deep)

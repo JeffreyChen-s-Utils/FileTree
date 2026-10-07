@@ -21,6 +21,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`breadcrumbs` binds clickable ancestors and a bounded 100-visit folder history to the current scan.
+ChartStack navigation updates all charts and records one visit; stepping history does not append it.
+Detached nodes are pruned after edits, new scans reset references, and deep ancestor paths use a
+scroll area with a collapsed menu instead of widening the chart. Shortcuts apply while Chart is visible.
+
 `printing` captures the visible results before opening QPrintDialog, then QPrinter fits those pixels
 on one printable page. PDF export uses the same fitted layout via QPdfWriter on ExportWorker, avoiding
 native printer enumeration. Its temporary sibling is flushed and atomically replaced after successful
