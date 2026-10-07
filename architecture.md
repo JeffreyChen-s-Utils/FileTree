@@ -21,6 +21,14 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`gui.tree_filter` debounces a case-insensitive name query and inspects recorded children only beneath
+expanded nodes on cancellable owned threads. Accepted node identities and ancestors form an O(1)
+membership proxy without Qt recursive descendant filtering. FolderTreeModel owns numeric/name sorting
+and persistent source indexes. The tree swaps to the proxy only while a query is active, preserving
+header/expansion/selection state; ResultsView maps source targets and reads NODE_ROLE for proxy selection.
+Cross-view navigation to a hidden target clears the filter. Model reset/layout/row changes invalidate
+stale queries; closing joins every worker. The complete scan continues to drive all totals and exports.
+
 `core.live_compare` matches exact relative names from two fresh scanner trees iteratively, preserves
 unknown missing paths under unreadable scopes, and bounds displayed rows to 10,000 while keeping the
 complete count. Explicit requested pairs reuse snapshot-guarded full-file hashing and revalidate both

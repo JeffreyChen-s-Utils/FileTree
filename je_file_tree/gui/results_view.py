@@ -95,6 +95,7 @@ from je_file_tree.gui.tree_model import (
     SIZE,
     FolderTreeModel,
 )
+from je_file_tree.gui.tree_filter import TreeFilter
 from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, CATEGORY_COLOURS, COLOUR_MODES, LEVELS
 from je_file_tree.gui.tree_diagram import ORIENTATIONS
 from je_file_tree.gui.tree_columns import TreeColumns
@@ -230,7 +231,7 @@ class ResultsView(QWidget):
         """Show the tree a running scan is filling in."""
         self.tree_model.set_root(root, live=True)
         self.breadcrumbs.set_root(root)
-        self.tree.expand(self.tree_model.index(0, 0))
+        self.tree.expand(self.tree_filter.index_for(root))
         self.charts.set_view_root(root)
         self.select_node(root)
         self._update_texts()
@@ -268,7 +269,7 @@ class ResultsView(QWidget):
             self.tree_model.finish_live()
         else:
             self.tree_model.set_root(root)
-            self.tree.expand(self.tree_model.index(0, 0))
+            self.tree.expand(self.tree_filter.index_for(root))
         self.capacity.set_ledger(outcome.capacity)
         self.breadcrumbs.set_root(root)
         self.tree_model.set_drive_total(outcome.capacity.total if outcome.capacity is not None else None)
@@ -363,7 +364,7 @@ class ResultsView(QWidget):
     def selected_node(self) -> Node | None:
         """The entry the tree's cursor is on."""
         index = self.tree.currentIndex()
-        return self.tree_model.node(index) if index.isValid() else None
+        return index.data(NODE_ROLE) if index.isValid() else None
 
     def selected_nodes(self) -> list[Node]:
         """Every entry selected in the tree (Ctrl+click and Shift+click pick several)."""
@@ -417,7 +418,7 @@ class ResultsView(QWidget):
 
     def select_node(self, node: Node) -> None:
         """Select ``node`` in the tree (expanding its folders), and outline it in the treemap."""
-        index = self.tree_model.index_for(node)
+        index = self.tree_filter.reveal(node)
         if not index.isValid():
             return
         parent = index.parent()
@@ -468,6 +469,7 @@ class ResultsView(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self.tree_model.retranslate()
+        self.tree_filter.retranslate()
         self.charts.retranslate()
         self.capacity.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
@@ -553,7 +555,14 @@ class ResultsView(QWidget):
         self.tree_columns = TreeColumns(tree, settings)
         tree.selectionModel().currentChanged.connect(self._tree_current_changed)
         tree.selectionModel().selectionChanged.connect(lambda *_: self.selection_changed.emit(self.selected_node()))
+        self.tree_filter = TreeFilter(tree, self.tree_model, self)
+        self.tree_filter.selection_model_changed.connect(self._connect_tree_selection)
         return tree
+
+    def _connect_tree_selection(self) -> None:
+        self.tree.selectionModel().currentChanged.connect(self._tree_current_changed)
+        self.tree.selectionModel().selectionChanged.connect(
+            lambda *_: self.selection_changed.emit(self.selected_node()))
 
     def _build_entries_table(self, model: LargestFilesModel) -> tuple[QTableView, QSortFilterProxyModel]:
         """A list of entries (name, size, folder, modified) in which several rows can be selected."""
@@ -688,6 +697,7 @@ class ResultsView(QWidget):
         column = QWidget()
         layout = QVBoxLayout(column)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.tree_filter.line)
         layout.addWidget(self.tree, 1)
         layout.addWidget(self.details)
         return column
@@ -713,7 +723,7 @@ class ResultsView(QWidget):
         return splitter
 
     def _tree_current_changed(self, current: QModelIndex, _previous: QModelIndex) -> None:
-        node = self.tree_model.node(current)
+        node = current.data(NODE_ROLE) if current.isValid() else None
         self.charts.set_selected(node)
         self.selection_changed.emit(node)
         if self._scope_button.isChecked():
@@ -790,6 +800,7 @@ class ResultsView(QWidget):
     def wait_for_lists(self) -> None:
         """Wait for list computations still running (before the window closes)."""
         self._stop_focused()
+        self.tree_filter.shutdown()
         for worker in self._list_workers.copy():
             wait_for(worker)
 

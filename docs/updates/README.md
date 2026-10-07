@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-46 | 2026-10-07 | Filter expanded tree folders while preserving live model identities | #done #tree #navigation | [2026-10](2026-10.md) |
 | U-20261007-45 | 2026-10-07 | Compare two live folders with explicit stable content verification | #done #comparison #exports | [2026-10](2026-10.md) |
 | U-20261007-44 | 2026-10-07 | Verify native Linux desktop behavior with retained wire and drag evidence | #snapshot #linux #desktop | [2026-10](2026-10.md) |
 | U-20261007-43 | 2026-10-07 | Target the owned Thunar row in client coordinates | #incident #linux #desktop | [2026-10](2026-10.md) |

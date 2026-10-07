@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "tree_filter_placeholder": "Filter expanded folders…",
+    "tree_filter_hint": ("Match names (case-insensitive) only inside already expanded folders; ancestors stay visible. "
+                         "Collapsed contents are not searched. Clear the filter to restore the tree. "
+                         "Choosing a hidden entry in a chart/list clears the filter. "
+                         "Scan totals and exports stay unchanged."),
     "action_live_compare": "Compare two folders…",
     "action_live_compare_tip": "Compare fresh relative paths and verify only requested file pairs",
     "compare_choose_left": "Choose the left folder",
@@ -745,6 +750,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "tree_filter_placeholder": "篩選已展開的資料夾…",
+    "tree_filter_hint": ("僅在已展開的資料夾比對名稱（不分大小寫），保留上層路徑。不搜尋摺疊的內容。"
+                         "清除篩選即可恢復樹狀清單。從圖表／清單選取被隱藏的項目會清除篩選。掃描總量與匯出保持不變。"),
     "action_live_compare": "比較兩個資料夾…",
     "action_live_compare_tip": "比較即時相對路徑，僅驗證選取的檔案對",
     "compare_choose_left": "選擇左側資料夾",
@@ -1409,6 +1417,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "tree_filter_placeholder": "筛选已展开的文件夹…",
+    "tree_filter_hint": ("仅在已展开的文件夹匹配名称（不区分大小写），保留上层路径。不搜索折叠的内容。"
+                         "清除筛选即可恢复树状列表。从图表／列表选择被隐藏的项目会清除筛选。扫描总量与导出保持不变。"),
     "action_live_compare": "比较两个文件夹…",
     "action_live_compare_tip": "比较实时相对路径，仅验证选中的文件对",
     "compare_choose_left": "选择左侧文件夹",
