@@ -2,12 +2,29 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess  # nosec B404 - fixed test programs, no shell
 import sys
 import tempfile
 import time
 from pathlib import Path
+
+
+def run_probe(environment: dict[str, str], evidence: Path) -> int:
+    """Require complete artifacts even if the bus wrapper masks a crashed child."""
+    command = ["/usr/bin/dbus-run-session", "--", sys.executable,
+               "/workspace/tools/linux_desktop/probe.py", str(evidence)]
+    result = subprocess.run(command, env=environment, check=False)  # noqa: S603 # nosec B603
+    if result.returncode:
+        return result.returncode
+    proof = json.loads((evidence / "proof.json").read_text(encoding="utf-8"))
+    for key in ("dbus", "trash", "cjk_font"):
+        if not proof.get(key) or isinstance(proof[key], dict) and "error" in proof[key]:
+            raise RuntimeError(f"Incomplete native desktop evidence: {key}")
+    if not (evidence / "desktop-zh-TW.png").is_file():
+        raise RuntimeError("Missing native desktop screenshot")
+    return 0
 
 
 def main() -> int:
@@ -28,9 +45,7 @@ def main() -> int:
                     if server.poll() is not None or time.monotonic() > deadline:
                         raise RuntimeError("Xvfb did not start")
                     time.sleep(.05)
-                command = ["/usr/bin/dbus-run-session", "--", sys.executable,
-                           "/workspace/tools/linux_desktop/probe.py", str(evidence)]
-                return subprocess.run(command, env=environment, check=False).returncode  # noqa: S603 # nosec B603
+                return run_probe(environment, evidence)
             finally:
                 server.terminate()
                 server.wait(timeout=10)

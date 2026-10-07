@@ -21,6 +21,7 @@ jobs:
     - name: Build isolated desktop probe
       run: docker build -t filetree-desktop-probe -f tools/linux_desktop/Dockerfile .
     - name: Test native desktop behavior
+      shell: bash
       run: |
         mkdir -p desktop-evidence
         docker run --rm --memory=1g --cpus=2 -v "$PWD:/workspace:ro" -v "$PWD/desktop-evidence:/evidence" filetree-desktop-probe 2>&1 | tee desktop-evidence/probe.log
