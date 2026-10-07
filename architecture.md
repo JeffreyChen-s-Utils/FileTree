@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`chart_accessibility` attaches one QObject event filter per chart, exposing translated accessible
+names, current-root/selection facts and keyboard instructions. It navigates only cached/bounded layout
+nodes, coordinates normal node-click selection, scrolls bar/card selections into view and leaves
+modified shortcuts plus Tree diagram expand/collapse behavior intact. Enter never opens links/files;
+Backspace follows the shared root-change flow. Language/unit changes refresh accessibility properties.
+
 `core.system_files` recognizes anchored Windows-managed namespaces and returns stable explanation/tool
 keys. Details displays translated guidance with explicit GUI-only tool launch (fixed settings URIs or
 absolute System32 executables, no cleanup commands). MainWindow hides/filters direct managed targets;

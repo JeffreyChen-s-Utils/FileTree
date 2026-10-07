@@ -55,6 +55,8 @@ class ListStream:
                 batch = self.queue.get(timeout=0.05)
             except queue.Empty:
                 if self.closed.is_set():
+                    if self.error:
+                        raise ValueError(self.error) from None
                     return
                 continue
             yield from batch

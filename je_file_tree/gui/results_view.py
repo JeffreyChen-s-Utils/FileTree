@@ -468,6 +468,7 @@ class ResultsView(QWidget):
     def retranslate(self) -> None:
         """Re-read every translated text."""
         self.tree_model.retranslate()
+        self.charts.retranslate()
         self.capacity.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.refresh()

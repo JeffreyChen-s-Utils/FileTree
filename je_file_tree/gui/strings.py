@@ -9,6 +9,13 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "chart_access_keys": ("Arrow keys select rendered entries. Enter opens a folder; Backspace goes up. "
+                          "Use the folder tree for grouped or hidden entries."),
+    "chart_access_tree_keys": ("Up/Down selects cards; Right/Left expands/collapses folders. "
+                               "Enter opens a folder; Backspace goes up."),
+    "chart_access_folder": "Showing folder: {path}",
+    "chart_access_selected": "Selected: {path}. Size {size}; on disk {allocated}; {files} files, {folders} folders.",
+
     "system_file_hibernate": ("Hibernation and Fast Startup state. Windows manages this file. An "
                               "administrator can disable hibernation with powercfg /hibernate off, which "
                               "also removes Hibernate and may affect Fast Startup. FileTree only opens "
@@ -670,6 +677,12 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "chart_access_keys": ("方向鍵選取已繪製項目；Enter 開啟資料夾，Backspace 返回上層。"
+                          "合併或未顯示的項目可使用資料夾樹查看。"),
+    "chart_access_tree_keys": "上／下選取卡片，右／左展開或收合資料夾。Enter 開啟資料夾，Backspace 返回上層。",
+    "chart_access_folder": "目前資料夾：{path}",
+    "chart_access_selected": "已選取：{path}。大小 {size}；磁碟大小 {allocated}；{files} 個檔案，{folders} 個資料夾。",
+
     "system_file_hibernate": ("休眠與快速啟動狀態，由 Windows 管理。系統管理員可使用 powercfg /hibernate o"
                               "ff 關閉休眠，這也會移除休眠功能，並可能影響快速啟動。FileTree 僅開啟電源設"
                               "定。"),
@@ -1263,6 +1276,12 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "chart_access_keys": ("方向键选择已绘制条目；Enter 打开文件夹，Backspace 返回上级。"
+                          "合并或未显示的条目可使用文件夹树查看。"),
+    "chart_access_tree_keys": "上／下选择卡片，右／左展开或折叠文件夹。Enter 打开文件夹，Backspace 返回上级。",
+    "chart_access_folder": "当前文件夹：{path}",
+    "chart_access_selected": "已选择：{path}。大小 {size}；磁盘大小 {allocated}；{files} 个文件，{folders} 个文件夹。",
+
     "system_file_hibernate": ("休眠与快速启动状态，由 Windows 管理。管理员可使用 powercfg /hibernate off "
                               "关闭休眠，这也会移除休眠功能，并可能影响快速启动。FileTree 仅打开电源设置。"),
     "system_file_pagefile": ("虚拟内存的分页文件，Windows 可自动管理大小。在高级系统设置的性能设置中查看"

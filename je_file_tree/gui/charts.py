@@ -15,6 +15,7 @@ from je_file_tree.gui.bar_chart import BarChartWidget
 from je_file_tree.gui.sunburst_widget import SunburstWidget
 from je_file_tree.gui.treemap_widget import TreemapWidget
 from je_file_tree.gui.tree_diagram import TreeDiagramWidget
+from je_file_tree.gui.chart_accessibility import ChartAccessibility
 
 TREEMAP, BARS, SUNBURST, TREE = "treemap", "bars", "sunburst", "tree"
 MODES = (TREEMAP, BARS, SUNBURST, TREE)
@@ -45,6 +46,7 @@ class ChartStack(QStackedWidget):
             TREEMAP: self.treemap, BARS: self.bars, SUNBURST: self.sunburst, TREE: self.tree}
         self._pages: dict[str, QWidget] = {TREEMAP: self.treemap, BARS: scroll,
                                            SUNBURST: self.sunburst, TREE: tree_scroll}
+        self._access = {mode: ChartAccessibility(chart, mode) for mode, chart in self._charts.items()}
         for mode in MODES:
             chart = self._charts[mode]
             self.addWidget(self._pages[mode])
@@ -89,6 +91,8 @@ class ChartStack(QStackedWidget):
         """Outline ``node`` in every view."""
         for chart in self._charts.values():
             chart.set_selected(node)
+        for access in self._access.values():
+            access.refresh()
 
     def invalidate(self) -> None:
         """Lay out and draw every view again."""
@@ -100,6 +104,14 @@ class ChartStack(QStackedWidget):
         for chart in self._charts.values():
             chart.unit = unit
             chart.invalidate()
+        for access in self._access.values():
+            access.refresh()
+
+    def retranslate(self) -> None:
+        """Refresh accessible names/descriptions and cached translated chart text."""
+        for access in self._access.values():
+            access.refresh()
+        self.invalidate()
 
     def set_colour_mode(self, mode: str) -> None:
         """Apply the shared colour choice to both treemap tiles and sunburst arcs."""

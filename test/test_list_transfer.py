@@ -127,6 +127,29 @@ def test_streamed_worker_writes_all_rows_off_gui_thread(qapp, tmp_path) -> None:
     view.deleteLater()
 
 
+def test_cancel_while_writer_waits_for_a_batch_preserves_the_existing_file(qapp, tmp_path, monkeypatch) -> None:
+    stream = ListStream()
+    reached, failures = threading.Event(), []
+    get = stream.queue.get
+
+    def waiting(*, timeout):
+        reached.set()
+        return get(timeout=timeout)
+
+    monkeypatch.setattr(stream.queue, 'get', waiting)
+    target = tmp_path / 'before.csv'
+    target.write_text('keep', encoding='utf-8')
+    worker = ExportWorker(lambda: export_table_csv(('Name',), stream.rows(), target))
+    worker.failed.connect(failures.append)
+    worker.start()
+    assert reached.wait(2)
+    stream.finish('cancelled during wait')
+    wait_for(worker)
+    qapp.processEvents()
+    assert failures == ['cancelled during wait'] and target.read_text(encoding='utf-8') == 'keep'
+    assert list(tmp_path.iterdir()) == [target]
+
+
 def test_current_list_exports_filtered_display_order_and_all_tabs(window, qapp, sample_tree, monkeypatch, tmp_path):
     window.results.show_outcome(analyse(scan(sample_tree)))
     window.pages.setCurrentIndex(RESULTS_PAGE)

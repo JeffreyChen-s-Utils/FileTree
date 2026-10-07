@@ -29,6 +29,8 @@ Double-click an extension in **File types** to see its largest files and up to 1
 
 On Windows, **Details** explains hibernation/page/swap files, Windows.old, the Recycle Bin, System Volume Information, WinSxS, Windows Update downloads and Delivery Optimization caches. Recognition uses drive-root or installed-Windows paths, including descendants, rather than matching names anywhere. Buttons open the relevant Windows settings or system tool; FileTree never runs cleanup commands or moves these system-managed entries. The operation worker also rejects a folder containing them and rechecks resolved paths. WinSxS totals can include shared hard links; unseen system data stays unknown.
 
+The four charts expose accessible names, keyboard instructions and the current folder/selected entry with recorded size and counts. Focus a chart with Tab or a click: **arrow keys** select its rendered entries, **Enter** opens a selected folder, and **Backspace** goes up. Tree diagram retains Up/Down card selection and Right/Left expand/collapse. Bars and Tree diagram scroll selected rows into view. Navigation uses bounded chart geometry; grouped/hidden entries remain available in the folder tree. Modified shortcuts such as Alt+Left retain their existing behavior.
+
 ## Features
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
