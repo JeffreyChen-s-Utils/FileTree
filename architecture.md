@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`shell_integration` installs a marked current-user Directory verb only on explicit Options dialog Save.
+Native registry creation disposition prevents claiming an existing unowned key; ownership and key-shape
+checks limit updates/removal to this verb. Commands quote the executable and absolute `launcher.py`
+entry, whose source path bootstrap works independently of Explorer's working directory; Nuitka starts
+its original executable. Native Properties uses ShellExecuteExW with a fixed verb and item path.
+
 `themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
 palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice
 and startup restores it before constructing windows. Palette/style events discard chart caches.

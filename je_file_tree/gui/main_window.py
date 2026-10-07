@@ -32,7 +32,8 @@ from je_file_tree.core.operation_journal import JournalApproval, OperationJourna
 from je_file_tree.core.protected import protected_places, protection_of
 from je_file_tree.core.scanner import ScanOptions
 from je_file_tree.core.system_files import system_file
-from je_file_tree.gui import elevation, file_actions
+from je_file_tree.gui import elevation, file_actions, shell_integration
+from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
 from je_file_tree.gui.cleanup_review import CleanupReview
 from je_file_tree.gui.cleanup_policy_dialog import CleanupPolicyDialog
@@ -229,6 +230,8 @@ class MainWindow(QMainWindow):
             ("menu_reveal", lambda: file_actions.reveal_in_file_manager(node.path)),
             ("menu_copy_path", lambda: file_actions.copy_path(node.path)),
         ]
+        if shell_integration.supported():
+            entries.append(("menu_properties", lambda: self.show_properties(node)))
         if node.is_dir and not node.is_link:
             entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
@@ -246,6 +249,11 @@ class MainWindow(QMainWindow):
             for key in ("export_chart_png", "export_chart_svg"):
                 menu.addAction(self._actions[key])
         menu.exec(point)
+
+    def show_properties(self, node: Node) -> None:
+        """Open the selected entry's Windows Properties, reporting shell failures."""
+        if not shell_integration.show_properties(node.path, int(self.winId())):
+            QMessageBox.warning(self, tr("menu_properties"), tr("properties_failed", path=node.path))
 
     def rescan_folder(self, node: Node) -> None:
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
@@ -707,6 +715,7 @@ class MainWindow(QMainWindow):
             ("elevate", None, self.restart_as_admin),
             ("exclusions", None, self.edit_exclusions),
             ("cleanup_policy", None, self.edit_cleanup_policy),
+            ("shell_integration", None, self.edit_shell_integration),
             ("gentle", None, lambda: self.settings.setValue("gentle_scan", self._actions["gentle"].isChecked())),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
@@ -723,6 +732,7 @@ class MainWindow(QMainWindow):
         self._actions["gentle"].setCheckable(True)
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
+        self._actions["shell_integration"].setVisible(shell_integration.supported())
 
     def _build_menus(self) -> None:
         bar = self.menuBar()
@@ -767,6 +777,7 @@ class MainWindow(QMainWindow):
         options_menu = bar.addMenu("")
         options_menu.addAction(self._actions["cleanup_policy"])
         options_menu.addAction(self._actions["gentle"])
+        options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
         help_menu.addAction(self._actions["about"])
@@ -870,6 +881,13 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(tr("policy_saved"), _STATUS_TIMEOUT_MS)
         finally:
             dialog.shutdown()
+            dialog.deleteLater()
+
+    def edit_shell_integration(self) -> None:
+        """Open explicit Explorer settings; cancel leaves the registry untouched."""
+        if shell_integration.supported():
+            dialog = ShellIntegrationDialog(self)
+            dialog.exec()
             dialog.deleteLater()
 
     def exclusions(self) -> list[str]:

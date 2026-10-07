@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_shell_integration": "Explorer integration…",
+    "action_shell_integration_tip": "Add or remove Scan with FileTree in your Explorer folder menu",
+    "shell_enabled": "Add Scan with FileTree to Explorer's folder menu",
+    "shell_scan": "Scan with FileTree",
+    "shell_hint": ("Save changes only your account's folder menu; no administrator rights are needed. "
+                   "On Windows 11, look under Show more options. Turn this off here to remove the entry. "
+                   "Register again after moving the executable or source checkout."),
+    "shell_failed": "Explorer integration could not be changed.\n{reason}",
+    "menu_properties": "Properties",
+    "properties_failed": "Windows could not open Properties for:\n{path}",
     "menu_theme": "Theme",
     "theme_system": "System",
     "theme_light": "Light",
@@ -682,6 +692,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_shell_integration": "檔案總管整合…",
+    "action_shell_integration_tip": "在檔案總管的資料夾選單新增或移除「使用 FileTree 掃描」",
+    "shell_enabled": "在檔案總管的資料夾選單加入「使用 FileTree 掃描」",
+    "shell_scan": "使用 FileTree 掃描",
+    "shell_hint": ("儲存只會變更您帳號的資料夾選單，不需要系統管理員權限。"
+                   "Windows 11 請查看「顯示其他選項」。在此取消勾選即可移除。"
+                   "移動執行檔或原始碼資料夾後，請重新登錄。"),
+    "shell_failed": "無法變更檔案總管整合。\n{reason}",
+    "menu_properties": "內容",
+    "properties_failed": "Windows 無法開啟此項目的內容：\n{path}",
     "menu_theme": "主題",
     "theme_system": "系統",
     "theme_light": "淺色",
@@ -1286,6 +1306,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_shell_integration": "资源管理器集成…",
+    "action_shell_integration_tip": "在资源管理器的文件夹菜单添加或移除“使用 FileTree 扫描”",
+    "shell_enabled": "在资源管理器的文件夹菜单添加“使用 FileTree 扫描”",
+    "shell_scan": "使用 FileTree 扫描",
+    "shell_hint": ("保存只会更改您账户的文件夹菜单，不需要管理员权限。"
+                   "Windows 11 请查看“显示更多选项”。在此取消勾选即可移除。"
+                   "移动可执行文件或源码文件夹后，请重新注册。"),
+    "shell_failed": "无法更改资源管理器集成。\n{reason}",
+    "menu_properties": "属性",
+    "properties_failed": "Windows 无法打开此项目的属性：\n{path}",
     "menu_theme": "主题",
     "theme_system": "系统",
     "theme_light": "浅色",
