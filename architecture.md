@@ -21,6 +21,10 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded default on invalid values) and
+passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
+subsequent workers; welcome text explains UNC account/coverage behavior without initiating network I/O.
+
 `gui.bin_dialog` extends the volume survey with Windows-only explicit single-drive native emptying.
 Two GUI questions capture drive/bytes/item count and permanent-operation scope; EmptyBinWorker
 rechecks totals through core.trash_size before SHEmptyRecycleBinW. Empty/null, nonlocal, incomplete,

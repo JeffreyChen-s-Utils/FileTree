@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_scan_workers": "Scan workers…",
+    "action_scan_workers_tip": "Choose concurrency for new scans; higher is not always faster",
+    "workers_prompt": "Workers for new scans (1–32). The default is {default}. Slow network shares may benefit "
+                      "from more workers; excessive concurrency can overload a disk/server. Running scans retain "
+                      "their existing workers. Real UNC performance depends on your share.",
     "action_bins": "Recycle Bins…",
     "action_bins_tip": "Review per-drive bin totals and explicit Windows emptying",
     "bin_empty": "Empty selected drive's Recycle Bin…",
@@ -527,7 +532,9 @@ EN: dict[str, str] = {
     "welcome_drive_tip": "Scan {path}",
     "welcome_drive_free": "{free} free of {total}",
     "welcome_recent": "Recently scanned",
-    "welcome_tip": "Tip: you can also drag a folder from your file manager onto this window.",
+    "welcome_tip": "Tip: you can also drag a folder from your file manager onto this window. Paste an absolute "
+                   "UNC share path on Windows (\\\\server\\share); access uses your current account. Scan workers "
+                   "can be adjusted in Options. Denied/disconnected branches remain incomplete, not empty.",
     # scanning
     "scan_starting": "Starting…",
     "scan_progress": "Scanning… {files} files in {folders} folders · {size} · {time}",
@@ -859,6 +866,11 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_scan_workers": "掃描執行緒數…",
+    "action_scan_workers_tip": "選擇新掃描的並行數，較高不一定較快",
+    "workers_prompt": "新掃描執行緒數（1–32），預設為 {default}。慢速網路共用可能受益於較多執行緒；"
+                      "過高並行數可能使磁碟／伺服器負荷過重。進行中的掃描保留既有執行緒數，"
+                      "UNC 效能取決於實際共用環境。",
     "action_bins": "資源回收筒…",
     "action_bins_tip": "審查各磁碟回收筒總量與 Windows 明確清空動作",
     "bin_empty": "清空選取磁碟的資源回收筒…",
@@ -1323,7 +1335,8 @@ ZH_TW: dict[str, str] = {
     "welcome_drive_tip": "掃描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
     "welcome_recent": "最近掃描過",
-    "welcome_tip": "小技巧：也可以直接把資料夾從檔案總管拖曳到這個視窗。",
+    "welcome_tip": "小技巧：也可以把資料夾從檔案總管拖曳到這個視窗。Windows 可貼上絕對 UNC 共用路徑"
+                   "（\\\\server\\share），使用目前帳戶存取。掃描執行緒數可在選項調整；權限不足／斷線的分支維持不完整，非空資料夾。",
     "scan_starting": "準備中…",
     "scan_progress": "正在掃描… {folders} 個資料夾中的 {files} 個檔案 · {size} · {time}",
     "scan_stop": "停止",
@@ -1627,6 +1640,10 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_scan_workers": "扫描线程数…",
+    "action_scan_workers_tip": "选择新扫描的并行数，较高不一定较快",
+    "workers_prompt": "新扫描线程数（1–32），默认值为 {default}。慢速网络共享可能受益于更多线程；"
+                      "过高并行数可能使磁盘／服务器负荷过重。进行中的扫描保留现有线程数，UNC 性能取决于实际共享环境。",
     "action_bins": "回收站…",
     "action_bins_tip": "检查各磁盘回收站总量与 Windows 明确清空操作",
     "bin_empty": "清空选中磁盘的回收站…",
@@ -2091,7 +2108,8 @@ ZH_CN: dict[str, str] = {
     "welcome_drive_tip": "扫描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
     "welcome_recent": "最近扫描过",
-    "welcome_tip": "小技巧：也可以直接把文件夹从文件管理器拖到这个窗口。",
+    "welcome_tip": "小技巧：也可以把文件夹从文件管理器拖到这个窗口。Windows 可粘贴绝对 UNC 共享路径"
+                   "（\\\\server\\share），使用当前账户访问。扫描线程数可在选项调整；权限不足／断线的分支保持不完整，并非空文件夹。",
     "scan_starting": "准备中…",
     "scan_progress": "正在扫描… {folders} 个文件夹中的 {files} 个文件 · {size} · {time}",
     "scan_stop": "停止",

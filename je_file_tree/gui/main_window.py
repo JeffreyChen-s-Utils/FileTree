@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QLineEdit,
     QMainWindow,
+    QInputDialog,
     QMenu,
     QMessageBox,
     QStackedWidget,
@@ -30,7 +31,7 @@ from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.operations import MoveResult
 from je_file_tree.core.operation_journal import JournalApproval, OperationJournal
 from je_file_tree.core.protected import protected_places, protection_of
-from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.core.scanner import DEFAULT_WORKERS, ScanOptions
 from je_file_tree.core.system_files import system_file
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
@@ -68,6 +69,8 @@ ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
 SEARCHES_KEY = "saved_searches"
 CLEANUP_POLICY_KEY = "cleanup_policy"
+SCAN_WORKERS_KEY = "scan_workers"
+_MAX_SCAN_WORKERS = 32
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
@@ -75,6 +78,18 @@ def read_flag(settings: QSettings, key: str, default: bool) -> bool:
     """A yes/no setting (the registry keeps them as the strings \"true\" and \"false\")."""
     value = settings.value(key, default)
     return value if isinstance(value, bool) else str(value).lower() == "true"
+
+
+def read_workers(settings: QSettings) -> int:
+    """Validated user-selected concurrency; invalid persisted values retain the existing CPU-bounded default."""
+    raw = settings.value(SCAN_WORKERS_KEY, DEFAULT_WORKERS)
+    if not isinstance(raw, (int, str)) or isinstance(raw, bool):
+        return DEFAULT_WORKERS
+    try:
+        value = int(raw)
+    except (ValueError, TypeError):
+        return DEFAULT_WORKERS
+    return value if 1 <= value <= _MAX_SCAN_WORKERS else DEFAULT_WORKERS
 
 
 class MainWindow(QMainWindow):
@@ -760,6 +775,7 @@ class MainWindow(QMainWindow):
             ("cleanup_policy", None, self.edit_cleanup_policy),
             ("shell_integration", None, self.edit_shell_integration),
             ("gentle", None, lambda: self.settings.setValue("gentle_scan", self._actions["gentle"].isChecked())),
+            ("scan_workers", None, self.configure_workers),
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
@@ -825,6 +841,7 @@ class MainWindow(QMainWindow):
         options_menu = bar.addMenu("")
         options_menu.addAction(self._actions["cleanup_policy"])
         options_menu.addAction(self._actions["gentle"])
+        options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -1044,7 +1061,15 @@ class MainWindow(QMainWindow):
 
     def _scan_options(self) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
-                           gentle=self._actions["gentle"].isChecked())
+                           gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings))
+
+    def configure_workers(self) -> None:
+        """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""
+        value, accepted = QInputDialog.getInt(self, tr("action_scan_workers"),
+                                             tr("workers_prompt", default=DEFAULT_WORKERS),
+                                             read_workers(self.settings), 1, _MAX_SCAN_WORKERS, 1)
+        if accepted:
+            self.settings.setValue(SCAN_WORKERS_KEY, value)
 
     def choose_saved_scan(self) -> None:
         """Ask for a saved scan (a Folder tree JSON export) and compare the scan on screen with it."""
