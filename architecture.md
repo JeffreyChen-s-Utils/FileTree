@@ -311,6 +311,17 @@ are read. `gui.compression.CompressionDialog` owns/cancels/joins its preview wor
 tables/Ctrl+C and routes exact recorded-file activation back to ResultsView. The Windows folder menu
 offers this read-only estimate; native compression/uncompression operations remain pending.
 
+Optional ScanOptions.exact_windows_allocation routes Windows allocation through no-follow
+FILE_READ_ATTRIBUTES handles and FILE_STANDARD_INFO, validating full FILE_ID_INFO device/inode (or
+legacy stat device/inode on Python before 3.12), size, mtime and non-link/cloud state; every handle
+closes. Unknown/changed/unsupported results fall back to
+the documented estimate. POSIX keeps existing stat blocks. GUI settings default off, persist and are
+captured for subsequent full/branch workers. Native 9,695-file interleaved five-run medians off/on:
+0.29709/0.66070 s. An owned 2 MiB XPRESS8K file with ordinary attributes/no reparse tag retained 73,728
+allocated bytes on an exact rescan versus 2,097,152 default estimated bytes. Native NTFS and XPRESS8K
+compression/restoration preserved SHA-256 contents with read/no-delete pins. Native compact /s followed
+an owned junction outside the chosen folder, so future operations must use exact approved file paths.
+
 `core.owner_id` captures regular-file POSIX uid from the existing stat, or optional Windows owner SID
 through OWNER_SECURITY_INFORMATION/GetNamedSecurityInfoW with LocalFree ownership. Windows capture
 skips cloud/offline/link records and rechecks no-follow metadata after querying; failures become unknown
@@ -369,7 +380,7 @@ folder with `os.scandir`, turns entries into `Node`s without following links, an
 Folders matching `ScanOptions.exclude` (`exclusions.exclusion_test`: name patterns, or one folder by path;
 the setting `exclusions`) are listed with `error == EXCLUDED`, size 0, and never read or counted as folders.
 A file's size on disk (`Node.allocated`) comes from `allocation.allocation_for(root)`: `st_blocks` on POSIX;
-on Windows the size rounded up to the volume's clusters, the system asked only for compressed or sparse
+on Windows by default the size rounded up to the volume's clusters, the system asked for compressed or sparse
 files, 0 for files whose data is elsewhere (cloud placeholders, offline), never opening those.
 Each finished folder's files are added to the running totals of every folder above it. The root is handed
 out first (`started`), so `FolderTreeModel` shows the tree in live mode while it grows: each folder's

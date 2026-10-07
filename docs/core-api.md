@@ -16,7 +16,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 
 | Module | Public entry points | Result and meaning |
 |---|---|---|
-| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
+| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False, exact_windows_allocation=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds, including pauses |
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now`; extension/category/age records have logical `.size` and `.count` |
 | `search` | `search(root, query, limit=1000, cancel=None, *, now=None)`; `Query` | `SearchResult.matches` contains the largest matches, `.count` counts all matches, `.size` counts overlapping matching paths once |
@@ -28,7 +28,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 | `owners` | `owner_stats(root, *, cancel=None)` | `OwnerInventory.rows` (largest 1,000 owner groups), `.count`, `.files`, `.size`, `.unknown_files`, `.unknown_size`, `.incomplete`; `OwnerStat` includes raw identity/name, logical/named allocation/file totals and logical share; `None` on cancellation |
 | `compression` | `compression_plan(root, *, cancel=None)` | Read-only `CompressionPlan.rows` (largest 1,000 type candidates), full `.count`, `.logical`, `.allocated`, `.total_files`, `.unknown_files`, `.incomplete`, Windows `.filesystem`/`.unit` and positively identified `.ntfs`; potential saving only 0..recorded candidate allocation; `None` on cancellation |
 | `owner_id` | `owner_identifier(owner)`, `owner_name(owner)` | Stable uid/SID text and read-only name lookup with raw-identity fallback; None remains unavailable, never inferred from the process account |
-| `allocation` | `allocation_for(root)`, `blocks_allocation()`, `windows_allocation(cluster)`, `cluster_size(path)`, `compressed_size(path)` | A file-allocation callable takes `(DirEntry, stat_result)`; Windows-only helpers must be called on Windows |
+| `allocation` | `allocation_for(root, *, exact_windows=False)`, `blocks_allocation()`, `windows_allocation(cluster, *, exact=False)`, `cluster_size(path)`, `compressed_size(path)` | A file-allocation callable takes `(DirEntry, stat_result)`; optional per-file Windows handle measurements include unflagged WOF, with estimates on failure; Windows-only helpers must be called on Windows |
 | `export` | `export_folders_csv(root, target, max_depth=None)`, `export_files_csv(files, target)`, `export_json(root, target, max_depth=None)` | CSV exports return the row count; JSON returns `None`; all write atomically to an existing destination directory |
 
 `Query` accepts `text`, `min_size`, `max_size`, `changed_within`, `unchanged_for`, `category` and `kind`
@@ -123,6 +123,15 @@ raw identities follow the [SID structure](https://learn.microsoft.com/en-us/wind
 uses POSIX `st_blocks * 512`; ordinary Windows files are estimated by cluster rounding, with system
 allocation queried for compressed/sparse files. Online-only cloud data is counted without downloading
 it during scanning. Directory metadata, shared extents and filesystem snapshots are not measured.
+`ScanOptions(exact_windows_allocation=True)` opts into no-follow per-file FILE_STANDARD_INFO queries,
+checking 64-bit volume/128-bit file identity (legacy stat identity on Python before 3.12), size/mtime
+and known link/cloud state. It also measures
+XPRESS/WOF files with no ordinary compression flag. Failed/unsupported/changed queries retain the
+ordinary documented estimate; POSIX stat-block behavior is unchanged. Native per-file allocation does
+not deduplicate hard-link names or shared extents. GetCompressedFileSizeW alone is not a general
+allocation query: for ordinary files it can return logical length rather than allocated clusters.
+The handle path follows [FILE_STANDARD_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_standard_info)
+and [FILE_ID_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_id_info).
 Symbolic links, Windows junctions and different-device directory mounts are listed without traversal;
 Linux mount surveys also omit same-device directory binds and ancestor aliases; pinned directory
 descriptors reject live mount changes and incomplete mount-ID queries. Other POSIX same-device native

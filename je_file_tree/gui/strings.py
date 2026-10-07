@@ -9,6 +9,11 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_exact_allocation": "Measure Windows per-file allocation",
+    "action_exact_allocation_tip": (
+        "Off by default; extra metadata calls for future scans, including XPRESS/WOF files. "
+        "Enable and rescan. Known cloud/offline files stay unqueried; failed queries remain estimates."
+    ),
     "menu_compression": "NTFS compression estimate…",
     "compression_reading": "Reviewing recorded compression candidates…",
     "compression_summary": (
@@ -1010,6 +1015,11 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_exact_allocation": "量測 Windows 逐檔磁碟大小",
+    "action_exact_allocation_tip": (
+        "預設關閉，後續掃描增加中繼資料查詢，包含 XPRESS／WOF 檔案。啟用後請重新掃描。"
+        "已知雲端／離線檔案不會查詢，失敗結果仍使用估計值。"
+    ),
     "menu_compression": "NTFS 壓縮估算…",
     "compression_reading": "正在檢查已記錄的壓縮候選項目…",
     "compression_summary": (
@@ -1910,6 +1920,11 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_exact_allocation": "测量 Windows 逐文件磁盘大小",
+    "action_exact_allocation_tip": (
+        "默认关闭，后续扫描增加元数据查询，包含 XPRESS／WOF 文件。启用后请重新扫描。"
+        "已知云端／离线文件不会查询，失败结果仍使用估计值。"
+    ),
     "menu_compression": "NTFS 压缩估算…",
     "compression_reading": "正在检查已记录的压缩候选项…",
     "compression_summary": (

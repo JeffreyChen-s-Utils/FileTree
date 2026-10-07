@@ -28,6 +28,7 @@ from collections.abc import Callable
 from typing import Any
 
 from je_file_tree.core.savings import Savings, estimate_savings
+from je_file_tree.core.windows_allocation import file_allocation
 
 __all__ = ["Allocation", "DEFAULT_CLUSTER", "Savings", "allocation_for", "blocks_allocation", "windows_allocation",
            "cluster_size", "allocation_unit", "compressed_size", "estimate_savings"]
@@ -50,10 +51,10 @@ _VOLUME_PATH_LENGTH = 1024
 _SHARED = 1024  # sizes of up to this many units (clusters or blocks) share their int object
 
 
-def allocation_for(root: str) -> Allocation:
-    """How to tell the space taken on disk by the files beneath ``root`` (a folder on one volume)."""
+def allocation_for(root: str, *, exact_windows: bool = False) -> Allocation:
+    """Allocation rule for one root; optional Windows per-file measurement leaves POSIX stat blocks unchanged."""
     if sys.platform == "win32":
-        return windows_allocation(cluster_size(root))
+        return windows_allocation(cluster_size(root), exact=exact_windows)
     if hasattr(os.stat_result, "st_blocks"):
         return blocks_allocation()
     return _plain_size
@@ -70,8 +71,12 @@ def blocks_allocation() -> Allocation:
     return allocated
 
 
-def windows_allocation(cluster: int) -> Allocation:
-    """The Windows rule (see the module docstring) for a volume with ``cluster``-byte clusters."""
+def windows_allocation(cluster: int, *, exact: bool = False) -> Allocation:
+    """Windows allocation; opted-in per-file queries also measure WOF/XPRESS without visible flags.
+
+    The default retains cluster estimates for ordinary files. Known cloud/offline data still returns
+    zero without a query; unavailable native measurements fall back to the recorded size estimate.
+    """
 
     shared = _multiples(cluster)
 
@@ -81,12 +86,12 @@ def windows_allocation(cluster: int) -> Allocation:
 
     def allocated(entry: os.DirEntry[str], info: os.stat_result) -> int:
         attributes = info.st_file_attributes
-        if not attributes & _UNUSUAL:  # nearly every file: no call to the system
-            return rounded(info.st_size)
         if attributes & _ELSEWHERE:
             return 0
-        exact = compressed_size(entry.path)
-        return rounded(info.st_size) if exact is None else exact
+        if not exact and not attributes & _UNUSUAL:  # nearly every file: no call to the system
+            return rounded(info.st_size)
+        measured = file_allocation(entry.path, info) if exact else compressed_size(entry.path)
+        return rounded(info.st_size) if measured is None else measured
 
     return allocated
 

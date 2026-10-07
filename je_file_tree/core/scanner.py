@@ -88,6 +88,7 @@ class ScanOptions:
     gentle: bool = False
     file_times: bool = False
     windows_owners: bool = False
+    exact_windows_allocation: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,7 +178,8 @@ class _Crawler:
                  cancel: threading.Event | None = None, pause: threading.Event | None = None) -> None:
         self._options = options
         self._mounts = MountSurvey(root_path, cast(bytes, root.snapshot), mount_points())
-        self._allocation = allocation_for(root_path)
+        self._allocation = (allocation_for(root_path, exact_windows=True) if options.exact_windows_allocation
+                            else allocation_for(root_path))
         self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
         self._pause = pause

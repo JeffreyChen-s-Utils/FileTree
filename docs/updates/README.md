@@ -65,6 +65,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261007-69 | 2026-10-07 | Optional guarded Windows per-file allocation including unflagged XPRESS | #23 #measurement #windows | [2026-10](2026-10.md) |
 | U-20261007-68 | 2026-10-07 | Read-only NTFS compression candidate estimates | #23 #gui #estimate | [2026-10](2026-10.md) |
 | U-20261007-67 | 2026-10-07 | Recorded owner space with lazy Users tab and optional Windows capture | #28 #done #gui #measurement | [2026-10](2026-10.md) |
 | U-20261007-66 | 2026-10-07 | Read-only per-drive bin labels on Welcome and Clean up | #21 #gui #snapshot | [2026-10](2026-10.md) |

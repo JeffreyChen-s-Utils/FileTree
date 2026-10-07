@@ -724,6 +724,7 @@ class MainWindow(QMainWindow):
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
         self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
         self._actions["capture_owners"].setChecked(read_flag(self.settings, "capture_owners", False))
+        self._actions["exact_allocation"].setChecked(read_flag(self.settings, "exact_allocation", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_unit(self._unit)
@@ -808,6 +809,7 @@ class MainWindow(QMainWindow):
             ("file_times", None, self.show_file_times),
             ("capture_file_times", None, lambda: None),
             ("capture_owners", None, lambda: None),
+            ("exact_allocation", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
@@ -838,6 +840,10 @@ class MainWindow(QMainWindow):
         self._actions["capture_owners"].setVisible(elevation.supported())
         self._actions["capture_owners"].toggled.connect(
             lambda checked: self.settings.setValue("capture_owners", checked))
+        self._actions["exact_allocation"].setCheckable(True)
+        self._actions["exact_allocation"].setVisible(elevation.supported())
+        self._actions["exact_allocation"].toggled.connect(
+            lambda checked: self.settings.setValue("exact_allocation", checked))
         self._actions["elevate"].setVisible(elevation.can_elevate())
         self._actions["ask_admin"].setVisible(elevation.supported())
         self._actions["shell_integration"].setVisible(shell_integration.supported())
@@ -894,8 +900,8 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
-        options_menu.addAction(self._actions["capture_file_times"])
-        options_menu.addAction(self._actions["capture_owners"])
+        for key in ("capture_file_times", "capture_owners", "exact_allocation"):
+            options_menu.addAction(self._actions[key])
         options_menu.addAction(self._actions["shell_integration"])
         help_menu = bar.addMenu("")
         help_menu.addAction(self._actions["help"])
@@ -1191,7 +1197,8 @@ class MainWindow(QMainWindow):
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
                            gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
                            file_times=self._actions["capture_file_times"].isChecked(),
-                           windows_owners=self._actions["capture_owners"].isChecked())
+                           windows_owners=self._actions["capture_owners"].isChecked(),
+                           exact_windows_allocation=self._actions["exact_allocation"].isChecked())
 
     def configure_workers(self) -> None:
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""
