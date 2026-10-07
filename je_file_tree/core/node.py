@@ -40,6 +40,17 @@ class Node:
     parent: Node | None = field(default=None, repr=False)
     snapshot: bytes | None = field(default=None, repr=False)
     owner: int | bytes | None = field(default=None, repr=False)
+    accounting: tuple[int, int] | None = field(default=None, repr=False)
+
+    @property
+    def accounted_size(self) -> int:
+        """Optional once-per-recorded-identity total; size always retains each named file's true length."""
+        return self.size if self.accounting is None else self.accounting[0]
+
+    @property
+    def accounted_allocated(self) -> int:
+        """Optional once-per-recorded-identity allocation; allocated retains the per-name estimate."""
+        return self.allocated if self.accounting is None else self.accounting[1]
 
     @property
     def accessed(self) -> float | None:

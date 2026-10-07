@@ -29,6 +29,7 @@ from typing import cast
 from je_file_tree.core.allocation import Allocation, allocation_for
 from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.hard_links import HardLinkAccounting, account_hard_links
 from je_file_tree.core.owner_id import file_owner
 from je_file_tree.core.mounts import MOUNT_BOUNDARY, MountChangedError, MountSurvey, boundary_path, mount_points
 from je_file_tree.core.pacing import give_way
@@ -89,6 +90,7 @@ class ScanOptions:
     file_times: bool = False
     windows_owners: bool = False
     exact_windows_allocation: bool = False
+    count_hard_links: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,6 +111,7 @@ class ScanResult:
     errors: list[tuple[str, str]] = field(default_factory=list)
     elapsed: float = 0.0
     warnings: list[str] = field(default_factory=list)
+    hard_links: HardLinkAccounting | None = None
 
 
 ProgressCallback = Callable[[ScanProgress], None]
@@ -161,14 +164,19 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
         for folder, _ in crawler.unread():
             folder.error = NOT_SCANNED
         _add_up(crawler.folders)
+        accounting = account_hard_links(root) if options.count_hard_links else None
         raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started,
-                                            sorted(set(crawler.warnings)))) from None
+                                            sorted(set(crawler.warnings)), accounting)) from None
     _add_up(crawler.folders)
+    accounting = account_hard_links(root, cancel=cancel) if options.count_hard_links else None
+    if cancel is not None and cancel.is_set():
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started,
+                                            sorted(set(crawler.warnings)), accounting))
     if progress is not None:
         progress(crawler.snapshot())
     crawler.verify_mounts()
     return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started,
-                      warnings=sorted(set(crawler.warnings)))
+                      warnings=sorted(set(crawler.warnings)), hard_links=accounting)
 
 
 class _Crawler:

@@ -343,6 +343,19 @@ owners without making readable content incomplete. ScanOptions.windows_owners is
 captured with other options for full/branch scans. Node.owner is a shared immutable uid/SID key or None:
 100k-node retention measured one slot at +8 bytes/entry versus +28 for a copied SID suffix, with a bounded
 4,096-key canonical cache. Identity/operation snapshots and file timestamps are unchanged.
+
+`core.hard_links.account_hard_links` supplies optional once-per-observed-identity accounting after full
+or interrupted scan rollup. ScanOptions.count_hard_links is off by default; ScanResult.hard_links records
+alias reductions/unknowns. The survey uses existing stat snapshots (Windows already obtains missing
+DirEntry identity through lstat), groups only multiple-link regular identities and refuses inconsistent
+size/time/attribute/allocation records. The lexical first observed path contributes counted bytes;
+others use one shared zero tuple. Node.size/allocated/counts/snapshots stay named/unchanged; separate
+accounted_size/accounted_allocated fall back to named totals. A canceled survey makes no assignments;
+callers must reapply after tree mutation. Shared extents and directory metadata remain unknown.
+One optional accounting pointer measured 100k nodes at 222.828→230.820 bytes/entry (+8); only changed
+folder totals allocate tuples. Baseline recorded-identity grouping: 9,770 files, five-run median
+0.02091 s. Integrated one-worker 9,774-file interleaved scans off/on: 1.09788/1.14110 s, no extra OS query
+or payload read. GUI/chart/export integration and coherent mutation invalidation remain #32.
 `core.owners.owner_stats` traverses whole-root recorded files with cancellation/pacing, full byte/file/
 owner-group counts and a 1,000-row largest-group limit. Unknown owners are separate; omitted data stays
 unknown. It resolves only displayed account names on the worker and retains uid/SID on lookup failure.
