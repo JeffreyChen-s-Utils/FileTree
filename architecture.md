@@ -581,6 +581,18 @@ passing them to VHD-only Windows tools.
 
 ## 3. Entry points and public interfaces
 
+`tools.windows_owned_volume` provides administrator-only fresh validation VHDX/NTFS fixtures, never
+an existing path/disk selector. It enables only the current token's volume privilege, creates a fresh
+UUID and derives the physical number from its live virtual-disk handle. A fixed PowerShell script
+refuses boot/system/nonvirtual/non-RAW/nonempty/wrong-size disks before formatting; Windows assigns
+the drive letter. Every validation mutation rechecks handle/device mapping and OS volume GUID.
+`validate_windows_volume.py` checks capacity/allocation/hard links/compression/sparse savings and
+`windows_bin_probe` confines GUI surveys/questions and real native Shell emptying to the owned drive.
+It verifies No, changed approvals, two questions, close guards and metadata refresh. Detach joins
+before captured scratch/image cleanup; a failed detach retains the image. The dedicated Windows CI
+job saves JSON for seven days. Native volume proof remains pending; provider placeholders, shared
+extents, independent reserved bytes and APFS stay unverified/unknown.
+
 The supported core library imports, result fields, ownership and error/cancellation contracts are
 documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.
 

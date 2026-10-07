@@ -269,6 +269,12 @@ bind mount，並測試開啟資料夾前後新增掛載。也量測 1,001 個資
 python tools/validate_linux_volume.py --evidence volume-evidence
 ```
 
+獨立的 Windows CI 工作會以管理員執行 `validate_windows_volume.py`，原生證據仍待執行確認。工具建立全新 512 MiB VHDX 與隨機識別碼，只由其有效原生 handle 取得實體磁碟編號，僅格式化空白 RAW、非開機／系統的虛擬磁碟，並由 Windows 指派磁碟機代號。每次測試操作都重新核對裝置映射與 volume GUID。它比較容量、精確配置、硬連結、壓縮與稀疏檔案的回收估計，再只測試私有資源回收筒的預設拒絕、新項目到達、兩次確認的原生清空及 GUI 等待／更新。不接受既有映像、磁碟、磁碟機或回收筒；卸離失敗會保留暫存，清理也核對記錄的暫存資料夾／映像身分。實際雲端提供者、共享區塊、保留位元組及 APFS 仍需其他證據。JSON 保留七天。只在已提升權限的可拋棄 Windows 測試機執行；不要求 UAC：
+
+```powershell
+py -3 tools/validate_windows_volume.py --output windows-volume.json
+```
+
 ## 授權
 
 MIT——詳見 [LICENSE](../LICENSE)。

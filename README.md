@@ -426,6 +426,12 @@ validation. With dependencies installed and noninteractive sudo available on Lin
 python tools/validate_linux_volume.py --evidence volume-evidence
 ```
 
+A separate Windows CI job runs `validate_windows_volume.py` as administrator. Its pending native proof creates a new 512 MiB VHDX with a fresh UUID, derives the physical-device number only from its live native handle, formats only an empty RAW nonboot/non-system virtual disk and lets Windows assign the drive letter. Every fixture mutation rechecks the device mapping and volume GUID. It compares capacity and exact allocation, hard links, compression and sparse-file savings, then tests only its private bin with default-No refusal, a new arrival, two-question native emptying and joined GUI lifetime/refresh. It never accepts an existing image, disk, drive or bin; detachment failure retains scratch, and cleanup checks captured scratch/image identities. Actual cloud providers, shared extents, reserved bytes and APFS still need separate evidence. JSON is retained for seven days. Run only on an already elevated disposable Windows test machine; no UAC request is made:
+
+```powershell
+py -3 tools/validate_windows_volume.py --output windows-volume.json
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

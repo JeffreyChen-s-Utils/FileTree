@@ -454,3 +454,15 @@ Compaction/GUI review remains pending. DiskPart and Optimize-VHD apply to suppor
 not VMDK/VDI/QCOW2:
 [DiskPart requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk),
 [Optimize-VHD requirements](https://learn.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd).
+
+Validation tooling is separate from the supported library API. An already elevated disposable Windows
+runner can run `py -3 tools/validate_windows_volume.py --output windows-volume.json`; its native result
+is pending. It accepts no image/disk/bin selector, creates only a new owned VHDX/UUID, validates the
+live native physical mapping and formats only an empty RAW nonboot/non-system virtual disk through
+a fixed script. The OS assigns its drive letter; device and volume GUID are rechecked before fixture
+mutations. It compares OS capacity, FILE_STANDARD_INFO allocation, hard-link/sparse/compressed savings
+and the private-bin allocation subset. The native bin proof confines surveys and explicit fixture
+responses to that drive while actual Shell query/Trash/emptying, approval recheck and GUI worker
+lifetime/refresh remain native. No real user bin is queried or emptied. Detachment failure retains
+the scratch image; successful cleanup checks captured directory/image identities. Actual provider
+placeholders, shared extents, independent reserved bytes and APFS remain unmeasured.
