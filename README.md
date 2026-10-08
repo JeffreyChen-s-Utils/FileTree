@@ -162,9 +162,13 @@ standalone folder. It installs for all users under Program Files, requires admin
 adds a Start-menu shortcut and supports upgrades/uninstall through Windows. Installer CI checks
 fresh disposable fixtures. The separate Desktop builds CI compiles the actual standalone program,
 retains its ZIP/MSI and verifies installation, a package-version upgrade and removal against every
-payload hash on a disposable Windows runner. It preserves compiler output and never launches the app;
-native evidence must complete before installer support is claimed. Signing and
-winget/Scoop/Chocolatey publication still require the owner's certificate/accounts.
+payload hash on a disposable Windows runner. Native checks passed for all 104 upgraded files,
+the shortcut, source preservation and complete removal. The package upgrade adds a validation marker
+to the same compiled payload; it preserves compiler output and never launches the app.
+`tools/prepare_packages.py` generates winget, Scoop and Chocolatey review drafts from the exact
+MSI/ZIP hashes and read-only MSI metadata. CI retains them; releases attach a package-drafts ZIP.
+Local native winget validation passed. Drafts are unpublished and their release URLs require matching
+published artifacts. Signing and store submission still require the owner's certificate/accounts.
 
 **With Python 3.10 or newer**, from PyPI:
 
@@ -435,8 +439,8 @@ comparisons; native raw-record, alias/extension, resident-capacity and source/st
 passed with verified image cleanup. ACL-aware tree/options/fallback parity remains required to enable it.
 `core/windows_directory.py` supplies bounded native visible-name/file-ID metadata after an ordinary
 directory permission check, without changing privileges. It rejects changed/reparse/cloud scopes and
-closes its owned handle on stop; callers must anchor ancestors. Private-image comparisons of this
-multi-batch metadata and the Node backend are still pending.
+closes its owned handle on stop; callers must anchor ancestors. Private-image comparisons passed
+for 238 entries across multiple batches. ACL-aware Node/options/fallback parity remains pending.
 Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` can still report
 resident space with alignment padding. The parser retains logical length and bounded resident value
 capacity separately, and the diagnostic records raw/native allocation observations separately.

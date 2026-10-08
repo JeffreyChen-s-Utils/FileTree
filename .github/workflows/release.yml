@@ -173,6 +173,23 @@ jobs:
           path: FileTree-*-windows-x64.msi
           if-no-files-found: error
 
+      - name: Prepare unpublished store review drafts from the exact release artifacts
+        env:
+          NEW: ${{ needs.release.outputs.new }}
+        shell: pwsh
+        run: |
+          python tools/prepare_packages.py --version "$env:NEW"
+          if ($LASTEXITCODE -ne 0) { throw 'Package review drafts failed.' }
+          python -m zipfile -c "FileTree-$env:NEW-package-drafts.zip" package-drafts
+          if ($LASTEXITCODE -ne 0) { throw 'Package draft archive failed.' }
+
+      - name: Keep review drafts without submitting to package stores
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: filetree-package-drafts
+          path: FileTree-*-package-drafts.zip
+          if-no-files-found: error
+
       - name: Keep the standalone ZIP for the release
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -229,6 +246,12 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           name: filetree-msi
+          path: ./release-assets
+
+      - name: Fetch the unpublished store review drafts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: filetree-package-drafts
           path: ./release-assets
 
       - name: Create the GitHub release

@@ -123,6 +123,14 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'MSI fixture compilation failed.' }
     $msi = Join-Path $scratch 'FileTree-1.2.3-windows-x64.msi'
     $msiHash = (Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash
+    python tools/package_standalone.py --version 1.2.3 --source $build --output $scratch
+    if ($LASTEXITCODE -ne 0) { throw 'Owned package review archive failed.' }
+    $drafts = Join-Path $scratch 'package-drafts'
+    python tools/prepare_packages.py --version 1.2.3 --source $scratch --output $drafts
+    if ($LASTEXITCODE -ne 0) { throw 'Owned package review drafts failed.' }
+    $evidence.package_drafts_prepared = $true
+    $evidence.package_provenance = Get-Content -LiteralPath (Join-Path $drafts 'provenance.json') -Raw |
+        ConvertFrom-Json -AsHashtable
     $evidence.phase = 'installing'
     Save-Proof
     $attempted = $true

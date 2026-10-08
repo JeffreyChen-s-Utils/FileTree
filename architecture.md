@@ -956,6 +956,15 @@ the fixed hosted workspace's sole standalone output, copies no-follow contents i
 scratch, verifies every original/installed hash, checks a package-version upgrade, and uninstalls
 only the captured MSI. It refuses existing products/shortcuts and never launches the application.
 
+`tools/prepare_packages.py` prepares unpublished winget/Scoop/Chocolatey review drafts for a canonical
+MSI version from the exact ordinary MSI and complete standalone ZIP. `tools/msi_metadata.py` uses
+read-only Windows Installer database access, a fixed parameterized property query and bounded summary
+metadata; no install session or custom action is run. Identity/version/architecture/upgrade identity,
+runtime/plugin/catalogue ZIP layout and before/after SHA-256 identities must match. A fresh output
+folder is published exclusively under an anchored parent; existing or concurrent arrivals are retained.
+Draft provenance records actual hashes/ProductCode and published=false. CI archives drafts; the release
+attaches their ZIP without store credentials or submissions. URLs require those exact published assets.
+
 `core/mft.py` is the stdlib-only NTFS 3.1 raw metadata foundation: immutable FILE segments,
 sequence-qualified names/attribute-list entries, resident sizes (never DATA payloads), nonresident
 VCN runs/allocation and distinct FILETIME dates. Record sizes, USA arrays, forms, lengths, name

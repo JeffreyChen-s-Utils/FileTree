@@ -64,9 +64,10 @@ python tools/package_standalone.py --version 0.1.0
 ```bash
 dotnet tool install wix --global --version 6.0.2
 python tools/build_msi.py --version 0.1.0
+python tools/prepare_packages.py --version 0.1.0
 ```
 
-這會產生 `FileTree-0.1.0-windows-x64.msi`。工具會核對編譯器版本；程式內容有連結、不支援的 MSI 版本、執行階段檔案清單變動或建置失敗時，都拒絕發布。WiX 驗證保持啟用。為所有使用者安裝的套件包含全部執行階段檔案與開始功能表捷徑，支援主要版本升級，不使用自訂動作／啟動登錄。安裝需要系統管理員核准；建置工具只編譯。發版流程會附上同一個標籤的 MSI。Desktop builds 流程透過 `tools/install_compiler.py` 共用發版流程釘選的工具，實際編譯獨立程式，並保留 ZIP／MSI 及原生安裝／升級／移除證據。套件版本升級驗證將編譯內容複製到主機新建暫存區，只新增自有標記；原始輸出會保留且不啟動。仍須確認完整原生結果；這些檢查不能證明介面啟動或系統授權。
+這會產生 `FileTree-0.1.0-windows-x64.msi`。工具會核對編譯器版本；程式內容有連結、不支援的 MSI 版本、執行階段檔案清單變動或建置失敗時，都拒絕發布。WiX 驗證保持啟用。為所有使用者安裝的套件包含全部執行階段檔案與開始功能表捷徑，支援主要版本升級，不使用自訂動作／啟動登錄。安裝需要系統管理員核准；建置工具只編譯。發版流程會附上同一個標籤的 MSI。Desktop builds 流程透過 `tools/install_compiler.py` 共用發版流程釘選的工具，實際編譯獨立程式，並保留 ZIP／MSI 及原生安裝／升級／移除證據。套件版本升級驗證將編譯內容複製到主機新建暫存區，只新增自有標記；原始輸出會保留且不啟動。原生安裝／升級／移除核對已通過全部 104 個升級後檔案；這些檢查不能證明介面啟動或系統授權。草稿指令需要目前目錄中的相符 MSI 與獨立程式 ZIP，建立全新 `package-drafts` 資料夾，包含實際雜湊／ProductCode、winget 資訊清單、Scoop 資訊清單與 Chocolatey 套件原始碼。唯讀 MSI 檢查不安裝任何內容。原生 winget 驗證已通過，不提交商店。CI 保留草稿，發版附上草稿 ZIP；仍需要商店帳號與相符的已發布產物網址。
 
 ### 2.2 單一檔案
 

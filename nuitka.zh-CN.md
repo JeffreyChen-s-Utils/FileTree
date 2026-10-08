@@ -64,9 +64,10 @@ python tools/package_standalone.py --version 0.1.0
 ```bash
 dotnet tool install wix --global --version 6.0.2
 python tools/build_msi.py --version 0.1.0
+python tools/prepare_packages.py --version 0.1.0
 ```
 
-这会生成 `FileTree-0.1.0-windows-x64.msi`。工具会核对编译器版本；程序内容有链接、不支持的 MSI 版本、运行时文件清单变化或构建失败时，都拒绝发布。WiX 验证保持启用。为所有用户安装的包包含全部运行时文件与开始菜单快捷方式，支持主要版本升级，不使用自定义操作／启动注册。安装需要管理员批准；构建工具只编译。发布流程会附上同一个标签的 MSI。Desktop builds 流程通过 `tools/install_compiler.py` 共用发布流程锁定的工具，实际编译独立程序，并保留 ZIP／MSI 及原生安装／升级／移除证据。包版本升级验证将编译内容复制到主机新建临时目录，只添加自有标记；原始输出会保留且不启动。仍须确认完整原生结果；这些检查不能证明界面启动或系统授权。
+这会生成 `FileTree-0.1.0-windows-x64.msi`。工具会核对编译器版本；程序内容有链接、不支持的 MSI 版本、运行时文件清单变化或构建失败时，都拒绝发布。WiX 验证保持启用。为所有用户安装的包包含全部运行时文件与开始菜单快捷方式，支持主要版本升级，不使用自定义操作／启动注册。安装需要管理员批准；构建工具只编译。发布流程会附上同一个标签的 MSI。Desktop builds 流程通过 `tools/install_compiler.py` 共用发布流程锁定的工具，实际编译独立程序，并保留 ZIP／MSI 及原生安装／升级／移除证据。包版本升级验证将编译内容复制到主机新建临时目录，只添加自有标记；原始输出会保留且不启动。原生安装／升级／移除核对已通过全部 104 个升级后文件；这些检查不能证明界面启动或系统授权。草稿命令需要当前目录中的匹配 MSI 与独立程序 ZIP，创建全新 `package-drafts` 文件夹，包含实际哈希／ProductCode、winget 清单、Scoop 清单与 Chocolatey 包源代码。只读 MSI 检查不安装任何内容。原生 winget 验证已通过，不提交商店。CI 保留草稿，发布附上草稿 ZIP；仍需要商店账号与匹配的已发布产物网址。
 
 ### 2.2 单个文件
 

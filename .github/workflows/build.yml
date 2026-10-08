@@ -9,6 +9,8 @@ on:
       - tools/install_compiler.py
       - tools/build_nuitka.py
       - tools/build_msi.py
+      - tools/prepare_packages.py
+      - tools/msi_metadata.py
       - tools/validate_msi.ps1
       - tools/installer/**
 
@@ -43,6 +45,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Standalone archive failed.' }
           python tools/build_msi.py --version $version
           if ($LASTEXITCODE -ne 0) { throw 'Compiled installer failed.' }
+          python tools/prepare_packages.py --version $version
+          if ($LASTEXITCODE -ne 0) { throw 'Package review drafts failed.' }
       - name: Verify compiled payload install upgrade and removal in this disposable runner
         run: ./tools/validate_msi.ps1 -DisposableRunner -CompiledPayload
       - name: Retain compiled binaries and native evidence
@@ -57,5 +61,6 @@ jobs:
             install.log
             upgrade.log
             uninstall.log
+            package-drafts/
           if-no-files-found: warn
           retention-days: 7

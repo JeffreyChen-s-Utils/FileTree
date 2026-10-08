@@ -26,7 +26,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Scanning
 
-- **#33** (P3) Inspect native `windows_directory` multi-batch name/identity/date evidence; connect checked metadata to the same ACL-aware `Node` tree, preserving names, sizes/allocation, hard links, reparse boundaries, coverage, options and cancellation. Fall back to the ordinary scan on other volumes, without administrator rights or on parse errors. Compare the same folders/full-drive baseline against ordinary scans before enabling the backend.
+- **#33** (P3) Connect checked metadata to the same ACL-aware `Node` tree, preserving names, sizes/allocation, hard links, reparse boundaries, coverage, options and cancellation. Fall back to the ordinary scan on other volumes, without administrator rights or on parse errors. Compare the same folders/full-drive baseline against ordinary scans before enabling the backend.
 - **#35** (P2) [BLOCKED] Validate real UNC and mapped-drive scans: compare worker counts on slow links, allocation units on share roots, access-denied branches and a share disconnecting midway. No UNC share or mapped-drive test environment is available from the owner. Preserve incomplete coverage and confirm failures never create empty-folder clean-up proposals.
 - **#75** (P1) Verify same-device mount boundaries on macOS/other POSIX with native traversal guards; FreeBSD nullfs has a distinct st_dev and cannot prove that case. Unmounted APFS peer capacity remains unknown. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Direct bin labels and Finder emptying remain #21.
 
@@ -42,7 +42,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 
 - **#47** (P2) [BLOCKED] Sign `FileTree.exe`: an unsigned one-file executable triggers SmartScreen and some antivirus programs. Waits on the owner getting a code-signing certificate or an Azure Trusted Signing account; then the release workflow's `build-exe` job signs the exe (`signtool` or the Trusted Signing action, pinned) with the credentials as repository secrets before uploading it.
-- **#48** (P3) Inspect complete Desktop builds native compiled-payload MSI install/upgrade/removal evidence before claiming installer support. Finish store listings: a winget manifest (`wingetcreate` from the release workflow, with a token as a repository secret), a Scoop bucket and a Chocolatey package (an API key as a secret). Store-publishing tokens/accounts remain unavailable.
+- **#48** (P3) [BLOCKED] Submit reviewed winget/Scoop/Chocolatey drafts for the exact published release artifacts and verify real store installation/upgrades. Store-publishing tokens/accounts remain unavailable from the owner.
 - **#49** (P2) Linux and macOS builds: an AppImage (or Flatpak) and a macOS `.app` from `tools/build_nuitka.py --app` built on CI runners and attached to the release, after #4 is verified.
 - **#74** (P3) More languages: Japanese and Korean, each a table in `je_file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in `qt_translation.CATALOGUES`, a README translation and screenshots, if there are readers for them.
 

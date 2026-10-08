@@ -74,6 +74,7 @@ On Windows with the .NET 8 SDK, build an x64 MSI from the same complete standalo
 ```bash
 dotnet tool install wix --global --version 6.0.2
 python tools/build_msi.py --version 0.1.0
+python tools/prepare_packages.py --version 0.1.0
 ```
 
 This writes `FileTree-0.1.0-windows-x64.msi`. The compiler version is checked; payload links,
@@ -85,7 +86,12 @@ the same tag. The Desktop builds workflow shares the release's pinned tooling th
 `tools/install_compiler.py`; it compiles a standalone program and retains its ZIP/MSI plus native
 install/upgrade/removal evidence. Package-version upgrade validation copies the compiled payload
 to fresh runner scratch and adds only an owned marker; the original output is preserved and never
-launched. A complete native result is required; these checks do not prove GUI launch or OS consent.
+launched. Native install/upgrade/removal checks passed for all 104 upgraded files; these checks do
+not prove GUI launch or OS consent. The draft command requires the matching MSI and standalone ZIP
+in the current directory. It creates a fresh `package-drafts` folder with actual hashes/ProductCode,
+winget manifests, a Scoop manifest and a Chocolatey package source. Read-only MSI inspection never
+installs anything. Native winget validation passed; no store is submitted. CI retains the drafts and
+release attaches their ZIP. Store accounts and matching published release URLs remain required.
 
 ### 2.2 A single file
 
