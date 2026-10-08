@@ -1269,6 +1269,18 @@ The initial evidence write is inside the owned cleanup lifetime, so a write erro
 mount still attempts verified scratch cleanup. Regression tests exercise the real atomic writer
 and the initial-write failure path without asserting native mount equivalence.
 
+SonarCloud automatic analysis reads `.sonarcloud.properties`: application code, tooling, workflows,
+versioned documentation metadata and root launcher/project metadata are main sources; the dedicated
+test directory is test code. No exclusion, suppression or reduced quality gate is configured.
+The source/test paths are disjoint and include all currently tracked Python/PowerShell/JSON/YAML/shell
+and TOML files. Adding another source root requires extending this explicit source list.
+Sonar's [automatic analysis configuration](https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis)
+documents default-branch activation; placing the file on dev alone does not prove the service used it.
+Its [initial scope contract](https://docs.sonarsource.com/sonarqube-cloud/managing-your-projects/project-analysis/setting-analysis-scope/setting-initial-scope)
+distinguishes test analysis from source metrics and billed LOC. The current rejected analysis must
+be replaced by observed fresh API evidence before claiming quota or gate recovery. This configuration
+neither changes an account/plan nor triggers a release, default-branch merge or paid action.
+
 Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
 check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays
 unsigned, invalid enabled configuration fails. The pinned local signing composite checks exact

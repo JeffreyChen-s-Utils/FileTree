@@ -31,5 +31,5 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Validation
 
-- **#90** (P1) [BLOCKED] Restore fresh SonarCloud analysis for this project's pull request after resolving the organization's analysis LOC allowance. Requires an organization administrator's account/quota decision; then inspect fresh findings through the API and resolve any actual code failures.
+- **#90** (P1) [BLOCKED] Verify fresh SonarCloud analysis uses the reviewed `.sonarcloud.properties` source/test classification after default-branch activation, then inspect and resolve fresh API findings. The current service rejects analysis under the organization's LOC allowance; if correct classification still exceeds it, an administrator's account/quota decision is required. Default-branch activation awaits the normal release/merge process.
 
