@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-52 | 2026-10-08 | Guard Darwin scans with native mount metadata | #snapshot #scanner #mounts #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-51 | 2026-10-08 | Verify native APFS recovery and cocoa review summary | #done #apfs #review #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-50 | 2026-10-08 | Correct owned APFS hard-link recovery verification | #incident #apfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-49 | 2026-10-08 | Preserve wrapped recovery summary during review | #snapshot #review #validation | [2026-10-b](2026-10-b.md) |

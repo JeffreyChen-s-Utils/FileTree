@@ -165,7 +165,9 @@ The handle path follows [FILE_STANDARD_INFO](https://learn.microsoft.com/en-us/w
 and [FILE_ID_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_id_info).
 Symbolic links, Windows junctions and different-device directory mounts are listed without traversal;
 Linux mount surveys also omit same-device directory binds and ancestor aliases; pinned directory
-descriptors reject live mount changes and incomplete mount-ID queries. Other POSIX same-device native
+descriptors reject live mount changes and incomplete mount-ID queries. Darwin now uses bounded
+native INODE64 getfsstat buffers and fstatfs IDs on pinned directories, refusing unknown/truncated
+tables and changed scope/root mounts. Other POSIX same-device native
 validation remains pending. The scan is a sequence of observations, not a
 transactional filesystem snapshot.
 

@@ -441,7 +441,7 @@ fstat device/inode checks reject replaced queued folders. Descriptors close on s
 Unreadable roots retain incomplete coverage. A final scope/root-mount check refuses changed namespaces
 with `MountChangedError`; the GUI translates it, produces no successful outcome and writes no history.
 Changes outside the selected scope are ignored. Linux requires proc mount IDs (kernel 3.15+). This
-does not provide transactional consistency or change non-Linux directory reads.
+does not provide transactional consistency. Darwin also pins directory reads as described below.
 Same-device boundaries are listed as links with a translated omission reason, so coverage remains
 incomplete and the ledger counts those mounts without attributing their contents. An unknown table
 stops before directory traversal. Explicit mount roots remain scannable. Other-platform volume reconciliation still requires validation. The isolated Linux bind case below passed CI.
@@ -1079,3 +1079,14 @@ Native volume-list UUID/name/device and configured byte values must match before
 Its statvfs/ledger samples retain raw shared-container effects and null independent reservation bytes;
 capacity rows are never summed. The image holder recognizes only its registered fresh mountpoints
 and normally detaches the complete owned image. This additional peer's native evidence remains pending.
+
+`core/darwin_mounts.py` implements the modern 2168-byte Darwin INODE64 statfs ABI from Apple's XNU
+mount header. A private getfsstat array is bounded to 4096 entries and checked against a subsequent
+count, refusing truncation/changing counts and malformed/unterminated paths. Intel uses explicit
+INODE64/64 symbols; arm64 alone permits the modern unsuffixed symbols. No legacy layout is guessed.
+MountSurvey now opens Darwin directories no-follow, verifies captured inode/device and fstatfs IDs,
+and reads through the held descriptor. Exact mountpoint boundaries and final relevant scope/root
+checks refuse changed scans without history publication; no filesystem transaction is implied.
+Core remains stdlib-only, with no mount command or mutation. Buffer/refusal tests do not prove native
+same-device mounts; native CI must establish the new ABI and traversal behavior. APFS failure phase
+JSON additionally retains at most 64 KiB per native command stdout/stderr for actionable diagnostics.

@@ -238,6 +238,11 @@ def main() -> int:
         save(args.evidence, proof)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         proof.update(phase="failed", error=str(error))
+        if isinstance(error, subprocess.CalledProcessError):
+            proof["native_command_error"] = {
+                "returncode": error.returncode,
+                "stdout": (error.stdout or b"")[:65536].decode("utf-8", errors="replace"),
+                "stderr": (error.stderr or b"")[:65536].decode("utf-8", errors="replace")}
         raise
     finally:
         try:

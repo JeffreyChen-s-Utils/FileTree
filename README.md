@@ -368,8 +368,10 @@ The CLI scan record includes the same figures under `capacity`. Other-device dir
 listed without traversal. Linux reads `/proc/self/mountinfo` before traversal and before returning a result, and skips exact
 directory mount points, including same-device bind mounts and roots reached through ancestor aliases.
 Mount boundaries appear in Problems and make omitted bytes unknown; explicitly scanning a mounted
-directory itself is allowed. Missing/malformed mount tables stop the scan before traversal. Other POSIX
-systems retain device-boundary detection. Linux keeps each directory descriptor open through its entry
+directory itself is allowed. Missing/malformed mount tables stop the scan before traversal. macOS also
+queries a bounded complete native getfsstat table and pins each directory through fstatfs identity checks;
+malformed/truncated tables or changed scope/root mounts refuse a completed scan. Other POSIX systems
+retain device-boundary detection; native same-device macOS cases remain unverified. Linux keeps each directory descriptor open through its entry
 metadata reads, checks its mount ID and recorded identity, and refuses a completed result if relevant
 mount points or the root mount change. Rescan after the error; failed scans do not enter history.
 Unrelated mount changes outside the selected scope are ignored. Linux requires readable proc mount

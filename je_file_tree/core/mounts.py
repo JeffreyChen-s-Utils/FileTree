@@ -1,4 +1,4 @@
-"""Linux mount-table boundaries, including same-device bind mounts that stat/ismount cannot identify."""
+"""Native Linux/Darwin mount boundaries, including entries that stat/ismount cannot identify."""
 
 from __future__ import annotations
 
@@ -67,13 +67,18 @@ class MountChangedError(OSError):
         super().__init__("mount boundaries changed or could not be verified; scan again")
 
 
-def descriptor_mount(fd: int) -> int:
+def descriptor_mount(fd: int) -> int | tuple[int, int]:
     """Read a checked Linux directory mount ID with statx (5.8+), falling back to proc fdinfo.
 
     A 1,001-folder measurement found fdinfo overhead of 21/95 ms with one/four workers
     (U-20261007-61). Statx avoids opening/parsing an extra proc file per folder.
     The requested result mask must confirm the mount ID; missing IDs remain unsafe.
+    Darwin uses its native 64-bit-inode fstatfs filesystem ID on the same pinned descriptor.
     """
+    if sys.platform == "darwin":
+        from je_file_tree.core.darwin_mounts import descriptor_mount as native_mount  # noqa: PLC0415
+
+        return native_mount(fd)
     value = _statx_mount(fd)
     return value if value is not None else _proc_mount(fd)
 
@@ -103,7 +108,7 @@ class _AnchoredEntry:
 
 
 class MountSurvey:
-    """Pin each Linux folder read and reject relevant namespace changes before publication.
+    """Pin each Linux/Darwin folder read and reject relevant namespace changes before publication.
 
     Directory descriptors stay open through all entry metadata reads. Mount IDs distinguish
     same-device bind mounts; device/inode checks reject replaced queued directories.
@@ -116,9 +121,9 @@ class MountSurvey:
         self.actual = os.path.realpath(root)
         self.points = rebase_mount_points(root, points)
         self._relevant = self._scope(self.points)
-        self._mount: int | None = None
+        self._mount: int | tuple[int, int] | None = None
         self._root_error: PermissionError | None = None
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform == "darwin":
             try:
                 fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             except PermissionError as error:
@@ -149,7 +154,7 @@ class MountSurvey:
 
     @contextmanager
     def listing(self, path: str, snapshot: bytes | None) -> Iterator[Iterator[os.DirEntry[str]]]:
-        """Read through a pinned Linux descriptor, without following a replacement folder link."""
+        """Read through a pinned native descriptor, without following a replacement folder link."""
         if self._root_error is not None:
             raise self._root_error
         if self._mount is None:
@@ -204,7 +209,11 @@ def parse_mountinfo(contents: str) -> frozenset[str]:
 
 
 def mount_points() -> frozenset[str]:
-    """Read the current Linux mount namespace; refuse unknown tables instead of crossing blindly."""
+    """Read the native Linux/Darwin mount table; refuse unknown tables instead of crossing blindly."""
+    if sys.platform == "darwin":
+        from je_file_tree.core.darwin_mounts import mount_points as native_points  # noqa: PLC0415
+
+        return native_points()
     if not sys.platform.startswith("linux"):
         return frozenset()
     with _MOUNTINFO.open(encoding="utf-8", errors="surrogateescape") as stream:
