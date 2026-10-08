@@ -173,6 +173,8 @@ transactional filesystem snapshot.
 `.logical`, `.allocated`, `.recoverable_min`, `.recoverable_max`, `.free_now`, `.uncertain`. Overlapping
 paths collapse; hard-linked allocation counts once and other surviving names can make recoverable data
 zero. Recovery has no positive guaranteed lower bound; an unknown maximum is `None`, not zero.
+Windows and macOS mark `.uncertain` explicitly: cluster estimates or APFS shared extents/snapshots
+cannot be resolved from ordinary scan metadata. Native OS free changes are a separate observation.
 `duplicates.estimate_duplicate_savings` applies this estimate to each group's explicit `kept` Node;
 use `dataclasses.replace(group, kept=chosen_member)` to make a choice. Undecided groups have an unknown
 recovery maximum, not an implicit oldest keeper. `DuplicateGroup.digest` and `.proofs` record the

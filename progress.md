@@ -11,11 +11,12 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
+- **#89** (P2) Fix the cropped recovery summary in the native cocoa cleanup review (`je_file_tree/gui/cleanup_review.py`); verify complete wrapped text after the estimate updates and retain native screenshot evidence.
 
 ### Freeing space
 
 - **#21** (P2) macOS bin querying/Finder-wide emptying remains blocked on a native environment; no Mac is available from the owner. Verify native macOS automation consent, APFS/firmlink scope deduplication, multi-volume coverage, active-operation lifetime and failed/partial metadata refresh; fixture/mocked execution does not prove native behavior.
-- **#76** (P1) Finish isolated APFS recovery for one/all hard-link names, compression and sparse files, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown; Windows no-bin outcomes remain unknown. APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
+- **#76** (P1) Confirm native phase evidence from `tools/validate_macos_volume.py` for APFS one/last/all hard-link names, compression, sparse files and clones, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown; Windows no-bin outcomes remain unknown. Actual cloud placeholders need an unavailable provider environment. Drive reconciliation remains #75.
 
 ### Finding things
 
@@ -28,7 +29,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 - **#33** (P3) Read the NTFS master file table directly (as WizTree does) when FileTree runs as administrator on a local NTFS volume: parse the `$MFT` (file records, attribute lists, `$FILE_NAME`, `$DATA` sizes and allocation, hard links, reparse points) in a new `je_file_tree/core/mft.py` and build the same `Node` tree, falling back to the normal scan on any other volume, without administrator rights, or on a parse error. Start after #36 has measured the normal scan on a full drive, and test against the normal scan of the same folders.
 - **#35** (P2) [BLOCKED] Validate real UNC and mapped-drive scans: compare worker counts on slow links, allocation units on share roots, access-denied branches and a share disconnecting midway. No UNC share or mapped-drive test environment is available from the owner. Preserve incomplete coverage and confirm failures never create empty-folder clean-up proposals.
-- **#75** (P1) Finish capacity-ledger validation on isolated APFS volumes against OS capacity/bin attribution, allocation estimates, shared extents and reserved capacity. Verify same-device mount boundaries on other POSIX systems. APFS requires a Mac. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Reconcile macOS bin attribution with OS queries; direct bin labels and emptying remain #21.
+- **#75** (P1) Confirm native phase evidence from `tools/validate_macos_volume.py` on fresh APFS images, then finish shared-container/reservation cases and same-device mount boundaries on other POSIX systems. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Direct bin labels and Finder emptying remain #21.
 
 
 ### Over time

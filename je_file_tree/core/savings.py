@@ -21,7 +21,8 @@ class Savings:
 
     The recovery range concerns file data after emptying Trash, not immediate free space. Filesystem
     snapshots, shared extents and directory metadata cannot be measured from a scan; no positive lower
-    bound is promised. Windows ordinary allocation is cluster-rounded, so it remains an estimate.
+    bound is promised. Windows ordinary allocation is cluster-rounded; macOS allocation does not
+    identify APFS shared extents or retained snapshots. Both remain explicitly uncertain.
     """
 
     logical: int
@@ -67,7 +68,7 @@ class _Counter:
     allocated: int = 0
     recoverable: int = 0
     unknown: bool = False
-    uncertain: bool = sys.platform == "win32"
+    uncertain: bool = field(default_factory=lambda: sys.platform in ("win32", "darwin"))
     links: dict[tuple[int, int], list[int]] = field(default_factory=dict)
 
     def add_file(self, node: Node) -> None:

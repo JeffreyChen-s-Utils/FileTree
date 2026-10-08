@@ -1048,3 +1048,16 @@ retain ordinary durable audit and parent rescan. Passing observations grant no n
 and do not lock OS preferences or guarantee retention. Native private diagnostics additionally
 run the real worker for refused rows, preserve full hashes/IDs and inspect its durable audit;
 raw Qt size-boundary probing remains confined to fresh owned disposable fixtures.
+
+`tools/macos_owned_image.py` creates one UUID-named APFS sparse image in a fresh private directory;
+it accepts no image/device/volume selector. Native partition-map entries identify the image disk,
+separately from the synthesized APFS container. Before each phase/detach it checks image and scratch
+identities, native image mapping, exact private mountpoint/name and volume UUID. No forced detach is
+used; uncertain attachments are retained and never recursively cleaned up. `validate_macos_volume.py`
+compares statvfs-bracketed capacity, ordinary file st_blocks, sparse/compressed/native clone fixtures,
+one/last/all hard-link recovery estimates and private current-uid bin logical versus allocated bytes.
+Actual free-space deltas retain deferred reclamation/metadata uncertainty; unknown shared/reserved
+bytes stay null. It additionally exercises production cross-volume fcopyfile/resource-fork verification
+between its own host scratch and image. No Finder automation, real user bin or cloud provider is used.
+Each completed phase/failure and verified cleanup are atomically retained by native macOS CI; local
+refusal tests alone do not establish native APFS behavior. macOS savings explicitly retain uncertainty.
