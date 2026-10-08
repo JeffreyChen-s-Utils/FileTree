@@ -1280,6 +1280,12 @@ Its [initial scope contract](https://docs.sonarsource.com/sonarqube-cloud/managi
 distinguishes test analysis from source metrics and billed LOC. The current rejected analysis must
 be replaced by observed fresh API evidence before claiming quota or gate recovery. This configuration
 neither changes an account/plan nor triggers a release, default-branch merge or paid action.
+Observed PR analysis at d138131 subsequently reported 36,803 lines (Python 34,951), down from 53,297,
+but task AaEccZ39tYWSxWQdgf3A still refused the organization's 50,000-line allowance with current
+organization usage 38,415. The reduced Python count is consistent with test classification; scanner
+context was unavailable and analysis never completed. Retained sonar-20261009-classification.json
+distinguishes this observation from a successful fresh gate. Quota resolution remains an owner/admin
+decision; source scope and quality gates stay intact.
 
 Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
 check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays
