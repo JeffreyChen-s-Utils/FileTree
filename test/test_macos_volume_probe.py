@@ -1,6 +1,8 @@
 """Owned APFS tools refuse ambiguous/changed devices; uncertain detach retains disposable evidence."""
 
 from pathlib import Path
+import hashlib
+import os
 
 import pytest
 
@@ -92,3 +94,30 @@ def test_detach_error_retains_attached_state_and_never_runs_cleanup(tmp_path, mo
     with pytest.raises(RuntimeError, match="Uncertain"):
         image.cleanup()
     assert image.attached and tmp_path.exists()
+
+
+def _portable_record(path):
+    info = path.stat()
+    return {"identity": [info.st_dev, info.st_ino], "links": info.st_nlink,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def test_owned_hard_link_batch_accounts_for_only_its_own_link_removals(tmp_path, monkeypatch):
+    paths = {name: tmp_path / name for name in ("first", "second")}
+    paths["first"].write_bytes(b"disposable owned data")
+    os.link(paths["first"], paths["second"])
+    monkeypatch.setattr(probe, "file_record", _portable_record)
+    captured = {name: _portable_record(path) for name, path in paths.items()}
+    probe.unlink_fixtures(paths, captured)
+    assert not any(path.exists() for path in paths.values())
+
+
+def test_changed_owned_payload_is_retained_even_when_identity_and_links_match(tmp_path, monkeypatch):
+    paths = {"first": tmp_path / "first"}
+    paths["first"].write_bytes(b"disposable owned data")
+    monkeypatch.setattr(probe, "file_record", _portable_record)
+    captured = {name: _portable_record(path) for name, path in paths.items()}
+    paths["first"].write_bytes(b"changed disposable data")
+    with pytest.raises(RuntimeError, match="fixture changed"):
+        probe.unlink_fixtures(paths, captured)
+    assert paths["first"].read_bytes() == b"changed disposable data"

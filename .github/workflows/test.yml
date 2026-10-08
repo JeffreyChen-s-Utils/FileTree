@@ -31,12 +31,12 @@ jobs:
       run: python -m pytest -v --tb=short -p no:unraisableexception
     - name: Validate owned native metadata and cocoa rendering
       run: python tools/validate_macos_sources.py --evidence macos-evidence
-    - name: Validate fresh owned APFS capacity, recovery and cross-volume metadata
-      run: python tools/validate_macos_volume.py --evidence macos-evidence/apfs
     - name: Validate owned native startup metadata without a login entry
       run: python tools/validate_autostart.py --output macos-evidence/autostart.json
     - name: Validate owned native background history and cocoa tray lifetime
       run: python tools/validate_background.py --evidence macos-evidence/background --notification
+    - name: Validate fresh owned APFS capacity, recovery and cross-volume metadata
+      run: python tools/validate_macos_volume.py --evidence macos-evidence/apfs
     - name: Preserve macOS evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

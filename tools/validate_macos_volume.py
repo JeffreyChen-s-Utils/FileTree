@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 import ctypes
 from dataclasses import asdict
 import hashlib
@@ -128,7 +129,20 @@ def ledger_proof(image: OwnedImage, paths: dict[str, Path]) -> dict[str, object]
             "scan_errors": result.errors, "native_volume": image.check()}
 
 
-def recovery_proof(image: OwnedImage, paths: dict[str, Path]) -> list[dict[str, object]]:
+def unlink_fixtures(paths: dict[str, Path], captured: dict[str, dict[str, object]]) -> None:
+    """Recheck full owned identities/payloads, accounting only for this batch's own hard-link removals."""
+    removed: dict[tuple[int, int], int] = {}
+    for name, original in captured.items():
+        expected = dict(original)
+        identity = tuple(expected["identity"])
+        expected["links"] -= removed.get(identity, 0)
+        require(file_record(paths[name]) == expected, "Disposable recovery fixture changed")
+        paths[name].unlink()  # only the exclusive private-image fixtures created above
+        removed[identity] = removed.get(identity, 0) + 1
+
+
+def recovery_proof(image: OwnedImage, paths: dict[str, Path], *,
+                   record: Callable[[dict[str, object]], None] | None = None) -> list[dict[str, object]]:
     """Unlink only captured disposable fixtures; sample actual deltas without promising exact reclamation."""
     records = []
     cases = (("one_hard_link", ("alias",)), ("last_hard_link", ("plain",)),
@@ -149,22 +163,23 @@ def recovery_proof(image: OwnedImage, paths: dict[str, Path]) -> list[dict[str, 
         kept = {name: file_record(path) for name, path in paths.items() if name not in names and path.exists()}
         command(["/bin/sync"])
         before = os_capacity(image.root)["free"]
-        for name in names:
-            require(file_record(paths[name]) == captured[name], "Disposable recovery fixture changed")
-            paths[name].unlink()  # only the exclusive private-image fixtures created above
+        unlink_fixtures(paths, captured)
         command(["/bin/sync"])
         samples = []
         for _sample in range(4):
             samples.append(os_capacity(image.root)["free"] - before)
             time.sleep(0.1)
-        for name, record in kept.items():
+        for name, kept_record in kept.items():
             actual = file_record(paths[name])
-            require(actual["identity"] == record["identity"] and actual["sha256"] == record["sha256"],
+            require(actual["identity"] == kept_record["identity"] and actual["sha256"] == kept_record["sha256"],
                     "Unselected owned payload/identity changed")
-        records.append({"case": label, "estimate": asdict(estimate), "native_free_change_samples": samples,
-                        "selected_before": captured, "unselected_sources_preserved": True,
-                        "independent_shared_extent_bytes": None, "directory_metadata_bytes": None,
-                        "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"})
+        actual = {"case": label, "estimate": asdict(estimate), "native_free_change_samples": samples,
+                  "selected_before": captured, "unselected_sources_preserved": True,
+                  "independent_shared_extent_bytes": None, "directory_metadata_bytes": None,
+                  "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"}
+        records.append(actual)
+        if record is not None:
+            record(actual)
     return records
 
 
@@ -200,6 +215,11 @@ def main() -> int:
                                 "finder_automation": False, "cleanup_verified": False}
     args.evidence.mkdir(parents=True, exist_ok=True)
     save(args.evidence, proof)
+
+    def record(value: dict[str, object]) -> None:
+        proof.setdefault("recovery", []).append(value)
+        save(args.evidence, proof)
+
     try:
         image.create()
         image.attach()
@@ -208,7 +228,7 @@ def main() -> int:
         paths = fixtures(image)
         proof["capacity"] = ledger_proof(image, paths)
         save(args.evidence, proof)
-        proof["recovery"] = recovery_proof(image, paths)
+        recovery_proof(image, paths, record=record)
         proof["cross_volume"] = cross_volume_proof(image)
         proof["phase"] = "validated"
         save(args.evidence, proof)

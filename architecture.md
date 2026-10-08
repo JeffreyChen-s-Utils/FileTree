@@ -1063,3 +1063,9 @@ bytes stay null. It additionally exercises production cross-volume fcopyfile/res
 between its own host scratch and image. No Finder automation, real user bin or cloud provider is used.
 Each completed phase/failure and verified cleanup are atomically retained by native macOS CI; local
 refusal tests alone do not establish native APFS behavior. macOS savings explicitly retain uncertainty.
+Recovery retains each completed case before the next one. An all-name hard-link batch rechecks full
+payload/identity metadata and subtracts only its own preceding removals from expected link counts.
+The APFS diagnostic runs after the existing cocoa/background probes so its failure preserves their
+independent native evidence. The first native image confirmed bin/capacity/sparse/compression/clone
+metadata with successful detach/cleanup, including a null remainder when clone allocation exceeded
+OS used bytes; complete recovery/cross-volume evidence remains required by #75/#76.
