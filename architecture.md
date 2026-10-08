@@ -1338,7 +1338,11 @@ actual production question and real No click, source-policy guards, queue owners
 Evidence explicitly names `confirmation_backend=qt_widget` and `os_native_alert_verified=false`;
 OS-native alert interaction needs owner desktop validation. Production dialog defaults remain intact.
 Notification opt-in and source/permission/lifetime checks stay intact; registration/dispatch never
-prove real login or display permission. The dialog backend's native repeated execution is required.
+prove real login or display permission. Reviewed `b3159ca` push/PR artifacts each completed all four
+fresh Cocoa widget-review attempts with real No, unchanged sources, joined workers and owned cleanup;
+both APFS validators also completed verified cleanup. The two Tests runs passed all 14 jobs.
+`docs/updates/background-20261009-native-widget.json` retains run/job/artifact/JSON hashes and
+the scoped confirmation result; OS-native alert interaction and owner login/display remain #38.
 
 Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
 check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays

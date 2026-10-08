@@ -1,0 +1,291 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "b3159ca168d7b1e972ea902fd18f293912f63864",
+  "scope": "Eight fresh Cocoa Qt widget review/No sessions and two owned APFS validations",
+  "runs": [
+    {
+      "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37825593914",
+      "event": "push",
+      "tests_conclusion": "success",
+      "successful_jobs": 14,
+      "job_id": 113477505835,
+      "job_conclusion": "success",
+      "artifact": {
+        "id": 11570854430,
+        "name": "macos-native-sources",
+        "size_in_bytes": 1629459
+      },
+      "attempts": [
+        {
+          "attempt": 1,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 2,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 3,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 4,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        }
+      ],
+      "apfs": {
+        "json_sha256": "a723e11e28a74e9ed40e31900c41af0faef684c10cf973c71365d8b1ad18fc24",
+        "phase": "complete",
+        "cleanup_verified": true,
+        "host_bins_modified": false,
+        "finder_automation": false,
+        "peer_mounted": false
+      }
+    },
+    {
+      "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37825598605",
+      "event": "pr",
+      "tests_conclusion": "success",
+      "successful_jobs": 14,
+      "job_id": 113477521390,
+      "job_conclusion": "success",
+      "artifact": {
+        "id": 11571376864,
+        "name": "macos-native-sources",
+        "size_in_bytes": 1627530
+      },
+      "attempts": [
+        {
+          "attempt": 1,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 2,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 3,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        },
+        {
+          "attempt": 4,
+          "json_sha256": "c8915dff380663c815c5708cc55d8b2a6c96acfcd37c4a0226d69584bd076ac9",
+          "phase": "complete",
+          "platform": "cocoa",
+          "qt": "6.12.0",
+          "review": {
+            "fresh_foreground_scan": true,
+            "native_review_queue": true,
+            "manual_selection_required": true,
+            "confirmation_canceled": true,
+            "source_preserved": true,
+            "native_trash_move": false,
+            "wrapped_summary_visible": true,
+            "confirmation_backend": "qt_widget",
+            "os_native_alert_verified": false
+          },
+          "source_preserved": true,
+          "quit_joined": true,
+          "owned_fixture_cleanup": true,
+          "real_login_launch_verified": false,
+          "notification": {
+            "supported": true,
+            "dispatch": true,
+            "display_verified": false,
+            "scope": "explicit owned-fixture notification",
+            "os_policy_approval_verified": false
+          }
+        }
+      ],
+      "apfs": {
+        "json_sha256": "93ebd425a6d60b69def6d63f965839cfe44862deb74e13b309294ec6d3ee1a15",
+        "phase": "complete",
+        "cleanup_verified": true,
+        "host_bins_modified": false,
+        "finder_automation": false,
+        "peer_mounted": false
+      }
+    }
+  ],
+  "limitations": [
+    "Scoped Qt widget confirmation is not OS-native alert interaction.",
+    "Registration/notification dispatch does not prove login or display permission.",
+    "Successful APFS cleanup does not prove a native busy retry was exercised.",
+    "Unmounted APFS peer capacity and independently unmeasurable allocation remain unknown."
+  ]
+}

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-14 | 2026-10-09 | Record repeated native Qt confirmation and APFS cleanup proof | #snapshot #background #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-13 | 2026-10-09 | Keep owned native review confirmation controls in Qt | #incident #background #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-12 | 2026-10-09 | Bound owned APFS busy-detach retries | #done #validation #macos | [2026-10-c](2026-10-c.md) |
 | U-20261009-11 | 2026-10-09 | Record scoped native SMB parity and failure evidence | #snapshot #scanner #network | [2026-10-c](2026-10-c.md) |
