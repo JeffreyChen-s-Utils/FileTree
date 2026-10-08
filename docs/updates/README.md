@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-63 | 2026-10-08 | Retain padded resident value capacity without retaining DATA payloads | #snapshot #mft #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-62 | 2026-10-08 | Separate resident MFT clusters from native allocation and inspect native MSI evidence | #snapshot #mft #msi #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-61 | 2026-10-08 | Build a complete Windows MSI and validate owned installer fixtures in CI | #snapshot #distribution #msi #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-60 | 2026-10-08 | Retain owned fixture allocation values when native MFT parity refuses | #incident #mft #validation | [2026-10-b](2026-10-b.md) |

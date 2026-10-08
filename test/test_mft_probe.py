@@ -58,7 +58,7 @@ def test_native_allocation_difference_refuses_with_bounded_metadata_evidence(mon
 
 
 @pytest.mark.parametrize("length", [0, 1, 7, 9, 24, 31, 127])
-def test_resident_cluster_allocation_and_native_byte_length_are_distinct(monkeypatch, length):
+def test_resident_clusters_logical_length_and_native_capacity_are_distinct(monkeypatch, length):
     standard = bytearray(72)
     struct.pack_into("<QQQQI", standard, 0, *([116444736000000001] * 4), 0x20)
     raw = _record(_resident(mft.STANDARD_INFORMATION, bytes(standard)),
@@ -69,9 +69,11 @@ def test_resident_cluster_allocation_and_native_byte_length_are_distinct(monkeyp
     info = SimpleNamespace(st_ino=record.reference, st_size=length, st_mtime_ns=100, st_nlink=1)
     path = SimpleNamespace(name="fixture.bin", lstat=lambda: info,
                            parent=SimpleNamespace(lstat=lambda: SimpleNamespace(st_ino=5 | (7 << 48))))
-    monkeypatch.setattr(probe, "file_allocation", lambda *_args: length)
+    capacity = record.attributes[-1].resident_capacity
+    monkeypatch.setattr(probe, "file_allocation", lambda *_args: capacity)
     observed = probe._observe(native, path)
-    assert observed["raw_allocated"] == 0 and observed["native_allocated"] == length
-    monkeypatch.setattr(probe, "file_allocation", lambda *_args: length + 1)
+    assert observed["raw_allocated"] == 0 and observed["size"] == length
+    assert observed["native_allocated"] == observed["resident_capacity"] == capacity
+    monkeypatch.setattr(probe, "file_allocation", lambda *_args: capacity + 1)
     with pytest.raises(RuntimeError, match="allocation differs"):
         probe._observe(native, path)

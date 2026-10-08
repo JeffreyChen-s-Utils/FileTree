@@ -961,9 +961,10 @@ metadata reader remains separate from `scan`: ACL-aware Node construction/option
 parity must pass before enabling the backend. `tools/validate_mft.py` accepts only a new owned private
 NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
 CI retains phase evidence. Synthetic tests are not proof of native metadata parity.
-Raw resident DATA allocation is zero separate clusters; FILE_STANDARD_INFO may report its resident
-byte length. Diagnostics preserve both fields and compare resident/nonresident native semantics
-explicitly. A resident-size matrix is required before applying that distinction to Node construction.
+Raw resident DATA allocation is zero separate clusters. Its logical byte length and bounded
+ValueOffset..RecordLength capacity (including padding) are distinct. FILE_STANDARD_INFO may report
+the resident space, not logical length. Diagnostics preserve these fields separately and require
+exact native capacity comparisons; a size/truncation matrix must pass before Node construction.
 
 The GUI entry point accepts `--background` for an explicitly enabled monitor. It skips elevation
 and hides the workspace only when the saved opt-in configuration and native system tray are usable.

@@ -14,9 +14,11 @@ corrupt/unsupported input. Raw FILE records require complete sector update-seque
 already repaired native replies are not raw input. File and parent references retain reuse sequences,
 continuation sizes remain unknown, and resident main/named DATA never retains payload contents.
 Resident `Attribute.allocated == 0` denotes no separately allocated DATA clusters, while
-`Attribute.size` retains its byte length. Native `FILE_STANDARD_INFO` can report resident bytes;
-do not treat the two values as identical physical-storage observations. The native diagnostic
-retains `raw_allocated` and `native_allocated` separately and checks the API's resident length.
+`Attribute.size` retains its logical byte length. `Attribute.resident_capacity` retains the bounded
+space between ValueOffset and RecordLength, including alignment padding; it is None for nonresident
+attributes. Native `FILE_STANDARD_INFO` can report resident space rather than logical length;
+do not treat those values as identical physical-storage observations. The native diagnostic retains
+`raw_allocated`, `resident_capacity` and `native_allocated` separately and compares the padded capacity.
 This parser performs no volume I/O. `core.mft_reader.NTFSReader(path)` is a context-managed read-only
 metadata reader for an ordinary directory on fixed local NTFS 3.1 with an existing administrator
 token. It never elevates, changes privileges, locks/dismounts a volume or exposes a DATA payload API.

@@ -57,6 +57,8 @@ class Attribute:
 
     Continuation segments have unknown size/allocation: only LowestVcn zero owns those fields.
     Allocation is header-reported metadata, not a promise of independently recoverable bytes.
+    Resident capacity is the space after ValueOffset inside RecordLength, including padding;
+    it is distinct from the logical size and from separately allocated DATA clusters.
     """
 
     kind: int
@@ -69,6 +71,7 @@ class Attribute:
     allocated: int | None
     runs: tuple[Run, ...]
     value: bytes | None = None
+    resident_capacity: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -205,7 +208,7 @@ def _resident(data: bytes, identity: tuple[int, int, str, int]) -> Attribute:
         _require(name_at + len(name.encode("utf-16-le", errors="surrogatepass")) <= offset,
                  "Resident name overlaps its value")
     value = data[offset:offset + length] if kind in _METADATA else None
-    return Attribute(kind, instance, name, flags, True, 0, length, 0, (), value)
+    return Attribute(kind, instance, name, flags, True, 0, length, 0, (), value, len(data) - offset)
 
 
 def _nonresident(data: bytes, identity: tuple[int, int, str, int]) -> Attribute:

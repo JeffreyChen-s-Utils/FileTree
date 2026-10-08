@@ -91,6 +91,16 @@ def test_resident_data_retains_sizes_without_main_or_named_payload():
     assert "private" not in repr(record)
 
 
+def test_resident_capacity_uses_declared_value_space_including_padding_without_payload():
+    attribute = bytearray(_resident(mft.DATA, b"private", instance=1))
+    attribute.extend(bytes(16))
+    struct.pack_into("<I", attribute, 4, len(attribute))
+    record = mft.parse_record(_record(bytes(attribute)), 24)
+    parsed = record.attributes[0]
+    assert parsed.size == 7 and parsed.allocated == 0 and parsed.resident_capacity == 24
+    assert parsed.value is None and "private" not in repr(parsed)
+
+
 def test_file_names_keep_alias_namespace_parent_sequence_and_unicode():
     value = mft.parse_file_name(_filename())
     assert value == mft.FileName(5 | (3 << 48), 1, "卷 空白.dat")
