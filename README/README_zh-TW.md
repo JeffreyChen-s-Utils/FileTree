@@ -136,6 +136,8 @@ FileTree 可在 Windows、macOS 與 Linux 上執行。
 
 下一次發版流程也會從完整獨立程式資料夾建置 `FileTree-<版本>-windows-x64.msi`。它需要系統管理員核准，為所有使用者安裝至 Program Files，新增開始功能表捷徑，並支援透過 Windows 升級／解除安裝。安裝包 CI 使用全新可拋棄測試資料。獨立的 Desktop builds CI 會實際編譯獨立程式、保留 ZIP／MSI，並在可拋棄的 Windows 主機依全部內容雜湊核對安裝、套件版本升級與解除安裝。原生核對已通過升級後全部 104 個檔案、捷徑、來源保留與完整移除。套件升級只在相同編譯內容新增驗證標記；保留原始輸出且不啟動程式。`tools/prepare_packages.py` 使用實際 MSI／ZIP 雜湊與唯讀 MSI 中繼資料產生 winget、Scoop、Chocolatey 審閱草稿。CI 保留草稿，發版附上 package-drafts ZIP。本機原生 winget 驗證已通過。草稿尚未上架，發版網址須有相符的已發布產物。簽章與商店提交仍需要擁有者的憑證／帳號。
 
+Desktop builds CI 也會在 Ubuntu 22.04 準備完整 x86_64 Linux AppImage，在 macOS 15 準備 arm64 `.app` ZIP。原生解壓比對完整執行階段／套件，並保留來源雜湊／識別碼，不啟動程式。CI 保留開發產物與證據七天。正式發版附件受 `FILETREE_POSIX_RELEASE_VERIFIED=true` 控制，須先完成進度項目 #4 的 macOS 驗證。Developer ID 簽章／公證與 Finder／系統授權仍未驗證。原生打包指令見 [Nuitka 指南](../nuitka.zh-TW.md)。AppImage 登入登錄使用暫時掛載外的原始執行檔，請將該檔案保留在登錄位置。
+
 **有 Python 3.10 以上**，從 PyPI 安裝：
 
 ```bash

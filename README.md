@@ -170,6 +170,14 @@ MSI/ZIP hashes and read-only MSI metadata. CI retains them; releases attach a pa
 Local native winget validation passed. Drafts are unpublished and their release URLs require matching
 published artifacts. Signing and store submission still require the owner's certificate/accounts.
 
+Desktop builds CI also prepares a complete x86_64 Linux AppImage on Ubuntu 22.04 and an arm64 macOS
+`.app` ZIP on macOS 15. Native extraction compares the complete runtime/bundle and preserves source
+hashes/identities; the app is not launched. CI retains development artifacts and proof for seven days.
+Formal release attachment is gated by `FILETREE_POSIX_RELEASE_VERIFIED=true` after the macOS checks
+in progress item #4. Developer ID signing/notarization and Finder/OS consent remain unverified.
+See the [Nuitka guide](nuitka.md) for native packaging commands. AppImage login registration uses the
+original executable outside its temporary mount; keep that file at its registered location.
+
 **With Python 3.10 or newer**, from PyPI:
 
 ```bash

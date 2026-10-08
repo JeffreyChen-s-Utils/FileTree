@@ -31,6 +31,7 @@ from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
 from je_file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
 from je_file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
+from je_file_tree import __version__  # noqa: E402
 
 ENTRY_POINT = ROOT / "start_file_tree.py"
 PROGRAM_NAME = "FileTree"
@@ -61,8 +62,8 @@ def translation_options(translations: Path, packages: Path) -> list[str]:
 def icon_options(folder: Path, extra: list[str]) -> list[str]:
     """Write the program icon into ``folder`` and return the Nuitka option that uses it.
 
-    Windows gets a multi-size ``.ico``, Linux a 256-pixel PNG; macOS wants an
-    ``.icns``, which is not made here. Nothing is added when ``extra`` already
+    Windows gets a multi-size ``.ico``; Linux/macOS get a PNG (Nuitka converts
+    the macOS bundle icon). Nothing is added when ``extra`` already
     names an icon.
     """
     if any(option.split("=")[0].endswith("-icon") or "-icon-" in option for option in extra):
@@ -72,10 +73,11 @@ def icon_options(folder: Path, extra: list[str]) -> list[str]:
         path = folder / f"{PROGRAM_NAME}.ico"
         path.write_bytes(ico_bytes())
         return [f"--windows-icon-from-ico={path}"]
-    if sys.platform.startswith("linux"):
+    if sys.platform.startswith("linux") or sys.platform == "darwin":
         path = folder / f"{PROGRAM_NAME}.png"
-        path.write_bytes(png_bytes(draw(256)))
-        return [f"--linux-icon={path}"]
+        path.write_bytes(png_bytes(draw(1024 if sys.platform == "darwin" else 256)))
+        option = "macos-app-icon" if sys.platform == "darwin" else "linux-icon"
+        return [f"--{option}={path}"]
     return []
 
 
@@ -88,7 +90,8 @@ def nuitka_command(mode: str, extra: list[str]) -> list[str]:
         *translation_options(qt_translations_folder(), Path(PySide6.__file__).parent.parent),
     ]
     if mode == "app":
-        command.append(f"--macos-app-name={PROGRAM_NAME}")
+        command.extend((f"--macos-app-name={PROGRAM_NAME}", "--macos-signed-app-name=io.github.jechen.FileTree",
+                        f"--macos-app-version={__version__}"))
     return [*command, *extra, str(ENTRY_POINT)]
 
 

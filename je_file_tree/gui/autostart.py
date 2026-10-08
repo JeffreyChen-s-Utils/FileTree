@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import stat
 import subprocess  # nosec B404 - Windows command-line quoting only
 import sys
 
@@ -33,7 +34,8 @@ class Registration:
 def launch_arguments(*, is_compiled: bool, executable: str, program_path: str) -> tuple[str, ...]:
     """Use absolute programs and the source launcher without a shell or working-directory dependency."""
     if is_compiled:
-        arguments = (os.path.abspath(program_path), "--background")
+        program = _compiled_program(program_path)
+        arguments = (program, "--background")
     else:
         windowless = Path(executable).with_name("pythonw.exe")
         program = str(windowless) if sys.platform == "win32" and windowless.is_file() else executable
@@ -41,6 +43,19 @@ def launch_arguments(*, is_compiled: bool, executable: str, program_path: str) -
         arguments = (os.path.abspath(program), str(launcher), "--background")
     validate_arguments(arguments)
     return arguments
+
+
+def _compiled_program(program_path: str) -> str:
+    original = os.environ.get("APPIMAGE") if sys.platform == "linux" else None
+    if original is None:
+        return os.path.abspath(program_path)
+    # AppImage's runtime sets APPIMAGE to its original executable, outside its temporary mount.
+    if not os.path.isabs(original):
+        raise ValueError("AppImage startup requires its absolute original program path")
+    info = os.lstat(original)
+    if not stat.S_ISREG(info.st_mode) or not info.st_mode & 0o111:
+        raise ValueError("AppImage startup requires an ordinary executable original program")
+    return original
 
 
 def validate_arguments(arguments: tuple[str, ...]) -> None:

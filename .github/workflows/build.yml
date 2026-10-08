@@ -6,11 +6,13 @@ on:
     branches: [dev]
     paths:
       - .github/workflows/build.yml
+      - .github/workflows/posix-build.yml
       - tools/install_compiler.py
       - tools/build_nuitka.py
       - tools/build_msi.py
       - tools/prepare_packages.py
       - tools/msi_metadata.py
+      - tools/package_posix.py
       - tools/validate_msi.ps1
       - tools/installer/**
 
@@ -18,6 +20,10 @@ permissions:
   contents: read
 
 jobs:
+  posix:
+    uses: ./.github/workflows/posix-build.yml
+    with:
+      ref: ${{ github.sha }}
   windows:
     runs-on: windows-latest
     timeout-minutes: 90

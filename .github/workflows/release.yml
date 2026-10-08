@@ -211,8 +211,16 @@ jobs:
           path: ${{ env.EXE_NAME }}
           if-no-files-found: error
 
+  build-posix:
+    needs: release
+    if: vars.FILETREE_POSIX_RELEASE_VERIFIED == 'true'
+    uses: ./.github/workflows/posix-build.yml
+    with:
+      ref: v${{ needs.release.outputs.new }}
+
   publish-release:
-    needs: [release, build-exe]
+    needs: [release, build-exe, build-posix]
+    if: ${{ !cancelled() && needs.release.result == 'success' && needs.build-exe.result == 'success' && (needs.build-posix.result == 'success' || needs.build-posix.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -254,11 +262,27 @@ jobs:
           name: filetree-package-drafts
           path: ./release-assets
 
+      - name: Fetch the verified native AppImage
+        if: needs.build-posix.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: linux-compiled
+          path: ./release-assets/linux
+
+      - name: Fetch the verified native app bundle
+        if: needs.build-posix.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: macos-compiled
+          path: ./release-assets/macos
+
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW: ${{ needs.release.outputs.new }}
         run: |
-          gh release create "v$NEW" dist/* release-assets/*.exe release-assets/*.zip release-assets/*.msi \
+          shopt -s nullglob
+          assets=(dist/* release-assets/*.exe release-assets/*.zip release-assets/*.msi release-assets/linux/*.AppImage release-assets/macos/*.zip)
+          gh release create "v$NEW" "${assets[@]}" \
             --title "FileTree $NEW" \
             --generate-notes

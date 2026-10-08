@@ -57,6 +57,7 @@ def _build_script():
 @pytest.mark.parametrize(("platform", "option", "file"), [
     ("win32", "--windows-icon-from-ico=", "FileTree.ico"),
     ("linux", "--linux-icon=", "FileTree.png"),
+    ("darwin", "--macos-app-icon=", "FileTree.png"),
 ])
 def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                               platform: str, option: str, file: str) -> None:
@@ -67,13 +68,14 @@ def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path
     assert (tmp_path / file).stat().st_size > 0
 
 
-def test_the_build_leaves_macos_and_an_icon_given_by_hand_alone(tmp_path: Path,
-                                                                 monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("platform, option", [("win32", "--windows-icon-from-ico=mine.ico"),
+                                            ("linux", "--linux-icon=mine.png"),
+                                            ("darwin", "--macos-app-icon=mine.icns")])
+def test_the_build_leaves_an_icon_given_by_hand_alone(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                    platform: str, option: str) -> None:
     build = _build_script()
-    monkeypatch.setattr(sys, "platform", "darwin")
-    assert build.icon_options(tmp_path, []) == []
-    monkeypatch.setattr(sys, "platform", "win32")
-    assert build.icon_options(tmp_path, ["--windows-icon-from-ico=mine.ico"]) == []
+    monkeypatch.setattr(sys, "platform", platform)
+    assert build.icon_options(tmp_path, [option]) == []
     assert list(tmp_path.iterdir()) == []
 
 

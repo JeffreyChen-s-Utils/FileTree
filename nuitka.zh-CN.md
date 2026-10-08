@@ -81,11 +81,23 @@ python tools/build_nuitka.py --onefile
 
 ```bash
 python tools/build_nuitka.py --app
+python tools/package_posix.py --platform macos --source build/app/FileTree.app --version 0.1.0
 ```
 
-产物是 `build/app/FileTree.app`。
+包是 `build/app/FileTree.app`。打包命令将完整 ZIP 与证据写入全新 `desktop-package` 文件夹。原生 ditto 解压必须保留每个普通文件与内部 framework 链接，并核对包标识／版本／可执行文件；拒绝外部链接。
 
-在 Windows 与 Linux 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`（macOS 否则没有图标）。
+在 Windows、Linux 与 macOS 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`（macOS 默认由 Nuitka 转换生成的 PNG）。
+
+### 2.4 Linux AppImage
+
+```bash
+python tools/build_nuitka.py --jobs=2
+python tools/package_posix.py --platform linux --source build/standalone/start_file_tree.dist --version 0.1.0
+```
+
+若文件夹名称不同，请改用实际唯一的 `.dist`。原生 x86_64 Linux 打包保留完整 Qt 运行时与翻译，并加入固定参数的 AppRun 与生成的图标。封装工具 1.9.1 与 runtime 20251108 锁定 SHA-256；明确指定 runtime，不下载最新版本。封装不需要 FUSE 挂载。原生解压必须符合完整运行时，来源哈希／标识也须保持不变。AppImage 与证据一起发布至全新 `desktop-package`，拒绝覆盖既有或新到达的项目。
+
+Desktop builds CI 使用 Ubuntu 22.04 x86_64 与 macOS 15 arm64，保留开发产物七天，不使用发布令牌或启动程序。发布复用受仓库变量 `FILETREE_POSIX_RELEASE_VERIFIED=true` 控制，只能在进度项目 #4 验证后设置。本次变更不设置变量，也不提供 Developer ID 签名／公证或证明 Finder／系统授权。AppImage 登录注册使用挂载外的原始可执行文件。
 
 ## 3. 脚本运行的选项
 
@@ -98,8 +110,10 @@ python tools/build_nuitka.py --app
 | `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 生成的东西都放在 `build/`，Git 会忽略这个文件夹；每种形式各有自己的文件夹，编其中一种不会删掉另一种 |
 | `--output-filename=FileTree` | 程序叫 FileTree，而不是 start_file_tree |
 | `--assume-yes-for-downloads` | 让 Nuitka 不经询问就下载它需要的辅助工具 |
-| `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
+| `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png`／`--macos-app-icon=build/FileTree.png` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
 | `--macos-app-name=FileTree`（只在 `--app` 时） | 在 Finder 与 Dock 显示的名称 |
+| `--macos-signed-app-name=io.github.jechen.FileTree`（只在 `--app` 时） | 固定包标识，不提供 Developer ID 证书 |
+| `--macos-app-version=<仓库版本>`（只在 `--app` 时） | 包版本符合程序，不手动更新版本 |
 
 入口是 `start_file_tree.py`，和 `python -m je_file_tree` 是同一个程序。
 

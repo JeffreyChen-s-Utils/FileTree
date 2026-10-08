@@ -937,6 +937,21 @@ recent folders.
 
 ## 6. Cross-project boundaries
 
+`tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
+Linux x86_64 uses fixed SHA-256-pinned appimagetool 1.9.1 and type2 runtime 20251108, supplied explicitly,
+with complete Qt runtime/catalogues, generated icon and literal AppRun. The tool runs without FUSE;
+the owned image is extracted into fresh scratch and the full AppDir compared. macOS uses fixed
+`/usr/bin/ditto` to archive/extract an identity/version/executable-checked bundle; internal framework
+links remain links and external/special entries are refused. Every source hash/mode/identity/time
+and anchored ancestor is rechecked. Artifact/proof publish as one exclusive fresh directory; arrivals
+and source changes refuse publication. Proof distinguishes extraction/source checks from app launch,
+signing/notarization, Finder consent and publishing. `.github/workflows/posix-build.yml` is a read-only
+reusable native build for a checked-out ref. Desktop builds retains development artifacts; Release
+calls it only with `FILETREE_POSIX_RELEASE_VERIFIED=true` after #4, attaching both native archives only
+on success. The variable is not set by these tools. Compiled Linux autostart uses the runtime's
+absolute ordinary executable `APPIMAGE` origin instead of an ephemeral mount; source and other
+platform registrations ignore that environment variable.
+
 `tools/build_msi.py` compiles one complete Windows standalone `.dist` inventory with pinned WiX
 6.0.2 into an atomic versioned x64 MSI. `tools/installer/FileTree.wxs` fixes the upgrade identity,
 machine-wide Program Files destination and advertised Start-menu shortcut, harvests every runtime

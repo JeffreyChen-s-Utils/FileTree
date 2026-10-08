@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import os
 import plistlib
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -20,6 +21,43 @@ def test_launcher_is_absolute_background_only_without_shell_or_current_folder(mo
     monkeypatch.setattr(autostart, "launch_arguments", lambda **_kw: pytest.fail("Unexpected launch construction"))
     with pytest.raises(ValueError, match="boolean"):
         autostart.set_enabled("yes")
+
+
+def test_appimage_registration_uses_the_original_program_outside_the_temporary_mount(monkeypatch, tmp_path):
+    original = tmp_path / "FileTree.AppImage"
+    original.write_bytes(b"owned original program fixture")
+    original.chmod(0o755)
+    monkeypatch.setattr(autostart, "sys", SimpleNamespace(platform="linux"))
+    monkeypatch.setenv("APPIMAGE", str(original))
+    real = os.lstat
+    def ordinary(path, *arguments, **keywords):
+        info = real(path, *arguments, **keywords)
+        if os.name == "nt" and str(path) == str(original):
+            values = list(info)
+            values[0] = 0o100755
+            return os.stat_result(values)
+        return info
+    monkeypatch.setattr(autostart.os, "lstat", ordinary)
+    arguments = autostart.launch_arguments(is_compiled=True, executable="unused",
+                                           program_path=str(tmp_path / "temporary-mount/FileTree"))
+    assert arguments == (str(original), "--background")
+    monkeypatch.setenv("APPIMAGE", "relative.AppImage")
+    with pytest.raises(ValueError, match="absolute"):
+        autostart.launch_arguments(is_compiled=True, executable="unused", program_path="unused")
+    monkeypatch.setenv("APPIMAGE", str(tmp_path))
+    with pytest.raises(ValueError, match="ordinary"):
+        autostart.launch_arguments(is_compiled=True, executable="unused", program_path="unused")
+
+
+def test_appimage_environment_does_not_change_source_or_other_platform_startup(monkeypatch, tmp_path):
+    monkeypatch.setenv("APPIMAGE", "relative invalid program")
+    monkeypatch.setattr(autostart, "sys", SimpleNamespace(platform="darwin"))
+    program = str(tmp_path / "FileTree.app/Contents/MacOS/FileTree")
+    assert autostart.launch_arguments(is_compiled=True, executable="unused", program_path=program) == (
+        program, "--background")
+    monkeypatch.setattr(autostart, "sys", SimpleNamespace(platform="linux"))
+    assert autostart.launch_arguments(is_compiled=False, executable=sys.executable,
+                                     program_path="unused")[-2].endswith("launcher.py")
 
 
 @pytest.mark.parametrize("arguments", [("relative", "--background"), ("/abs", "--remove"),

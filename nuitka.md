@@ -106,14 +106,37 @@ but every start unpacks it to a temporary folder first, so it opens a little mor
 
 ```bash
 python tools/build_nuitka.py --app
+python tools/package_posix.py --platform macos --source build/app/FileTree.app --version 0.1.0
 ```
 
-The result is `build/app/FileTree.app`.
+The bundle is `build/app/FileTree.app`. The package command writes its complete ZIP and proof into
+a fresh `desktop-package` folder. Native ditto extraction must preserve every ordinary file and
+internal framework link. Bundle identity/version/executable are checked; external links are refused.
 
-The program gets FileTree's own icon on Windows and Linux (the script draws it into `build/`). Any other
+The program gets FileTree's own icon on Windows, Linux and macOS (the script draws it into `build/`). Any other
 option is passed on to Nuitka unchanged, for example a different icon:
 `python tools/build_nuitka.py --windows-icon-from-ico=icon.ico` (Windows), `--linux-icon=icon.png` or
-`--macos-app-icon=icon.icns` (macOS has no icon otherwise).
+`--macos-app-icon=icon.icns` (Nuitka converts the generated PNG for macOS by default).
+
+### 2.4 A Linux AppImage
+
+```bash
+python tools/build_nuitka.py --jobs=2
+python tools/package_posix.py --platform linux --source build/standalone/start_file_tree.dist --version 0.1.0
+```
+
+Use the actual sole `.dist` folder from your build if its name differs. Native x86_64 Linux packaging
+preserves the whole Qt runtime and translations in the AppDir, with a literal AppRun launcher and
+generated icon. Packaging tool 1.9.1 and runtime 20251108 are SHA-256 pinned; the runtime is supplied
+explicitly instead of downloading latest. No FUSE mount is needed during packaging. Native image
+extraction must reproduce the complete runtime, and source hashes/identities must remain unchanged.
+The AppImage and proof publish together into a fresh `desktop-package`; existing arrivals are refused.
+
+Desktop builds CI uses Ubuntu 22.04 x86_64 and macOS 15 arm64 and retains these development artifacts
+for seven days without a release token or application launch. Release reuse is gated by repository
+variable `FILETREE_POSIX_RELEASE_VERIFIED=true`, to be set only after progress item #4 is verified.
+This change does not set that variable, provide Developer ID signing/notarization or prove Finder/OS
+consent. AppImage login registration uses its original executable outside the mount.
 
 ## 3. What the script runs
 
@@ -126,8 +149,10 @@ option is passed on to Nuitka unchanged, for example a different icon:
 | `--output-dir=build/standalone` (or `build/onefile`, `build/app`) | Everything Nuitka creates goes into `build/`, which Git ignores; each form has its own folder, so building one does not delete another |
 | `--output-filename=FileTree` | The program is called FileTree instead of start_file_tree |
 | `--assume-yes-for-downloads` | Lets Nuitka fetch helper tools it needs without asking |
-| `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
+| `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` / `--macos-app-icon=build/FileTree.png` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
 | `--macos-app-name=FileTree` (with `--app` only) | The name shown in Finder and the Dock |
+| `--macos-signed-app-name=io.github.jechen.FileTree` (with `--app` only) | Stable bundle identity; this does not provide a Developer ID certificate |
+| `--macos-app-version=<checked-in version>` (with `--app` only) | Bundle version matches the program without a manual bump |
 
 The entry point is `start_file_tree.py`, the same program as `python -m je_file_tree`.
 
