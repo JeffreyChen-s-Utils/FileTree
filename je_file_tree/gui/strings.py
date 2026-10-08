@@ -3984,6 +3984,8 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 
+
+
 JA: dict[str, str] = {
     'recurring_review': '再スキャンして現在の候補を確認…',
     'recurring_validating': '日付の付いた提案を新しいスキャン全体と現在のソース メタデータと照合して検証しています…',
@@ -4144,8 +4146,8 @@ JA: dict[str, str] = {
     'vc_running': 'レビューしたディスクを再チェックして圧縮しています…',
     'vc_waiting': '現在のネイティブ呼び出しを待機しています。実際の結果はまた報告します…',
     'vc_done': (
-        '{status}\n観察されたバッキング割り当て: {before} → {after}。これは OS のフリーリカバリを保証するもの'
-        'ではありません。ゲストの使用状況は不明のままです。書き込みを試行するには、新たなスキャンが必要です。'
+        '{status}\n仮想ディスクファイルの占有量の観測値: {before} → {after}。OS の空き容量の回復を保証するも'
+        'のではありません。ゲスト内の使用量は不明です。書き込みを試みた後は再スキャンが必要です。'
     ),
     'vc_failed': '圧縮: {reason}',
     'vc_not_compacted': '圧縮されていない',
@@ -5145,9 +5147,9 @@ JA: dict[str, str] = {
     'review_continue': '確認に進む',
     'review_estimating': '{count} エントリが選択されました。割り当てを見積もっています…',
     'review_summary': (
-        '{count} エントリ;論理 {logical};割り当てられた見積もり {allocated};ごみ箱を空にした後に回復可能なフ'
-        'ァイル データ: {recoverable};今なら無料 {free}。共有エクステントとディレクトリのメタデータは不明のま'
-        'まです。ゴミ箱に移動してもスペースは空きません。'
+        '{count} 項目。論理サイズ {logical}、占有量の推定 {allocated}。ごみ箱を空にした後に回収できるファイル'
+        'データ: {recoverable}。今すぐ増える空き容量: {free}。共有領域とディレクトリのメタデータは不明です。'
+        'ごみ箱へ移動するだけでは空き容量は増えません。'
     ),
     'size_unknown': '不明',
     'trash_running': (
@@ -5255,7 +5257,7 @@ JA: dict[str, str] = {
     'welcome_choose': 'フォルダーを選択してください…',
     'welcome_drives': 'ドライブ',
     'welcome_drive_tip': '{path} をスキャンします',
-    'welcome_drive_free': '{free} から {total} まで無料',
+    'welcome_drive_free': '合計 {total}、空き容量 {free}',
     'welcome_recent': '最近スキャンした',
     'welcome_tip': (
         'ヒント: ファイル マネージャーからフォルダーをこのウィンドウにドラッグすることもできます。絶対 UNC 共'
@@ -5752,8 +5754,8 @@ KO: dict[str, str] = {
     'vc_running': '검토된 디스크를 다시 확인하고 압축하는 중…',
     'vc_waiting': '현재 운영체제 호출을 기다리는 중입니다. 실제 결과가 보고될 예정입니다…',
     'vc_done': (
-        '{status}\n관찰된 지원 할당: {before} → {after}. 이는 OS 무료 복구를 보장하지 않습니다. 게스트 사용량'
-        '은 아직 알려지지 않았습니다. 쓰기를 시도하려면 새로 검사해야 합니다.'
+        '{status}\n가상 디스크 파일 할당량 관측값: {before} → {after}. OS 여유 공간 회복을 보장하지 않습니다.'
+        ' 게스트 사용량은 알 수 없으며 쓰기를 시도한 후에는 새로 스캔해야 합니다.'
     ),
     'vc_failed': '압축: {reason}',
     'vc_not_compacted': '압축되지 않음',
@@ -6678,9 +6680,9 @@ KO: dict[str, str] = {
     'review_continue': '계속해서 확인하세요',
     'review_estimating': '{count} 항목이 선택되었습니다. 할당 추정 중…',
     'review_summary': (
-        '{count} 항목; 논리적 {logical}; 할당된 추정치 {allocated}; 휴지통을 비운 후 복구 가능한 파일 데이터:'
-        ' {recoverable}; 지금 무료입니다 {free}. 공유 범위와 디렉터리 메타데이터는 아직 알려지지 않았습니다. '
-        '휴지통으로 이동해도 공간이 확보되지 않습니다.'
+        '{count}개 항목; 논리 크기 {logical}; 할당량 추정 {allocated}; 휴지통을 비운 후 회수 가능한 파일 데이'
+        '터: {recoverable}; 지금 확보되는 여유 공간 {free}. 공유 영역과 디렉터리 메타데이터는 알 수 없습니다.'
+        ' 휴지통으로 이동하는 것만으로는 여유 공간이 늘어나지 않습니다.'
     ),
     'size_unknown': '알 수 없음',
     'trash_running': '승인된 항목을 재검증하고 이동하는 중... 중지를 누르면 나머지 항목이 취소됩니다.',
@@ -6777,7 +6779,7 @@ KO: dict[str, str] = {
     'welcome_choose': '폴더를 선택하세요…',
     'welcome_drives': '드라이브',
     'welcome_drive_tip': '{path} 스캔',
-    'welcome_drive_free': '{free}은 {total}에서 무료입니다.',
+    'welcome_drive_free': '전체 {total}, 여유 공간 {free}',
     'welcome_recent': '최근에 스캔됨',
     'welcome_tip': (
         '팁: 파일 관리자에서 폴더를 이 창으로 끌어서 놓을 수도 있습니다. Windows(\\\\server\\share)에 절대 UN'
