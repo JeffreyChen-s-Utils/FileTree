@@ -35,6 +35,9 @@ def test_probe_refuses_an_alias_to_an_existing_directory(tmp_path, monkeypatch):
     target.mkdir()
     alias = tmp_path / "filetree-volume-alias"
     alias.symlink_to(target, target_is_directory=True)
+    monkeypatch.setattr(volume.sys, "platform", "linux")
     monkeypatch.setattr(volume.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(volume, "command", lambda _arguments: pytest.fail("foreign alias reached a command"))
     with pytest.raises(RuntimeError, match="owned scratch"):
         volume.probe(alias, "owned")
+    assert alias.is_symlink() and target.is_dir() and not list(target.iterdir())
