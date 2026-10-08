@@ -4,6 +4,8 @@ Closing or canceling an owned analysis/operation dialog requests cancellation an
 
 Source operations and branch rescans also wait asynchronously for canceled background readers. Trash, Undo and approved bin operations start after the owned readers join; their results release the operation guard only after their own worker joins. Stop discards queued Trash, Undo or branch requests without calling their native operation.
 
+Switching change monitoring retires old readers asynchronously and starts only the latest requested reader after they join. History/comparison results, recurring-review handoff and virtual-disk query completion also wait asynchronously for worker termination before enabling the next action.
+
 Folder validation and welcome-drive discovery run on owned workers; rendering and action updates use copied drive values. Replacing a scan requests cancellation and waits asynchronously for the old scan, native watcher and gentle scan to join before dispatching the latest request. Repeated replacements coalesce; Stop discards a pending replacement. Slow native calls remain owned until they finish, while the GUI event loop continues handling events. These changes do not establish a throughput improvement.
 
 **See where your disk space goes.** FileTree scans a folder or a whole drive, adds up every file inside

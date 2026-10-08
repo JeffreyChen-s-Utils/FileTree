@@ -3,6 +3,7 @@
 import threading
 
 import pytest
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QDialog
 
 from test_gui import _scanned, _wait, window as window  # noqa: PLC0414
@@ -100,6 +101,45 @@ def test_dialog_stop_close_join_and_late_reply_are_ignored(window, qapp, sample_
     assert dialog.model.rowCount() == 0 and not dialog.compare_button.isEnabled()
     assert entry.path.exists()
     dialog.deleteLater()
+
+
+def test_history_ready_waits_asynchronously_for_join_before_enabling_comparison(window, qapp, tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept"
+    kept.write_bytes(b"kept")
+    store = ScanHistory(tmp_path / "history")
+    entry = store.save(scan(source).root)
+    release, entered = threading.Event(), threading.Event()
+    original = history.HistoryWorker.run
+
+    def held(worker):
+        original(worker)
+        entered.set()
+        release.wait(5)
+
+    monkeypatch.setattr(history.HistoryWorker, "run", held)
+    dialog = HistoryDialog(store, str(source), "auto", window)
+    compared = []
+    dialog.compare_requested.connect(compared.append)
+    try:
+        _wait(qapp, entered.is_set)
+        assert dialog.worker.isRunning() and dialog._running
+        assert dialog.model.rowCount() == 0 and not dialog.compare_button.isEnabled()
+        QTimer.singleShot(20, release.set)
+        _wait(qapp, lambda: not dialog._running)
+        assert release.is_set() and dialog.worker.wait(0) and dialog.model.rowCount() == 1
+        dialog.view.setCurrentIndex(dialog.model.index(0, 0))
+        dialog.compare_selected()
+        _wait(qapp, lambda: bool(compared))
+        assert dialog.result() == QDialog.DialogCode.Accepted and dialog.worker.wait(0)
+        assert compared[0].root == str(source)
+        assert entry.path.exists() and kept.read_bytes() == b"kept"
+    finally:
+        release.set()
+        dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
+        dialog.deleteLater()
 
 
 def test_history_save_failure_preserves_completed_scan_and_disabled_history_saves_nothing(

@@ -21,7 +21,7 @@ from je_file_tree.core.recurring import ProposalCancelledError, RecurringProposa
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.recurring_settings import ProposalSettings
 from je_file_tree.gui.scan_worker import ScanOutcome, wait_for
-from je_file_tree.gui.worker_lifecycle import WorkerDialog
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads
 
 if TYPE_CHECKING:
     from je_file_tree.gui.background_monitor import BackgroundMonitor
@@ -105,14 +105,13 @@ class ValidationDialog(WorkerDialog):
         layout.addWidget(self.buttons)
         self.resize(600, 180)
         self.worker = ReviewWorker(report, root, binding, self)
-        self.worker.finished.connect(self._finished)
+        self.worker.finished.connect(lambda: after_threads((self.worker,), self._finished, self))
         self.start_timer = QTimer(self)
         self.start_timer.setSingleShot(True)
         self.start_timer.timeout.connect(self.worker.start)
         self.start_timer.start(0)
 
     def _finished(self) -> None:
-        wait_for(self.worker)
         if self.worker.cancel.is_set():
             self.reject()
         elif self.worker.status is None:
@@ -162,7 +161,9 @@ class RecurringFlow(QObject):
 
     def _succeeded(self, outcome: ScanOutcome) -> None:
         self.delivered = True
-        wait_for(self.scan)
+        after_threads((self.scan,), lambda: self._deliver(outcome), self)
+
+    def _deliver(self, outcome: ScanOutcome) -> None:
         owner, root = self.owner, outcome.result.root
         if (owner._closing or owner._worker is not None or owner.operation_busy or outcome.partial
                 or owner.results.outcome is not outcome or owner.results.tree_model.root is not root):

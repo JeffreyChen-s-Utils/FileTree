@@ -48,14 +48,15 @@ def _dirty(controller, *paths, full=False):
     controller._since = time.monotonic() - 2
 
 
-def test_default_off_and_opt_out_joins_worker_before_return(window, qapp, tmp_path, monkeypatch):
+def test_default_off_and_opt_out_retires_worker_asynchronously(window, qapp, tmp_path, monkeypatch):
     _source(window, tmp_path)
     assert not window._actions["follow_changes"].isChecked() and window._follow.worker is None
     controller = _enable(window, qapp, monkeypatch)
     worker = controller.worker
     assert worker.isRunning() and window.settings.value("follow_changes", type=bool)
     window._actions["follow_changes"].setChecked(False)
-    assert controller.worker is None and worker.cancel.is_set() and not worker.isRunning()
+    assert controller.worker is None and worker.cancel.is_set()
+    _wait(qapp, lambda: not controller._retiring)
     assert not controller.timer.isActive() and not controller.label.isVisible()
 
 

@@ -1401,3 +1401,9 @@ checking the current request. Main-window branch scans, Trash, Undo and approved
 same gate. A discarded queued branch/Trash/Undo request clears its controller through a terminal
 continuation without starting native execution or writing an approval journal. Native operation results
 pass through after_threads before reporting and releasing their source-operation ownership.
+
+Normal FollowChanges.stop/configure/adopt calls retire readers without blocking; queued rearming
+checks the current reader and cancellation state after old readers join. Explicit shutdown uses
+stop(wait=True). History and comparison ready/failure callbacks are identity-guarded join continuations;
+they enable comparisons and publish captured saved scans only after termination. Recurring foreground
+scan delivery/review validation and virtual-disk query completion use the same nonblocking join gate.

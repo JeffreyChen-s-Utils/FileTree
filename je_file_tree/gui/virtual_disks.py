@@ -20,7 +20,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.reasons import problem_text
 from je_file_tree.gui.scan_worker import wait_for
-from je_file_tree.gui.worker_lifecycle import WorkerDialog
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.virtual_disk_compaction import VirtualDiskCompactionDialog
 
@@ -227,7 +227,7 @@ class VirtualDisksDialog(WorkerDialog):
         worker = VirtualDiskInfoWorker(row.disk, self)
         self.info_worker = worker
         worker.ready.connect(lambda info, error: self._information(worker, info, error))
-        worker.finished.connect(self._info_finished)
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._info_finished(worker), self))
         self.status.setText(tr("vd_querying", path=row.disk.path))
         self.stop_button.setEnabled(True)
         self._buttons()
@@ -240,12 +240,11 @@ class VirtualDisksDialog(WorkerDialog):
         self.model.set_rows([replace(row, info=info, error=error) if row.disk is worker.disk else row for row in rows])
         self.status.setText(tr("vd_failed", reason=error) if error else tr("vd_information_hint"))
 
-    def _info_finished(self) -> None:
-        worker = self.info_worker
-        if worker is not None:
-            wait_for(worker)
-            worker.deleteLater()
-            self.info_worker = None
+    def _info_finished(self, worker: VirtualDiskInfoWorker) -> None:
+        if worker is not self.info_worker:
+            return
+        worker.deleteLater()
+        self.info_worker = None
         if not self._closed:
             self.stop_button.setEnabled(False)
             self._buttons()

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-18 | 2026-10-09 | Retire change readers and completion callbacks asynchronously | #fix #gui #threads | [2026-10-c](2026-10-c.md) |
 | U-20261009-17 | 2026-10-09 | Keep source-operation handoff asynchronous across tabs | #fix #gui #threads | [2026-10-c](2026-10-c.md) |
 | U-20261009-16 | 2026-10-09 | Join owned dialog workers without freezing the GUI | #fix #gui #threads #done | [2026-10-c](2026-10-c.md) |
 | U-20261009-15 | 2026-10-09 | Keep scan replacement and drive discovery responsive | #fix #gui #threads #done | [2026-10-c](2026-10-c.md) |

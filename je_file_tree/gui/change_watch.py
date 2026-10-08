@@ -15,7 +15,7 @@ from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.pacing import give_way
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
-from je_file_tree.gui.worker_lifecycle import after_threads
+from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
 
 if TYPE_CHECKING:
     from je_file_tree.gui.main_window import MainWindow
@@ -104,7 +104,7 @@ class FollowChanges(QObject):
         self.timer.timeout.connect(self.tick)
 
     def configure(self, enabled: bool) -> None:
-        """Persist the default-off preference; disabling cancels and joins immediately."""
+        """Persist the default-off preference; cancel old readers and retire them asynchronously."""
         self.window.settings.setValue(ENABLED_KEY, enabled)
         self.enabled = enabled
         self.stop(clear=True)
@@ -139,12 +139,14 @@ class FollowChanges(QObject):
             self._set_status("follow_incomplete")
             return
         self._set_status("follow_starting")
-        self.worker = ChangeWorker(root, self)
-        self.worker.start()
+        worker = ChangeWorker(root, self)
+        self.worker = worker
+        queue_worker(worker, lambda: self.worker is worker and not self._closing
+                     and not self.window._closing and not worker.cancel.is_set(), self)
         if root is not previous or not self._reconcile:
             self._reconcile = time.monotonic() + RECONCILE_SECONDS
 
-    def stop(self, *, clear: bool = False, wait: bool = True) -> tuple[ChangeWorker, ...]:
+    def stop(self, *, clear: bool = False, wait: bool = False) -> tuple[ChangeWorker, ...]:
         """Join through the GUI's shared gate; retain the final bounded batch before releasing maps."""
         worker, self.worker = self.worker, None
         if worker is not None:
@@ -182,7 +184,7 @@ class FollowChanges(QObject):
         """Prevent late replies and join all native work before the tab is destroyed."""
         self._closing = True
         self.timer.stop()
-        self.stop(clear=True)
+        self.stop(clear=True, wait=True)
 
     def _merge(self, batch: ChangeBatch) -> None:
         if not batch.folders and not batch.full:

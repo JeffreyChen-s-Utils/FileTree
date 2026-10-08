@@ -20,7 +20,7 @@ from je_file_tree.core.history import HistoryCancelledError, HistoryEntry, Histo
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
-from je_file_tree.gui.worker_lifecycle import WorkerDialog
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker, retire_worker
 from je_file_tree.gui.tables import Column, _TableModel
 
 _MIB = 1024 * 1024
@@ -217,9 +217,15 @@ class HistoryDialog(WorkerDialog):
             layout.addWidget(widget, 1 if widget is self.view else 0)
         self.worker = HistoryWorker(store, root, self)
         self._running = True
-        self.worker.ready.connect(self._show)
-        self.worker.failed.connect(self._failed)
-        self.worker.start()
+        self._start_read()
+
+    def _start_read(self) -> None:
+        worker = self.worker
+        worker.ready.connect(lambda result: after_threads(
+            (worker,), lambda: worker is self.worker and self._show(result), self))
+        worker.failed.connect(lambda reason: after_threads(
+            (worker,), lambda: worker is self.worker and self._failed(reason), self))
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _show(self, result: HistoryRead | SavedScan) -> None:
         if self._closed or self.worker.cancel.is_set():
@@ -245,16 +251,14 @@ class HistoryDialog(WorkerDialog):
         if self._running or not index.isValid():
             return
         entry = self.model.rows()[index.row()]
-        wait_for(self.worker)
-        self.worker.deleteLater()
+        self.worker.cancel.set()
+        retire_worker(self.worker, self)
         self.worker = HistoryWorker(self.store, self.root, self, entry=entry)
-        self.worker.ready.connect(self._show)
-        self.worker.failed.connect(self._failed)
         self._running = True
         self.compare_button.setEnabled(False)
         self.stop_button.setEnabled(True)
         self.status.setText(tr("history_reading"))
-        self.worker.start()
+        self._start_read()
 
     def _failed(self, reason: str) -> None:
         if not self._closed and not self.worker.cancel.is_set():

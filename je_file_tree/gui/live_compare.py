@@ -16,7 +16,7 @@ from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import ExportWorker, wait_for
-from je_file_tree.gui.worker_lifecycle import WorkerDialog
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -124,10 +124,14 @@ class LiveCompareDialog(WorkerDialog):
         self.verify.setEnabled(False)
         self.export.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.worker.ready.connect(self._show)
-        self.worker.failed.connect(self._failed)
-        self.worker.finished.connect(self._finished)
-        self.worker.start()
+        worker = self.worker
+        worker.ready.connect(lambda result: after_threads(
+            (worker,), lambda: worker is self.worker and self._show(result), self))
+        worker.failed.connect(lambda reason: after_threads(
+            (worker,), lambda: worker is self.worker and self._failed(reason), self))
+        worker.finished.connect(lambda: after_threads(
+            (worker,), lambda: worker is self.worker and self._finished(), self))
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _finished(self) -> None:
         if not self._closed:
@@ -163,8 +167,8 @@ class LiveCompareDialog(WorkerDialog):
                 for index in self.view.selectionModel().selectedRows()]
         if not rows or self.worker.isRunning():
             return
-        wait_for(self.worker)
-        self.worker.deleteLater()
+        self.worker.cancel.set()
+        retire_worker(self.worker, self)
         self.worker = ComparisonWorker(self, rows=rows)
         self.status.setText(tr("compare_hashing"))
         self._start()

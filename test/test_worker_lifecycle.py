@@ -99,6 +99,41 @@ def _held_follow(window, qapp, monkeypatch):
     return release, window._follow.worker
 
 
+def test_follow_reconfiguration_queues_only_latest_reader_without_gui_wait(window, qapp, tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept"
+    kept.write_bytes(b"kept")
+    window.results.show_outcome(scan_worker.analyse(scan(source)))
+    release = threading.Event()
+    calls = []
+
+    def watch(_root, _changed, cancel, *, ready):
+        calls.append(QThread.currentThread())
+        ready("directory_changes")
+        cancel.wait(5)
+        release.wait(5)
+
+    monkeypatch.setattr(change_watch, "watch", watch)
+    monkeypatch.setattr(change_watch, "supported", lambda: True)
+    action = window._actions["follow_changes"]
+    try:
+        action.setChecked(True)
+        _pump(qapp, lambda: len(calls) == 1)
+        old = window._follow.worker
+        for enabled in (False, True, False, True):
+            action.setChecked(enabled)
+        newest = window._follow.worker
+        assert old.cancel.is_set() and old.isRunning()
+        assert newest is not old and calls == [old]
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: len(calls) == 2 and bool(newest.backend))
+        assert release.is_set() and calls == [old, newest]
+        assert kept.read_bytes() == b"kept"
+    finally:
+        release.set()
+
+
 @pytest.mark.parametrize("cancel", [False, True])
 def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_path, monkeypatch, cancel):
     source = tmp_path / "source"
