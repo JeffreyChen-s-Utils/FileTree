@@ -10,6 +10,7 @@ from pathlib import Path
 import statistics
 import subprocess
 import threading
+import time
 import uuid
 
 from je_file_tree.core.mft_reader import NTFSReader
@@ -100,17 +101,21 @@ def _diagnose(root: Path, ordinary: ScanResult) -> None:
 
 
 def _compare(root: Path, options: ScanOptions) -> dict:
+    started = time.perf_counter()
     ordinary = scan(root, options=options)
+    ordinary_seconds = time.perf_counter() - started
     published = []
+    started = time.perf_counter()
     audited = scan(root, options=replace(options, experimental_mft=True), on_root=published.append)
+    mft_seconds = time.perf_counter() - started
     if audited.backend != "mft":
         _diagnose(root, ordinary)
     require(audited.root is published[0] and len(published) == 1, "Native scan published another root")
     require(_same_rows(_rows(ordinary), _rows(audited)) and sorted(ordinary.errors) == sorted(audited.errors),
             "Native metadata tree differs from ordinary Node/options/coverage: " + _parity_detail(ordinary, audited))
     require(ordinary.hard_links == audited.hard_links, "Native metadata hard-link accounting differs")
-    return {"options": asdict(options), "ordinary_seconds": ordinary.elapsed,
-            "mft_seconds": audited.elapsed, "nodes": len(_rows(audited)), "errors": len(audited.errors),
+    return {"options": asdict(options), "ordinary_seconds": ordinary_seconds,
+            "mft_seconds": mft_seconds, "nodes": len(_rows(audited)), "errors": len(audited.errors),
             "files": audited.root.file_count, "logical_bytes": audited.root.size,
             "allocated_bytes": audited.root.allocated, "backend": audited.backend, "equal": True,
             "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"}
@@ -122,11 +127,14 @@ def _acl(volume: OwnedVolume, path: Path, action: str, descriptor: str = "") -> 
             "Refusing a nonowned ACL fixture")
     program = Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
     script = Path(__file__).with_name("mft_fixture_acl.ps1").resolve(strict=True)
+    # A Python child of PowerShell 7 inherits incompatible module locations for Windows PowerShell.
+    environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
+    environment["PSModulePath"] = str(program.parent / "Modules")
     try:
         result = subprocess.run([str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),  # noqa: S603
                                  "-Action", action, "-Path", str(path), "-VolumeId", volume.volume_id,
                                  "-Descriptor", descriptor], check=True, timeout=30,
-                                capture_output=True, encoding="utf-8")
+                                capture_output=True, encoding="utf-8", env=environment)
     except subprocess.SubprocessError as error:
         detail = getattr(error, "stderr", "") or str(error)
         raise RuntimeError(f"Owned ACL {action} failed: {str(detail)[-2000:]}") from error

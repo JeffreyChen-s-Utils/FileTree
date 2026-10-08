@@ -1,7 +1,9 @@
 """Owned native probe failure paths restore the exact captured DACL; mocks are no native evidence."""
 
 from pathlib import Path
+import os
 import subprocess
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -147,3 +149,38 @@ def test_failed_native_acl_subprocess_retains_bounded_stderr_in_phase_error(tmp_
         probe._acl(SimpleNamespace(root=tmp_path, volume_id="owned native identity"),
                    tmp_path / "owned-fixtures/denied-owned", "Deny")
     assert str(captured.value) == "Owned ACL Deny failed: " + "x" * 2000
+
+
+def test_acl_child_uses_only_matching_system_modules_and_keeps_parent_environment(tmp_path, monkeypatch):
+    monkeypatch.setattr(probe, "verify_volume", lambda _v: None)
+    monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
+    monkeypatch.setenv("PSMODULEPATH", "incompatible-edition-modules")
+    monkeypatch.setenv("PsMoDuLePaTh", "another-incompatible-module-key")
+    monkeypatch.setenv("FILETREE_PROBE_SENTINEL", "preserved")
+    original = [(key, value) for key, value in os.environ.items() if key.casefold() == "psmodulepath"]
+    def run(command, **kwargs):
+        environment = kwargs.get("env")
+        assert environment is not None
+        modules = [(key, value) for key, value in environment.items() if key.casefold() == "psmodulepath"]
+        assert modules == [("PSModulePath", str(Path(command[0]).parent / "Modules"))]
+        assert environment["FILETREE_PROBE_SENTINEL"] == "preserved"
+        return SimpleNamespace(stdout='{"descriptor": "original descriptor"}')
+    monkeypatch.setattr(probe.subprocess, "run", run)
+    assert probe._acl(SimpleNamespace(root=tmp_path, volume_id="owned identity"),
+                      tmp_path / "owned-fixtures/denied-owned", "Read") == "original descriptor"
+    assert [(key, value) for key, value in os.environ.items() if key.casefold() == "psmodulepath"] == original
+
+
+def test_probe_timings_measure_wall_clock_even_when_scan_elapsed_is_zero(tmp_path, monkeypatch):
+    def scan(_root, *, on_root=None, **_kwargs):
+        result = ScanResult(Node(str(tmp_path), True, children=[]), [], elapsed=0,
+                            backend="mft" if on_root is not None else "ordinary")
+        if on_root is not None:
+            on_root(result.root)
+        return result
+    clock = iter((10.0, 10.005, 10.01, 10.215))
+    monkeypatch.setattr(probe, "scan", scan)
+    monkeypatch.setattr(time, "perf_counter", lambda: next(clock))
+    result = probe._compare(tmp_path, probe.ScanOptions())
+    assert result["ordinary_seconds"] == pytest.approx(0.005)
+    assert result["mft_seconds"] == pytest.approx(0.205)
