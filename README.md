@@ -440,8 +440,9 @@ automatic clean-up is available from the console.
 
 The stdlib-only `core/mft.py` foundation parses bounded NTFS 3.1 raw FILE records, names, attribute
 lists, nonresident extents and size/allocation metadata. It rejects torn/unsupported records, retains
-reuse sequences and never retains resident main/named file contents. It is not yet selected by the
-scanner. `core/mft_reader.py` adds bounded read-only access for an existing administrator token on
+reuse sequences and never retains resident main/named file contents. The Python API offers
+`ScanOptions(experimental_mft=True)` for an explicit serial metadata audit; ordinary scanning remains
+the default. `core/mft_reader.py` adds bounded read-only access for an existing administrator token on
 fixed local NTFS volumes, checked geometry and sequence/owner-checked extensions, without requesting
 elevation or modifying privileges. A CI diagnostic uses a new private image for native metadata
 comparisons; native raw-record, alias/extension, resident-capacity and source/stream preservation checks
@@ -449,7 +450,12 @@ passed with verified image cleanup. ACL-aware tree/options/fallback parity remai
 `core/windows_directory.py` supplies bounded native visible-name/file-ID metadata after an ordinary
 directory permission check, without changing privileges. It rejects changed/reparse/cloud scopes and
 closes its owned handle on stop; callers must anchor ancestors. Private-image comparisons passed
-for 238 entries across multiple batches. ACL-aware Node/options/fallback parity remains pending.
+for 238 entries across multiple batches. The staged tree requires ordinary directory visibility and
+per-path no-follow stat authority before matching raw names/parents/sequences/dates/link counts/sizes.
+Allocation, owners, options and link boundaries retain ordinary Node rules. Unsupported/raw failures
+discard the candidate and restart ordinary scanning after a root identity check; progress may restart.
+Success or cancellation adopts into the single published root. Native ACL/options/full-drive parity
+and performance baselines remain pending; the audit does not promise a speed improvement.
 Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` can still report
 resident space with alignment padding. The parser retains logical length and bounded resident value
 capacity separately, and the diagnostic records raw/native allocation observations separately.

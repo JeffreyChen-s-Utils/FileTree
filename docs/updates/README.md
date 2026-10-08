@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-75 | 2026-10-08 | Stage an explicitly selected ACL-aware NTFS metadata audit with ordinary fallback | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-74 | 2026-10-08 | Verify cross-platform compiler wheel hashes and correct native package publication | #snapshot #distribution #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-73 | 2026-10-08 | Package complete native Linux and macOS builds with gated release reuse | #snapshot #distribution #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-72 | 2026-10-08 | Prepare store review drafts from exact compiled artifacts and inspect native MSI evidence | #snapshot #distribution #validation | [2026-10-c](2026-10-c.md) |

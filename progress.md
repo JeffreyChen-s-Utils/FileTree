@@ -26,7 +26,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Scanning
 
-- **#33** (P3) Connect checked metadata to the same ACL-aware `Node` tree, preserving names, sizes/allocation, hard links, reparse boundaries, coverage, options and cancellation. Fall back to the ordinary scan on other volumes, without administrator rights or on parse errors. Compare the same folders/full-drive baseline against ordinary scans before enabling the backend.
+- **#33** (P3) Validate the off-by-default `ScanOptions.experimental_mft` audit with native DACL/Node/options/cancellation/fallback parity and same-folder/full-drive performance baselines before default enabling. Raw records never override ordinary directory visibility or no-follow path authority; preserve allocation estimates, hard links, reparse boundaries and incomplete coverage. The serial audit makes no speed claim.
 - **#35** (P2) [BLOCKED] Validate real UNC and mapped-drive scans: compare worker counts on slow links, allocation units on share roots, access-denied branches and a share disconnecting midway. No UNC share or mapped-drive test environment is available from the owner. Preserve incomplete coverage and confirm failures never create empty-folder clean-up proposals.
 - **#75** (P1) Verify same-device mount boundaries on macOS/other POSIX with native traversal guards; FreeBSD nullfs has a distinct st_dev and cannot prove that case. Unmounted APFS peer capacity remains unknown. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Direct bin labels and Finder emptying remain #21.
 

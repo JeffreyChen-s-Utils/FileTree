@@ -263,13 +263,15 @@ class NTFSReader:
         _require(data is not None, "Missing attribute-list metadata")
         return mft.parse_attribute_list(data)
 
-    def attributes(self, base: mft.FileRecord) -> tuple[mft.Attribute, ...]:
-        """Resolve only checked sequence/base-owned extensions; cycles and nested list streams refuse."""
+    def attributes(self, base: mft.FileRecord, check: Callable[[], None] | None = None) -> tuple[mft.Attribute, ...]:
+        """Resolve checked owned extensions; optional worker checks run before every bounded list entry."""
         _require(base.in_use and not base.base_reference, "Attribute owner is not a live base record")
         result = list(base.attributes)
         identities = {(base.reference, item.instance) for item in result}
         references = {base.reference}
         for entry in self._list(base):
+            if check is not None:
+                check()
             _require(len(references) < _MAX_EXTENSIONS, "Excessive MFT extension records")
             extension = base if entry.reference == base.reference else self.record(entry.reference & ((1 << 48) - 1))
             _require(extension.in_use and extension.reference == entry.reference

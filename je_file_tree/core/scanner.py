@@ -23,7 +23,7 @@ import threading
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import cast
 
 from je_file_tree.core.allocation import Allocation, allocation_for
@@ -84,6 +84,8 @@ class ScanOptions:
     """What a scan includes and how many folders it reads at once.
 
     ``count_hard_links`` adds counted totals from recorded identities without changing named bytes.
+    ``experimental_mft`` opts into a serial checked NTFS metadata audit; ordinary fallback/default
+    remains available without elevation. Native ACL/parity/performance baselines are still required.
     """
 
     include_hidden: bool = True
@@ -94,6 +96,7 @@ class ScanOptions:
     windows_owners: bool = False
     exact_windows_allocation: bool = False
     count_hard_links: bool = False
+    experimental_mft: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,13 +111,14 @@ class ScanProgress:
 
 @dataclass(slots=True)
 class ScanResult:
-    """A finished scan: the tree, the entries that could not be read, and how long it took."""
+    """A finished tree, coverage and duration; backend is ordinary or the opt-in mft audit."""
 
     root: Node
     errors: list[tuple[str, str]] = field(default_factory=list)
     elapsed: float = 0.0
     warnings: list[str] = field(default_factory=list)
     hard_links: HardLinkAccounting | None = None
+    backend: str = "ordinary"
 
 
 ProgressCallback = Callable[[ScanProgress], None]
@@ -144,6 +148,9 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     calling thread. Setting ``cancel`` stops the scan within one interval.
     While ``pause`` is set, workers take no new folders; in-flight folder reads finish.
     Clearing it resumes within 0.1 seconds. Cancellation works while paused.
+    Experimental MFT stages a separate candidate and adopts success/cancelled partial results into
+    the single published root. Raw/unsupported failures discard the candidate before ordinary
+    fallback; progress may restart. Per-path native ACL metadata remains mandatory, without elevation.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
     :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
@@ -160,6 +167,16 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
         raise NotADirectoryError("scan roots must not be links or junctions")
     if on_root is not None:
         on_root(root)
+    if options.experimental_mft:
+        try:
+            candidate = _mft_candidate(root, options, progress, cancel, pause, progress_interval)
+        except ScanCancelledError as stopped:
+            if stopped.partial is not None:
+                stopped.partial.elapsed = time.monotonic() - started
+            raise
+        if candidate is not None:
+            candidate.elapsed = time.monotonic() - started
+            return candidate
     crawler = _Crawler(root, root_path, options, cancel, pause)
     try:
         crawler.run(progress, cancel, progress_interval)
@@ -180,6 +197,36 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     crawler.verify_mounts()
     return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started,
                       warnings=sorted(set(crawler.warnings)), hard_links=accounting)
+
+
+def _adopt_mft(root: Node, result: ScanResult) -> ScanResult:
+    for item in fields(Node):
+        if item.name not in ("name", "parent", "snapshot"):
+            setattr(root, item.name, getattr(result.root, item.name))
+    for child in root.children:
+        child.parent = root
+    result.root = root
+    return result
+
+
+def _mft_candidate(root: Node, options: ScanOptions, progress: ProgressCallback | None,
+                   cancel: threading.Event | None, pause: threading.Event | None,
+                   interval: float) -> ScanResult | None:
+    from je_file_tree.core.mft_scan import build  # noqa: PLC0415 - optional metadata backend, no Qt
+
+    try:
+        result = build(root, options, progress=progress, cancel=cancel, pause=pause, interval=interval)
+    except ScanCancelledError as stopped:
+        if stopped.partial is not None:
+            _adopt_mft(root, stopped.partial)
+            if options.count_hard_links:
+                stopped.partial.hard_links = account_hard_links(root)
+        raise
+    if result is None:
+        if unpack_snapshot(stat_snapshot(root.name)).identity != unpack_snapshot(cast(bytes, root.snapshot)).identity:
+            raise OSError("NTFS scan root changed before ordinary fallback")
+        return None
+    return _adopt_mft(root, result)
 
 
 class _Crawler:

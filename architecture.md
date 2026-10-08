@@ -999,8 +999,17 @@ The parser performs no volume I/O. `core/mft_reader.py` owns an exclusively read
 handle with bounded aligned reads, checked NTFS 3.1 geometry/physical mapping, streaming batches and
 an LRU record cache. It checks extension sequences/base ownership and refuses nested/split lists.
 No elevation/privilege changes, volume mutations or public DATA payload access are provided. This
-metadata reader remains separate from `scan`: ACL-aware Node construction/options/fallback and native
-parity must pass before enabling the backend. `tools/validate_mft.py` accepts only a new owned private
+metadata reader connects to `scan` only through off-by-default ScanOptions.experimental_mft. The
+serial core/mft_scan candidate requires ordinary visible directory entries and per-path no-follow
+stat authority before matching raw sequence/name/parent/date/link/type/size metadata. Shared Node
+helpers retain ordinary allocation, owner, exclusion, hidden, link and hard-link semantics. Ancestors
+are pinned; worker pause/cancel checks precede entries and attribute-list extensions. Native reader
+and mount observations reverify before completion. Success/cancellation adopts a sorted staged tree
+into the single on_root object; unsupported/raw failures discard it and restart ordinary traversal
+after checking root identity, so progress can restart. User callback errors propagate without fallback.
+ScanResult.backend identifies ordinary or the explicit mft audit; raw I/O stays serial despite workers.
+Native ACL/options/full-drive parity and performance baselines are required before default enabling.
+`tools/validate_mft.py` accepts only a new owned private
 NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
 CI retains phase evidence. Synthetic tests are not proof of native metadata parity.
 `core/windows_directory.py` streams bounded FILE_ID_EXTD_DIR_INFO under ordinary scandir listing
@@ -1009,7 +1018,7 @@ It rejects unsafe/corrupt chains, reparse/cloud directory scopes and changed ide
 worker checks, and closes only its own handle. Callers must anchor ancestors. It makes no raw-volume
 or privilege calls; private-image validation compares native names/IDs/sizes/attributes/birth/modified
 dates across a reply larger than one buffer. Directory allocation is retained separately. Node/options
-and full-drive fallback/parity validation are still required before selecting an MFT scan backend.
+and full-drive fallback/parity validation are still required before default enabling the MFT audit.
 Raw resident DATA allocation is zero separate clusters. Its logical byte length and bounded
 ValueOffset..RecordLength capacity (including padding) are distinct. FILE_STANDARD_INFO may report
 the resident space, not logical length. Diagnostics preserve these fields separately and require
