@@ -15,6 +15,7 @@ import uuid
 from je_file_tree.core.mft_reader import NTFSReader
 from je_file_tree.core.mft_scan import _audit
 from je_file_tree.core.scanner import ACCESS_DENIED, NOT_SCANNED, ScanCancelledError, ScanOptions, ScanResult, scan
+from je_file_tree.core.snapshot import snapshot_times, unpack_snapshot
 from je_file_tree.core.windows_directory import WindowsEntry
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
@@ -28,13 +29,21 @@ def _rows(result: ScanResult) -> list[tuple]:
                   for node in result.root.iter_nodes())
 
 
+def _field_difference(name: str, left: object, right: object) -> object:
+    if name == "snapshot" and isinstance(left, bytes) and isinstance(right, bytes):
+        before, after = asdict(unpack_snapshot(left)), asdict(unpack_snapshot(right))
+        before["times"], after["times"] = snapshot_times(left), snapshot_times(right)
+        return {key: (value, after[key]) for key, value in before.items() if value != after[key]}
+    return repr(left)[:256], repr(right)[:256]
+
+
 def _parity_detail(ordinary: ScanResult, audited: ScanResult) -> str:
     before, after = _rows(ordinary), _rows(audited)
     if len(before) != len(after):
         return f"node counts ordinary={len(before)}, mft={len(after)}"
     for left, right in zip(before, after, strict=True):
         if left != right:
-            changes = {name: (repr(a)[:256], repr(b)[:256])
+            changes = {name: _field_difference(name, a, b)
                        for name, a, b in zip(_ROW_FIELDS, left, right, strict=True) if a != b}
             return f"first owned node {left[0]!r}: {changes!r}"[:2048]
     return f"errors ordinary={ordinary.errors[:3]!r}, mft={audited.errors[:3]!r}"[:2048]

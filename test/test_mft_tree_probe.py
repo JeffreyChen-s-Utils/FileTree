@@ -8,6 +8,7 @@ import pytest
 
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ACCESS_DENIED, ScanResult
+from je_file_tree.core.snapshot import pack_snapshot
 from tools import mft_tree_probe as probe
 
 
@@ -65,6 +66,17 @@ def test_native_parity_diagnostics_are_bounded_and_distinguish_missing_nodes_fro
     assert detail.startswith("errors ordinary=") and len(detail) <= 2048
     audited.root.children.append(Node("extra", False, parent=audited.root))
     assert probe._parity_detail(ordinary, audited) == "node counts ordinary=1, mft=2"
+
+
+def test_snapshot_diagnostics_report_exact_trailing_attribute_and_link_fields():
+    info = SimpleNamespace(st_dev=1, st_ino=2, st_size=0, st_mode=0o40777, st_mtime_ns=100,
+                           st_ctime_ns=100, st_file_attributes=0x10, st_nlink=1)
+    ordinary = pack_snapshot(info)
+    info.st_file_attributes, info.st_nlink = 0x10000010, 2
+    audited = pack_snapshot(info)
+    assert probe._field_difference("snapshot", ordinary, audited) == {
+        "attributes": (0x10, 0x10000010), "links": (1, 2),
+    }
 
 
 def test_acl_dispatch_refuses_outside_owned_private_tree_before_subprocess(tmp_path, monkeypatch):
