@@ -205,7 +205,7 @@ def test_corrupt_duplicate_or_unqualified_attribute_list_refuses(raw):
 
 
 @pytest.mark.parametrize("offset,format_code,value", [(4, "H", 16), (6, "H", 2), (16, "H", 0),
-                                                    (20, "H", 57), (22, "H", 8), (24, "I", 1025),
+                                                    (20, "H", 57), (22, "H", 16), (24, "I", 1025),
                                                     (28, "I", 512), (44, "I", 25), (510, "H", 1),
                                                     (1022, "H", 1), (60, "I", 0)])
 def test_corrupt_raw_headers_sectors_and_attribute_lengths_refuse(offset, format_code, value):
@@ -222,6 +222,15 @@ def test_duplicate_instances_and_missing_attribute_end_refuse():
     struct.pack_into("<I", raw, 56, 0x80)
     with pytest.raises(mft.MFTParseError):
         mft.parse_record(bytes(raw), 24)
+
+
+@pytest.mark.parametrize("flags", [4, 5, 8, 9, 11, 13, 15])
+def test_known_system_and_view_index_flags_preserve_directory_and_live_bits(flags):
+    record = mft.parse_record(_record(_resident(mft.DATA, b"private"), flags=flags), 24)
+    assert record.flags == flags
+    assert record.in_use == bool(flags & 1)
+    assert record.is_dir == bool(flags & 2)
+    assert record.attributes[0].value is None
 
 
 def test_large_record_metadata_crossing_sector_tail_is_repaired():

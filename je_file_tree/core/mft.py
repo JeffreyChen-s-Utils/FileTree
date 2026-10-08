@@ -35,6 +35,7 @@ _MAX_REFERENCE = (1 << 64) - 1
 _ORDINAL_MASK = (1 << 48) - 1
 _PACKED = 0x8000 | 0x00FF
 _FLAGS = 0x8000 | 0x4000 | 0x0001
+_RECORD_FLAGS = 0x0001 | 0x0002 | 0x0004 | 0x0008
 _FILETIME_EPOCH = 116444736000000000
 
 
@@ -76,7 +77,10 @@ class Attribute:
 
 @dataclass(frozen=True, slots=True)
 class FileRecord:
-    """One FILE segment with its complete sequence-qualified identity and base-record reference."""
+    """One FILE segment with its complete sequence-qualified identity and base-record reference.
+
+    System and view-index flags are preserved; only the filename-index bit marks a directory.
+    """
 
     ordinal: int
     sequence: int
@@ -251,7 +255,7 @@ def parse_record(data: bytes, ordinal: int) -> FileRecord:
     sequence, links, first, flags, used, allocated, base = struct.unpack_from("<HHHHIIQ", raw, 16)
     number, = struct.unpack_from("<I", raw, 44)
     _require(allocated == len(raw) and _RECORD_HEADER <= first < used <= allocated and first % _ALIGN == 0
-             and flags in (0, 1, 2, 3) and number == ordinal & _END, "Invalid FILE record header")
+             and not flags & ~_RECORD_FLAGS and number == ordinal & _END, "Invalid FILE record header")
     _require(sequence > 0 and (not flags & 1 or links > 0 or base > 0), "Invalid FILE record identity")
     attributes, instances = [], set()
     offset = first

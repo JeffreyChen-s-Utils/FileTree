@@ -955,6 +955,8 @@ sequence-qualified names/attribute-list entries, resident sizes (never DATA payl
 VCN runs/allocation and distinct FILETIME dates. Record sizes, USA arrays, forms, lengths, name
 offsets, instances, mapping widths, signs, extents and list counts are bounded and fail closed.
 Sparse holes do not alter previous LCNs; extension sizes remain unknown outside LowestVcn zero.
+Known FILE system/view-index bits are retained without treating view indexes as directories;
+unknown flag bits are refused alongside the existing geometry and identity checks.
 The parser performs no volume I/O. `core/mft_reader.py` owns an exclusively read-only raw volume
 handle with bounded aligned reads, checked NTFS 3.1 geometry/physical mapping, streaming batches and
 an LRU record cache. It checks extension sequences/base ownership and refuses nested/split lists.

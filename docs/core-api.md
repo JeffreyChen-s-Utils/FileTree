@@ -12,7 +12,9 @@ interactive application.
 `parse_attribute_list`, `parse_file_name` and `parse_standard_information`. `MFTParseError` rejects
 corrupt/unsupported input. Raw FILE records require complete sector update-sequence validation;
 already repaired native replies are not raw input. File and parent references retain reuse sequences,
-continuation sizes remain unknown, and resident main/named DATA never retains payload contents.
+and FILE flags retain known system/view-index bits; only the filename-index bit marks a directory.
+Unknown FILE flag bits remain unsupported. Attribute continuation sizes remain unknown,
+and resident main/named DATA never retains payload contents.
 Resident `Attribute.allocated == 0` denotes no separately allocated DATA clusters, while
 `Attribute.size` retains its logical byte length. `Attribute.resident_capacity` retains the bounded
 space between ValueOffset and RecordLength, including alignment padding; it is None for nonresident
