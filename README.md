@@ -19,6 +19,8 @@ File → Scheduled scan proposals shows reports prepared by gentle scheduled wor
 
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md) | [日本語](README/README_ja.md) | [한국어](README/README_ko.md)
 
+Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops publication. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
+
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
 
 Japanese and Korean use an installed language-appropriate font while preserving the system font size and style; fonts are neither downloaded nor bundled. Missing fonts fall back to the system font.

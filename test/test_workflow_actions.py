@@ -21,6 +21,7 @@ from packaging.requirements import Requirement  # pytest depends on packaging
 
 _ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github" / "workflows").is_dir())
 _WORKFLOWS = sorted((_ROOT / ".github" / "workflows").glob("*.yml"))
+_ACTION_FILES = [*_WORKFLOWS, *sorted((_ROOT / ".github" / "actions").rglob("action.yml"))]
 _USES = re.compile(r"^\s*(?:-\s*)?uses:\s*(\S+)(.*)$")
 _PINNED = re.compile(r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}$")
 _LOCAL = re.compile(r"^\./")
@@ -41,7 +42,7 @@ def test_workflows_exist():
     assert _WORKFLOWS
 
 
-@pytest.mark.parametrize("workflow", _WORKFLOWS, ids=lambda p: p.name)
+@pytest.mark.parametrize("workflow", _ACTION_FILES, ids=lambda p: p.relative_to(_ROOT).as_posix())
 def test_every_action_is_pinned_to_a_commit_with_its_version(workflow):
     bad = [f"{workflow.name}:{number} {ref}{rest}"
            for number, ref, rest in _uses(workflow)
@@ -52,7 +53,7 @@ def test_every_action_is_pinned_to_a_commit_with_its_version(workflow):
 def test_one_version_per_action():
     # The same action at two different commits means a partial upgrade.
     seen: dict[str, set[str]] = {}
-    for workflow in _WORKFLOWS:
+    for workflow in _ACTION_FILES:
         for _number, ref, _rest in _uses(workflow):
             action, _, sha = ref.partition("@")
             seen.setdefault(action, set()).add(sha)

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-83 | 2026-10-08 | Prepare opt-in OIDC release signing with native verification gates | #snapshot #signing #distribution #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-82 | 2026-10-08 | Normalize the proven native NTFS directory attribute representation | #snapshot #ntfs #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-81 | 2026-10-08 | Japanese and Korean interface and distribution catalogues | #done #localization #distribution #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-80 | 2026-10-08 | Retain bounded NTFS candidate refusal diagnostics for native parity review | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |

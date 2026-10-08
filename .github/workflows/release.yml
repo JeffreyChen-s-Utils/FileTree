@@ -126,6 +126,10 @@ jobs:
   build-exe:
     needs: release
     runs-on: windows-latest
+    environment: windows-signing
+    permissions:
+      contents: read
+      id-token: write
     timeout-minutes: 90  # separate one-file and standalone Nuitka builds of PySide6
     steps:
       - name: Check out the new tag
@@ -139,6 +143,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate explicit Windows signing configuration before compiling
+        id: signing
+        env:
+          FILETREE_WINDOWS_SIGNING: ${{ vars.FILETREE_WINDOWS_SIGNING }}
+          FILETREE_AZURE_CLIENT_ID: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          FILETREE_AZURE_TENANT_ID: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          FILETREE_AZURE_SUBSCRIPTION_ID: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          FILETREE_SIGNING_ENDPOINT: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          FILETREE_SIGNING_ACCOUNT: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          FILETREE_SIGNING_PROFILE: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          FILETREE_SIGNING_PUBLISHER: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
+        run: python tools/check_signing.py
+
       # Pinned: an unpinned install would let a new upstream release into the published exe.
       # Nuitka publishes only an sdist, so it alone is exempt from the wheels-only rule.
       - name: Install PySide6 and Nuitka
@@ -149,6 +166,21 @@ jobs:
 
       - name: Compile the standalone folder
         run: python tools/build_nuitka.py
+
+      - name: Sign and verify the one-file and standalone executables before packaging
+        if: steps.signing.outputs.enabled == 'true'
+        uses: ./.github/actions/sign-windows
+        with:
+          files: |
+            ${{ github.workspace }}/build/onefile/FileTree.exe
+            ${{ github.workspace }}/build/standalone/start_file_tree.dist/FileTree.exe
+          client-id: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          endpoint: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          account: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          profile: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
 
       - name: Package the complete standalone folder
         env:
@@ -165,6 +197,19 @@ jobs:
         env:
           NEW: ${{ needs.release.outputs.new }}
         run: python tools/build_msi.py --version "$env:NEW"
+
+      - name: Sign and verify the MSI before upload and package-draft hashing
+        if: steps.signing.outputs.enabled == 'true'
+        uses: ./.github/actions/sign-windows
+        with:
+          files: ${{ github.workspace }}/FileTree-${{ needs.release.outputs.new }}-windows-x64.msi
+          client-id: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          endpoint: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          account: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          profile: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
 
       - name: Keep the MSI for the release
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

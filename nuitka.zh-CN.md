@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止发布。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](docs/windows-signing.md)。
+
 [Nuitka](https://nuitka.net/) 会把 FileTree 编译成原生程序，没有安装 Python 的电脑也能运行。它把 Python 代码转成 C 再编译，所以程序启动很快；代价是编译时间比较长。它编译的入口是仓库根目录的 `start_file_tree.py`。
 
 > Nuitka 只能编译出运行它的那个系统的程序：在 Windows 上编 Windows 版、在 macOS 上编 macOS 版、在 Linux 上编 Linux 版，不能交叉编译。

@@ -1228,3 +1228,11 @@ FreeBSD phase evidence uses the existing `_atomic_file(..., encoding="utf-8")` c
 The initial evidence write is inside the owned cleanup lifetime, so a write error before the first
 mount still attempts verified scratch cleanup. Regression tests exercise the real atomic writer
 and the initial-write failure path without asserting native mount equivalence.
+
+Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
+check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays
+unsigned, invalid enabled configuration fails. The pinned local signing composite checks exact
+nonlinked one-file/standalone/MSI paths, uses Azure CLI OIDC only with pinned Azure actions, SHA-256
+and RFC 3161 timestamps, and refuses invalid native trust/timestamp/expected-subject verification.
+Executable signing precedes ZIP/MSI construction; MSI signing precedes upload and store hashes.
+Third-party runtimes are not resigned. No keys/accounts/settings or native signing evidence exist.

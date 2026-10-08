@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops publication. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
+
 [Nuitka](https://nuitka.net/) turns FileTree into a native program that runs on computers without
 Python. It translates the Python code to C and compiles it, so the program starts quickly; the price is a
 longer build. The entry point it compiles is `start_file_tree.py` in the repository root.

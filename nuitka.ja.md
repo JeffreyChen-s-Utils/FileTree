@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows リリースでは Azure Artifact Signing と OIDC による署名を明示的に有効化できます。有効時に設定が不足した場合や、署名・タイムスタンプ・発行者の検証に失敗した場合は公開を停止します。単一ファイル版・独立フォルダー版の実行ファイルはパッケージ作成前、MSI はアップロードとマニフェストのハッシュ計算前に検証します。開発ビルドは未署名です。アカウントとネイティブ署名の成功検証はまだ利用できません。[Windows 署名の設定](docs/windows-signing.md)を参照してください。
+
 [Nuitka](https://nuitka.net/) は、FileTree を、Python を使用しないコンピューター上で実行されるネイティブ プログラムに変換します。 Python コードを C に変換してコンパイルするため、プログラムはすぐに開始されます。その分、ビルドには時間がかかります。コンパイルされるエントリ ポイントは、リポジトリ ルートの `start_file_tree.py` です。
 
 > Nuitka は、実行されるシステムに合わせてビルドします。Windows の場合は Windows、macOS の場合は macOS、Linux の場合は Linux にビルドします。クロスコンパイルはできません。

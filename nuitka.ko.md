@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 게시를 중지합니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](docs/windows-signing.md)을 참조하세요.
+
 [Nuitka](https://nuitka.net/)는 FileTree를 Python 없이 컴퓨터에서 실행되는 기본 프로그램으로 바꿉니다. Python 코드를 C로 변환하고 컴파일하므로 프로그램이 빠르게 시작됩니다. 가격은 더 긴 빌드입니다. 컴파일하는 진입점은 저장소 루트의 `start_file_tree.py`입니다.
 
 > Nuitka는 실행되는 시스템을 위해 빌드합니다. Windows의 경우 Windows, macOS의 경우 macOS, > Linux의 경우 Linux에 빌드합니다. 크로스 컴파일할 수 없습니다.

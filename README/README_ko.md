@@ -16,6 +16,8 @@
 
 [English](../README.md) | [繁體中文](README_zh-TW.md) | [简体中文](README_zh-CN.md) | [日本語](README_ja.md) | [한국어](README_ko.md)
 
+Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 게시를 중지합니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](../docs/windows-signing.md)을 참조하세요.
+
 ![FileTree 홈 폴더 표시: 왼쪽에는 폴더 트리, 오른쪽에는 트리맵](../docs/images/main_window_ko.png)
 
 일본어·한국어는 설치된 적절한 글꼴을 사용하며 시스템 글꼴 크기와 스타일을 유지합니다. 글꼴을 다운로드하거나 함께 배포하지 않습니다. 적절한 글꼴이 없으면 시스템 글꼴을 사용합니다.

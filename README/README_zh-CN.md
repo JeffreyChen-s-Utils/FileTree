@@ -16,6 +16,8 @@
 
 [English](../README.md) | [繁體中文](README_zh-TW.md) | [简体中文](README_zh-CN.md) | [日本語](README_ja.md) | [한국어](README_ko.md)
 
+Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止发布。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](../docs/windows-signing.md)。
+
 ![FileTree 显示一个用户文件夹：左边是文件夹树，右边是方块图](../docs/images/main_window_zh-CN.png)
 
 日语与韩语界面会选用已安装的适合字体，保留系统字号与样式；不会下载或附带字体。找不到适合字体时使用系统字体。
