@@ -1059,6 +1059,9 @@ The fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern
 fixture label and nonreparse directory before ACL access. It denies only LIST_DIRECTORY on that owned
 folder. Phase evidence retains comparisons/refusal and original payload/ADS identities/hashes; no host
 ACL, privilege change or source removal occurs. Native artifact review is required before parity claims.
+The newly created fixture symlink freezes its complete no-follow snapshot and actual readlink target
+before scanning. Final equality preserves native Windows namespace prefixes and refuses replaced
+identity/type/metadata or changed targets; comparing against the input display path is insufficient.
 `core/windows_directory.py` streams bounded FILE_ID_EXTD_DIR_INFO under ordinary scandir listing
 permission, checked native file ID/volume and a no-follow handle pinned against rename/delete.
 It rejects unsafe/corrupt chains, reparse/cloud directory scopes and changed identities, propagates

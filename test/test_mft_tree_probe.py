@@ -112,6 +112,37 @@ def _directory_info():
                            st_ctime_ns=100, st_file_attributes=0x10, st_nlink=1)
 
 
+def test_owned_link_state_keeps_exact_native_namespace_and_rejects_replaced_identity(monkeypatch):
+    info = _directory_info()
+    info.st_mode, info.st_file_attributes = 0o120777, 0x410
+    path = SimpleNamespace(lstat=lambda: info)
+    target = r"\\?\E:\owned-fixtures\tree-branch"
+    monkeypatch.setattr(probe.os, "readlink", lambda _path: target)
+    before = probe._link_state(path)
+    assert before[1] == target and probe.unpack_snapshot(before[0]).is_link
+    info.st_ino += 1
+    assert probe._link_state(path) != before
+
+
+def test_owned_link_state_does_not_normalize_changed_target(monkeypatch):
+    info = _directory_info()
+    info.st_mode = 0o120777
+    path = SimpleNamespace(lstat=lambda: info)
+    targets = iter((r"\\?\E:\owned-fixtures\tree-branch", r"E:\owned-fixtures\tree-branch"))
+    monkeypatch.setattr(probe.os, "readlink", lambda _path: next(targets))
+    before, after = probe._link_state(path), probe._link_state(path)
+    assert before[0] == after[0] and before != after
+
+
+def test_owned_link_state_refuses_changed_type_before_reading_target(monkeypatch):
+    path = SimpleNamespace(lstat=_directory_info)
+    def forbidden(_path):
+        pytest.fail("An ordinary directory must not supply fixture link authority")
+    monkeypatch.setattr(probe.os, "readlink", forbidden)
+    with pytest.raises(RuntimeError, match="symlink"):
+        probe._link_state(path)
+
+
 def test_only_proven_directory_representation_is_equivalent_without_changing_either_snapshot():
     info = _directory_info()
     ordinary = pack_snapshot(info)

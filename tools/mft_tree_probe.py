@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import statistics
+import stat
 import subprocess
 import threading
 import time
@@ -16,7 +17,7 @@ import uuid
 from je_file_tree.core.mft_reader import NTFSReader
 from je_file_tree.core.mft_scan import _audit
 from je_file_tree.core.scanner import ACCESS_DENIED, NOT_SCANNED, ScanCancelledError, ScanOptions, ScanResult, scan
-from je_file_tree.core.snapshot import snapshot_times, stable_snapshot, unpack_snapshot
+from je_file_tree.core.snapshot import pack_snapshot, snapshot_times, stable_snapshot, unpack_snapshot
 from je_file_tree.core.windows_directory import WindowsEntry
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
@@ -187,6 +188,12 @@ def _cancel(root: Path) -> dict:
     raise RuntimeError("Native cancellation fixture completed without honoring stop")
 
 
+def _link_state(path: Path) -> tuple[bytes, str]:
+    info = path.lstat()
+    require(stat.S_ISLNK(info.st_mode), "Owned fixture is no longer a symlink")
+    return pack_snapshot(info), os.readlink(path)
+
+
 def validate_tree(volume: OwnedVolume, root: Path, save: Callable[[dict], None]) -> dict:
     """Compare options and the whole private drive, restore only the owned denied DACL, keep payloads.
 
@@ -200,7 +207,10 @@ def validate_tree(volume: OwnedVolume, root: Path, save: Callable[[dict], None])
     (branch / "empty").mkdir()
     (branch / "keep.bin").write_bytes(b"owned tree bytes")
     (root / ".tree-hidden.bin").write_bytes(b"owned hidden bytes")
-    os.symlink(branch, root / "tree-link", target_is_directory=True)
+    link = root / "tree-link"
+    os.symlink(branch, link, target_is_directory=True)
+    original_link = _link_state(link)
+    save({"tree_link": {"original_target": original_link[1]}})
     options = [ScanOptions(workers=1), ScanOptions(workers=4), ScanOptions(include_hidden=False),
                ScanOptions(exclude=("tree-branch",)),
                ScanOptions(file_times=True, windows_owners=True, exact_windows_allocation=True,
@@ -224,11 +234,17 @@ def validate_tree(volume: OwnedVolume, root: Path, save: Callable[[dict], None])
                for backend in ("ordinary", "requested_mft")}
     medians["mft_seconds"] = statistics.median(mft_times) if mft_times else None
     require((branch / "keep.bin").read_bytes() == b"owned tree bytes"
-            and (root / ".tree-hidden.bin").read_bytes() == b"owned hidden bytes"
-            and (root / "tree-link").is_symlink() and os.readlink(root / "tree-link") == str(branch),
-            "Additional tree payloads/link changed")
+            and (root / ".tree-hidden.bin").read_bytes() == b"owned hidden bytes",
+            "Additional tree payloads changed")
+    current_link = _link_state(link)
+    link_evidence = {"original_target": original_link[1], "current_target": current_link[1],
+                     "snapshot_preserved": current_link[0] == original_link[0],
+                     "target_preserved": current_link[1] == original_link[1]}
+    save({"tree_link": link_evidence})
+    require(current_link == original_link, "Owned fixture symlink snapshot/target changed")
     return {"tree_comparisons": comparisons, "denied_branch": denied, "cancellation": cancelled,
             "full_private_drive": full_drive, "full_private_drive_medians": medians,
             "full_private_drive_mft_samples": len(mft_times),
             "full_private_drive_fallback_samples": len(full_drive) - len(mft_times),
+            "tree_link": link_evidence,
             "default_enabled": False, "large_real_drive_validated": False, "tree_payloads_preserved": True}
