@@ -24,6 +24,15 @@ commit has no execution record, `gh workflow run test.yml --ref dev` requests th
 and owned native probes on that ref. This does not invoke the release workflow; a dispatch request
 alone never establishes a passing result or native evidence.
 
+The Windows owned SMB job creates a fresh loopback share with read access limited to the runner's
+current account and one nonpersistent unused drive mapping. `validate_windows_share.ps1` refuses
+non-hosted/nonadministrative sessions, existing roots/shares/mappings and redirected fixture entries.
+`windows_share_probe.py` compares UNC/mapped scans and native allocation units with the local tree at
+one/four workers, verifies denied-listing incomplete coverage and no empty-folder proposals, and
+pauses new reads while removing only that receipt-checked share mid-scan. Source identity/content and
+the exact owned denied-directory DACL are rechecked before guarded fixture cleanup. Partial JSON is
+retained on failure. This fixture cannot establish slow remote-link performance or owner share behavior.
+
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
@@ -948,6 +957,13 @@ installs fonts; missing families retain normal system fallback across workspace 
   `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
+
+`tools/validate_windows_share.ps1 -DisposableRunner` is a hosted-Windows-only native validation
+entry point, never a caller-selected source/share cleanup API. It persists `windows-share.json`,
+including transport scope, completion/failure and owned cleanup; `windows_share_probe.py` is its
+receipt-checked helper. Mid-scan disconnect removes only the newly created share registration,
+after pausing new reads; it never deletes scanned payloads. Loopback timings do not imply remote
+performance, and source preservation does not establish complete coverage after native failures.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
