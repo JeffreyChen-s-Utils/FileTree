@@ -1012,7 +1012,10 @@ an LRU record cache. It checks extension sequences/base ownership and refuses ne
 No elevation/privilege changes, volume mutations or public DATA payload access are provided. This
 metadata reader connects to `scan` only through off-by-default ScanOptions.experimental_mft. The
 serial core/mft_scan candidate requires ordinary visible directory entries and per-path no-follow
-stat authority before matching raw sequence/name/parent/date/link/type/size metadata. Shared Node
+stat authority before matching raw sequence/name/parent/date/link/type/size metadata. Only the known
+NTFS internal 0x10000000 DIRECTORY bit is normalized for comparison when native listing and stat
+both independently identify an ordinary nonreparse/noncloud directory. Full snapshot attributes
+are retained; regular files, unknown bits, identity/time changes and other attributes still refuse. Shared Node
 helpers retain ordinary allocation, owner, exclusion, hidden, link and hard-link semantics. Ancestors
 are pinned; worker pause/cancel checks precede entries and attribute-list extensions. Native reader
 and mount observations reverify before completion. Success/cancellation adopts a sorted staged tree

@@ -30,6 +30,8 @@ from je_file_tree.core.snapshot import unpack_snapshot
 from je_file_tree.core.windows_directory import WindowsEntry, directory_entries
 
 _UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
+_DIRECTORY_ATTRIBUTE = 0x10
+_NTFS_DIRECTORY_ATTRIBUTE = 0x10000000
 _DOS_NAMESPACE = 2
 _LOG = logging.getLogger(__name__)
 _STAT_FIELDS = ("st_dev", "st_ino", "st_size", "st_mode", "st_nlink", "st_mtime_ns", "st_ctime_ns",
@@ -52,6 +54,17 @@ def _notify(callback: ProgressCallback, progress: ScanProgress) -> None:
 def _require(condition: bool, detail: str) -> None:
     if not condition:
         raise mft.MFTParseError(detail)
+
+
+def _matching_native_entry(visible: WindowsEntry, info: os.stat_result) -> bool:
+    listed, observed = visible.attributes, info.st_file_attributes
+    # NTFS's internal DIRECTORY bit is exposed by some stat APIs but not directory enumeration.
+    # Normalize only this known representation for independently proven ordinary directories.
+    if (stat.S_ISDIR(info.st_mode) and listed & observed & _DIRECTORY_ATTRIBUTE
+            and not (listed | observed) & _UNAVAILABLE):
+        listed &= ~_NTFS_DIRECTORY_ATTRIBUTE
+        observed &= ~_NTFS_DIRECTORY_ATTRIBUTE
+    return ((visible.file_id, listed, visible.times[2]) == (info.st_ino, observed, info.st_mtime_ns))
 
 
 def _audit(native: NTFSReader, info: os.stat_result, visible: WindowsEntry,
@@ -102,7 +115,7 @@ class _Entry:
             return
         listed = visible.file_id, visible.attributes, visible.times[2]
         observed = info.st_ino, info.st_file_attributes, info.st_mtime_ns
-        _require(listed == observed,
+        _require(_matching_native_entry(visible, info),
                  f"Native directory entry changed before ordinary path metadata: {visible.name!r}; "
                  f"listing={listed}, path={observed}")
         if not stat.S_ISDIR(info.st_mode) and not info.st_file_attributes & _UNAVAILABLE:
@@ -198,6 +211,8 @@ def build(root: Node, options: ScanOptions, *, progress: ProgressCallback | None
 
     No elevation or privilege changes occur. Ordinary no-follow per-path metadata is mandatory;
     live raw names/parents/sequences/dates/sizes must agree before entering the same Node helpers.
+    Only the known NTFS internal DIRECTORY representation is normalized for proven ordinary
+    directories; full native snapshot attributes and all other identity/metadata checks are retained.
     Allocation/owner/options retain ordinary rules. Raw reads are serial on this calling worker;
     workers is not a speed claim. Cancellation retains a sorted partial tree and closes own handles.
     Caller adopts only success/partial cancellation into its one published root; parse fallback

@@ -466,6 +466,8 @@ Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` ca
 resident space with alignment padding. The parser retains logical length and bounded resident value
 capacity separately, and the diagnostic records raw/native allocation observations separately.
 
+For ordinary directories independently confirmed by both native replies, the audit normalizes only NTFS's internal `0x10000000` directory attribute when comparing enumeration and no-follow path metadata. Full native attributes remain in snapshots; identity, dates, reparse/cloud flags and every other attribute still require agreement.
+
 For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
 duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.
 

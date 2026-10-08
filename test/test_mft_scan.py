@@ -2,6 +2,7 @@
 
 from contextlib import nullcontext
 import ctypes
+from dataclasses import replace
 import errno
 from itertools import count
 import os
@@ -198,6 +199,52 @@ def test_raw_metadata_constructs_the_same_snapshot_without_payload_or_windows_ch
     result = mft_scan._audit(native, info, visible, 123, lambda: None)
     assert pack_snapshot(result) == pack_snapshot(info)
     assert unpack_snapshot(pack_snapshot(result)).changed_ns == 100  # Windows stat ctime is creation.
+
+
+@pytest.mark.parametrize("path_attributes, listed_attributes", [(0x10000010, 0x10), (0x10, 0x10000010)])
+def test_known_ntfs_directory_attribute_representation_keeps_complete_native_snapshot(
+        monkeypatch, path_attributes, listed_attributes):
+    native, info, visible, record, _data, _metadata = _audit_fixture(monkeypatch)
+    info.st_mode, info.st_file_attributes, record.is_dir = stat.S_IFDIR | 0o777, path_attributes, True
+    visible = replace(visible, attributes=listed_attributes)
+    monkeypatch.setattr(mft_scan.os, "lstat", lambda _path: info)
+    entry = mft_scan._Entry("owned", visible, native, 123, lambda: None)
+    assert entry.stat().st_file_attributes == path_attributes
+    assert pack_snapshot(entry.stat()) == pack_snapshot(info)
+
+
+@pytest.mark.parametrize("mode, listed_attributes, path_attributes", [
+    (stat.S_IFREG, 0x20, 0x10000020),  # Never normalize a regular file.
+    (stat.S_IFDIR, 0x10, 0x20000010),  # Another internal bit is not the proven directory bit.
+    (stat.S_IFDIR, 0x410, 0x10000410),  # Reparse directories retain strict comparison.
+    (stat.S_IFDIR, 0x10, 0x10001010),  # Offline/cloud changes remain visible.
+    (stat.S_IFDIR, 0, 0x10000010),  # Both replies must independently say directory.
+])
+def test_other_native_attribute_differences_refuse_before_raw_audit(
+        monkeypatch, mode, listed_attributes, path_attributes):
+    native, info, visible, _record, _data, _metadata = _audit_fixture(monkeypatch)
+    info.st_mode, info.st_file_attributes = mode | 0o777, path_attributes
+    visible = replace(visible, attributes=listed_attributes)
+    monkeypatch.setattr(mft_scan.os, "lstat", lambda _path: info)
+    def forbidden(*_args):
+        pytest.fail("A changed native path must never reach raw metadata")
+    monkeypatch.setattr(mft_scan, "_audit", forbidden)
+    with pytest.raises(mft.MFTParseError, match="entry changed"):
+        mft_scan._Entry("owned", visible, native, 123, lambda: None)
+
+
+@pytest.mark.parametrize("changed", ["identity", "modified"])
+def test_directory_representation_normalization_never_hides_identity_or_time_changes(monkeypatch, changed):
+    native, info, visible, _record, _data, _metadata = _audit_fixture(monkeypatch)
+    info.st_mode, info.st_file_attributes = stat.S_IFDIR | 0o777, 0x10000010
+    visible = replace(visible, attributes=0x10)
+    if changed == "identity":
+        info.st_ino += 1
+    else:
+        info.st_mtime_ns += 1
+    monkeypatch.setattr(mft_scan.os, "lstat", lambda _path: info)
+    with pytest.raises(mft.MFTParseError, match="entry changed"):
+        mft_scan._Entry("owned", visible, native, 123, lambda: None)
 
 
 @pytest.mark.parametrize("case", ["identity", "links", "size", "payload", "nonresident", "parent"])

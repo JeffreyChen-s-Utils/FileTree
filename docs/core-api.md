@@ -34,7 +34,9 @@ exception before each batch; `close()` closes only its owned handle. Observation
 Refused records include their ordinal and bounded numeric header fields, retaining the original
 parse exception as cause; diagnostic errors never include raw records or DATA payloads.
 Split attribute-list streams and unsupported bootstrap mappings refuse. Raw access does not establish
-directory ACL coverage. `scan` defaults to its ordinary backend. `ScanOptions(experimental_mft=True)`
+directory ACL coverage. Enumeration/path comparisons normalize only NTFS's internal directory bit
+(`0x10000000`) for independently proven ordinary nonreparse/noncloud directories; full snapshot
+attributes remain unchanged and every other attribute, file ID and modification date must agree. `scan` defaults to its ordinary backend. `ScanOptions(experimental_mft=True)`
 explicitly requests a serial metadata audit on eligible Windows volumes. Every name must have ordinary
 directory visibility and no-follow per-path stat authority; raw sequence/name/parent/date/link/size
 metadata must agree. Allocation, owners, exclusions, links, hidden entries and hard-link counting use
