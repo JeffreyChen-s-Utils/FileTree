@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import sys
@@ -136,6 +137,7 @@ def _proof(volume) -> dict:
 
 def main() -> None:
     """Persist bounded metadata evidence across phases; never accept an existing disk or source path."""
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s %(message)s")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     options = parser.parse_args()

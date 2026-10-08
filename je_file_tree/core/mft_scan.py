@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+import logging
 import os
 import stat
 import sys
@@ -30,6 +31,7 @@ from je_file_tree.core.windows_directory import WindowsEntry, directory_entries
 
 _UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
 _DOS_NAMESPACE = 2
+_LOG = logging.getLogger(__name__)
 _STAT_FIELDS = ("st_dev", "st_ino", "st_size", "st_mode", "st_nlink", "st_mtime_ns", "st_ctime_ns",
                 "st_mtime", "st_ctime", "st_atime", "st_file_attributes", "st_reparse_tag", "st_uid", "st_gid")
 
@@ -98,9 +100,11 @@ class _Entry:
         except OSError as error:
             self.error = error
             return
-        _require((visible.file_id, visible.attributes, visible.times[2]) ==
-                 (info.st_ino, info.st_file_attributes, info.st_mtime_ns),
-                 "Native directory entry changed before ordinary path metadata")
+        listed = visible.file_id, visible.attributes, visible.times[2]
+        observed = info.st_ino, info.st_file_attributes, info.st_mtime_ns
+        _require(listed == observed,
+                 f"Native directory entry changed before ordinary path metadata: {visible.name!r}; "
+                 f"listing={listed}, path={observed}")
         if not stat.S_ISDIR(info.st_mode) and not info.st_file_attributes & _UNAVAILABLE:
             _require(visible.size == info.st_size, "Native directory size changed before path metadata")
         self.info = (info if info.st_file_attributes & _UNAVAILABLE
@@ -215,7 +219,8 @@ def build(root: Node, options: ScanOptions, *, progress: ProgressCallback | None
             tree.check()
     except _CallbackError as failure:
         raise failure.error from None
-    except (OSError, ValueError):
+    except (OSError, ValueError) as error:
+        _LOG.debug("Discarded experimental NTFS candidate: %s", str(error)[:2048])
         return None  # A discarded candidate supplies no coverage or operation authority.
     if progress is not None:
         progress(ScanProgress(tree.files, len(tree.folders) - 1, tree.size, root.name))

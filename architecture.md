@@ -1013,6 +1013,9 @@ into the single on_root object; unsupported/raw failures discard it and restart 
 after checking root identity, so progress can restart. User callback errors propagate without fallback.
 ScanResult.backend identifies ordinary or the explicit mft audit; raw I/O stays serial despite workers.
 Native ACL/options/full-drive parity and performance baselines are required before default enabling.
+Candidate refusal logs a bounded metadata-only reason at DEBUG; default logging remains quiet. Native
+private-image validation enables those diagnostics, including directory/stat ID/attribute/time values,
+so an ordinary fallback never supplies parity evidence without the actual refusal being inspected.
 `tools/validate_mft.py` accepts only a new owned private
 NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
 CI retains phase evidence. Synthetic tests are not proof of native metadata parity.

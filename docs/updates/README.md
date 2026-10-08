@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-80 | 2026-10-08 | Retain bounded NTFS candidate refusal diagnostics for native parity review | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-79 | 2026-10-08 | Package the actual compiler bundle into a verified canonical macOS app | #incident #packaging #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-78 | 2026-10-08 | Honor the native directory iterator keyword-only cancellation contract | #incident #mft #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-77 | 2026-10-08 | Compare native NTFS audit options ACL refusal cancellation and private-drive timings | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |

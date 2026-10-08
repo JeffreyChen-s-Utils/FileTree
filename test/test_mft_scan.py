@@ -87,15 +87,17 @@ def test_staged_native_tree_matches_options_and_adopts_into_the_same_single_publ
     assert closed == [True] and progress[-1].files == result.root.file_count
 
 
-def test_corrupt_candidate_is_discarded_before_ordinary_fallback_without_second_root(tmp_path, monkeypatch):
+def test_corrupt_candidate_is_discarded_before_ordinary_fallback_without_second_root(tmp_path, monkeypatch, caplog):
     root, closed = _model(tmp_path, monkeypatch)
     def corrupted(*_args):
         raise mft.MFTParseError("owned raw metadata fixture")
     monkeypatch.setattr(mft_scan, "_audit", corrupted)
     published = []
-    result = scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True), on_root=published.append)
+    with caplog.at_level("DEBUG", logger="je_file_tree.core.mft_scan"):
+        result = scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True), on_root=published.append)
     assert result.backend == "ordinary" and result.root is published[0] and len(published) == 1
     assert result.root.file_count == 3 and closed == [True]
+    assert "Discarded experimental NTFS candidate: owned raw metadata fixture" in caplog.text
 
 
 def test_permission_denied_folder_remains_incomplete_and_never_raw_visible(tmp_path, monkeypatch):
