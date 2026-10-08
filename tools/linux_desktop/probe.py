@@ -16,7 +16,7 @@ from urllib.parse import unquote
 from PySide6.QtCore import QSettings, Qt, QUrl
 from PySide6.QtDBus import QDBusConnection, QDBusMessage
 from PySide6.QtGui import QFont, QRawFont
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QSystemTrayIcon
 
 from je_file_tree.core.scanner import scan
 from je_file_tree.core.export import _atomic_file
@@ -150,6 +150,27 @@ def check_fallback(app: QApplication, evidence: Path, scratch: Path) -> dict[str
     return {"disconnected_bus": True, "parent_folder_preserved": True, "arguments": arguments}
 
 
+def check_background(app: QApplication, evidence: Path) -> dict:
+    """Require an actual XEmbed tray and visible Qt notification on this container's private desktop."""
+    with (evidence / "tray.log").open("w", encoding="utf-8") as log:
+        command = ["/usr/bin/trayer", "--edge", "top", "--align", "right", "--widthtype", "request", "--height", "28"]
+        tray = subprocess.Popen(command, stdout=log, stderr=log)  # noqa: S603 # nosec B603 - fixed private-desktop tray
+        try:
+            pump(app, lambda: QSystemTrayIcon.isSystemTrayAvailable() or tray.poll() is not None)
+            require(tray.poll() is None and QSystemTrayIcon.isSystemTrayAvailable(), "Native XEmbed tray did not start")
+            command = [sys.executable, "/workspace/tools/validate_background.py", "--evidence", str(evidence),
+                       "--require-tray", "--require-notification"]
+            result = subprocess.run(command, check=False, timeout=60)  # noqa: S603 # nosec B603 - owned native probe
+            require(result.returncode == 0, "Native tray/history/notification probe failed")
+            proof = json.loads((evidence / "background.json").read_text(encoding="utf-8"))
+            require(proof.get("phase") == "complete" and proof.get("owned_fixture_cleanup"), "Incomplete tray evidence")
+            require(proof["session"]["notification"]["display_verified"], "No native notification display evidence")
+            return proof
+        finally:
+            tray.terminate()
+            tray.wait(timeout=10)
+
+
 def main() -> int:
     """Run only owned fixtures; emit proof and a native Traditional Chinese screenshot."""
     evidence, scratch = Path(sys.argv[1]), Path(os.environ["HOME"])
@@ -166,7 +187,8 @@ def main() -> int:
         for name, check in (("dbus", lambda: check_bus(app, evidence, scratch)),
                             ("trash", lambda: check_trash(app, window, scratch)),
                             ("fallback", lambda: check_fallback(app, evidence, scratch)),
-                            ("drag", lambda: check_drag(app, window, evidence, scratch))):
+                            ("drag", lambda: check_drag(app, window, evidence, scratch)),
+                            ("background", lambda: check_background(app, evidence))):
             try:
                 proof[name] = check()
             except (OSError, RuntimeError, ValueError, ET.ParseError) as error:

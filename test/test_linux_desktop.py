@@ -44,7 +44,8 @@ def test_desktop_probe_rejects_a_masked_crash_and_incomplete_evidence(monkeypatc
     monkeypatch.setattr(module.subprocess, "run", lambda *_args, **_kwargs: SimpleNamespace(returncode=0))
     with pytest.raises(FileNotFoundError):
         module.run_probe({}, tmp_path)
-    proof = {"dbus": {"error": "crashed"}, "trash": True, "fallback": True, "drag": True, "cjk_font": "test"}
+    proof = {"dbus": {"error": "crashed"}, "trash": True, "fallback": True, "drag": True,
+             "cjk_font": "test", "background": {"phase": "complete"}}
     (tmp_path / "proof.json").write_text(json.dumps(proof), encoding="utf-8")
     with pytest.raises(RuntimeError, match="dbus"):
         module.run_probe({}, tmp_path)

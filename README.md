@@ -11,6 +11,8 @@ In **Options → Follow changes** (off by default), each result tab follows its 
 
 **Start this monitor when I sign in** is a separate opt-in in the same dialog. It shows actual native registration and its location: a fixed current-user Windows HKCU Run value, Linux `$XDG_CONFIG_HOME/autostart/je-file-tree-background.desktop` (default `~/.config`), or macOS `~/Library/LaunchAgents/io.github.jechen.FileTree.background.plist`. Uncheck and accept to remove the owned entry; disabling monitoring also clears this choice. It applies to future logins, without launching a second copy or ending this session. Foreign/changed entries, linked POSIX directories/files and shared metadata are refused with visible errors; registrations use literal absolute arguments and no shell. Move the program by first removing its previous login entry and then registering the new location. Windows commands over 260 UTF-16 characters and Linux paths with percent signs (or executable paths with equal signs) are refused. OS startup policy can suppress launch. Native fixture validation does not prove a real login launch.
 
+Native CI retains phase JSON and CJK screenshots for owned background/history/capacity sources. The isolated Linux X11 desktop requires an actual tray and visible notification capture. Windows/macOS report available or unavailable tray behavior explicitly; notification dispatch alone does not prove OS display permission. These probes never register a host login job or mutate existing user sources.
+
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md)
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)

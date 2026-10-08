@@ -728,3 +728,11 @@ Absolute literal launcher arguments avoid shell/working-directory dependency. Mo
 program requires explicit removal before registering a different program. Registration affects future
 logins; no immediate launchctl/bootstrap, process launch or kill, KeepAlive, elevation or global startup
 entry is used. Inspection reports metadata presence, not OS startup-policy approval or successful login.
+
+`tools/validate_background.py` requires actual windows/cocoa/xcb/wayland rendering and owns fresh
+literal CJK sources plus private settings/history. Phase evidence retains native capacity, completed
+history, unchanged source identity/hash and foreground tabs, close/restore/explicit-Quit joins, or the
+visible paused unavailable-tray state. Notification opt-in is explicit in the probe; Linux's isolated
+XEmbed desktop additionally requires a visible native QBalloonTip screenshot. Dispatch alone never
+claims notification permission or successful user login. No startup registration or bin/source action
+is invoked by this proof. Windows/macOS artifacts retain unavailable states without claiming support.

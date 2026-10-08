@@ -8,6 +8,8 @@
 
 同一對話框中的 **登入時啟動此監視器** 需另外選擇啟用，顯示實際原生註冊狀態與位置：Windows 目前使用者的固定 HKCU Run 值、Linux `$XDG_CONFIG_HOME/autostart/je-file-tree-background.desktop`（預設 `~/.config`），或 macOS `~/Library/LaunchAgents/io.github.jechen.FileTree.background.plist`。取消勾選並接受會移除擁有的項目；停用監視也會清除此選項。適用下次登入，不啟動第二個程式或結束目前工作階段。外來／已變更項目、連結的 POSIX 目錄／檔案與共用中繼資料會拒絕並顯示錯誤；使用固定絕對路徑參數，不使用 shell。移動程式前，請先移除舊登入項目，再於新位置註冊。Windows 命令超過 260 個 UTF-16 字元、Linux 路徑包含百分號（或執行檔路徑包含等號）會拒絕。系統啟動原則可能抑制啟動；原生測試資料驗證不證明實際登入啟動。
 
+原生 CI 會保留背景／歷史／容量測試來源的階段 JSON 與 CJK 截圖。隔離的 Linux X11 桌面要求實際系統匣與可見通知截圖；Windows／macOS 明確記錄系統匣可用或不可用的行為。僅呼叫通知不證明系統顯示權限。這些驗證不註冊主機登入工作，也不改動既有使用者來源。
+
 [English](../README.md) | [繁體中文](README_zh-TW.md) | [简体中文](README_zh-CN.md)
 
 ![FileTree 顯示一個使用者資料夾：左邊是資料夾樹，右邊是方塊圖](../docs/images/main_window_zh-TW.png)

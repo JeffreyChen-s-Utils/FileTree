@@ -72,6 +72,10 @@ uses owned canonical metadata, descriptor-anchored no-follow directories and exc
 Foreign/changed/shared/linked entries are refused; removal rechecks captured metadata. No shell,
 global registration, immediate process launch, KeepAlive or elevation is used. The setting affects
 future logins; native metadata presence does not prove OS login approval. Remaining desktop proof is #38.
+`tools/validate_background` requires native Qt rendering, private sources/settings/history and retained
+phase JSON/CJK captures. Linux's private X11 session starts an owned XEmbed tray and requires visible
+notification capture; other platforms explicitly retain unavailable trays or dispatch-only evidence.
+CI never registers host login jobs, and notification calls never imply actual OS permission.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured

@@ -33,6 +33,8 @@ jobs:
       run: python tools/validate_macos_sources.py --evidence macos-evidence
     - name: Validate owned native startup metadata without a login entry
       run: python tools/validate_autostart.py --output macos-evidence/autostart.json
+    - name: Validate owned native background history and cocoa tray lifetime
+      run: python tools/validate_background.py --evidence macos-evidence/background --notification
     - name: Preserve macOS evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -180,6 +182,16 @@ jobs:
       run: python tools/validate_change_watch.py --output change-watch.json
     - name: Validate owned native HKCU startup fixtures without a login entry
       run: python tools/validate_autostart.py --output autostart.json
+    - name: Validate owned native background history or visible unavailable tray
+      run: python tools/validate_background.py --evidence background-evidence
+    - name: Preserve native background evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-background-${{ matrix.python-version }}
+        path: background-evidence/
+        if-no-files-found: warn
+        retention-days: 7
     - name: Preserve native change-feed evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
