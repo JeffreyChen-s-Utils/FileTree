@@ -142,15 +142,7 @@ jobs:
       # Pinned: an unpinned install would let a new upstream release into the published exe.
       # Nuitka publishes only an sdist, so it alone is exempt from the wheels-only rule.
       - name: Install PySide6 and Nuitka
-        shell: bash
-        run: |
-          python -m pip install --upgrade --only-binary :all: "pip==26.1.2" "wheel==0.47.0"
-          pip install --only-binary :all: "PySide6==6.11.2"
-          pip install --require-hashes --only-binary :all: -r .github/requirements/reports.txt
-          pip install --require-hashes --only-binary :all: -r .github/requirements/archives.txt
-          pip install --require-hashes --only-binary :all: -r .github/requirements/photos.txt
-          pip install --only-binary :all: --no-binary nuitka \
-            "nuitka==4.2.2" "ordered-set==4.1.0" "zstandard==0.25.0"
+        run: python tools/install_compiler.py
 
       - name: Compile FileTree.exe
         run: python tools/build_nuitka.py --onefile

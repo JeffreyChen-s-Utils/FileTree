@@ -949,6 +949,12 @@ hash-checked MSI. It never executes the fixture PE or proves compiled-app launch
 evidence is retained. An owned 1.2.3-to-1.2.4 upgrade changes a library fixture and requires exactly
 the new related product/version, unchanged source hashes and removal of the upgraded installation.
 Store publishing and signing require external accounts/credentials.
+`tools/install_compiler.py` is the shared pinned desktop compiler/runtime installation contract
+for Release and Desktop builds. The latter keeps unsigned compiled ZIP/MSI and owned installation
+evidence without a release token. `validate_msi.ps1 -DisposableRunner -CompiledPayload` accepts only
+the fixed hosted workspace's sole standalone output, copies no-follow contents into fresh runner
+scratch, verifies every original/installed hash, checks a package-version upgrade, and uninstalls
+only the captured MSI. It refuses existing products/shortcuts and never launches the application.
 
 `core/mft.py` is the stdlib-only NTFS 3.1 raw metadata foundation: immutable FILE segments,
 sequence-qualified names/attribute-list entries, resident sizes (never DATA payloads), nonresident

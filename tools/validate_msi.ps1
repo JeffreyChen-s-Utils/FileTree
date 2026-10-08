@@ -1,4 +1,4 @@
-param([switch]$DisposableRunner)
+param([switch]$DisposableRunner, [switch]$CompiledPayload)
 $ErrorActionPreference = 'Stop'
 if (-not $DisposableRunner -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows') {
     throw 'MSI installation validation requires an explicit disposable hosted Windows runner.'
@@ -14,25 +14,85 @@ if ((Test-Path -LiteralPath $installRoot) -or (Test-Path -LiteralPath $shortcut)
 $scratch = Join-Path $env:RUNNER_TEMP ('filetree-msi-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $scratch | Out-Null
 $build = Join-Path $scratch 'build'
+New-Item -ItemType Directory -Path $build | Out-Null
 $payload = Join-Path $build 'fixture.dist'
-New-Item -ItemType Directory -Path (Join-Path $payload 'PySide6/translations') -Force | Out-Null
-# A native PE and small runtime fixtures prove installer behavior, not a compiled FileTree launch.
-Copy-Item -LiteralPath (Join-Path $env:SystemRoot 'System32/where.exe') -Destination (Join-Path $payload 'FileTree.exe')
-[IO.File]::WriteAllBytes((Join-Path $payload 'Qt6Core.dll'), [Text.Encoding]::UTF8.GetBytes('owned library fixture'))
-foreach ($name in @('qtbase_zh_TW.qm', 'qtbase_zh_CN.qm')) {
-    [IO.File]::WriteAllBytes((Join-Path $payload ('PySide6/translations/' + $name)),
-                           [Text.Encoding]::UTF8.GetBytes('owned catalogue fixture'))
+function New-FixturePayload {
+    New-Item -ItemType Directory -Path (Join-Path $payload 'PySide6/translations') -Force | Out-Null
+    # A native PE and small runtime fixtures prove installer behavior, not a compiled FileTree launch.
+    Copy-Item -LiteralPath (Join-Path $env:SystemRoot 'System32/where.exe') -Destination (Join-Path $payload 'FileTree.exe')
+    [IO.File]::WriteAllBytes((Join-Path $payload 'Qt6Core.dll'), [Text.Encoding]::UTF8.GetBytes('owned library fixture'))
+    foreach ($name in @('qtbase_zh_TW.qm', 'qtbase_zh_CN.qm')) {
+        [IO.File]::WriteAllBytes((Join-Path $payload ('PySide6/translations/' + $name)),
+                               [Text.Encoding]::UTF8.GetBytes('owned catalogue fixture'))
+    }
+    New-Item -ItemType Directory -Path (Join-Path $payload 'PySide6/plugins/platforms') -Force | Out-Null
+    [IO.File]::WriteAllBytes((Join-Path $payload 'PySide6/plugins/platforms/qwindows.dll'),
+                           [Text.Encoding]::UTF8.GetBytes('owned platform fixture'))
 }
-New-Item -ItemType Directory -Path (Join-Path $payload 'PySide6/plugins/platforms') -Force | Out-Null
-[IO.File]::WriteAllBytes((Join-Path $payload 'PySide6/plugins/platforms/qwindows.dll'),
-                       [Text.Encoding]::UTF8.GetBytes('owned platform fixture'))
-$fixtureFiles = @(Get-ChildItem -LiteralPath $payload -Recurse -File)
-$hashes = @{}
-foreach ($file in $fixtureFiles) {
-    $relative = [IO.Path]::GetRelativePath($payload, $file.FullName)
-    $hashes[$relative] = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
+function Read-OwnedInventory([string]$root) {
+    $pending = [Collections.Generic.Stack[string]]::new()
+    $pending.Push($root)
+    $inventory = @{}
+    while ($pending.Count -gt 0) {
+        $current = $pending.Pop()
+        $item = Get-Item -LiteralPath $current -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Payload contains a link.' }
+        $relative = [IO.Path]::GetRelativePath($root, $current)
+        if ($item.PSIsContainer) {
+            $inventory[$relative] = '<directory>'
+            foreach ($child in Get-ChildItem -LiteralPath $current -Force) { $pending.Push($child.FullName) }
+        } else {
+            $inventory[$relative] = (Get-FileHash -LiteralPath $current -Algorithm SHA256).Hash
+        }
+    }
+    return $inventory
 }
-$evidence = @{ phase = 'starting'; fixture_only = $true; cleanup_verified = $false }
+function Confirm-Inventory([string]$root, [hashtable]$expected) {
+    $actual = Read-OwnedInventory $root
+    if ($actual.Count -ne $expected.Count) { throw 'Payload inventory has missing or unexpected entries.' }
+    foreach ($relative in $expected.Keys) {
+        if (-not $actual.ContainsKey($relative) -or $actual[$relative] -ne $expected[$relative]) {
+            throw "Payload differs: $relative"
+        }
+    }
+}
+function Copy-CompiledPayload {
+    $sourceBuild = Join-Path $env:GITHUB_WORKSPACE 'build/standalone'
+    foreach ($directory in @((Join-Path $env:GITHUB_WORKSPACE 'build'), $sourceBuild)) {
+        if ((Get-Item -LiteralPath $directory).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Compiled source ancestors contain a link.'
+        }
+    }
+    $folders = @(Get-ChildItem -LiteralPath $sourceBuild -Directory -Filter '*.dist')
+    if ($folders.Count -ne 1) { throw 'Expected one owned compiled standalone folder.' }
+    $script:compiledRoot = $folders[0].FullName
+    $script:originalInventory = Read-OwnedInventory $compiledRoot
+    foreach ($relative in $originalInventory.Keys) {
+        $destination = Join-Path $payload $relative
+        if ($originalInventory[$relative] -eq '<directory>') {
+            New-Item -ItemType Directory -Path $destination -Force | Out-Null
+        } else {
+            New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
+            Copy-Item -LiteralPath (Join-Path $compiledRoot $relative) -Destination $destination
+        }
+    }
+    Confirm-Inventory $payload $originalInventory
+    Confirm-Inventory $compiledRoot $originalInventory
+    if (-not $originalInventory.ContainsKey('FileTree.exe')) { throw 'Compiled FileTree.exe missing.' }
+    foreach ($required in @('Qt6Core.dll', 'qwindows.dll', 'qtbase_zh_TW.qm', 'qtbase_zh_CN.qm')) {
+        $matches = @($originalInventory.Keys | Where-Object { [IO.Path]::GetFileName($_) -eq $required })
+        if ($matches.Count -ne 1) { throw "Compiled runtime incomplete or ambiguous: $required" }
+    }
+}
+if ($CompiledPayload) {
+    # Copy into a separate fresh payload; the compiler output is never edited or launched.
+    $payload = Join-Path $build 'compiled.dist'
+    New-Item -ItemType Directory -Path $payload | Out-Null
+    Copy-CompiledPayload
+} else { New-FixturePayload }
+$payloadInventory = Read-OwnedInventory $payload
+$evidence = @{ phase = 'starting'; fixture_only = (-not $CompiledPayload); compiled_payload = [bool]$CompiledPayload;
+               app_launched = $false; cleanup_verified = $false }
 $proofPath = Join-Path $scratch 'msi-proof.json'
 function Save-Proof {
     [IO.File]::WriteAllText($proofPath, ($evidence | ConvertTo-Json -Depth 6), [Text.UTF8Encoding]::new($false))
@@ -49,18 +109,12 @@ function Invoke-OwnedInstaller([string]$operation, [string]$logName) {
     if ($process.ExitCode -notin @(0, 3010)) { throw "Owned MSI operation failed: $($process.ExitCode)" }
 }
 function Confirm-OwnedPayload {
-    foreach ($relative in $hashes.Keys) {
-        $installed = Join-Path $installRoot $relative
-        $item = Get-Item -LiteralPath $installed
-        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
-            (Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $hashes[$relative]) {
-            throw "Installed fixture differs: $relative"
-        }
-        if ((Get-FileHash -LiteralPath (Join-Path $payload $relative) -Algorithm SHA256).Hash -ne $hashes[$relative]) {
-            throw "Installer changed source fixture: $relative"
-        }
-    }
+    Confirm-Inventory $installRoot $payloadInventory
+    Confirm-Inventory $payload $payloadInventory
     if (-not (Test-Path -LiteralPath $shortcut)) { throw 'Owned Start-menu shortcut missing.' }
+    if ($CompiledPayload) {
+        Confirm-Inventory $compiledRoot $originalInventory
+    }
 }
 $attempted = $false
 try {
@@ -76,9 +130,10 @@ try {
     Confirm-OwnedPayload
     $evidence.phase = 'upgrading'
     Save-Proof
-    $changedFile = Join-Path $payload 'Qt6Core.dll'
+    $changedName = if ($CompiledPayload) { 'installer-validation.txt' } else { 'Qt6Core.dll' }
+    $changedFile = Join-Path $payload $changedName
     [IO.File]::WriteAllBytes($changedFile, [Text.Encoding]::UTF8.GetBytes('owned upgraded library fixture'))
-    $hashes['Qt6Core.dll'] = (Get-FileHash -LiteralPath $changedFile -Algorithm SHA256).Hash
+    $payloadInventory[$changedName] = (Get-FileHash -LiteralPath $changedFile -Algorithm SHA256).Hash
     python tools/build_msi.py --version 1.2.4 --source $build --output $scratch
     if ($LASTEXITCODE -ne 0) { throw 'MSI upgrade fixture compilation failed.' }
     $msi = Join-Path $scratch 'FileTree-1.2.4-windows-x64.msi'
@@ -90,7 +145,7 @@ try {
         throw 'Owned major upgrade did not leave exactly the expected new product.'
     }
     $evidence.upgrade_verified = $true
-    $evidence.installed_files = $hashes.Count
+    $evidence.installed_files = @($payloadInventory.Values | Where-Object { $_ -ne '<directory>' }).Count
     $evidence.shortcut_verified = $true
     $evidence.source_preserved = $true
     $evidence.phase = 'validated'

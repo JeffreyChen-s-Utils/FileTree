@@ -81,7 +81,11 @@ unsupported MSI versions, changed runtime inventories and failed builds refuse p
 validation remains enabled. The per-machine package includes all runtime files and a Start-menu
 shortcut, supports major upgrades, and uses no custom actions/startup registration. Its installer
 requires administrator approval; the builder only compiles. The release workflow attaches it from
-the same tag. Native CI installation uses disposable fixtures and does not prove a compiled-app launch.
+the same tag. The Desktop builds workflow shares the release's pinned tooling through
+`tools/install_compiler.py`; it compiles a standalone program and retains its ZIP/MSI plus native
+install/upgrade/removal evidence. Package-version upgrade validation copies the compiled payload
+to fresh runner scratch and adds only an owned marker; the original output is preserved and never
+launched. A complete native result is required; these checks do not prove GUI launch or OS consent.
 
 ### 2.2 A single file
 

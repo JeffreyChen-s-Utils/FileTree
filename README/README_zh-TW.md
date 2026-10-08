@@ -134,7 +134,7 @@ FileTree 可在 Windows、macOS 與 Linux 上執行。
 
 從下一次發版起，同一頁也會提供 `FileTree-<版本>-windows-standalone.zip`。解壓縮**整個資料夾**後執行其中的 `FileTree.exe`，啟動較快；DLL、外掛及翻譯檔都要保留在旁邊。單檔 EXE 較方便攜帶，但每次啟動都會先解壓縮內含檔案。兩種形式都不需要 Python。
 
-下一次發版流程也會從完整獨立程式資料夾建置 `FileTree-<版本>-windows-x64.msi`。它需要系統管理員核准，為所有使用者安裝至 Program Files，新增開始功能表捷徑，並支援透過 Windows 升級／解除安裝。安裝包 CI 使用全新可拋棄測試資料；已發布編譯程式的實際安裝仍待驗證。簽章及 winget／Scoop／Chocolatey 發布仍需要擁有者的憑證／帳號。
+下一次發版流程也會從完整獨立程式資料夾建置 `FileTree-<版本>-windows-x64.msi`。它需要系統管理員核准，為所有使用者安裝至 Program Files，新增開始功能表捷徑，並支援透過 Windows 升級／解除安裝。安裝包 CI 使用全新可拋棄測試資料。獨立的 Desktop builds CI 會實際編譯獨立程式、保留 ZIP／MSI，並在可拋棄的 Windows 主機依全部內容雜湊核對安裝、套件版本升級與解除安裝。它保留編譯輸出而且不啟動程式；宣稱安裝器支援前仍須確認完整原生證據。簽章及 winget／Scoop／Chocolatey 發布仍需要擁有者的憑證／帳號。
 
 **有 Python 3.10 以上**，從 PyPI 安裝：
 

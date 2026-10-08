@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-68 | 2026-10-08 | Build actual compiled Windows installers with owned native validation | #snapshot #distribution #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-67 | 2026-10-08 | Accept known NTFS system and view-index FILE flags | #snapshot #mft #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-66 | 2026-10-08 | Identify refused raw MFT headers without exposing record payloads | #snapshot #mft #msi #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-65 | 2026-10-08 | Preserve named-stream paths throughout owned truncation fixture setup | #incident #mft #validation | [2026-10-b](2026-10-b.md) |
