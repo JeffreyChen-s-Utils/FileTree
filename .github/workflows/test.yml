@@ -42,6 +42,18 @@ jobs:
           windows-volume-vhd.json
         if-no-files-found: warn
         retention-days: 7
+    - name: Compare sparse Trash lengths on a fresh owned larger NTFS volume
+      env:
+        QT_QPA_PLATFORM: offscreen
+      run: python tools/validate_windows_sparse_trash.py --output windows-sparse-trash-2gib.json
+    - name: Preserve sparse Trash size-boundary evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-sparse-trash-2gib
+        path: windows-sparse-trash-2gib.json
+        if-no-files-found: warn
+        retention-days: 7
   linux-restore:
     runs-on: ubuntu-latest
     name: Linux native Trash restore

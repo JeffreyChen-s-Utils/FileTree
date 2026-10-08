@@ -21,6 +21,7 @@ from je_file_tree.core.snapshot import pack_snapshot
 from je_file_tree.core.virtual_disks import VirtualDisk
 
 _CAPACITY = 512 * 1024 * 1024
+_CAPACITIES = (_CAPACITY, 2048 * 1024 * 1024)
 _PREFIX = "filetree-owned-ntfs-"
 
 
@@ -49,6 +50,7 @@ class OwnedVolume:
     label: str
     handle: ctypes.c_void_p
     creation_identifier: bytes = b""
+    capacity: int = _CAPACITY
 
 
 def require(condition: bool, message: str) -> None:
@@ -103,14 +105,15 @@ def _library():
     return library
 
 
-def _create(library, path: Path, identity: bytes) -> ctypes.c_void_p:
+def _create(library, path: Path, identity: bytes, capacity: int = _CAPACITY) -> ctypes.c_void_p:
+    require(capacity in _CAPACITIES, "Refusing an unapproved fixture capacity")
     require(not os.path.lexists(path), "Refusing an existing fixture image")
     kind = path.suffix.removeprefix(".")
     require(kind in native._DEVICES, "Refusing an unsupported fresh fixture format")
     storage = native._Storage(native._DEVICES[kind], native._Guid.from_buffer_copy(native._MICROSOFT))
     parameters = _Create()
     parameters.version, parameters.guid = 2, native._Guid.from_buffer_copy(identity)
-    parameters.maximum, parameters.sector = _CAPACITY, 512
+    parameters.maximum, parameters.sector = capacity, 512
     handle = ctypes.c_void_p()
     code = library.CreateVirtualDisk(ctypes.byref(storage), str(path), 0, None, 0, 0,
                                     ctypes.byref(parameters), None, ctypes.byref(handle))
@@ -131,7 +134,8 @@ def _physical(library, handle: ctypes.c_void_p) -> str:
     return buffer.value
 
 
-def _initialize(physical: str, label: str) -> dict[str, str]:
+def _initialize(physical: str, label: str, capacity: int = _CAPACITY) -> dict[str, str]:
+    require(capacity in _CAPACITIES, "Refusing an unapproved fixture capacity")
     require(re.fullmatch(r"\\\\\.\\PhysicalDrive[1-9][0-9]*", physical) is not None,
             "Refusing an unknown physical fixture mapping")
     require(re.fullmatch(r"FT-[0-9a-f]{12}", label) is not None, "Refusing an unknown fixture label")
@@ -139,7 +143,8 @@ def _initialize(physical: str, label: str) -> dict[str, str]:
     program = Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
     script = Path(__file__).with_name("initialize_owned_ntfs.ps1").resolve(strict=True)
     result = subprocess.run([str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),  # noqa: S603
-                             "-DiskNumber", number, "-Label", label], check=True, timeout=60,
+                             "-DiskNumber", number, "-Label", label, "-ExpectedCapacity", str(capacity)],
+                            check=True, timeout=60,
                             capture_output=True, encoding="utf-8")
     data = json.loads(result.stdout)
     require(isinstance(data, dict) and re.fullmatch(r"[A-Z]:\\", data.get("root", "")) is not None,
@@ -199,7 +204,8 @@ def verify_volume(volume: OwnedVolume) -> None:
 
 @contextmanager
 def owned_ntfs_volume(*, kind: str = "vhdx",
-                      after_detach: Callable[[OwnedVolume], None] | None = None) -> Iterator[OwnedVolume]:
+                      after_detach: Callable[[OwnedVolume], None] | None = None,
+                      capacity: int = _CAPACITY) -> Iterator[OwnedVolume]:
     """Create, map and format only one new private VHD/VHDX, then detach before owned image cleanup.
 
     No existing path, drive, physical disk or bin is accepted. Format only the exact native mapping
@@ -208,7 +214,9 @@ def owned_ntfs_volume(*, kind: str = "vhdx",
     This validation-only tool requires an existing administrator token; it never prompts for UAC.
     An optional hook runs only after successful body/detach/handle-close, with original directory/file
     identities rechecked and pinned. Hook failure retains the image, including possible attachment.
+    Capacity is restricted to 512 MiB or 2 GiB and must match the exact new disk before formatting.
     """
+    require(capacity in _CAPACITIES, "Refusing an unapproved fixture capacity")
     _administrator()
     _enable_volume_privilege()
     require(kind in native._DEVICES, "Only fresh VHD/VHDX fixture formats are allowed")
@@ -218,7 +226,7 @@ def owned_ntfs_volume(*, kind: str = "vhdx",
             "Fresh owned scratch required")
     image, identity = owned / ("owned." + kind), uuid.uuid4().bytes_le
     library = _library()
-    handle = _create(library, image, identity)
+    handle = _create(library, image, identity, capacity)
     attached = False
     detached = False
     image_info = volume = None
@@ -231,10 +239,10 @@ def owned_ntfs_volume(*, kind: str = "vhdx",
             raise ctypes.WinError(code)
         attached = True
         physical = _physical(library, handle)
-        data = _initialize(physical, "FT-" + uuid.uuid4().hex[:12])
+        data = _initialize(physical, "FT-" + uuid.uuid4().hex[:12], capacity)
         require(_physical(library, handle) == physical, "Native fixture mapping changed during formatting")
         volume = OwnedVolume(image, identity, physical, Path(data["root"]), data["volume_id"], data["label"],
-                             handle, identity)
+                             handle, identity, capacity)
         verify_volume(volume)
         yield volume
         completed = True

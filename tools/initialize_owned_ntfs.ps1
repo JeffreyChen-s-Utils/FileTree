@@ -1,12 +1,13 @@
 param(
     [Parameter(Mandatory=$true)][ValidateRange(1,2147483647)][int]$DiskNumber,
-    [Parameter(Mandatory=$true)][ValidatePattern('^FT-[0-9a-f]{12}$')][string]$Label
+    [Parameter(Mandatory=$true)][ValidatePattern('^FT-[0-9a-f]{12}$')][string]$Label,
+    [ValidateSet(536870912,2147483648)][long]$ExpectedCapacity = 536870912
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $disk = Get-Disk -Number $DiskNumber
 if ($disk.IsBoot -or $disk.IsSystem -or $disk.PartitionStyle -ne 'RAW' -or
-    $disk.NumberOfPartitions -ne 0 -or $disk.Size -ne 536870912 -or
+    $disk.NumberOfPartitions -ne 0 -or $disk.Size -ne $ExpectedCapacity -or
     $disk.BusType -notin @('File Backed Virtual','FileBackedVirtual','Virtual')) {
     throw 'Refusing a nonempty, host, nonvirtual or incorrectly sized disk'
 }

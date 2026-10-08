@@ -24,6 +24,7 @@ from tools.windows_owned_volume import owned_ntfs_volume, OwnedVolume, require, 
 from tools.windows_bin_probe import bin_proof  # noqa: E402
 from tools.windows_compaction_probe import capture_guest, compaction_proof  # noqa: E402
 from tools.windows_recovery_probe import recovery_proof  # noqa: E402
+from tools.windows_sparse_trash_probe import sparse_trash_proof  # noqa: E402
 from tools.volume_evidence import ledger_record  # noqa: E402
 
 _MIB = 1024 * 1024
@@ -151,6 +152,10 @@ def main() -> int:
         evidence.setdefault("actual_recovery", {})[name] = result
         evidence["phase"] = "recovery_" + name
         _save(args.output, evidence)
+    def record_sparse(name: str, result: dict) -> None:
+        evidence.setdefault("sparse_trash_diagnostic", {})[name] = result
+        evidence["phase"] = "sparse_trash_" + name
+        _save(args.output, evidence)
     with owned_ntfs_volume(kind=args.kind, after_detach=after_detach) as volume:
         root = _fixtures(volume)
         evidence = {"fresh_owned_disk": True, "kind": args.kind, "native_device": volume.physical,
@@ -164,6 +169,7 @@ def main() -> int:
         evidence["phase"] = "private_bin"
         _save(args.output, evidence)
         recovery_proof(volume, root, record_recovery)
+        sparse_trash_proof(volume, root, record_sparse)
         evidence["capacity_after_empty"] = _ledger(volume)
         captured = capture_guest(volume)
         evidence["phase"] = "guest_captured"

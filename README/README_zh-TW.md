@@ -277,6 +277,8 @@ python tools/validate_linux_volume.py --evidence volume-evidence
 
 獨立的 Windows CI 工作會以管理員執行 `validate_windows_volume.py`，原生證據已通過。工具建立全新 512 MiB VHDX 與隨機識別碼，只由其有效原生 handle 取得實體磁碟編號，僅格式化空白 RAW、非開機／系統的虛擬磁碟，並由 Windows 指派磁碟機代號。每次測試操作都重新核對裝置映射與 volume GUID。它比較容量、精確配置、硬連結、壓縮與稀疏檔案的回收估計，再只測試私有資源回收筒的預設拒絕、新項目到達、兩次確認的原生清空及 GUI 等待／更新。不接受既有映像、磁碟、磁碟機或回收筒；卸離失敗會保留暫存，清理也核對記錄的暫存資料夾／映像身分。原生容量／配置／回收界限及私有資源回收筒驗證已通過，確認自有映像卸離／清理。無法讀取的系統資料夾保留不完整涵蓋範圍與未知差額；OS 回收筒為零項時仍有觀察到的回收筒中繼資料位元組。硬連結／壓縮／稀疏檔案逐項實際空間回收已有私有磁碟原生 CI 驗證工具，一個／最後一個／全部硬連結名稱、壓縮檔案與 8 MiB 稀疏檔案的原生回收已在兩種全新格式通過，確認清理完成。雲端提供者、共享區塊、獨立保留位元組及 APFS 仍需其他證據。後續原生檢查失敗時也會保留已完成階段的 JSON；只有完整證據確認卸離與清理。JSON 保留七天。只在已提升權限的可拋棄 Windows 測試機執行；不要求 UAC：
 
+私有 Windows 驗證工具另在 512 MiB 映像比較新建稀疏檔案的 8／16／32／48／64／96 MiB 邏輯長度；`python tools/validate_windows_sparse_trash.py --output sparse-trash.json` 使用既有管理員權限，在新建固定 2 GiB VHDX 重複比較。只接受這兩種全新私有磁碟容量，格式化前核對大小。紀錄完整來源雜湊、Qt 回傳、有限的私有資源回收筒清單、原生總計、唯讀觀察的磁碟偏好及 OS 可用空間變化。缺少原生清單時維持未知，不授權清空。不變更偏好或視為有效配額；原生結論需以 CI 證據確認。
+
 ```powershell
 py -3 tools/validate_windows_volume.py --output windows-volume.json
 py -3 tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json

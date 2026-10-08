@@ -915,3 +915,11 @@ an opt-out hourly/startup timer, QLockFile daily claim around synced QSettings, 
 translated fixed-link notice. Only gui.app.main starts scheduling; constructors, tests, screenshots
 and CLI remain passive. Attempts are persisted before networking, including failures; disabling
 cancels publication and close joins the owned request through wait_for. No scan data is sent.
+
+Private Windows validation records six sparse logical lengths after the actual recovery cases.
+`windows_sparse_trash_probe` separates Qt success, source disappearance, native-bin retention,
+read-only observed preferences and OS free changes; missing inventory grants no emptying authority.
+`validate_windows_sparse_trash` repeats only that diagnostic on a fresh larger VHDX. Owned creation
+and the fixed PowerShell RAW/no-host formatter whitelist exactly 512 MiB/2 GiB and check the selected
+capacity. CI runs each command separately and always retains partial JSON. Existing user bins,
+registry settings and backing images are never selected or modified by this diagnostic.

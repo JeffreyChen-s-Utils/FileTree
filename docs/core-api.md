@@ -590,3 +590,14 @@ prereleases/local forms and yanked versions. `fetch_release(current, cancel)` ma
 verified-TLS metadata request, refuses redirects/encoding changes and bounds response bytes/read
 time. It returns a newer version or None; OSError/ValueError/HTTP protocol failures are observable.
 No paths, file content, package downloads or installation are involved. Importing invokes no network.
+
+`tools.windows_sparse_trash_probe` compares fresh sparse logical lengths of 8/16/32/48/64/96 MiB
+on only the verified private NTFS volume. It captures complete source SHA-256/snapshots, Qt receipts,
+native bin counts/bytes, bounded read-only private-bin inventory, OS free deltas and observed
+per-volume registry preferences. Missing native items stay unknown and never authorize emptying;
+only the single expected native item gets the existing two-question owned-bin workflow. Pending
+JSON precedes approval, and settings are never interpreted as effective quota or changed.
+The normal validator retains 512 MiB VHD/VHDX fixtures; validate_windows_sparse_trash.py adds only
+a fresh fixed 2 GiB VHDX for comparison. Creation and RAW/private formatting accept exactly these
+two capacities and prove the selected size; no existing disk/image/drive selector is available.
+Native size-boundary conclusions require CI artifacts; mocked tests do not establish OS behavior.

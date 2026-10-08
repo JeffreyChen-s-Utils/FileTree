@@ -86,7 +86,7 @@ def test_detachment_failure_closes_handle_and_retains_fixture(tmp_path, monkeypa
     closed = []
     library = SimpleNamespace(AttachVirtualDisk=lambda *_args: 0, DetachVirtualDisk=lambda *_args: 5)
     monkeypatch.setattr(volumes, "_library", lambda: library)
-    def create(_library, path, identity):
+    def create(_library, path, identity, capacity=volumes._CAPACITY):
         path.write_bytes(b"owned fresh fixture")
         library.identity = identity
         return ctypes.c_void_p(123)
@@ -115,7 +115,8 @@ def test_private_format_script_refuses_host_and_nonempty_disks():
     script = Path(volumes.__file__).with_name("initialize_owned_ntfs.ps1").read_text(encoding="utf-8")
     assert "Get-Disk -Number $DiskNumber" in script
     assert "$disk.IsBoot -or $disk.IsSystem" in script and "$disk.PartitionStyle -ne 'RAW'" in script
-    assert "$disk.NumberOfPartitions -ne 0" in script and "$disk.Size -ne 536870912" in script
+    assert "$disk.NumberOfPartitions -ne 0" in script and "$disk.Size -ne $ExpectedCapacity" in script
+    assert "[ValidateSet(536870912,2147483648)][long]$ExpectedCapacity = 536870912" in script
     assert "Clear-Disk" not in script and "Remove-Partition" not in script
 
 
@@ -235,7 +236,7 @@ def test_owned_context_closes_created_handle_and_retains_image_on_observation_or
         return 0
     library = SimpleNamespace(AttachVirtualDisk=lambda *_args: 0, DetachVirtualDisk=detach)
     monkeypatch.setattr(volumes, "_library", lambda: library)
-    def create(_library, path, identity):
+    def create(_library, path, identity, capacity=volumes._CAPACITY):
         path.write_bytes(b"owned fresh fixture")
         library.identity = identity
         return ctypes.c_void_p(123)
