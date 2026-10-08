@@ -8,6 +8,14 @@ interactive application.
 
 ## Supported interface
 
+`core.mft` provides bounded NTFS 3.1 raw metadata parsers: `parse_record`, `parse_runs`,
+`parse_attribute_list`, `parse_file_name` and `parse_standard_information`. `MFTParseError` rejects
+corrupt/unsupported input. Raw FILE records require complete sector update-sequence validation;
+already repaired native replies are not raw input. File and parent references retain reuse sequences,
+continuation sizes remain unknown, and resident main/named DATA never retains payload contents.
+This foundation performs no volume I/O and is not yet selected by `scan`; native reading/tree
+construction and ordinary-scan fallback must be validated separately before enabling it.
+
 The import paths, argument names and result attributes listed here are the supported public API.
 Call optional arguments by keyword and consume results by attribute; new fields may be added.
 Breaking changes must be documented in release notes. Leading-underscore helpers, worker classes,

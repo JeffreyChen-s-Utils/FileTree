@@ -415,6 +415,11 @@ automatic clean-up is available from the console.
 
 ## Development
 
+The stdlib-only `core/mft.py` foundation parses bounded NTFS 3.1 raw FILE records, names, attribute
+lists, nonresident extents and size/allocation metadata. It rejects torn/unsupported records, retains
+reuse sequences and never retains resident main/named file contents. It is not yet selected by the
+scanner; native read-only volume integration and parity against ordinary scans remain pending.
+
 For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
 duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.
 

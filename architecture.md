@@ -937,6 +937,14 @@ recent folders.
 
 ## 6. Cross-project boundaries
 
+`core/mft.py` is the stdlib-only NTFS 3.1 raw metadata foundation: immutable FILE segments,
+sequence-qualified names/attribute-list entries, resident sizes (never DATA payloads), nonresident
+VCN runs/allocation and distinct FILETIME dates. Record sizes, USA arrays, forms, lengths, name
+offsets, instances, mapping widths, signs, extents and list counts are bounded and fail closed.
+Sparse holes do not alter previous LCNs; extension sizes remain unknown outside LowestVcn zero.
+The module performs no volume I/O and is not yet a scan backend. Native reading, extension
+ownership/cycle checks, ordinary Node construction/fallback and native parity are separate steps.
+
 The GUI entry point accepts `--background` for an explicitly enabled monitor. It skips elevation
 and hides the workspace only when the saved opt-in configuration and native system tray are usable.
 The flag alone never enables monitoring. Window close may keep an opted-in monitor in the tray;
