@@ -9,6 +9,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'action_check_updates': 'Check for updates daily',
+    'action_check_updates_tip': 'Ask PyPI over HTTPS at most once a day; notice only, with no installation.',
+    'update_available': 'FileTree {version} is available',
     'multi_roots': 'Multiple roots',
     'action_multi_scan': 'Scan several folders…',
     'action_multi_scan_tip': 'Review explicit folders in one combined scan.',
@@ -1329,6 +1332,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'action_check_updates': '每天檢查更新',
+    'action_check_updates_tip': '每天最多透過 HTTPS 向 PyPI 查詢一次；僅通知，不安裝更新。',
+    'update_available': 'FileTree {version} 已推出',
     'multi_roots': '多個掃描來源',
     'action_multi_scan': '掃描多個資料夾…',
     'action_multi_scan_tip': '檢視明確選取的資料夾並合併掃描。',
@@ -2521,6 +2527,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'action_check_updates': '每天检查更新',
+    'action_check_updates_tip': '每天最多通过 HTTPS 向 PyPI 查询一次；仅通知，不安装更新。',
+    'update_available': 'FileTree {version} 已发布',
     'multi_roots': '多个扫描来源',
     'action_multi_scan': '扫描多个文件夹…',
     'action_multi_scan_tip': '检查明确选取的文件夹并合并扫描。',

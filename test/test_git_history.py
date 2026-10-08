@@ -13,6 +13,7 @@ from je_file_tree.core import git_history as history
 def _git(folder, *arguments, contents=None):
     command = ["git", "-c", "user.name=FileTree test", "-c", "user.email=filetree@example.invalid",
                "-c", "commit.gpgsign=false", "-c", "core.hooksPath=" + str(folder / "absent-hooks"),
+               "-c", "gc.auto=0", "-c", "maintenance.auto=false",
                "-C", str(folder), *arguments]
     return subprocess.run(command, input=contents, capture_output=True, check=True,  # noqa: S603 # nosec B603
                           env=history._environment()).stdout.decode("utf-8").strip()

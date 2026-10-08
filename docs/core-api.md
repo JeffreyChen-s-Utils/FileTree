@@ -581,3 +581,12 @@ missing/incomplete roots still produce exit 1. Atomic folder/file/JSON exports a
 support the virtual tree. GUI workers capture root tuples, preserve joined cancellation/close,
 rescan those sources and save only individual physical roots with captured snapshots to history.
 Combined GUI results are read-only; translated virtual display labels never become OS paths.
+
+`core.updates.check_due(last_attempt, now)` uses elapsed 24-hour intervals, treating malformed
+stored values as no previous attempt and refusing invalid current times; backward clocks do not
+accelerate checks. `newer_release(payload, current)` validates bounded UTF-8 PyPI project metadata,
+refuses foreign/malformed projects and compares only FileTree stable x.y.z releases, ignoring
+prereleases/local forms and yanked versions. `fetch_release(current, cancel)` makes one fixed
+verified-TLS metadata request, refuses redirects/encoding changes and bounds response bytes/read
+time. It returns a newer version or None; OSError/ValueError/HTTP protocol failures are observable.
+No paths, file content, package downloads or installation are involved. Importing invokes no network.

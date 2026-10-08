@@ -908,3 +908,10 @@ combined views read-only. Display helpers translate only the pathless root; menu
 duplicate linking, copying, compression and compaction never derive authority from that label.
 All four charts, search, exports and saved comparison preserve actual child paths. CLI --also
 routes through the same API and adds actual roots while leaving virtual root/OS capacity null.
+
+`core.updates` validates only FileTree stable x.y.z metadata and makes one bounded verified-TLS
+request to the fixed PyPI host; it follows no redirects and installs nothing. `gui.updates` owns
+an opt-out hourly/startup timer, QLockFile daily claim around synced QSettings, UpdateWorker and
+translated fixed-link notice. Only gui.app.main starts scheduling; constructors, tests, screenshots
+and CLI remain passive. Attempts are persisted before networking, including failures; disabling
+cancels publication and close joins the owned request through wait_for. No scan data is sent.

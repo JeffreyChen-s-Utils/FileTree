@@ -6,7 +6,7 @@ import json
 import os
 from collections.abc import Callable, Sequence
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, Qt, QTimer
+from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (
@@ -72,6 +72,7 @@ from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage, drives
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
+from je_file_tree.gui.updates import UpdateNotice
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
 # How often the tree of a running scan is refreshed.
@@ -900,6 +901,7 @@ class MainWindow(QMainWindow):
         self.results.retranslate()
         self.theme_menu.retranslate()
         self._undo.retranslate()
+        self._updates.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
     def _remember(self, path: str) -> None:
@@ -923,6 +925,8 @@ class MainWindow(QMainWindow):
         self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
+        with QSignalBlocker(self._actions["check_updates"]):
+            self._actions["check_updates"].setChecked(self._updates.enabled())
         self._actions["capture_file_times"].setChecked(read_flag(self.settings, "capture_file_times", False))
         self._actions["capture_owners"].setChecked(read_flag(self.settings, "capture_owners", False))
         self._actions["exact_allocation"].setChecked(read_flag(self.settings, "exact_allocation", False))
@@ -936,6 +940,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self._updates.shutdown()
         self._undo.shutdown()
         for dialog in self._path_dialogs.copy():
             dialog.reject()
@@ -988,6 +993,7 @@ class MainWindow(QMainWindow):
     # --- building ---------------------------------------------------------
 
     def _build_actions(self) -> None:
+        self._updates = UpdateNotice(self.settings, self)
         self._captures: set[ListCapture] = set()
         definitions: list[tuple[str, QKeySequence | str | None, Callable[[], object]]] = [
             ("open", QKeySequence.StandardKey.Open, self.choose_folder),
@@ -1034,6 +1040,7 @@ class MainWindow(QMainWindow):
             ("ask_admin", None, lambda: self.settings.setValue(ASK_ADMIN_KEY, self._actions["ask_admin"].isChecked())),
             ("help", QKeySequence.StandardKey.HelpContents, self.show_help),
             ("about", None, self.show_about),
+            ("check_updates", None, lambda: None),
         ]
         for key, shortcut, handler in definitions:
             action = QAction(self)
@@ -1041,6 +1048,8 @@ class MainWindow(QMainWindow):
                 action.setShortcut(QKeySequence(shortcut))
             action.triggered.connect(lambda _checked=False, run=handler: run())
             self._actions[key] = action
+        self._actions["check_updates"].setCheckable(True)
+        self._actions["check_updates"].toggled.connect(self._updates.configure)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
         self._actions["gentle"].setCheckable(True)
@@ -1114,6 +1123,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
+        options_menu.addAction(self._actions["check_updates"])
         for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
             options_menu.addAction(self._actions[key])
         options_menu.addAction(self._actions["shell_integration"])

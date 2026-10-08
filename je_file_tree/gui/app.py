@@ -57,6 +57,7 @@ def main(argv: Sequence[str]) -> int:
     pace_workers()  # background work waits while the window is busy
     window = create_window(settings, folder)
     window.show()
+    window._updates.start()
     return app.exec()
 
 
