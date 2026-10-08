@@ -370,7 +370,7 @@ directory mount points, including same-device bind mounts and roots reached thro
 Mount boundaries appear in Problems and make omitted bytes unknown; explicitly scanning a mounted
 directory itself is allowed. Missing/malformed mount tables stop the scan before traversal. macOS also
 queries a bounded complete native getfsstat table and pins each directory through fstatfs identity checks;
-malformed/truncated tables or changed scope/root mounts refuse a completed scan. Other POSIX systems
+malformed/truncated tables or changed scope/root mounts refuse a completed scan. Remaining POSIX systems
 retain device-boundary detection; native same-device macOS cases remain unverified. Linux keeps each directory descriptor open through its entry
 metadata reads, checks its mount ID and recorded identity, and refuses a completed result if relevant
 mount points or the root mount change. Rescan after the error; failed scans do not enter history.
@@ -383,6 +383,13 @@ An owned static same-device bind mount in a private Linux namespace has passed C
 live binds before and after opening a folder, and records the cost of guarded folder reads.
 
 Right-click the folder-tree header to choose visible columns; choices are remembered. The name stays visible and starts at a readable width, with horizontal scrolling for extra columns. **% of drive** is optional and divides logical bytes by OS-reported total capacity, alongside **% of parent**. It is unknown until capacity is available, after tree changes and for other-volume entries; hard-link names still count separately, so it does not measure allocated or recoverable space.
+
+FreeBSD 12+ on 64-bit systems also uses a bounded native getfsstat table and pinned fstatfs IDs.
+Unknown ABI versions and changed boundaries refuse completion. A separate disposable FreeBSD 14.3
+CI guest tests fresh read-only nullfs mounts with one/four workers and live mounts before
+and after opening a directory; JSON includes source preservation and confirmed unmount/cleanup.
+Native evidence remains pending. FreeBSD gives nullfs a different device ID; this case does not establish
+same-device behavior. The diagnostic refuses desktop hosts and accepts no existing mount selector.
 
 ## Command line without a window
 
@@ -453,7 +460,7 @@ validation. With dependencies installed and noninteractive sudo available on Lin
 python tools/validate_linux_volume.py --evidence volume-evidence
 ```
 
-`validate_macos_volume.py` runs only as an unelevated native macOS user and creates a fresh private 1 GiB UUID APFS sparse image, large enough for the primary volume and the fresh reserve/quota peer. Native CI confirmed OS capacity, native allocation, one/last/all hard-link estimates, sparse files, native compression/clones, current-uid bin logical versus allocated bytes and verified cleanup. Actual free-space changes include deferred reclamation and filesystem metadata; shared extents and independent reservation bytes remain unknown. macOS recovery estimates explicitly show uncertainty: the first native 8 MiB clone removal released zero bytes while its final peer released 8 MiB. Production cross-volume fcopyfile verified complete payload/resource-fork metadata between the owned scratch and image. No existing image/device/bin can be selected, no Finder automation is invoked and ambiguous ownership/detachment retains the fixture. Phase JSON is retained. The additional `macos_apfs_peer.py` case derives its container only from the owned image's checked physical store, validates installed reserve/quota options and creates one fresh peer with explicit byte limits; its native phase evidence remains pending. The peer stays unmounted: its capacity/ledger remain unknown while the primary's OS values are observed. No custom/default host mountpoint or privilege helper is used. Capacity rows sharing a container must not be summed. Real cloud placeholders and desktop consent require separate environments.
+`validate_macos_volume.py` runs only as an unelevated native macOS user and creates a fresh private 1 GiB UUID APFS sparse image, large enough for the primary volume and the fresh reserve/quota peer. Native CI confirmed OS capacity, native allocation, one/last/all hard-link estimates, sparse files, native compression/clones, current-uid bin logical versus allocated bytes and verified cleanup. Actual free-space changes include deferred reclamation and filesystem metadata; shared extents and independent reservation bytes remain unknown. macOS recovery estimates explicitly show uncertainty: the first native 8 MiB clone removal released zero bytes while its final peer released 8 MiB. Production cross-volume fcopyfile verified complete payload/resource-fork metadata between the owned scratch and image. No existing image/device/bin can be selected, no Finder automation is invoked and ambiguous ownership/detachment retains the fixture. Phase JSON is retained. The additional `macos_apfs_peer.py` case derives its container only from the owned image's checked physical store, validates installed reserve/quota options and creates one fresh peer with explicit byte limits; native run 37745569607 verified 16 MiB reserve and 64 MiB quota, the primary ledger and complete detach/cleanup. The peer stays unmounted: its capacity/ledger remain unknown while the primary's OS values are observed. No custom/default host mountpoint or privilege helper is used. Capacity rows sharing a container must not be summed. Real cloud placeholders and desktop consent require separate environments.
 
 ```sh
 python tools/validate_macos_volume.py --evidence macos-volume-evidence

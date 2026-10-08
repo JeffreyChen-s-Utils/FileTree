@@ -148,6 +148,12 @@ Windows capture follows the documented buffer ownership of
 [GetNamedSecurityInfoW](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfow);
 raw identities follow the [SID structure](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid).
 
+FreeBSD 12+ on 64-bit systems reads bounded, version-checked native mount tables and pins folder
+descriptors with fstatfs IDs; nullfs boundaries must be omitted or refuse completion.
+Unknown ABI versions, incomplete metadata and relevant namespace changes fail the scan. The
+disposable guest diagnostic validates static/live mounts independently of synthetic buffer tests.
+Native FreeBSD nullfs rewrites st_dev; it is not proof of same-device boundaries.
+
 ## Size and snapshot semantics
 
 `Node.size` is logical size; folder totals count each file name, including hard-link names. `allocated`
@@ -167,7 +173,8 @@ Symbolic links, Windows junctions and different-device directory mounts are list
 Linux mount surveys also omit same-device directory binds and ancestor aliases; pinned directory
 descriptors reject live mount changes and incomplete mount-ID queries. Darwin now uses bounded
 native INODE64 getfsstat buffers and fstatfs IDs on pinned directories, refusing unknown/truncated
-tables and changed scope/root mounts. Other POSIX same-device native
+tables and changed scope/root mounts. FreeBSD uses version-checked native tables and filesystem IDs.
+Other POSIX same-device native
 validation remains pending. The scan is a sequence of observations, not a
 transactional filesystem snapshot.
 

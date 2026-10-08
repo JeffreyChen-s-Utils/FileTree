@@ -1095,6 +1095,18 @@ Core remains stdlib-only, with no mount command or mutation. Buffer/refusal test
 same-device mounts; native CI must establish the new ABI and traversal behavior. APFS failure phase
 JSON additionally retains at most 64 KiB per native command stdout/stderr for actionable diagnostics.
 
+`core/freebsd_mounts.py` adds the 2344-byte FreeBSD 12+ 64-bit statfs ABI with version 0x20140518,
+bounded private getfsstat buffers and pinned fstatfs IDs. MountSurvey dispatches FreeBSD alongside
+Linux/Darwin; unknown layouts and mount changes fail closed. Core remains stdlib-only.
+The disposable FreeBSD 14.3 CI guest runs `tools/validate_freebsd_mounts.py`, accepting only explicit
+CI/guest flags and fresh private source/target directories. Native nullfs source/target/type/FSID
+are checked before normal unmount; uncertain mounts retain scratch. Static scans use one/four
+workers; live mounts before opening refuse traversal, after opening retain the original descriptor
+and refuse completion. Native phase evidence must confirm source preservation and cleanup.
+FreeBSD's null_stat rewrites st_dev to its own mount FSID: the diagnostic records actual IDs and
+does not claim same-device evidence. This extends §6's mount contract without changing public
+scan signatures or importing GUI/Qt.
+
 The fresh APFS sparse image is 1 GiB so the container permits the primary volume and its
 unmounted reservation peer. Apple documents `nx_max_file_systems` as container bytes divided
 by 512 MiB, rounded up; the former 512 MiB fixture allowed only one volume. No existing image

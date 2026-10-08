@@ -10,6 +10,32 @@ permissions:
   contents: read
 
 jobs:
+  freebsd-mounts:
+    runs-on: ubuntu-24.04
+    name: FreeBSD native nullfs boundaries
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Validate only fresh nullfs fixtures in a disposable FreeBSD guest
+      uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc  # v1.5.9
+      env:
+        FILETREE_DISPOSABLE_FREEBSD_VM: "1"
+      with:
+        release: "14.3"
+        sync: rsync
+        envs: FILETREE_DISPOSABLE_FREEBSD_VM GITHUB_ACTIONS
+        prepare: pkg install -y python311
+        run: python3.11 tools/validate_freebsd_mounts.py --disposable-vm --output freebsd-mounts.json
+    - name: Preserve native FreeBSD proof including failures
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: freebsd-native-mounts
+        path: freebsd-mounts.json
+        if-no-files-found: warn
+        retention-days: 7
   macos:
     runs-on: macos-15
     name: macOS arm64 / Python 3.12
