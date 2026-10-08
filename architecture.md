@@ -964,6 +964,9 @@ including transport scope, completion/failure and owned cleanup; `windows_share_
 receipt-checked helper. Mid-scan disconnect removes only the newly created share registration,
 after pausing new reads; it never deletes scanned payloads. Loopback timings do not imply remote
 performance, and source preservation does not establish complete coverage after native failures.
+Only the fresh denied-directory fixture's DACL is initialized before capturing the native denial
+baseline; original/restored descriptors are retained and exact equality is required. Set-Acl's
+legacy-to-automatic inheritance conversion must not be counted as successful restoration.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;

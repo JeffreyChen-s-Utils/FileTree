@@ -93,7 +93,12 @@ try {
     $mapped = $true
     Invoke-Probe 'compare'
     $denied = Join-Path $scratch 'sources/denied'
+    # Normalize only the newly created fixture's inherited DACL before freezing the denial baseline.
+    # Set-Acl can convert a legacy non-auto-inherited DACL; never compare that conversion as restoration.
+    Set-Acl -LiteralPath $denied -AclObject (Get-Acl -LiteralPath $denied)
     $originalAcl = Get-Acl -LiteralPath $denied
+    $proof.original_denied_descriptor = $originalAcl.Sddl
+    Save-Proof
     $changedAcl = Get-Acl -LiteralPath $denied
     $changedAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
         [Security.Principal.SecurityIdentifier]::new('S-1-1-0'),
@@ -103,7 +108,9 @@ try {
         Invoke-Probe 'denied'
     } finally {
         Set-Acl -LiteralPath $denied -AclObject $originalAcl
-        if ((Get-Acl -LiteralPath $denied).Sddl -ne $originalAcl.Sddl) { throw 'Owned DACL was not restored exactly.' }
+        $proof.restored_denied_descriptor = (Get-Acl -LiteralPath $denied).Sddl
+        Save-Proof
+        if ($proof.restored_denied_descriptor -ne $originalAcl.Sddl) { throw 'Owned DACL was not restored exactly.' }
         $proof.acl_restored = $true
         $originalAcl = $null
         Save-Proof
