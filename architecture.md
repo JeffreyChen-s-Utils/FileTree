@@ -807,8 +807,14 @@ tree used to make the window queue behind it. `core.pacing.WINDOW` is a gate: `s
 loop is about to wait (`aboutToBlock`). Every walk over the tree calls `pacing.give_way()` once per folder
 (the scan's workers, `_add_up`, the analysis, clean-up, search, compare, export, each file hashed), which
 waits while the gate is closed, at most `PAUSE_LIMIT` (50 ms) and never on the thread that closed it, so
-nothing can hang on it. The window blocks on a worker only through `scan_worker.wait_for`, which opens the
-gate first.
+nothing can hang on it. Emergency/destruction joins go through `scan_worker.wait_for`, which opens the
+gate first. Normal whole-root scan replacement uses `worker_lifecycle.ThreadFence`: GUI-owned timers poll
+`QThread.wait(0)` until owned scans/watchers/gentle work have fully joined, then dispatch only the latest
+request. Pending replacements retain the ordinary scan/source-operation exclusion and Stop discards them.
+Old workers stay owned until joining; no thread is terminated. Background receipts are finalized before
+foreground dispatch. Folder validation runs in ScanWorker. Welcome DriveWorker discovers volumes once
+per coalesced request and publishes immutable scalar DriveSnapshot values; language/unit/action updates
+render the cache without storage I/O. Tab destruction still cancels/joins these owned workers.
 
 **Show.** `ResultsView.show_outcome` hands the tree to `FolderTreeModel` (which wraps the `Node`s, sorts
 per folder lazily, and never copies), the tables to their models, and the root to `TreemapWidget` (layout
@@ -1372,3 +1378,9 @@ Both original snapshots are preserved. Unknown/other attributes, cloud/reparse f
 links, sizes and exact optional date bytes remain strict; linked/mount-boundary nodes do not receive
 this equivalence. Native run 37795477143 proved the only remaining snapshot difference was
 attributes 16 versus 268435472 before this explicitly bounded comparison rule.
+
+Scan integration contract: `MainWindow.start_scan` returns after dispatch or queues the latest replacement;
+folder errors are delivered asynchronously. `WelcomePage.drives_changed` publishes availability; the
+ready-drive action uses `drive_rows` snapshots, while every scan revalidates its actual root independently.
+`ThreadFence` invokes its continuation once on the GUI thread only after captured workers join; it grants
+no source-operation approval and never starts a canceled replacement.

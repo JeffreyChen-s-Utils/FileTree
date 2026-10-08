@@ -26,6 +26,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.recurring_dialog import RecurringDialog
 from je_file_tree.gui.recurring_review import RecurringFlow, ReviewBinding
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 if TYPE_CHECKING:
     from je_file_tree.gui.workspace import ScanWorkspace
@@ -65,6 +66,7 @@ class BackgroundMonitor(QObject):
         self.capacity: CapacityWorker | None = None
         self.scan: ScheduledWorker | None = None
         self.attempt: ScanAttempt | None = None
+        self._retiring: dict[ScheduledWorker, ScanAttempt | None] = {}
         self.reports: dict[str, RecurringProposal] = {}
         self.warnings = SpaceWarnings()
         self.active, self.closing = False, False
@@ -184,7 +186,8 @@ class BackgroundMonitor(QObject):
             worker.finished.connect(lambda: self._capacity_finished(worker))
             self.capacity = worker
             worker.start()
-        if (self.scan is not None or self.workspace.operations.busy or QApplication.activeModalWidget() is not None
+        if (self.scan is not None or self._retiring or self.workspace.operations.busy
+                or QApplication.activeModalWidget() is not None
                 or any(window._worker is not None or window._analysers or window._undo.available
                        for window in self.workspace.operations.windows)):
             return
@@ -366,20 +369,35 @@ class BackgroundMonitor(QObject):
             capacity.deleteLater()
         self.quiesce()
 
-    def quiesce(self) -> None:
+    def quiesce(self, *, wait: bool = True) -> tuple[ScheduledWorker, ...]:
         """Cancel gentle scanning before foreground scans/source reviews, retaining its claimed period."""
         scan, self.scan = self.scan, None
         if scan is not None:
             scan.cancel.set()
-            wait_for(scan)
+            attempt, self.attempt = self.attempt, None
+            self._retiring[scan] = attempt
+            after_threads((scan,), lambda: self._retired_scan(scan, attempt), self)
+        retiring = tuple(self._retiring)
+        if wait:
+            for pending in retiring:
+                wait_for(pending)
+                # Publish its final receipt before any subsequent foreground dispatch.
+                if pending in self._retiring:
+                    self._retired_scan(pending, self._retiring[pending])
+        return retiring
+
+    def _retired_scan(self, scan: ScheduledWorker, attempt: ScanAttempt | None) -> None:
+        if scan not in self._retiring:
+            return
+        self._retiring.pop(scan)
+        if attempt is not None:
             try:
-                self._finish_attempt(replace(self.attempt, state=scan.state))
+                self._finish_attempt(replace(attempt, state=scan.state))
             except (OSError, ValueError) as error:
                 self._failed(str(error))
-            if scan.error:
-                self._failed(scan.error)
-            self.attempt = None
-            scan.deleteLater()
+        if scan.error:
+            self._failed(scan.error)
+        scan.deleteLater()
 
     def shutdown(self) -> None:
         """Explicit Quit joins every native call and scan; close-to-tray is a separate workspace choice."""

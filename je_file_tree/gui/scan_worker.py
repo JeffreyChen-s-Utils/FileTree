@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import threading
 import time
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -296,6 +297,8 @@ class ScanWorker(QThread):
     def run(self) -> None:
         """Thread body: scan, analyse, report."""
         try:
+            if not self._validate_path():
+                return
             scanning = scan_roots if isinstance(self.path, tuple) else scan
             result = scanning(self.path, options=self._options, progress=self.progressed.emit,
                           cancel=self._cancel, on_root=self.started.emit, pause=self._pause)
@@ -316,6 +319,17 @@ class ScanWorker(QThread):
             self.cancelled.emit(analyse(result, partial=True))
             return
         self.succeeded.emit(outcome)
+
+    def _validate_path(self) -> bool:
+        if not isinstance(self.path, str):
+            return True
+        valid = os.path.isdir(self.path)
+        if self._cancel.is_set():
+            self.cancelled.emit(None)
+            return False
+        if not valid:
+            self.failed.emit(tr("not_a_folder", path=self.path))
+        return valid
 
     def _save_history(self, outcome: ScanOutcome) -> bool:
         if self._cancel.is_set():

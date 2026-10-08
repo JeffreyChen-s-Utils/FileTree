@@ -335,11 +335,12 @@ def test_a_scan_shows_the_results_and_is_remembered(window: MainWindow, qapp: QA
     assert window.results.selected_node() is window.results.tree_model.root
 
 
-def test_a_missing_folder_is_reported_without_leaving_the_page(window: MainWindow, tmp_path: Path,
+def test_a_missing_folder_is_reported_without_leaving_the_page(window: MainWindow, qapp: QApplication, tmp_path: Path,
                                                                monkeypatch: pytest.MonkeyPatch) -> None:
     warnings: list[str] = []
     monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, text: warnings.append(text))
     window.start_scan(str(tmp_path / "missing"))
+    _wait(qapp, lambda: bool(warnings) and window._worker is None)
     assert window.pages.currentIndex() == WELCOME_PAGE
     assert warnings and "missing" in warnings[0]
 

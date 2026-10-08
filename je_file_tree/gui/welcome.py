@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QStorageInfo, Qt, Signal
+from dataclasses import dataclass
+import threading
+
+from PySide6.QtCore import QStorageInfo, QThread, QTimer, Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -17,6 +20,8 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_size
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 _MAX_RECENT = 6
 
@@ -25,6 +30,42 @@ def drives() -> list[QStorageInfo]:
     """Mounted volumes that are ready and have a size, as shown on the welcome page."""
     return [volume for volume in QStorageInfo.mountedVolumes()
             if volume.isValid() and volume.isReady() and volume.bytesTotal() > 0]
+
+
+@dataclass(frozen=True, slots=True)
+class DriveSnapshot:
+    """Copied native drive values; UI rendering never queries storage."""
+
+    root: str
+    name: str
+    total: int
+    available: int
+
+
+class DriveWorker(QThread):
+    """Discover native volumes on a cancellable worker, publishing copied values only."""
+
+    ready = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, parent: QWidget) -> None:
+        super().__init__(parent)
+        self.cancel = threading.Event()
+
+    def run(self) -> None:
+        """An in-progress OS query remains owned; canceled results never refresh the UI."""
+        try:
+            rows = []
+            for volume in drives():
+                if self.cancel.is_set():
+                    return
+                rows.append(DriveSnapshot(volume.rootPath(), volume.displayName(),
+                                          volume.bytesTotal(), volume.bytesAvailable()))
+            if not self.cancel.is_set():
+                self.ready.emit(tuple(rows))
+        except (OSError, ValueError) as error:
+            if not self.cancel.is_set():
+                self.failed.emit(str(error))
 
 
 class WelcomePage(QWidget):
@@ -36,10 +77,15 @@ class WelcomePage(QWidget):
     overview_requested = Signal()
     bins_requested = Signal()
     bin_refresh_requested = Signal()
+    drives_changed = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._recent: list[str] = []
+        self.drive_rows: tuple[DriveSnapshot, ...] = ()
+        self._drive_worker: DriveWorker | None = None
+        self._drive_refresh_pending = False
+        self._closed = False
         self.unit = AUTO_UNIT
         self._bin_data: dict[str, TrashUsage] = {}
         self._bin_labels: dict[str, tuple[str, QLabel]] = {}
@@ -61,6 +107,10 @@ class WelcomePage(QWidget):
         self._tip = QLabel()
         self._build()
         self.retranslate()
+        self._drive_timer = QTimer(self)
+        self._drive_timer.setSingleShot(True)
+        self._drive_timer.timeout.connect(self.refresh_drives)
+        self._drive_timer.start(0)
 
     def set_recent(self, folders: list[str]) -> None:
         """Show these recently scanned folders (most recent first)."""
@@ -68,8 +118,42 @@ class WelcomePage(QWidget):
         self._fill_recent()
 
     def refresh_drives(self) -> None:
-        """Re-read the list of drives and how full they are."""
+        """Queue native discovery; repeated requests coalesce while one OS query is active."""
+        if self._closed:
+            return
+        self._drive_timer.stop()
+        if self._drive_worker is not None:
+            self._drive_refresh_pending = True
+            return
+        worker = DriveWorker(self)
+        self._drive_worker = worker
+        worker.ready.connect(lambda rows: self._show_drives(worker, rows))
+        worker.failed.connect(lambda reason: not self._closed and self._drives_title.setToolTip(reason))
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._drive_finished(worker), self))
+        worker.start()
+
+    def _show_drives(self, worker: DriveWorker, rows: tuple[DriveSnapshot, ...]) -> None:
+        if self._closed or worker is not self._drive_worker or worker.cancel.is_set():
+            return
+        self.drive_rows = rows
+        self._drives_title.setToolTip("")
         self._fill_drives()
+        self.drives_changed.emit()
+
+    def _drive_finished(self, worker: DriveWorker) -> None:
+        self._drive_worker = None
+        worker.deleteLater()
+        if self._drive_refresh_pending and not self._closed:
+            self._drive_refresh_pending = False
+            self.refresh_drives()
+
+    def shutdown(self) -> None:
+        """Invalidate replies and join discovery before this page is destroyed."""
+        self._closed = True
+        self._drive_timer.stop()
+        if self._drive_worker is not None:
+            self._drive_worker.cancel.set()
+            wait_for(self._drive_worker)
 
     def set_bin_metadata(self, rows: dict[str, TrashUsage]) -> None:
         """Update visible drive labels with copied query results; missing scopes remain unqueried."""
@@ -149,20 +233,20 @@ class WelcomePage(QWidget):
     def _fill_drives(self) -> None:
         _clear(self._drives)
         self._bin_labels = {}
-        for row, volume in enumerate(drives()):
-            used = volume.bytesTotal() - volume.bytesAvailable()
-            name = volume.displayName() or volume.rootPath()
-            root = volume.rootPath()
+        for row, volume in enumerate(self.drive_rows):
+            used = volume.total - volume.available
+            name = volume.name or volume.root
+            root = volume.root
             button = QPushButton(f"{name}  ({root})" if name != root else root)
             button.setToolTip(tr("welcome_drive_tip", path=root))
             button.clicked.connect(lambda _checked=False, path=root: self.scan_requested.emit(path))
             bar = QProgressBar()
             bar.setRange(0, 1000)
-            bar.setValue(round(1000 * used / volume.bytesTotal()))
+            bar.setValue(round(1000 * used / volume.total))
             bar.setTextVisible(False)
             bar.setMaximumHeight(10)
-            free = QLabel(tr("welcome_drive_free", free=format_size(volume.bytesAvailable()),
-                             total=format_size(volume.bytesTotal())))
+            free = QLabel(tr("welcome_drive_free", free=format_size(volume.available),
+                             total=format_size(volume.total)))
             self._drives.addWidget(button, row * 2, 0)
             self._drives.addWidget(bar, row * 2, 1)
             self._drives.addWidget(free, row * 2, 2)

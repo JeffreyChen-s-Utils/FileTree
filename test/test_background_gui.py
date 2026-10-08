@@ -221,9 +221,10 @@ def test_foreground_scan_cancels_and_joins_gentle_scan_before_dispatch(monitored
     assert entered.wait(5)
     worker = monitor.scan
     monitored.current.start_scan(str(source))
-    assert ended.is_set() and worker.cancel.is_set() and not worker.isRunning()
+    assert worker.cancel.is_set()
     assert monitor.scan is None
     _wait(qapp, lambda: monitored.current._worker is None)
+    assert ended.is_set()
     receipt = next(iter(load_attempts(monitored.settings.value(service.ATTEMPTS_KEY)).values()))
     assert receipt.state == "canceled" and (source / "kept").read_bytes() == b"kept"
 

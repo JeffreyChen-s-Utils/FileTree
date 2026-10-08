@@ -1,5 +1,7 @@
 # FileTree
 
+Folder validation and welcome-drive discovery run on owned workers; rendering and action updates use copied drive values. Replacing a scan requests cancellation and waits asynchronously for the old scan, native watcher and gentle scan to join before dispatching the latest request. Repeated replacements coalesce; Stop discards a pending replacement. Slow native calls remain owned until they finish, while the GUI event loop continues handling events. These changes do not establish a throughput improvement.
+
 **See where your disk space goes.** FileTree scans a folder or a whole drive, adds up every file inside
 it, and shows you the biggest folders and files first — in a folder tree, a colourful treemap and a list
 of the largest files. When you find something you no longer need, move it to the Recycle Bin right from

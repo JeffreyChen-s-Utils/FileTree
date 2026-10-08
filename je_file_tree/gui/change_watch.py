@@ -15,6 +15,7 @@ from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.pacing import give_way
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 if TYPE_CHECKING:
     from je_file_tree.gui.main_window import MainWindow
@@ -92,6 +93,7 @@ class FollowChanges(QObject):
         self._pending = ChangeBatch()
         self._since, self._reconcile = 0.0, 0.0
         self._status, self._detail = "follow_waiting", ""
+        self._retiring: set[ChangeWorker] = set()
         self.label = QLabel(window)
         self.label.setTextFormat(Qt.TextFormat.PlainText)
         self.label.setMaximumWidth(300)
@@ -142,20 +144,31 @@ class FollowChanges(QObject):
         if root is not previous or not self._reconcile:
             self._reconcile = time.monotonic() + RECONCILE_SECONDS
 
-    def stop(self, *, clear: bool = False) -> None:
+    def stop(self, *, clear: bool = False, wait: bool = True) -> tuple[ChangeWorker, ...]:
         """Join through the GUI's shared gate; retain the final bounded batch before releasing maps."""
         worker, self.worker = self.worker, None
         if worker is not None:
             worker.cancel.set()
-            wait_for(worker)
-            self._merge(worker.take())
-            if worker.error and not self._closing:
-                self._set_status("follow_failed", worker.error)
-            worker.deleteLater()
+            root = self.root
+            self._retiring.add(worker)
+            after_threads((worker,), lambda: self._retired(worker, root, clear), self)
         if clear:
             self.root = None
             self._pending, self._since = ChangeBatch(), 0.0
             self._reconcile = 0.0
+        retiring = tuple(self._retiring)
+        if wait:
+            for pending in retiring:
+                wait_for(pending)
+        return retiring
+
+    def _retired(self, worker: ChangeWorker, root: Node | None, clear: bool) -> None:
+        self._retiring.discard(worker)
+        if not clear and not self._closing and self.root is root:
+            self._merge(worker.take())
+            if worker.error:
+                self._set_status("follow_failed", worker.error)
+        worker.deleteLater()
 
     def quiesce(self) -> None:
         """Stop tree capture before source operations; their observation gap requires full reconciliation."""

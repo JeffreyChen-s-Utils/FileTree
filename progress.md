@@ -7,6 +7,9 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
+- **#94** (P1) Remove synchronous worker waits from normal source-operation dialog cancellation/preview replacement (`gui/namespace_dialog.py`, `gui/duplicate_link_dialog.py`, `gui/compression.py` and other owned worker dialogs); retain approvals and partial-outcome reporting until native calls finish.
+- **#95** (P1) Audit remaining GUI synchronous native calls, tree/model work and shutdown waits after the scan/dialog fixes; reproduce the owner's scan and source-operation hangs with native responsiveness evidence before claiming all hangs resolved.
+
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 
 ### Freeing space

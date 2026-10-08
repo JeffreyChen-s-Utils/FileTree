@@ -6,7 +6,7 @@ import json
 import os
 from collections.abc import Callable, Sequence
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, Qt, QTimer
+from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, QThread, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (
@@ -71,7 +71,8 @@ from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcom
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
-from je_file_tree.gui.welcome import WelcomePage, drives
+from je_file_tree.gui.welcome import WelcomePage
+from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
@@ -120,12 +121,12 @@ class MainWindow(QMainWindow):
         self._operations, self._language_base_font = operations, self.font()
         self._close_all: Callable[[], object] | None = None
         self._background_settings: Callable[[], object] | None = None
-        self._background_pause: Callable[[], object] | None = None
+        self._background_pause: Callable[..., tuple[QThread, ...]] | None = None
         self._recurring_show: Callable[[], object] | None = None
         self._language_changed: Callable[[], object] = self.retranslate
         self.settings = settings if settings is not None else QSettings()
         self._journal = OperationJournal(journal_folder())
-        self._worker: ScanWorker | None = None
+        self._init_scan_state()
         self._trash_worker: TrashWorker | None = None
         self._path_dialogs: set[QDialog] = set()
         self._trash_rescans: list[Node] = []
@@ -167,6 +168,11 @@ class MainWindow(QMainWindow):
         self.retranslate()
         self._update_actions()
         self._restore_cleanup_policy()
+
+    def _init_scan_state(self) -> None:
+        self._worker: ScanWorker | None = None
+        self._scan_workers: set[ScanWorker] = set()
+        self._pending_scan: ScanWorker | None = None
 
     def _restore_cleanup_policy(self) -> None:
         self._cleanup_policy = CleanupPolicy()
@@ -210,14 +216,11 @@ class MainWindow(QMainWindow):
 
     def start_scan(self, path: str, *, exact_allocation: bool = False) -> None:
         """Scan ``path`` (stopping a scan already running)."""
-        if self.operation_busy or self._path_dialogs:
+        if self.operation_busy or self._path_dialogs or self._closing:
             return
         self._undo.expire()
         self._trash_rescans.clear()
         path = os.path.abspath(os.path.expanduser(path.strip().strip('"')))
-        if not os.path.isdir(path):
-            QMessageBox.warning(self, tr("scan_failed_title"), tr("not_a_folder", path=path))
-            return
         self._begin_scan(path, exact_allocation=exact_allocation)
 
     def start_scan_roots(self, paths: tuple[str, ...], *, exact_allocation: bool = False) -> None:
@@ -228,7 +231,7 @@ class MainWindow(QMainWindow):
 
     def scan_all_drives(self) -> None:
         """Capture the currently ready mounted roots once; discovery does not grant mutation authority."""
-        self.start_scan_roots(tuple(volume.rootPath() for volume in drives()))
+        self.start_scan_roots(tuple(volume.root for volume in self.welcome.drive_rows))
 
     def choose_roots(self) -> None:
         """Start a combined scan only after accepting an owned explicit-folder list."""
@@ -242,12 +245,15 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def _begin_scan(self, path: str | tuple[str, ...], *, exact_allocation: bool = False) -> None:
-        if self._background_pause is not None:
-            self._background_pause()
-        self._follow.stop(clear=True)
+        background = self._background_pause(wait=False) if self._background_pause is not None else ()
+        following = self._follow.stop(clear=True, wait=False)
         self._undo.expire()
         self._trash_rescans.clear()
-        self.stop_scan(wait=True)
+        previous = self._worker
+        if previous is not None:
+            previous.cancel()
+            if previous is self._pending_scan:
+                previous.deleteLater()
         self._bin_labels.stop()
         self._analyser = None
         self._last_roots = path if isinstance(path, tuple) else ()
@@ -267,13 +273,27 @@ class MainWindow(QMainWindow):
         worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
         worker.history_failed.connect(lambda reason: self._is_current(worker) and not self._closing
                                       and self.statusBar().showMessage(tr("history_save_failed", reason=reason)))
-        worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._release_scan(worker), self))
         self._worker = worker
+        self._pending_scan = worker
         self.results.begin_scan()
         self.pages.setCurrentIndex(RESULTS_PAGE)
         self._update_actions()
         self._live_timer.start()
+        after_threads((*self._scan_workers, *background, *following), lambda: self._dispatch_scan(worker), self)
+
+    def _dispatch_scan(self, worker: ScanWorker) -> None:
+        if self._closing or worker is not self._worker or worker is not self._pending_scan:
+            return
+        if self._background_pause is not None:
+            self._background_pause()
+        self._pending_scan = None
+        self._scan_workers.add(worker)
         worker.start()
+
+    def _release_scan(self, worker: ScanWorker) -> None:
+        self._scan_workers.discard(worker)
+        worker.deleteLater()
 
     def stop_scan(self, *, wait: bool = False) -> None:
         """Ask the running scan (if any) to stop; with ``wait``, until it has."""
@@ -286,6 +306,12 @@ class MainWindow(QMainWindow):
             return
         worker.cancel()
         self.results.scan_bar.stopping()
+        if worker is self._pending_scan:
+            self._pending_scan = self._worker = None
+            worker.deleteLater()
+            self._live_timer.stop()
+            self._back_from_scan()
+            return
         if wait:
             wait_for(worker)
             self._worker = None
@@ -539,8 +565,9 @@ class MainWindow(QMainWindow):
         worker.failed.connect(lambda reason: self._is_current(worker) and self._scan_failed(reason))
         worker.cancelled.connect(lambda _outcome: self._is_current(worker) and self._branch_cancelled())
         worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
-        worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._release_scan(worker), self))
         self._worker = worker
+        self._scan_workers.add(worker)
         self.results.scan_bar.start()
         self._update_actions()
         worker.start()
@@ -1012,6 +1039,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self.welcome.shutdown()
         self._follow.shutdown()
         self._updates.shutdown()
         self._undo.shutdown()
@@ -1026,6 +1054,9 @@ class MainWindow(QMainWindow):
             self._trash_worker = None
             self._report_copy_errors(worker.result)
         self.stop_scan(wait=True)
+        for worker in self._scan_workers.copy():
+            worker.cancel()
+            wait_for(worker)
         self.results.search.stop(wait=True)
         self.results.duplicates.stop(wait=True)
         self.results.cleanup.stop(wait=True)
@@ -1237,6 +1268,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
 
     def _connect(self) -> None:
+        self.welcome.drives_changed.connect(self._update_actions)
         self.results.duplicates.link_requested.connect(self.show_duplicate_links)
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
@@ -1298,7 +1330,7 @@ class MainWindow(QMainWindow):
         for key in ("trash", "history", "git_history"):
             self._actions[key].setEnabled(has_results and not scanning and not virtual)
         self._actions["multi_scan"].setEnabled(not self.operation_busy)
-        self.welcome.scan_all.setEnabled(not scanning and bool(drives()))
+        self.welcome.scan_all.setEnabled(not scanning and bool(self.welcome.drive_rows))
         self._update_bin_buttons()
 
     def _update_bin_buttons(self) -> None:

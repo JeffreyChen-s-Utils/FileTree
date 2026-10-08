@@ -56,9 +56,12 @@ def test_cancel_before_any_reads_works_while_paused(tmp_path) -> None:
 def test_qt_paused_worker_can_be_cancelled_and_joined(qapp, tmp_path) -> None:
     worker = ScanWorker(str(tmp_path), ScanOptions(workers=2))
     outcomes = []
+    roots = []
     worker.cancelled.connect(outcomes.append)
+    worker.started.connect(roots.append)
     assert worker.set_paused(True)
     worker.start()
+    _wait(qapp, lambda: bool(roots))
     worker.cancel()
     wait_for(worker)
     _wait(qapp, lambda: bool(outcomes))

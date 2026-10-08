@@ -1,7 +1,6 @@
 """Combined result lifetimes preserve physical sources and never dispatch the virtual label as a path."""
 
 import json
-from types import SimpleNamespace
 
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
@@ -12,7 +11,8 @@ from test_multi_scan import sources as sources  # noqa: PLC0414 - shared pytest 
 from je_file_tree import cli
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.core.scanner import ScanOptions
-from je_file_tree.gui import main_window, file_actions
+from je_file_tree.gui import file_actions
+from je_file_tree.gui.welcome import DriveSnapshot
 from je_file_tree.gui.charts import MODES
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.multi_scan import MultiScanDialog
@@ -59,10 +59,10 @@ def test_combined_window_renders_all_charts_and_rescans_captured_roots(window, q
     assert window.results.outcome.result.root.size == 6 and window._last_roots == paths
 
 
-def test_scan_all_drives_captures_provider_once_and_normal_scan_restores_source_scope(
+def test_scan_all_drives_captures_cached_roots_and_normal_scan_restores_source_scope(
         window, qapp, sources, monkeypatch):
-    monkeypatch.setattr(main_window, "drives", lambda: [SimpleNamespace(rootPath=lambda path=str(path): path)
-                                                        for path in sources])
+    window.welcome.drive_rows = tuple(DriveSnapshot(str(path), "", 1000, 500) for path in sources)
+    window.welcome.drives_changed.emit()
     window.welcome.scan_all.click()
     _wait(qapp, lambda: window._worker is None)
     assert window.results.outcome.result.root.path is None
