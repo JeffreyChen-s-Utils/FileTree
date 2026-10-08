@@ -91,7 +91,13 @@ jobs:
       run: python tools/validate_autostart.py --output macos-evidence/autostart.json
     - name: Validate owned native background history and cocoa tray lifetime
       timeout-minutes: 5
-      run: python tools/validate_background.py --evidence macos-evidence/background --notification
+      shell: bash
+      run: |
+        for attempt in 1 2 3 4; do
+          evidence="macos-evidence/background/attempt-$attempt"
+          mkdir -p "$evidence"
+          python tools/validate_background.py --evidence "$evidence" --notification 2>&1 | tee "$evidence/probe.log"
+        done
     - name: Validate fresh owned APFS capacity, recovery and cross-volume metadata
       run: python tools/validate_macos_volume.py --evidence macos-evidence/apfs
     - name: Preserve macOS evidence

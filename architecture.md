@@ -1315,6 +1315,9 @@ the last phase and completed fields; complete/owned cleanup are published only a
 scratch cleanup finish. A repeating 60-second faulthandler traceback identifies synchronous Qt/native
 blocking that an event-pump deadline cannot interrupt. The macOS CI step is bounded to five minutes;
 its always-run artifact upload retains partial evidence rather than declaring a native pass.
+The macOS step repeats four fresh native processes with separate `background/attempt-N` phase,
+capture and `probe.log` artifacts. Bash pipefail preserves each Python failure through tee; the
+five-minute step bound includes all attempts, and a blocked attempt cannot be counted as a pass.
 Notification opt-in and source/permission/lifetime checks remain unchanged. This diagnoses observed
 intermittent Cocoa hangs and does not prove their cause or real login/notification permission.
 
