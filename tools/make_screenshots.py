@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from je_file_tree.core.node import Node  # noqa: E402
 from je_file_tree.core.scanner import ScanResult  # noqa: E402
-from je_file_tree.gui.app import create_window  # noqa: E402
+from je_file_tree.gui.app import create_workspace  # noqa: E402
 from je_file_tree.gui.i18n import LANGUAGES  # noqa: E402
 from je_file_tree.gui.main_window import RESULTS_PAGE  # noqa: E402
 from je_file_tree.gui.scan_worker import analyse  # noqa: E402
@@ -76,13 +76,13 @@ def main() -> None:
     for language in LANGUAGES:
         settings = QSettings(str(Path(scratch.name) / f"{language}.ini"), QSettings.Format.IniFormat)
         settings.setValue("language", language)
-        window = create_window(settings)
+        window = create_workspace(settings)
         window.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         window.resize(1200, 720)
         window.show()
-        window.results.show_outcome(analyse(ScanResult(demo_tree(), [], 2.4)))
-        window.pages.setCurrentIndex(RESULTS_PAGE)
-        window.path_edit.setText("C:\\Users\\demo")
+        window.current.results.show_outcome(analyse(ScanResult(demo_tree(), [], 2.4)))
+        window.current.pages.setCurrentIndex(RESULTS_PAGE)
+        window.current.path_edit.setText("C:\\Users\\demo")
         for _ in range(10):
             app.processEvents()
         window.grab().save(str(OUTPUT / f"main_window_{language}.png"))

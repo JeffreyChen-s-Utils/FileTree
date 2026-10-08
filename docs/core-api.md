@@ -621,4 +621,15 @@ TrashWorker supplies this gate for ordinary, duplicate and copy-then-Trash sourc
 rows remain attached, are audited as skipped and receive normal parent refresh/translated reasons.
 The private sparse diagnostic runs the actual production worker for each observed veto, verifies
 durable skipped status and full source preservation, then independently probes raw Qt only on
-its newly owned disposable payload. Native gate conclusions await CI evidence.
+its newly owned disposable payload. Native Windows 10.0.26100 / Qt 6.11.2 CI verified production
+capacity vetoes at 64/96 MiB on both private 512 MiB formats: source snapshot/full SHA-256 preserved,
+durable skipped receipts, and no Qt dispatch. All six sizes passed the guard on the private 2 GiB
+volume. Separate raw-Qt diagnostics retain no-bin outcomes as unknown; preferences are not effective quota.
+
+GUI integration `app.create_workspace(settings, folder=None)` adds a ScanWorkspace with independent
+result-tab MainWindow instances. `add_tab(folder=None)` returns a new owner or None at the sixteen-tab
+limit/close; `current` is the active owner, `close_tab(index)` joins that owner, and closing the last tab
+exits. Workspace close joins all owners. These factories schedule no network requests; the GUI entry
+point invokes start_services after showing the workspace. Existing create_window retains its return
+type and behavior. Shared OperationGroup exclusion is additional to exact source revalidation and
+never authorizes filesystem operations. Combined scan roots remain one read-only tab.

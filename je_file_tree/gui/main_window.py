@@ -73,6 +73,7 @@ from je_file_tree.gui.welcome import WelcomePage, drives
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
+from je_file_tree.gui.operation_group import OperationGroup
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
 # How often the tree of a running scan is refreshed.
@@ -111,13 +112,16 @@ def read_workers(settings: QSettings) -> int:
 class MainWindow(QMainWindow):
     """The FileTree window."""
 
-    def __init__(self, settings: QSettings | None = None) -> None:
+    def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
+        self._operations = operations
+        self._close_all: Callable[[], object] | None = None
+        self._language_changed: Callable[[], object] = self.retranslate
         self.settings = settings if settings is not None else QSettings()
         self._journal = OperationJournal(journal_folder())
         self._worker: ScanWorker | None = None
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs: set[NamespaceDialog | DuplicateLinksDialog | VirtualDisksDialog] = set()
+        self._path_dialogs: set[QDialog] = set()
         self._trash_rescans: list[Node] = []
         self._closing = False
         self._analyser: AnalyseWorker | None = None
@@ -155,6 +159,9 @@ class MainWindow(QMainWindow):
         self._restore()
         self.retranslate()
         self._update_actions()
+        self._restore_cleanup_policy()
+
+    def _restore_cleanup_policy(self) -> None:
         self._cleanup_policy = CleanupPolicy()
         if self.settings.contains(CLEANUP_POLICY_KEY):
             try:
@@ -165,10 +172,22 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(tr("policy_saved_invalid"))
         self.results.cleanup.set_policy(self._cleanup_policy)
 
+    def quit_application(self) -> None:
+        """Close the containing workspace, or this standalone integration window."""
+        if self._close_all is None:
+            self.close()
+        else:
+            self._close_all()
+
+    @property
+    def local_operation_busy(self) -> bool:
+        """Whether this tab owns Trash, restoration or a source-operation review."""
+        return self._trash_worker is not None or self._undo.busy or bool(self._path_dialogs)
+
     @property
     def operation_busy(self) -> bool:
-        """Serialize source mutations across Trash, restoration and owned path-operation dialogs."""
-        return self._trash_worker is not None or self._undo.busy or bool(self._path_dialogs)
+        """Serialize source mutations across this window and any result-tab peers."""
+        return self.local_operation_busy or self._operations is not None and self._operations.busy
 
     # --- scanning ---------------------------------------------------------
 
@@ -371,11 +390,13 @@ class MainWindow(QMainWindow):
         dialog = NamespaceDialog(root, nodes, self._unit, self, rename=rename)
         self._undo.expire()
         self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
             self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
             QTimer.singleShot(0, self._rescan_after_trash)
         if not self._closing and dialog.changed and self.results.outcome is outcome:
@@ -397,11 +418,13 @@ class MainWindow(QMainWindow):
         dialog = CopyDialog(root, nodes, self._unit, self)
         self._undo.expire()
         self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
             self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
             QTimer.singleShot(0, self._rescan_after_trash)
         if self._closing or not dialog.changed or self.results.outcome is not outcome:
@@ -430,11 +453,13 @@ class MainWindow(QMainWindow):
         self._undo.expire()
         dialog = DuplicateLinksDialog(root, groups, self._journal, self)
         self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
             self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
             QTimer.singleShot(0, self._rescan_after_trash)
         if not self._closing and dialog.changed and self.results.outcome is outcome:
@@ -452,10 +477,14 @@ class MainWindow(QMainWindow):
             return
         dialog = CompressionDialog(node, self._unit, self, partial=outcome.partial)
         dialog.selected.connect(self.results.select_node)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
         if dialog.changed:
             self.rescan_folder(node, exact_allocation=True)
@@ -882,7 +911,7 @@ class MainWindow(QMainWindow):
         set_language(code)
         apply_qt_translation(code)
         self.settings.setValue("language", code)
-        self.retranslate()
+        self._language_changed()
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
@@ -943,6 +972,7 @@ class MainWindow(QMainWindow):
         self._updates.shutdown()
         self._undo.shutdown()
         for dialog in self._path_dialogs.copy():
+            dialog.shutdown()
             dialog.reject()
         self._bin_labels.shutdown()
         if self._trash_worker is not None:
@@ -1029,7 +1059,7 @@ class MainWindow(QMainWindow):
             ("count_hard_links", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
-            ("quit", "Ctrl+Q", self.close),  # Windows has no standard Quit key
+            ("quit", "Ctrl+Q", self.quit_application),  # Windows has no standard Quit key
             ("hidden", None, lambda: self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())),
             ("elevate", None, self.restart_as_admin),
             ("exclusions", None, self.edit_exclusions),
@@ -1180,6 +1210,8 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        if self._operations is not None:
+            self._operations.refresh(self)
         scanning = self._worker is not None or self.operation_busy
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
@@ -1312,14 +1344,21 @@ class MainWindow(QMainWindow):
         if self._worker is not None or self.operation_busy:
             return
         dialog = BinDialog(self._unit, self)
-        dialog.scan_requested.connect(self.start_scan)
+        requested: list[str] = []
+        dialog.scan_requested.connect(requested.append)
         dialog.emptied.connect(self._bin_emptied)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             dialog.exec()
         finally:
             dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
             self.refresh_bin_labels()
+        if requested and not self._closing:
+            self.start_scan(requested[-1])
 
     def _bin_emptied(self, _root: str) -> None:
         self._analyser = None
@@ -1351,7 +1390,7 @@ class MainWindow(QMainWindow):
         """
         arguments = [self._last_path] if self._last_path else []
         if elevation.relaunch_elevated(arguments):
-            self.close()
+            self.quit_application()
             return
         self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
 

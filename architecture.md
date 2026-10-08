@@ -21,6 +21,15 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+`gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
+result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
+sources; close cancels and joins only that owner, while workspace Quit joins every tab. `OperationGroup`
+checks all local source-operation owners on the GUI thread and synchronizes action availability without
+processing events. Trash/Undo and modal copy/namespace/link/compression/compaction/bin reviews block peer
+mutations; completed scans still undergo their normal per-source snapshot/approval checks. Language
+retranslation crosses every tab. Only the running entry point schedules update services; factories are
+passive. `create_window` remains the single-window integration factory; `create_workspace` is additive.
+
 `core.similar_photos` groups 64-bit signatures by an observed representative, without transitive
 chains or exact-duplicate authorization. Disjoint d+1 bands guarantee a matching band for distance d;
 the 0..8-bit index preserves the earliest matching representative, with linear fallback for 9..16.

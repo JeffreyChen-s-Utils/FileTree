@@ -16,6 +16,7 @@ from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.scan_worker import pace_workers
 from je_file_tree.gui.themes import theme_controller
+from je_file_tree.gui.workspace import ScanWorkspace
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
@@ -41,6 +42,16 @@ def wants_admin_prompt(settings: QSettings) -> bool:
     return elevation.can_elevate() and read_flag(settings, ASK_ADMIN_KEY, True)
 
 
+def create_workspace(settings: QSettings, folder: str | None = None) -> ScanWorkspace:
+    """Build concurrent result tabs; keep create_window available for single-window integrations."""
+    first = create_window(settings)
+    workspace = ScanWorkspace(settings, first)
+    workspace.setWindowIcon(app_icon())
+    if folder:
+        first.start_scan(folder)
+    return workspace
+
+
 def main(argv: Sequence[str]) -> int:
     """Run the window until it is closed; ``argv`` may hold one folder to scan right away."""
     claim_taskbar_button()  # before any window exists, or Windows files it under Python's button
@@ -55,9 +66,9 @@ def main(argv: Sequence[str]) -> int:
     if wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
         return 0
     pace_workers()  # background work waits while the window is busy
-    window = create_window(settings, folder)
+    window = create_workspace(settings, folder)
     window.show()
-    window._updates.start()
+    window.start_services()
     return app.exec()
 
 

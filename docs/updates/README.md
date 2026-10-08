@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-36 | 2026-10-08 | Own concurrent result tabs and serialize source operations | #done #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-35 | 2026-10-08 | Refuse unsafe Windows Qt recycling before source dispatch | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-34 | 2026-10-08 | Preserve extended UNC discovery paths and record sparse Trash boundaries | #fix #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-33 | 2026-10-08 | Add isolated sparse Trash size-boundary diagnostics | #implementation #validation | [2026-10-b](2026-10-b.md) |

@@ -15,7 +15,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Freeing space
 
 - **#21** (P2) macOS bin querying/Finder-wide emptying remains blocked on a native environment; no Mac is available from the owner. Verify native macOS automation consent, APFS/firmlink scope deduplication, multi-volume coverage, active-operation lifetime and failed/partial metadata refresh; fixture/mocked execution does not prove native behavior.
-- **#76** (P1) Implement and natively verify fail-closed Windows Qt Trash preflight for oversized/disabled/unknown Recycle Bin settings and incomplete source sizes; retain no-bin outcomes as unknown. Finish isolated APFS recovery for one/all hard-link names, compression and sparse files, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown. Large-sparse discrepancy requires isolated administrator Windows CI investigation; local administrator access is unavailable. APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
+- **#76** (P1) Finish isolated APFS recovery for one/all hard-link names, compression and sparse files, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown; Windows no-bin outcomes remain unknown. APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
 
 ### Finding things
 
@@ -39,7 +39,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Everyday use
 
-- **#69** (P3) Several scans at once: result tabs, each its own scan, to look at two drives side by side; the window's single `ResultsView` becomes one per tab, with the scan worker per tab.
 
 ### Distribution
 

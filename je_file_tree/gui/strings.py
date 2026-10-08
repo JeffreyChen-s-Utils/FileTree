@@ -9,6 +9,10 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'workspace_new': 'New scan tab',
+    'workspace_new_tip': 'Open an independent scan tab (Ctrl+T); close the current tab with Ctrl+W.',
+    'workspace_close': 'Close scan tab',
+    'workspace_empty': 'Choose a folder',
     'trash_skip_recycle_unverified': (
         'Windows recycling settings, complete source size or native bin metadata could not be verified; source kept.'
     ),
@@ -1341,6 +1345,10 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'workspace_new': '新增掃描分頁',
+    'workspace_new_tip': '開啟獨立的掃描分頁（Ctrl+T）；以 Ctrl+W 關閉目前分頁。',
+    'workspace_close': '關閉掃描分頁',
+    'workspace_empty': '選擇資料夾',
     'trash_skip_recycle_unverified': (
         '無法核對 Windows 回收設定、完整來源大小或原生回收筒資料；已保留來源。'
     ),
@@ -2545,6 +2553,10 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'workspace_new': '新建扫描标签页',
+    'workspace_new_tip': '打开独立的扫描标签页（Ctrl+T）；用 Ctrl+W 关闭当前标签页。',
+    'workspace_close': '关闭扫描标签页',
+    'workspace_empty': '选择文件夹',
     'trash_skip_recycle_unverified': (
         '无法核对 Windows 回收设置、完整来源大小或原生回收站数据；已保留来源。'
     ),
