@@ -973,6 +973,13 @@ metadata reader remains separate from `scan`: ACL-aware Node construction/option
 parity must pass before enabling the backend. `tools/validate_mft.py` accepts only a new owned private
 NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
 CI retains phase evidence. Synthetic tests are not proof of native metadata parity.
+`core/windows_directory.py` streams bounded FILE_ID_EXTD_DIR_INFO under ordinary scandir listing
+permission, checked native file ID/volume and a no-follow handle pinned against rename/delete.
+It rejects unsafe/corrupt chains, reparse/cloud directory scopes and changed identities, propagates
+worker checks, and closes only its own handle. Callers must anchor ancestors. It makes no raw-volume
+or privilege calls; private-image validation compares native names/IDs/sizes/attributes/birth/modified
+dates across a reply larger than one buffer. Directory allocation is retained separately. Node/options
+and full-drive fallback/parity validation are still required before selecting an MFT scan backend.
 Raw resident DATA allocation is zero separate clusters. Its logical byte length and bounded
 ValueOffset..RecordLength capacity (including padding) are distinct. FILE_STANDARD_INFO may report
 the resident space, not logical length. Diagnostics preserve these fields separately and require

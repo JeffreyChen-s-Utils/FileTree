@@ -36,6 +36,14 @@ parse exception as cause; diagnostic errors never include raw records or DATA pa
 Split attribute-list streams and unsupported bootstrap mappings refuse. Raw access does not establish
 directory ACL coverage. `scan` still uses its ordinary backend; native reading/tree/options/fallback
 parity must be validated before enabling MFT scanning.
+`core.windows_directory.directory_entries(path, expected, check=None)` streams checked
+`WindowsEntry` metadata from FILE_ID_EXTD_DIR_INFO: native 128-bit file identity, name, sizes,
+attributes/reparse tag and four nanosecond dates. `expected` is a captured directory `Snapshot`.
+An ordinary scandir permission check precedes the metadata handle; reparse/cloud directories,
+identity changes, invalid bounds, unsafe names and native failures refuse. Only the owned handle
+is closed; consumers must anchor ancestors and consume/close the iterator on their worker.
+Checks propagate before each batch/entry. This performs no raw access or privilege changes and
+does not enable the MFT backend. Directory allocation remains a separate native observation.
 
 The import paths, argument names and result attributes listed here are the supported public API.
 Call optional arguments by keyword and consume results by attribute; new fields may be added.

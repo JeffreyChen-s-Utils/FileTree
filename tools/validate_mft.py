@@ -14,7 +14,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from je_file_tree.core import mft  # noqa: E402
 from je_file_tree.core.export import _atomic_file  # noqa: E402
 from je_file_tree.core.mft_reader import NTFSReader  # noqa: E402
+from je_file_tree.core.snapshot import stat_snapshot, unpack_snapshot  # noqa: E402
 from je_file_tree.core.windows_allocation import file_allocation  # noqa: E402
+from je_file_tree.core.windows_directory import directory_entries  # noqa: E402
 from tools.validate_windows_volume import _fixtures, _write  # noqa: E402
 from tools.windows_owned_volume import owned_ntfs_volume, require, verify_volume  # noqa: E402
 
@@ -73,6 +75,23 @@ def _observe(native: NTFSReader, path: Path) -> dict:
                               for item in attributes if item.kind == mft.DATA and item.name and not item.lowest_vcn]}
 
 
+def _directory_observations(root: Path, paths: list[Path]) -> dict:
+    entries = list(directory_entries(str(root), unpack_snapshot(stat_snapshot(str(root)))))
+    require(len(entries) == len(paths) and {entry.name for entry in entries} == {path.name for path in paths},
+            "Native identity listing differs from ordinary directory names/coverage")
+    observations = {}
+    for entry in entries:
+        info = (root / entry.name).lstat()
+        created = getattr(info, "st_birthtime_ns", info.st_ctime_ns)
+        require((entry.file_id, entry.size, entry.attributes, entry.times[0], entry.times[2]) ==
+                (info.st_ino, info.st_size, info.st_file_attributes, created, info.st_mtime_ns),
+                f"Native directory identity/size/attributes/birth/modified metadata differs: {entry.name}")
+        observations[entry.name] = {"reference": entry.file_id, "size": entry.size,
+                                   "directory_allocated": entry.allocated, "attributes": entry.attributes,
+                                   "reparse_tag": entry.reparse_tag, "dates_ns": entry.times}
+    return observations
+
+
 def _proof(volume) -> dict:
     root = _fixtures(volume)
     verify_volume(volume)
@@ -92,6 +111,8 @@ def _proof(volume) -> dict:
     _write(linked, b"private extension fixture" * 4096)
     for index in range(128):
         os.link(linked, root / (f"alias-{index:03}-" + "long-name-" * 8 + ".bin"))
+    for index in range(96):
+        _write(root / (f"directory-batch-{index:03}-" + "long-name-" * 16 + ".bin"), b"")
     paths = sorted(root.iterdir())
     before = _capture([*paths, named_stream])
     observations = {}
@@ -105,10 +126,11 @@ def _proof(volume) -> dict:
         require(all(item[1] in references for name, item in before.items() if name != str(named_stream)),
                 "Bounded raw streaming omitted a fresh native file reference")
         native.verify()
+    directory = _directory_observations(root, paths)
     verify_volume(volume)
     require(_capture([*paths, named_stream]) == before, "MFT observations changed fixture identity/data/streams")
     return {"files": observations, "source_preserved": True, "stream_preserved": True,
-            "raw_stream_complete": True, "scanner_enabled": False}
+            "raw_stream_complete": True, "directory_entries": directory, "scanner_enabled": False}
 
 
 def main() -> None:

@@ -431,7 +431,12 @@ reuse sequences and never retains resident main/named file contents. It is not y
 scanner. `core/mft_reader.py` adds bounded read-only access for an existing administrator token on
 fixed local NTFS volumes, checked geometry and sequence/owner-checked extensions, without requesting
 elevation or modifying privileges. A CI diagnostic uses a new private image for native metadata
-comparisons; native evidence and ACL-aware tree/options/fallback parity remain prerequisites to enable it.
+comparisons; native raw-record, alias/extension, resident-capacity and source/stream preservation checks
+passed with verified image cleanup. ACL-aware tree/options/fallback parity remains required to enable it.
+`core/windows_directory.py` supplies bounded native visible-name/file-ID metadata after an ordinary
+directory permission check, without changing privileges. It rejects changed/reparse/cloud scopes and
+closes its owned handle on stop; callers must anchor ancestors. Private-image comparisons of this
+multi-batch metadata and the Node backend are still pending.
 Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` can still report
 resident space with alignment padding. The parser retains logical length and bounded resident value
 capacity separately, and the diagnostic records raw/native allocation observations separately.
