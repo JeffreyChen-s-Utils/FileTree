@@ -79,6 +79,48 @@ def test_snapshot_diagnostics_report_exact_trailing_attribute_and_link_fields():
     }
 
 
+def _directory_info():
+    return SimpleNamespace(st_dev=1, st_ino=2, st_size=0, st_mode=0o40777, st_mtime_ns=100,
+                           st_ctime_ns=100, st_file_attributes=0x10, st_nlink=1)
+
+
+def test_only_proven_directory_representation_is_equivalent_without_changing_either_snapshot():
+    info = _directory_info()
+    ordinary = pack_snapshot(info)
+    info.st_file_attributes |= 0x10000000
+    audited = pack_snapshot(info)
+    assert ordinary != audited and probe._same_snapshot(ordinary, audited)
+    assert probe._same_snapshot(audited, ordinary)
+    assert probe._field_difference("snapshot", ordinary, audited) == {"attributes": (16, 268435472)}
+
+
+@pytest.mark.parametrize("field, value", [
+    ("st_ino", 3), ("st_nlink", 2), ("st_mtime_ns", 101), ("st_ctime_ns", 101),
+    ("st_file_attributes", 0x20000010), ("st_file_attributes", 0x10000012),
+    ("st_file_attributes", 0x10000410), ("st_file_attributes", 0x10001010),
+    ("st_file_attributes", 0x10000000), ("st_mode", 0o100666),
+])
+def test_directory_representation_never_hides_other_snapshot_changes(field, value):
+    info = _directory_info()
+    ordinary = pack_snapshot(info)
+    info.st_file_attributes |= 0x10000000
+    setattr(info, field, value)
+    assert not probe._same_snapshot(ordinary, pack_snapshot(info))
+
+
+def test_semantic_rows_keep_node_link_boundaries_and_all_other_fields_strict():
+    info = _directory_info()
+    ordinary = ScanResult(Node("owned", True, children=[], snapshot=pack_snapshot(info)), [])
+    info.st_file_attributes |= 0x10000000
+    audited = ScanResult(Node("owned", True, children=[], snapshot=pack_snapshot(info)), [], backend="mft")
+    assert probe._same_rows(probe._rows(ordinary), probe._rows(audited))
+    ordinary.root.is_link = audited.root.is_link = True
+    assert not probe._same_rows(probe._rows(ordinary), probe._rows(audited))
+    ordinary.root.is_link = audited.root.is_link = False
+    audited.root.allocated = 1
+    assert not probe._same_rows(probe._rows(ordinary), probe._rows(audited))
+
+
 def test_acl_dispatch_refuses_outside_owned_private_tree_before_subprocess(tmp_path, monkeypatch):
     monkeypatch.setattr(probe, "verify_volume", lambda _v: None)
     def forbidden(*_args, **_kwargs):

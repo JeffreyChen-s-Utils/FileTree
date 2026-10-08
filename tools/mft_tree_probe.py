@@ -15,12 +15,16 @@ import uuid
 from je_file_tree.core.mft_reader import NTFSReader
 from je_file_tree.core.mft_scan import _audit
 from je_file_tree.core.scanner import ACCESS_DENIED, NOT_SCANNED, ScanCancelledError, ScanOptions, ScanResult, scan
-from je_file_tree.core.snapshot import snapshot_times, unpack_snapshot
+from je_file_tree.core.snapshot import snapshot_times, stable_snapshot, unpack_snapshot
 from je_file_tree.core.windows_directory import WindowsEntry
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
 _ROW_FIELDS = ("path", "is_dir", "is_link", "size", "allocated", "file_count", "dir_count", "modified",
                "error", "snapshot", "owner", "accounting")
+_SNAPSHOT_COLUMN = _ROW_FIELDS.index("snapshot")
+_DIRECTORY = 0x10
+_NTFS_DIRECTORY = 0x10000000
+_UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
 
 
 def _rows(result: ScanResult) -> list[tuple]:
@@ -35,6 +39,37 @@ def _field_difference(name: str, left: object, right: object) -> object:
         before["times"], after["times"] = snapshot_times(left), snapshot_times(right)
         return {key: (value, after[key]) for key, value in before.items() if value != after[key]}
     return repr(left)[:256], repr(right)[:256]
+
+
+def _same_snapshot(left: bytes | None, right: bytes | None) -> bool:
+    if left == right:
+        return True
+    if left is None or right is None or len(left) != len(right):
+        return False
+    before, after = unpack_snapshot(left), unpack_snapshot(right)
+    if (not before.is_dir or not after.is_dir or before.is_link or after.is_link
+            or not before.attributes & after.attributes & _DIRECTORY
+            or (before.attributes | after.attributes) & _UNAVAILABLE):
+        return False
+    # Native evidence proves only this internal DIRECTORY representation differs across the APIs.
+    # Full published snapshots remain intact; all other metadata and optional date bytes must agree.
+    return (replace(before, attributes=before.attributes & ~_NTFS_DIRECTORY)
+            == replace(after, attributes=after.attributes & ~_NTFS_DIRECTORY)
+            and left[len(stable_snapshot(left)):] == right[len(stable_snapshot(right)):])
+
+
+def _same_rows(left: list[tuple], right: list[tuple]) -> bool:
+    if len(left) != len(right):
+        return False
+    for before, after in zip(left, right, strict=True):
+        if before == after:
+            continue
+        if (before[:_SNAPSHOT_COLUMN] != after[:_SNAPSHOT_COLUMN]
+                or before[_SNAPSHOT_COLUMN + 1:] != after[_SNAPSHOT_COLUMN + 1:]
+                or not before[1] or before[2]
+                or not _same_snapshot(before[_SNAPSHOT_COLUMN], after[_SNAPSHOT_COLUMN])):
+            return False
+    return True
 
 
 def _parity_detail(ordinary: ScanResult, audited: ScanResult) -> str:
@@ -71,13 +106,14 @@ def _compare(root: Path, options: ScanOptions) -> dict:
     if audited.backend != "mft":
         _diagnose(root, ordinary)
     require(audited.root is published[0] and len(published) == 1, "Native scan published another root")
-    require(_rows(ordinary) == _rows(audited) and sorted(ordinary.errors) == sorted(audited.errors),
+    require(_same_rows(_rows(ordinary), _rows(audited)) and sorted(ordinary.errors) == sorted(audited.errors),
             "Native metadata tree differs from ordinary Node/options/coverage: " + _parity_detail(ordinary, audited))
     require(ordinary.hard_links == audited.hard_links, "Native metadata hard-link accounting differs")
     return {"options": asdict(options), "ordinary_seconds": ordinary.elapsed,
             "mft_seconds": audited.elapsed, "nodes": len(_rows(audited)), "errors": len(audited.errors),
             "files": audited.root.file_count, "logical_bytes": audited.root.size,
-            "allocated_bytes": audited.root.allocated, "backend": audited.backend, "equal": True}
+            "allocated_bytes": audited.root.allocated, "backend": audited.backend, "equal": True,
+            "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"}
 
 
 def _acl(volume: OwnedVolume, path: Path, action: str, descriptor: str = "") -> str:

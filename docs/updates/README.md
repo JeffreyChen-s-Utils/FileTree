@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-88 | 2026-10-08 | Compare proven NTFS directory snapshot representations | #snapshot #ntfs #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-87 | 2026-10-08 | Report exact differing snapshot fields in native tree validation | #snapshot #ntfs #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-86 | 2026-10-08 | Retain ordinary Windows no-follow path authority with cached identities | #snapshot #scanner #ntfs #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-85 | 2026-10-08 | Clarify Japanese and Korean recovery and approval wording | #snapshot #localization #validation | [2026-10-c](2026-10-c.md) |

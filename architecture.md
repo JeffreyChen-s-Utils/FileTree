@@ -1246,7 +1246,14 @@ detail without weakening comparisons; native candidate success alone is not pari
 
 Ordinary Windows os.DirEntry metadata always passes through no-follow os.lstat even when a cached
 ID is valid, because enumeration can omit NTFS internal attributes. Full attributes remain in
-NodeSnapshot and align with later native path validation; denied paths retain ordinary errors.
+NodeSnapshot for later native path validation; denied paths retain ordinary errors.
 Non-DirEntry audited adapters retain their already checked metadata. POSIX caching/missing-ID
 fallback remain unchanged. Owned 10k-file/1k-folder one-worker measurements retain baseline and
 path-authority medians in docs/updates/scan-20261008-path-authority.json; no speed claim is made.
+
+Native tree parity compares all fields/coverage and normalizes only the known internal NTFS
+DIRECTORY representation between independently confirmed ordinary nonlinked directory snapshots.
+Both original snapshots are preserved. Unknown/other attributes, cloud/reparse flags, identities,
+links, sizes and exact optional date bytes remain strict; linked/mount-boundary nodes do not receive
+this equivalence. Native run 37795477143 proved the only remaining snapshot difference was
+attributes 16 versus 268435472 before this explicitly bounded comparison rule.
