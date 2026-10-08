@@ -15,6 +15,7 @@ from je_file_tree.core.background import (
     MonitorConfig, ScanAttempt, SpaceWarnings, claim_scan, due_roots, dump_attempts, load_attempts, load_config,
 )
 from je_file_tree.core.formatting import format_size
+from je_file_tree.gui import autostart
 from je_file_tree.gui.background_dialog import BackgroundDialog
 from je_file_tree.gui.background_worker import CapacityWorker, ScheduledWorker
 from je_file_tree.gui.history import configured_history
@@ -105,10 +106,22 @@ class BackgroundMonitor(QObject):
         except (ValueError, OSError) as error:
             self._failed(str(error))
             config = MonitorConfig()
-        dialog = BackgroundDialog(config, self.workspace)
+        startup, startup_error = None, ""
+        try:
+            startup = autostart.registration()
+        except (OSError, ValueError) as error:
+            startup_error = tr("background_startup_error", detail=str(error))
+        dialog = BackgroundDialog(config, self.workspace, startup=startup, startup_error=startup_error)
         try:
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 self.configure(dialog.configuration())
+                if (startup is not None and dialog.startup.isChecked() != startup.installed
+                        and self.settings.status() == QSettings.Status.NoError):
+                    try:
+                        autostart.set_enabled(dialog.startup.isChecked())
+                    except (OSError, ValueError) as error:
+                        self.show_window()
+                        self._failed(tr("background_startup_error", detail=str(error)))
         finally:
             dialog.deleteLater()
 

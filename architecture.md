@@ -66,7 +66,12 @@ forces gentle/one-thread scans and normal bounded history, recording incomplete 
 leaving foreground tabs untouched. Foreground scans/source reviews cancel and join gentle work.
 Explicit Quit joins everything; window close hides only with enabled/available tray, and tray loss
 restores the window. --background skips elevation and only hides a configured native tray session;
-it never enables monitoring. Removable per-user automatic startup remains #38.
+it never enables monitoring. `gui.autostart` exposes actual native registration and an explicit separate
+login choice. `startup_windows` uses one HKCU Run value and a durable private receipt; `startup_posix`
+uses owned canonical metadata, descriptor-anchored no-follow directories and exclusive publication.
+Foreign/changed/shared/linked entries are refused; removal rechecks captured metadata. No shell,
+global registration, immediate process launch, KeepAlive or elevation is used. The setting affects
+future logins; native metadata presence does not prove OS login approval. Remaining desktop proof is #38.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
@@ -905,6 +910,9 @@ The GUI entry point accepts `--background` for an explicitly enabled monitor. It
 and hides the workspace only when the saved opt-in configuration and native system tray are usable.
 The flag alone never enables monitoring. Window close may keep an opted-in monitor in the tray;
 `Workspace.quit_application` is the explicit exit boundary and joins every owned worker.
+Per-user login registration passes only absolute FileTree launcher arguments and `--background`.
+Its native entry names and strict ownership marker are persistent removal contracts; app preferences
+never substitute for actual registration or authorize overwriting another application's entry.
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.

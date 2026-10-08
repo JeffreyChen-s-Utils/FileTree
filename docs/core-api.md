@@ -704,7 +704,7 @@ validation rejects non-finite/oversized values without overflowing display or sc
 `gui.background_monitor.BackgroundMonitor` belongs to ScanWorkspace. Factories are passive;
 start_services starts monitoring only when persisted background_config explicitly enables it and
 a system tray is available. Options → Background monitor reviews selected folders, threshold and
-interval; no automatic startup registration or clean-up follows acceptance. CapacityWorker copies
+interval and a separate opt-in current-user login entry; no automatic clean-up follows acceptance. CapacityWorker copies
 at most 256 OS capacity rows on its thread, without bin queries. Informational crossing warnings
 appear as supported system notifications and plain-text status/tray tooltips; OS preferences may
 suppress notifications. Unknown capacity never triggers a warning or falsely clears its latch.
@@ -718,3 +718,13 @@ worker; explicit Quit joins capacity and scans. Close-to-tray requires explicit 
 available tray; losing a tray restores a hidden workspace. Disabling restores the window and joins.
 The GUI entry accepts --background, skips elevation and hides only when enabled/native tray is ready;
 disabled/unavailable monitoring stays visible. The flag alone never enables monitoring or startup.
+
+`gui.autostart.registration()` reads native registration without creating metadata; `set_enabled(bool)`
+applies only an explicit dialog choice. Windows uses one fixed HKCU Run value and a separate strict
+durable ownership receipt before publication. POSIX uses descriptor-anchored no-follow private user
+directories, canonical desktop/plist metadata and exclusive link publication; changed/foreign/linked/
+shared entries are refused. Removal rechecks the captured content/identity; concurrency is observational.
+Absolute literal launcher arguments avoid shell/working-directory dependency. Moving an installed
+program requires explicit removal before registering a different program. Registration affects future
+logins; no immediate launchctl/bootstrap, process launch or kill, KeepAlive, elevation or global startup
+entry is used. Inspection reports metadata presence, not OS startup-policy approval or successful login.

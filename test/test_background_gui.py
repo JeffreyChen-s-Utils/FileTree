@@ -120,6 +120,59 @@ def test_durable_claim_throttles_second_owner_and_corruption_fails_closed(monito
         monitored.background._claim()
 
 
+def test_startup_dialog_cancel_has_no_native_effect_and_accept_is_separate_opt_in(monitored, monkeypatch):
+    from je_file_tree.gui import autostart
+    from PySide6.QtWidgets import QDialog
+
+    calls = []
+    monkeypatch.setattr(autostart, "registration", lambda: autostart.Registration(False, "owned fixture"))
+    monkeypatch.setattr(autostart, "set_enabled", calls.append)
+
+    def reject(dialog):
+        dialog.enabled.setChecked(True)
+        dialog.startup.setChecked(True)
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(BackgroundDialog, "exec", reject)
+    monitored.background.configure_dialog()
+    assert not calls and not monitored.settings.contains(service.CONFIG_KEY)
+
+    def accept(dialog):
+        dialog.enabled.setChecked(True)
+        dialog.startup.setChecked(True)
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(BackgroundDialog, "exec", accept)
+    monitored.background.configure_dialog()
+    assert calls == [True] and service.configuration(monitored.settings).enabled
+
+
+def test_disabling_monitor_explicitly_removes_owned_startup_and_failure_stays_visible(monitored, monkeypatch):
+    from je_file_tree.gui import autostart
+    from PySide6.QtWidgets import QDialog
+
+    _enable(monitored)
+    monkeypatch.setattr(autostart, "registration", lambda: autostart.Registration(True, "owned fixture"))
+    calls = []
+
+    def remove(enabled):
+        calls.append(enabled)
+        raise OSError("entry changed before removal")
+
+    monkeypatch.setattr(autostart, "set_enabled", remove)
+
+    def accept(dialog):
+        assert dialog.startup.isChecked()
+        dialog.enabled.setChecked(False)
+        assert not dialog.startup.isChecked()
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(BackgroundDialog, "exec", accept)
+    monitored.background.configure_dialog()
+    assert calls == [False] and not monitored.background.config.enabled
+    assert "changed before removal" in monitored.background.error and not monitored.isHidden()
+
+
 def test_actual_scheduled_history_is_gentle_and_preserves_sources_without_touching_tabs(monitored, qapp, tmp_path):
     source = tmp_path / "scheduled-source"
     source.mkdir()

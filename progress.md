@@ -33,7 +33,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Over time
 
-- **#38** (P3) Add opt-in removable per-user startup (Windows HKCU Run, Linux autostart desktop file, macOS LaunchAgent), with owned-registration collision checks. Review native tray/notification and scheduled-history CI proof on supported desktops; unavailable trays must keep/restore the visible workspace and explicit Quit must join all work.
+- **#38** (P3) Review native tray/notification and scheduled-history CI proof on supported desktops, plus native per-user startup fixture results and real login launch. Unavailable trays must keep/restore the visible workspace and explicit Quit must join all work. Actual login startup can be suppressed by OS policy; fixture registration does not prove it.
 - **#86** (P2) Reviewable recurring clean-up: combine #37's scan history with the policy in #81 to show “new junk since last scan” and “largest new growth” per drive; a scheduled scan may prepare a dated proposal but never move anything automatically. The proposal records the scan coverage and rule version, expires when paths change, and opens the same review queue as #77. Test that a missed schedule, stale scan or changed rule cannot silently turn an old proposal into an action.
 
 ### Everyday use

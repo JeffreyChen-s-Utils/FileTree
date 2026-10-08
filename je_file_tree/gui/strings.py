@@ -26,6 +26,11 @@ EN: dict[str, str] = {
     'action_background_monitor': 'Background monitor…',
     'action_background_monitor_tip': 'Opt in to tray notifications and gentle scheduled folder-history scans.',
     'background_enable': 'Enable background monitoring',
+    'background_startup': 'Start this monitor when I sign in',
+    'background_startup_hint': ('Separate opt-in for this user only. Uncheck to remove FileTree’s owned login entry. '
+                                'Applies to future logins; does not start another copy or close this monitor.'),
+    'background_startup_requires_monitor': 'Enable background monitoring before adding a login entry.',
+    'background_startup_error': 'Login startup could not be changed: {detail}',
     'background_hint': ('Off by default. Closing keeps FileTree in the available system tray; Quit ends it. '
                         'Check OS available capacity each minute and scan only chosen folders gently. '
                         'Scheduled scans require enabled local history. '
@@ -1399,6 +1404,11 @@ ZH_TW: dict[str, str] = {
     'action_background_monitor': '背景監視器…',
     'action_background_monitor_tip': '選擇啟用系統匣通知與低優先順序的排程資料夾歷史掃描。',
     'background_enable': '啟用背景監視',
+    'background_startup': '登入時啟動此監視器',
+    'background_startup_hint': ('需另外選擇啟用，僅適用目前使用者。取消勾選會移除 FileTree 擁有的登入項目。'
+                                '適用下次登入，不會啟動另一個程式或結束目前監視器。'),
+    'background_startup_requires_monitor': '請先啟用背景監視，再新增登入項目。',
+    'background_startup_error': '無法變更登入啟動：{detail}',
     'background_hint': ('預設關閉。系統匣可用時，關閉視窗會保留 FileTree，選擇「結束」才退出。'
                         '每分鐘查詢系統可用容量，只低優先順序掃描明確選取的資料夾。'
                         '排程掃描需要啟用本機歷史記錄，不自動清理或註冊開機啟動。'),
@@ -2642,6 +2652,11 @@ ZH_CN: dict[str, str] = {
     'action_background_monitor': '后台监视器…',
     'action_background_monitor_tip': '选择启用托盘通知与低优先级的定期文件夹历史扫描。',
     'background_enable': '启用后台监视',
+    'background_startup': '登录时启动此监视器',
+    'background_startup_hint': ('需另外选择启用，仅适用当前用户。取消勾选会移除 FileTree 拥有的登录项目。'
+                                '适用下次登录，不会启动另一个程序或结束当前监视器。'),
+    'background_startup_requires_monitor': '请先启用后台监视，再添加登录项目。',
+    'background_startup_error': '无法更改登录启动：{detail}',
     'background_hint': ('默认关闭。托盘可用时，关闭窗口会保留 FileTree，选择“退出”才结束。'
                         '每分钟查询系统可用容量，只低优先级扫描明确选择的文件夹。'
                         '定期扫描需要启用本地历史记录，不自动清理或注册开机启动。'),
