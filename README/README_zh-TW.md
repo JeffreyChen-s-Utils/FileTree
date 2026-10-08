@@ -16,6 +16,8 @@
 
 [English](../README.md) | [繁體中文](README_zh-TW.md) | [简体中文](README_zh-CN.md) | [日本語](README_ja.md) | [한국어](README_ko.md)
 
+macOS arm64 原生編譯與套件打包已通過 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)：167 個來源項目全部保留，解壓內容一致。這份證據確認該提交的編譯與打包，未啟動或發佈程式。Finder／同意驗證與 Developer ID／公證仍缺環境，因此 POSIX 發行閘門維持關閉。
+
 Windows 發行版可明確啟用 Azure Artifact Signing 的 OIDC 簽章；已啟用但設定缺漏，或簽章、時間戳、發行者驗證失敗時會停止發佈。單檔與獨立資料夾執行檔在打包前驗證，MSI 在上傳與套件清單雜湊前驗證。開發建置維持未簽署。目前仍缺帳號與原生成功簽署驗證，請參閱 [Windows 簽章設定](../docs/windows-signing.md)。
 
 ![FileTree 顯示一個使用者資料夾：左邊是資料夾樹，右邊是方塊圖](../docs/images/main_window_zh-TW.png)

@@ -44,6 +44,29 @@ def test_exact_acl_restoration_runs_after_every_probe_outcome(tmp_path, monkeypa
     assert next(root.iterdir()).joinpath("keep-secret.bin").read_bytes() == b"owned permission fixture"
 
 
+def test_native_parity_failure_reports_first_exact_field_without_weakening_comparison(tmp_path, monkeypatch):
+    ordinary = ScanResult(Node(str(tmp_path), True, allocated=123, children=[]), [])
+    audited = ScanResult(Node(str(tmp_path), True, allocated=456, children=[]), [], backend="mft")
+    replies = iter((ordinary, audited))
+    def scan(_root, *, on_root=None, **_kwargs):
+        result = next(replies)
+        if on_root is not None:
+            on_root(result.root)
+        return result
+    monkeypatch.setattr(probe, "scan", scan)
+    with pytest.raises(RuntimeError, match="allocated.*123.*456"):
+        probe._compare(tmp_path, probe.ScanOptions())
+
+
+def test_native_parity_diagnostics_are_bounded_and_distinguish_missing_nodes_from_errors(tmp_path):
+    ordinary = ScanResult(Node(str(tmp_path), True, children=[]), [("owned", "x" * 4096)])
+    audited = ScanResult(Node(str(tmp_path), True, children=[]), [], backend="mft")
+    detail = probe._parity_detail(ordinary, audited)
+    assert detail.startswith("errors ordinary=") and len(detail) <= 2048
+    audited.root.children.append(Node("extra", False, parent=audited.root))
+    assert probe._parity_detail(ordinary, audited) == "node counts ordinary=1, mft=2"
+
+
 def test_acl_dispatch_refuses_outside_owned_private_tree_before_subprocess(tmp_path, monkeypatch):
     monkeypatch.setattr(probe, "verify_volume", lambda _v: None)
     def forbidden(*_args, **_kwargs):

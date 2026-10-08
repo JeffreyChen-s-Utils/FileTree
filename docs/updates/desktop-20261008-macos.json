@@ -1,0 +1,16 @@
+{
+  "platform": "macos",
+  "architecture": "arm64",
+  "version": "0.1.0",
+  "source_entries": 167,
+  "source_preserved": true,
+  "extraction_verified": true,
+  "app_launched": false,
+  "published": false,
+  "sha256": "fa3a2d44448516212646b836f16e33ec3f74dbea6b2048d608dd88a88d0c45c8",
+  "run_id": 37788683269,
+  "head_sha": "763182ace9caf3ece922cf474d2e6efbb2f49afc",
+  "artifact_id": 11555529363,
+  "artifact_zip_bytes": 46793833,
+  "proof_zip_crc_verified": true
+}

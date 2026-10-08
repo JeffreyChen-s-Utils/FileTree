@@ -1,0 +1,16 @@
+{
+  "platform": "linux",
+  "architecture": "x86_64",
+  "version": "0.1.0",
+  "source_entries": 204,
+  "source_preserved": true,
+  "extraction_verified": true,
+  "app_launched": false,
+  "published": false,
+  "sha256": "57ccb69226669945af62629ddab9ffb7c22b113ccb5a025c20e0acb1d62af80a",
+  "run_id": 37788683269,
+  "head_sha": "763182ace9caf3ece922cf474d2e6efbb2f49afc",
+  "artifact_id": 11555573246,
+  "artifact_zip_bytes": 77400691,
+  "proof_zip_crc_verified": true
+}

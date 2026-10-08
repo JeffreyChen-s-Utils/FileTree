@@ -43,5 +43,4 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 - **#47** (P2) [BLOCKED] Configure an owner Azure Artifact Signing Public Trust account/profile and OIDC environment identifiers for the opt-in release signing flow (`docs/windows-signing.md`), then verify real timestamped EXE/MSI signatures and downloaded artifact hashes. No signing certificate/service environment is available. macOS Developer ID signing/notarization also requires unavailable owner credentials; unsigned builds do not establish signing or SmartScreen reputation.
 - **#48** (P3) [BLOCKED] Submit reviewed winget/Scoop/Chocolatey drafts for the exact published release artifacts and verify real store installation/upgrades. Store-publishing tokens/accounts remain unavailable from the owner.
-- **#49** (P2) Inspect complete native macOS bundle compilation and extraction/source-preservation evidence after the ICNS conversion fix in Desktop builds CI. Release attachment remains gated by #4 verification and `FILETREE_POSIX_RELEASE_VERIFIED`; owner Finder/consent validation is unavailable. Developer ID signing/notarization remains unavailable.
 

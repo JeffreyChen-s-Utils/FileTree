@@ -1236,3 +1236,10 @@ nonlinked one-file/standalone/MSI paths, uses Azure CLI OIDC only with pinned Az
 and RFC 3161 timestamps, and refuses invalid native trust/timestamp/expected-subject verification.
 Executable signing precedes ZIP/MSI construction; MSI signing precedes upload and store hashes.
 Third-party runtimes are not resigned. No keys/accounts/settings or native signing evidence exist.
+
+Native macOS arm64 Desktop build 37788683269 at 763182a compiled the actual bundle,
+preserved all 167 source entries and verified canonical FileTree.app extraction. Reviewed proof
+CRC/size is retained in docs/updates/desktop-20261008-macos.json. The app was not launched/published;
+Finder consent, signing/notarization and the POSIX release gate remain external requirements.
+Owned MFT tree parity failures report the first differing Node field or bounded coverage/count
+detail without weakening comparisons; native candidate success alone is not parity evidence.

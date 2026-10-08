@@ -19,6 +19,8 @@ File → Scheduled scan proposals shows reports prepared by gentle scheduled wor
 
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md) | [日本語](README/README_ja.md) | [한국어](README/README_ko.md)
 
+Native macOS arm64 compilation and bundle packaging passed Desktop builds run [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269): all 167 source entries were preserved and extraction matched. This proves compilation/packaging of that checked commit; the app was neither launched nor published. Finder/consent validation and Developer ID/notarization remain unavailable, so the POSIX release gate stays disabled.
+
 Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops publication. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)

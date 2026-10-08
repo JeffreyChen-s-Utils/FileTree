@@ -18,11 +18,26 @@ from je_file_tree.core.scanner import ACCESS_DENIED, NOT_SCANNED, ScanCancelledE
 from je_file_tree.core.windows_directory import WindowsEntry
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
+_ROW_FIELDS = ("path", "is_dir", "is_link", "size", "allocated", "file_count", "dir_count", "modified",
+               "error", "snapshot", "owner", "accounting")
+
 
 def _rows(result: ScanResult) -> list[tuple]:
     return sorted((node.path, node.is_dir, node.is_link, node.size, node.allocated, node.file_count,
                    node.dir_count, node.modified, node.error, node.snapshot, node.owner, node.accounting)
                   for node in result.root.iter_nodes())
+
+
+def _parity_detail(ordinary: ScanResult, audited: ScanResult) -> str:
+    before, after = _rows(ordinary), _rows(audited)
+    if len(before) != len(after):
+        return f"node counts ordinary={len(before)}, mft={len(after)}"
+    for left, right in zip(before, after, strict=True):
+        if left != right:
+            changes = {name: (repr(a)[:256], repr(b)[:256])
+                       for name, a, b in zip(_ROW_FIELDS, left, right, strict=True) if a != b}
+            return f"first owned node {left[0]!r}: {changes!r}"[:2048]
+    return f"errors ordinary={ordinary.errors[:3]!r}, mft={audited.errors[:3]!r}"[:2048]
 
 
 def _diagnose(root: Path, ordinary: ScanResult) -> None:
@@ -48,7 +63,7 @@ def _compare(root: Path, options: ScanOptions) -> dict:
         _diagnose(root, ordinary)
     require(audited.root is published[0] and len(published) == 1, "Native scan published another root")
     require(_rows(ordinary) == _rows(audited) and sorted(ordinary.errors) == sorted(audited.errors),
-            "Native metadata tree differs from ordinary Node/options/coverage")
+            "Native metadata tree differs from ordinary Node/options/coverage: " + _parity_detail(ordinary, audited))
     require(ordinary.hard_links == audited.hard_links, "Native metadata hard-link accounting differs")
     return {"options": asdict(options), "ordinary_seconds": ordinary.elapsed,
             "mft_seconds": audited.elapsed, "nodes": len(_rows(audited)), "errors": len(audited.errors),

@@ -1,0 +1,25 @@
+{
+  "app_launched": false,
+  "shortcut_verified": true,
+  "compiled_payload": true,
+  "package_drafts_prepared": true,
+  "source_preserved": true,
+  "upgrade_verified": true,
+  "cleanup_verified": true,
+  "installed_files": 106,
+  "phase": "complete",
+  "fixture_only": false,
+  "package_provenance": {
+    "version": "1.2.3",
+    "product_code": "{FE57B97C-E0F2-467B-A9EF-9557C216E891}",
+    "upgrade_code": "1CF91EA0-1ED2-45CB-B2FC-A6F321F67B73",
+    "msi_sha256": "867cfa96836c5c4096ae94282f5343a8fc8dd3b5d31bad9e8763af824fbc9be7",
+    "zip_sha256": "1c0a6775b88c3681375eec854bdebd31ebf59c43d6d97912cb1ebe2d79ce12a1",
+    "published": false
+  },
+  "run_id": 37788683269,
+  "head_sha": "763182ace9caf3ece922cf474d2e6efbb2f49afc",
+  "artifact_id": 11556870639,
+  "artifact_zip_bytes": 85579830,
+  "proof_zip_crc_verified": true
+}
