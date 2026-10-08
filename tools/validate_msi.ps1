@@ -48,17 +48,7 @@ function Invoke-OwnedInstaller([string]$operation, [string]$logName) {
         -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
     if ($process.ExitCode -notin @(0, 3010)) { throw "Owned MSI operation failed: $($process.ExitCode)" }
 }
-$attempted = $false
-try {
-    Save-Proof
-    python tools/build_msi.py --version 1.2.3 --source $build --output $scratch
-    if ($LASTEXITCODE -ne 0) { throw 'MSI fixture compilation failed.' }
-    $msi = Join-Path $scratch 'FileTree-1.2.3-windows-x64.msi'
-    $msiHash = (Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash
-    $evidence.phase = 'installing'
-    Save-Proof
-    $attempted = $true
-    Invoke-OwnedInstaller '/i' 'install.log'
+function Confirm-OwnedPayload {
     foreach ($relative in $hashes.Keys) {
         $installed = Join-Path $installRoot $relative
         $item = Get-Item -LiteralPath $installed
@@ -71,6 +61,35 @@ try {
         }
     }
     if (-not (Test-Path -LiteralPath $shortcut)) { throw 'Owned Start-menu shortcut missing.' }
+}
+$attempted = $false
+try {
+    Save-Proof
+    python tools/build_msi.py --version 1.2.3 --source $build --output $scratch
+    if ($LASTEXITCODE -ne 0) { throw 'MSI fixture compilation failed.' }
+    $msi = Join-Path $scratch 'FileTree-1.2.3-windows-x64.msi'
+    $msiHash = (Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash
+    $evidence.phase = 'installing'
+    Save-Proof
+    $attempted = $true
+    Invoke-OwnedInstaller '/i' 'install.log'
+    Confirm-OwnedPayload
+    $evidence.phase = 'upgrading'
+    Save-Proof
+    $changedFile = Join-Path $payload 'Qt6Core.dll'
+    [IO.File]::WriteAllBytes($changedFile, [Text.Encoding]::UTF8.GetBytes('owned upgraded library fixture'))
+    $hashes['Qt6Core.dll'] = (Get-FileHash -LiteralPath $changedFile -Algorithm SHA256).Hash
+    python tools/build_msi.py --version 1.2.4 --source $build --output $scratch
+    if ($LASTEXITCODE -ne 0) { throw 'MSI upgrade fixture compilation failed.' }
+    $msi = Join-Path $scratch 'FileTree-1.2.4-windows-x64.msi'
+    $msiHash = (Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash
+    Invoke-OwnedInstaller '/i' 'upgrade.log'
+    Confirm-OwnedPayload
+    $products = @($installer.RelatedProducts($upgradeCode))
+    if ($products.Count -ne 1 -or $installer.ProductInfo($products[0], 'VersionString') -ne '1.2.4') {
+        throw 'Owned major upgrade did not leave exactly the expected new product.'
+    }
+    $evidence.upgrade_verified = $true
     $evidence.installed_files = $hashes.Count
     $evidence.shortcut_verified = $true
     $evidence.source_preserved = $true

@@ -35,6 +35,7 @@ jobs:
         path: |
           msi-proof.json
           install.log
+          upgrade.log
           uninstall.log
         if-no-files-found: warn
         retention-days: 7

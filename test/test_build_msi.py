@@ -123,3 +123,5 @@ def test_release_and_native_fixture_validation_keep_msi_artifacts():
     assert "Existing FileTree installation/shortcut/product found" in native
     assert "RelatedProducts($upgradeCode)" in native
     assert "Invoke-OwnedInstaller '/x'" in native and "-WindowStyle Hidden" in native
+    assert "--version 1.2.4" in native and "Invoke-OwnedInstaller '/i' 'upgrade.log'" in native
+    assert "$installer.ProductInfo($products[0], 'VersionString')" in native

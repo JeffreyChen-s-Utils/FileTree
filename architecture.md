@@ -946,7 +946,9 @@ The existing release tag's standalone build supplies the MSI; the release upload
 beside the EXE/ZIP. `tools/validate_msi.ps1` installs only fresh disposable hosted-runner fixtures,
 refuses existing directories/shortcuts/related products, checks hashes and uninstalls its exact
 hash-checked MSI. It never executes the fixture PE or proves compiled-app launch; native phase/log
-evidence is retained. Store publishing and signing require external accounts/credentials.
+evidence is retained. An owned 1.2.3-to-1.2.4 upgrade changes a library fixture and requires exactly
+the new related product/version, unchanged source hashes and removal of the upgraded installation.
+Store publishing and signing require external accounts/credentials.
 
 `core/mft.py` is the stdlib-only NTFS 3.1 raw metadata foundation: immutable FILE segments,
 sequence-qualified names/attribute-list entries, resident sizes (never DATA payloads), nonresident
