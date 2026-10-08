@@ -725,7 +725,14 @@ File → Scheduled scan proposals opens a metadata-only current-session view of 
 with new/current candidates and logical folder growth capped at 100 rows per list. Dates/expiry, omitted
 rows, coverage and unknown comparisons remain visible. Literal full-path tooltips and Ctrl+C copy never
 open recorded sources. OperationGroup guards the modal view across tabs. Status refresh checks bounded
-settings/receipts only; review through a fresh foreground scan remains pending. Baselines persist under
+settings/receipts only. Explicit review scans the same root in a new foreground tab and compares captured
+fingerprints, coverage and the whole actual no-follow tree on a joinable guarded worker. Current effective
+rules resolve displayed scalar rows to current actual scan Nodes only. Cancel/failure/replacement/owner
+close discards the intent. The ordinary CleanupReview queue and protected/Trash questions remain required.
+Metadata changes during review refuse dispatch; the operation worker rechecks the whole native tree
+before a proposal batch and date/rules/schedule/receipt per item with thread-local QSettings instances.
+Scalar settings capture preserves explicit backend/group and namespace fallback contracts, rejecting a
+different reopened location. Observational validation never grants a filesystem transaction. Baselines persist under
 normal history retention; reports appear after a scheduled scan in the current session.
 
 `gui.autostart.registration()` reads native registration without creating metadata; `set_enabled(bool)`
@@ -770,3 +777,7 @@ root/size/date; their bytes share the existing cap and retention. `load_recurrin
 changed entry or mismatched root/size/date/coverage. Existing `load_history` and export compatibility
 remain unchanged; file-only errors now also flag incomplete history. ProposalCancelledError never
 publishes a partial proposal. These APIs neither dispatch scans nor invoke source operations.
+
+`operations.validate_tree(root, cancel=...)` compares no-follow snapshots and complete directory names
+for an ordinary physical captured root, returning a refusal key or None. It belongs on a worker and
+does not authorize mutations or replace `revalidate` immediately before each selected source move.

@@ -25,6 +25,7 @@ from je_file_tree.gui.app import create_workspace  # noqa: E402
 from je_file_tree.gui.autostart import Registration  # noqa: E402
 from je_file_tree.gui.background_dialog import BackgroundDialog  # noqa: E402
 from je_file_tree.gui.recurring_dialog import RecurringDialog  # noqa: E402
+from tools.recurring_probe import validate_review  # noqa: E402
 
 _EXPECTED_SCHEDULES = 2
 
@@ -123,7 +124,7 @@ def _proposal(app: QApplication, workspace, source: Path, config: MonitorConfig,
     require(history.configured_history(workspace.settings).read(str(source)).count == _EXPECTED_SCHEDULES,
             "Proposal did not preserve both scheduled history entries")
     return {"comparison_complete": True, "new_junk_rows": len(report.new_junk), "growth_rows": len(report.growth),
-            "binding_current": True, "source_preserved": True, "review_execution_verified": False}
+            "binding_current": True, "source_preserved": True, "native_trash_move": False}
 
 
 def _session(app: QApplication, owned: Path, args) -> dict:
@@ -159,6 +160,7 @@ def _session(app: QApplication, owned: Path, args) -> dict:
             proof.update(scheduled_history_complete=True, native_capacity_rows=len(capacity.rows),
                          foreground_unchanged=True)
             proof["recurring"] = _proposal(app, workspace, source, config, args.evidence)
+            proof["recurring_review"] = validate_review(app, workspace, source, args.evidence, pump)
             if args.notification or args.require_notification:
                 proof["notification"] = _notification(app, workspace, args.evidence, required=args.require_notification)
             workspace.close()

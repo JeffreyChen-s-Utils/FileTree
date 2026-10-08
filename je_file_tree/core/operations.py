@@ -111,6 +111,17 @@ def _check_subtree(node: Node, cancel: threading.Event | None,
     return None
 
 
+def validate_tree(root: Node, *, cancel: threading.Event | None = None) -> str | None:
+    """Recheck an ordinary captured physical tree without granting mutation authority; use on workers.
+
+    Names and no-follow snapshots are observational: an external process can still change a source
+    after validation. Ordinary per-item operation checks remain required immediately before moving.
+    """
+    if root.path is None or not root.is_dir or root.is_link:
+        return "outside"
+    return _check_subtree(root, cancel)
+
+
 def _check_node(node: Node, *, identity_only: bool = False,
                 overrides: dict[tuple[int, int], bytes] | None = None) -> str | None:
     if not identity_only and system_file(node.path) is not None:

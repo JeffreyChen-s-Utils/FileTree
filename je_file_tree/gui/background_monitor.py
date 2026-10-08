@@ -24,6 +24,7 @@ from je_file_tree.gui.history import configured_history
 from je_file_tree.gui.icon import app_icon
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.recurring_dialog import RecurringDialog
+from je_file_tree.gui.recurring_review import RecurringFlow, ReviewBinding
 from je_file_tree.gui.scan_worker import wait_for
 
 if TYPE_CHECKING:
@@ -232,6 +233,17 @@ class BackgroundMonitor(QObject):
             self._failed(str(error))
             return "unavailable"
 
+    def review_binding(self, report: RecurringProposal) -> ReviewBinding | None:
+        """Capture strict current review metadata before worker-side source validation."""
+        try:
+            self.settings.sync()
+            attempts = load_attempts(self.settings.value(ATTEMPTS_KEY, dump_attempts({})))
+            policy, config = self._policy(), configuration(self.settings)
+            return ReviewBinding(policy, config, attempts.get(report.context.attempt.key))
+        except (OSError, ValueError) as error:
+            self._failed(str(error))
+            return None
+
     def show_proposals(self) -> None:
         """Show current-session bounded observations while serializing all source-operation owners."""
         if (self.closing or self.workspace.operations.busy
@@ -243,13 +255,21 @@ class BackgroundMonitor(QObject):
         dialog = RecurringDialog(tuple(self.reports.values()), self.report_status, owner)
         owner._path_dialogs.add(dialog)
         owner._update_actions()
+        requested = None
         try:
-            dialog.exec()
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                requested = dialog.requested
         finally:
             dialog.shutdown()
             owner._path_dialogs.discard(dialog)
             owner._update_actions()
             dialog.deleteLater()
+        if requested is not None and not self.closing and self.report_status(requested) is None:
+            owner = self.workspace.add_tab()
+            if owner is None:
+                self._failed(tr("recurring_tabs_full"))
+            else:
+                RecurringFlow(self, owner, requested).start()
 
     def _claim(self) -> ScanAttempt | None:
         lock = _lock(self.settings)

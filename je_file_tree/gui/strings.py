@@ -9,6 +9,14 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'recurring_review': 'Rescan and review current candidates…',
+    'recurring_validating': 'Validating the dated proposal against the entire fresh scan and current source metadata…',
+    'recurring_refused': ('Proposal cannot continue: {status}. '
+                         'Run a new scheduled scan to prepare current observations.'),
+    'recurring_tabs_full': 'All sixteen scan tabs are in use. Close a tab before reviewing a scheduled proposal.',
+    'trash_skip_proposal_changed': ('Source paths or proposal settings/receipt changed or could not be verified; '
+                                    'source kept.'),
+    'trash_skip_proposal_expired': 'The scheduled proposal expired before this move; source kept.',
     'action_recurring': 'Scheduled scan proposals…',
     'action_recurring_tip': 'View dated scheduled observations and their coverage; no automatic clean-up.',
     'recurring_rule': 'Rule',
@@ -19,7 +27,8 @@ EN: dict[str, str] = {
     'recurring_empty': 'No scheduled report in this session. Enable background monitoring and select scan folders.',
     'recurring_hint': ('Observations only; nothing is moved automatically. Up to 100 rows per list. '
                        'Growth is logical bytes, not recoverable space. Unknown comparisons do not prove no new junk. '
-                       'Reports appear after a scheduled scan in this session; baselines are kept in local history.'),
+                       'Reports appear after a scheduled scan in this session; baselines are kept in local history. '
+                       'Review rescans in a new tab and uses the ordinary queue and confirmations.'),
     'recurring_summary': ('Prepared: {prepared}\nPrevious baseline: {previous}\nExpires: {expires}\n'
                           'Candidates shown: {retained} / {total}; coverage: {coverage}; comparison: {comparison}\n'
                           'Status: {status}'),
@@ -1410,6 +1419,12 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'recurring_review': '重新掃描並審查目前候選…',
+    'recurring_validating': '正在比對具日期建議、完整的新掃描與目前來源中繼資料…',
+    'recurring_refused': '無法繼續此建議：{status}。請執行新的排程掃描，以產生目前的觀察資料。',
+    'recurring_tabs_full': '十六個掃描分頁皆在使用中。請先關閉一個分頁，再審查排程建議。',
+    'trash_skip_proposal_changed': '來源路徑、建議設定或掃描紀錄已變更或無法驗證；保留來源。',
+    'trash_skip_proposal_expired': '移動前排程建議已到期；保留來源。',
     'action_recurring': '排程掃描建議…',
     'action_recurring_tip': '查看排程觀察的日期與涵蓋範圍；不會自動清理。',
     'recurring_rule': '規則',
@@ -1420,7 +1435,8 @@ ZH_TW: dict[str, str] = {
     'recurring_empty': '本次執行尚無排程報告。請啟用背景監控並選擇掃描資料夾。',
     'recurring_hint': ('僅供查看，不會自動移動檔案。每份清單最多顯示 100 筆。'
                        '成長量是邏輯位元組，不代表可回收空間。比較未知不代表沒有新增垃圾。'
-                       '報告會在本次執行的排程掃描後出現；基準資料儲存在本機掃描歷史。'),
+                       '報告會在本次執行的排程掃描後出現；基準資料儲存在本機掃描歷史。'
+                       '審查會在新分頁重新掃描，再進入一般審查佇列與確認流程。'),
     'recurring_summary': ('產生時間：{prepared}\n上次基準：{previous}\n到期時間：{expires}\n'
                           '顯示候選：{retained} / {total}；涵蓋範圍：{coverage}；比較：{comparison}\n'
                           '狀態：{status}'),
@@ -2681,6 +2697,12 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'recurring_review': '重新扫描并审核当前候选…',
+    'recurring_validating': '正在比对带日期建议、完整的新扫描与当前源元数据…',
+    'recurring_refused': '无法继续此建议：{status}。请执行新的计划扫描，以生成当前的观察数据。',
+    'recurring_tabs_full': '十六个扫描标签页均在使用中。请先关闭一个标签页，再审核计划建议。',
+    'trash_skip_proposal_changed': '源路径、建议设置或扫描记录已更改或无法验证；保留来源。',
+    'trash_skip_proposal_expired': '移动前计划建议已到期；保留来源。',
     'action_recurring': '计划扫描建议…',
     'action_recurring_tip': '查看计划观察的日期与覆盖范围；不会自动清理。',
     'recurring_rule': '规则',
@@ -2691,7 +2713,8 @@ ZH_CN: dict[str, str] = {
     'recurring_empty': '本次运行尚无计划报告。请启用后台监控并选择扫描文件夹。',
     'recurring_hint': ('仅供查看，不会自动移动文件。每份列表最多显示 100 条。'
                        '增长量是逻辑字节，不代表可回收空间。比较未知不代表没有新增垃圾。'
-                       '报告会在本次运行的计划扫描后出现；基准数据保存在本地扫描历史。'),
+                       '报告会在本次运行的计划扫描后出现；基准数据保存在本地扫描历史。'
+                       '审核会在新标签页重新扫描，再进入普通审核队列与确认流程。'),
     'recurring_summary': ('生成时间：{prepared}\n上次基准：{previous}\n到期时间：{expires}\n'
                           '显示候选：{retained} / {total}；覆盖范围：{coverage}；比较：{comparison}\n'
                           '状态：{status}'),

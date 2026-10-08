@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from PySide6.QtCore import QTimer, Qt
@@ -50,7 +50,14 @@ class GrowthModel(_TableModel[Growth]):
 
 
 def _date(timestamp: float) -> str:
-    return datetime.fromtimestamp(timestamp).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+    return _display_date(datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=timestamp))
+
+
+def _display_date(value: datetime) -> str:
+    try:
+        return value.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+    except (OSError, OverflowError, ValueError):
+        return value.isoformat()
 
 
 class RecurringDialog(QDialog):
@@ -60,6 +67,7 @@ class RecurringDialog(QDialog):
                  parent: QWidget) -> None:
         super().__init__(parent)
         self.reports, self.status = tuple(reports), status
+        self.requested: RecurringProposal | None = None
         self.setWindowTitle(tr("action_recurring"))
         self.resize(980, 620)
         self.roots = QComboBox()
@@ -77,6 +85,8 @@ class RecurringDialog(QDialog):
         hint = QLabel(tr("recurring_hint"))
         hint.setWordWrap(True)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        self.review = buttons.addButton(tr("recurring_review"), QDialogButtonBox.ButtonRole.ActionRole)
+        self.review.clicked.connect(self._request_review)
         buttons.rejected.connect(self.reject)
         layout = QVBoxLayout(self)
         for widget in (self.roots, self.summary, self.tabs, hint, buttons):
@@ -110,11 +120,14 @@ class RecurringDialog(QDialog):
     def _summary(self) -> None:
         index = self.roots.currentIndex()
         if not 0 <= index < len(self.reports):
+            self.review.setEnabled(False)
             self.summary.setText(tr("recurring_empty"))
             return
         report = self.reports[index]
+        status = self.status(report)
+        self.review.setEnabled(status is None and bool(report.baseline.candidates))
         baseline, context = report.baseline, report.context
-        previous = (datetime.fromisoformat(report.previous_saved).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+        previous = (_display_date(datetime.fromisoformat(report.previous_saved))
                     if report.previous_saved else tr("recurring_unknown"))
         self.summary.setText(tr("recurring_summary", prepared=_date(context.prepared_at), previous=previous,
                                 expires=_date(context.expires_at), retained=format_count(len(baseline.candidates)),
@@ -122,7 +135,15 @@ class RecurringDialog(QDialog):
                                 coverage=tr("history_complete" if baseline.complete else "history_incomplete"),
                                 comparison=tr("history_complete" if report.comparison_complete
                                               else "recurring_unknown"),
-                                status=tr("recurring_status_" + (self.status(report) or "current"))))
+                                status=tr("recurring_status_" + (status or "current"))))
+
+    def _request_review(self) -> None:
+        index = self.roots.currentIndex()
+        if 0 <= index < len(self.reports):
+            report = self.reports[index]
+            if self.status(report) is None and report.baseline.candidates:
+                self.requested = report
+                self.accept()
 
     def shutdown(self) -> None:
         """Stop metadata refresh when the owning workspace closes its modal view."""

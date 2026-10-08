@@ -41,6 +41,7 @@ from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
 from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_history, history_folder, history_limit
+from je_file_tree.gui.recurring_review import RecurringReview
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.gui.projects import ProjectsDialog
 from je_file_tree.gui.programs import ProgramsDialog
@@ -582,7 +583,8 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
 
-    def move_to_trash(self, nodes: Sequence[Node], *, copies: CopyApproval | None = None) -> None:
+    def move_to_trash(self, nodes: Sequence[Node], *, copies: CopyApproval | None = None,
+                      proposal: RecurringReview | None = None) -> None:
         """Ask once, then move ``nodes`` to the Recycle Bin / Trash and take them out of the results.
 
         An entry inside another of ``nodes`` goes along with its folder; the scanned folder itself is
@@ -591,22 +593,22 @@ class MainWindow(QMainWindow):
         chosen = _movable(nodes)
         root = self.results.tree_model.root
         if (not chosen or root is None or root.path is None or self._worker is not None or self.operation_busy
-                or copies is not None and not copies.matches(root, chosen)):
+                or copies is not None and not copies.matches(root, chosen)
+                or proposal is not None and (not proposal.matches(root, chosen)
+                                            or not self._proposal_current(proposal))):
             return
         chosen = self._without_managed(chosen)
-        if not chosen:
-            return
-        reasons = self.results.cleanup.reasons_for(chosen)
-        if reasons:
+        reasons = self.results.cleanup.reasons_for(chosen) if proposal is None else proposal.reasons
+        if reasons and chosen:
             chosen = self._review_cleanup(chosen, reasons, root)
-            if not chosen:
-                return
+        if not chosen or proposal is not None and not self._proposal_current(proposal):
+            return
         approvals = {node: protection_of(node.path, self._protected) for node in chosen}
         if not self._confirm_protected(chosen):
             return
         answer = self._confirm_copy_trash(chosen, copies) if copies is not None else QMessageBox.question(
             self, tr("trash_confirm_title"), self._trash_question(chosen))
-        if answer != QMessageBox.StandardButton.Yes:
+        if answer != QMessageBox.StandardButton.Yes or proposal is not None and not self._proposal_current(proposal):
             return
         if self._worker is not None or self.operation_busy or self.results.tree_model.root is not root:
             lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
@@ -619,6 +621,8 @@ class MainWindow(QMainWindow):
         explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
         audit = JournalApproval(self._journal, explanations)
         worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
+        worker.proposal_context = proposal.report.context if proposal is not None else None
+        worker.proposal_check = (lambda: proposal.store.status(proposal.report)) if proposal is not None else None
         if copies is not None:
             worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in chosen),
                                                 copies.redirect)
@@ -631,6 +635,14 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("trash_running"))
         worker.start()
+
+    def _proposal_current(self, proposal: RecurringReview) -> bool:
+        status = proposal.check()
+        if status is None:
+            return True
+        QMessageBox.warning(self, tr("action_recurring"), tr("recurring_refused",
+                            status=tr("recurring_status_" + status)))
+        return False
 
     def _confirm_copy_trash(self, nodes: list[Node], copies: CopyApproval) -> QMessageBox.StandardButton:
         question = QMessageBox(QMessageBox.Icon.Question, tr("trash_confirm_title"), "",
@@ -645,10 +657,14 @@ class MainWindow(QMainWindow):
 
     def _review_cleanup(self, nodes: list[Node], reasons: dict[Node, CleanupGroup], root: Node) -> list[Node]:
         dialog = CleanupReview(nodes, reasons, self._protected, self._unit, root, self)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
         try:
             return dialog.selected_nodes() if dialog.exec() == QDialog.DialogCode.Accepted else []
         finally:
             dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
 
     def _trash_finished(self, result: MoveResult) -> None:
@@ -1107,6 +1123,9 @@ class MainWindow(QMainWindow):
                 action.setShortcut(QKeySequence(shortcut))
             action.triggered.connect(lambda _checked=False, run=handler: run())
             self._actions[key] = action
+        self._configure_actions()
+
+    def _configure_actions(self) -> None:
         self._actions["check_updates"].setCheckable(True)
         self._actions["check_updates"].toggled.connect(self._updates.configure)
         self._actions["follow_changes"].setCheckable(True)

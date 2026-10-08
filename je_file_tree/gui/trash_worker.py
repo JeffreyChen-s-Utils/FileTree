@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import threading
+import time
 import uuid
 
 from PySide6.QtCore import QObject, QThread, Signal
@@ -12,7 +14,8 @@ from je_file_tree.core.copy_approval import CopyApproval, redirect_copy
 from je_file_tree.core.no_replace import anchored_directory
 from je_file_tree.core.verified_copy import verify_copy
 from je_file_tree.core.lock_holders import find_holders
-from je_file_tree.core.operations import move_batch
+from je_file_tree.core.operations import move_batch, validate_tree
+from je_file_tree.core.recurring import ProposalContext
 from je_file_tree.core.operations import MoveReceipt, MoveResult
 from je_file_tree.core.windows_trash import recycle_reason
 from je_file_tree.core.operation_journal import JournalApproval, OperationOutcome, OperationRecord
@@ -41,6 +44,8 @@ class TrashWorker(QThread):
         self._decisions = decisions or []
         self._audit = _AuditBatch(audit, self._cancel)
         self.copy_approval: CopyApproval | None = None
+        self.proposal_context: ProposalContext | None = None
+        self.proposal_check: Callable[[], str | None] | None = None
         self._copy_errors: list[tuple[str, str, str, str]] = []
         self.result: MoveResult | None = None
         self.allow_undo = False
@@ -73,6 +78,9 @@ class TrashWorker(QThread):
         self.done.emit(result)
 
     def _move_checked(self) -> MoveResult:
+        if self.proposal_context is not None and validate_tree(self._root, cancel=self._cancel) is not None:
+            return MoveResult(skipped=[(node, "proposal_changed") for node in self._nodes],
+                              parents=[node.parent for node in self._nodes if node.parent is not None])
         remaining = set(self._nodes)
         result = MoveResult()
         for group in self._decisions:
@@ -93,7 +101,17 @@ class TrashWorker(QThread):
     def _move(self, nodes: list[Node]) -> MoveResult:
         return move_batch(self._root, nodes, self._copy_move, places=self._places,
                           approved=self._approvals, cancel=self._cancel,
-                          before_move=lambda node: recycle_reason(node, self._cancel))
+                          before_move=self._before_move)
+
+    def _before_move(self, node: Node) -> str | None:
+        context = self.proposal_context
+        if context is not None and not context.prepared_at <= time.time() < context.expires_at:
+            return "proposal_expired"
+        if self.proposal_check is not None:
+            status = self.proposal_check()
+            if status is not None:
+                return "proposal_expired" if status == "expired" else "proposal_changed"
+        return recycle_reason(node, self._cancel)
 
     def _copy_move(self, path: str) -> MoveReceipt:
         approval = self.copy_approval

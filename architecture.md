@@ -92,7 +92,15 @@ proposal failures retain ordinary saved history plus a visible error; cancellati
 BackgroundMonitor retains metadata-only current-session reports for at most 32 selected roots. The File
 menu opens RecurringDialog under OperationGroup ownership: three read-only 100-row lists, plain dates/
 coverage/expiry/unknowns, literal full-path tooltips and copy. A small settings/receipt binding check
-refreshes status without walking sources on the GUI thread. Fresh-scan review connection remains #86.
+refreshes status without walking sources on the GUI thread. Explicit review starts an ordinary new-tab
+foreground scan. RecurringFlow discards canceled/replaced/closed intents; ValidationDialog joins its
+worker under OperationGroup ownership, comparing the full captured digest and native no-follow tree.
+Only actual current scan nodes matching bounded rows/effective rules reach the existing CleanupReview
+queue. MainWindow retains protected-folder/Trash confirmations and rechecks metadata after modal review.
+TrashWorker revalidates the whole source before the batch and expiry/settings/receipt before each item,
+then applies ordinary per-item native source guards. ProposalSettings captures scalar backend/group/
+fallback location on the GUI thread and constructs distinct QSettings instances on operation threads;
+it preserves namespace fallbacks and refuses changed storage locations. Validation remains observational.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
@@ -941,6 +949,11 @@ physical root identity and dated schedule receipts are comparison/expiry contrac
 `proposal_status` additionally checks the whole captured tree and belongs on a worker. Workspace-only
 report viewing leaves the standalone create_window factory passive. Session reports are not persisted
 as actions; only bounded observation baselines use the existing history format/retention contract.
+Optional `MainWindow.move_to_trash(..., proposal=RecurringReview)` requires matched current nodes and
+dated metadata, reuses the same editable queue/confirmations and never grants historical source authority.
+`operations.validate_tree(root, cancel=...)` performs a read-only native snapshot/name recheck on a worker;
+it does not replace immediate per-item guards or authorize mutations. A separate QSettings instance is
+required for worker metadata reads, including integrations supplying explicit INI/plist/registry groups.
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.
