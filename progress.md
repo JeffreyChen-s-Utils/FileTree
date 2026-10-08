@@ -42,7 +42,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 
 - **#47** (P2) [BLOCKED] Sign `FileTree.exe`: an unsigned one-file executable triggers SmartScreen and some antivirus programs. Waits on the owner getting a code-signing certificate or an Azure Trusted Signing account; then the release workflow's `build-exe` job signs the exe (`signtool` or the Trusted Signing action, pinned) with the credentials as repository secrets before uploading it.
-- **#48** (P3) Inspect the owned MSI build/install/uninstall CI evidence and validate an actual compiled FileTree MSI/upgrade before claiming installer support. Finish store listings: a winget manifest (`wingetcreate` from the release workflow, with a token as a repository secret), a Scoop bucket and a Chocolatey package (an API key as a secret). Store-publishing tokens/accounts remain unavailable.
+- **#48** (P3) Validate an actual compiled FileTree MSI/upgrade before claiming installer support. Finish store listings: a winget manifest (`wingetcreate` from the release workflow, with a token as a repository secret), a Scoop bucket and a Chocolatey package (an API key as a secret). Store-publishing tokens/accounts remain unavailable.
 - **#49** (P2) Linux and macOS builds: an AppImage (or Flatpak) and a macOS `.app` from `tools/build_nuitka.py --app` built on CI runners and attached to the release, after #4 is verified.
 - **#74** (P3) More languages: Japanese and Korean, each a table in `je_file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in `qt_translation.CATALOGUES`, a README translation and screenshots, if there are readers for them.
 

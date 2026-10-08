@@ -51,10 +51,12 @@ def _observe(native: NTFSReader, path: Path) -> dict:
     heads = [item for item in attributes if item.kind == mft.DATA and not item.name and item.lowest_vcn == 0]
     require(len(heads) == 1 and heads[0].size == info.st_size, "Raw unnamed size differs from native file")
     allocation = file_allocation(str(path), info)
-    require(allocation is not None and heads[0].allocated == allocation,
+    # MFT resident DATA owns no separate clusters; FILE_STANDARD_INFO reports its resident byte length.
+    expected_allocation = heads[0].size if heads[0].resident else heads[0].allocated
+    require(allocation is not None and expected_allocation == allocation,
             f"Raw unnamed allocation differs from native FILE_STANDARD_INFO: {path.name}; "
             f"raw={heads[0].allocated}, native={allocation}, resident={heads[0].resident}, "
-            f"flags={heads[0].flags}, logical={heads[0].size}")
+            f"flags={heads[0].flags}, logical={heads[0].size}, expected_native={expected_allocation}")
     standard = [mft.parse_standard_information(item.value) for item in attributes
                 if item.kind == mft.STANDARD_INFORMATION]
     require(len(standard) == 1 and standard[0].modified_ns == info.st_mtime_ns,
@@ -63,7 +65,8 @@ def _observe(native: NTFSReader, path: Path) -> dict:
     require(all(item.value is None for item in attributes if item.kind == mft.DATA),
             "DATA payload was retained in parsed metadata")
     return {"reference": record.reference, "names": len(names), "links": record.links,
-            "size": heads[0].size, "allocated": allocation, "resident": heads[0].resident,
+            "size": heads[0].size, "raw_allocated": heads[0].allocated, "native_allocated": allocation,
+            "resident": heads[0].resident,
             "attribute_list": any(item.kind == mft.ATTRIBUTE_LIST for item in attributes),
             "named_streams": [{"name": item.name, "size": item.size, "allocated": item.allocated}
                               for item in attributes if item.kind == mft.DATA and item.name and not item.lowest_vcn]}
@@ -76,6 +79,8 @@ def _proof(volume) -> dict:
     _write(tiny, b"private resident fixture")
     stream = Path(str(tiny) + ":owned")
     _write(stream, b"private named stream")
+    for size in (0, 1, 7, 9, 31, 127):
+        _write(root / f"resident-{size:03}.bin", b"r" * size)
     linked = root / "extensions.bin"
     _write(linked, b"private extension fixture" * 4096)
     for index in range(128):

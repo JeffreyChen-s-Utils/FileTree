@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 import json
 import stat
+import struct
 from types import SimpleNamespace
 
 import pytest
@@ -53,4 +54,24 @@ def test_native_allocation_difference_refuses_with_bounded_metadata_evidence(mon
     path = SimpleNamespace(name="fixture.bin", lstat=lambda: info, parent=parent)
     monkeypatch.setattr(probe, "file_allocation", lambda *_args: 8192)
     with pytest.raises(RuntimeError, match="fixture.bin; raw=4096, native=8192, resident=False, flags=0, logical=100"):
+        probe._observe(native, path)
+
+
+@pytest.mark.parametrize("length", [0, 1, 7, 9, 24, 31, 127])
+def test_resident_cluster_allocation_and_native_byte_length_are_distinct(monkeypatch, length):
+    standard = bytearray(72)
+    struct.pack_into("<QQQQI", standard, 0, *([116444736000000001] * 4), 0x20)
+    raw = _record(_resident(mft.STANDARD_INFORMATION, bytes(standard)),
+                  _resident(mft.FILE_NAME, _filename("fixture.bin", parent=5 | (7 << 48)), instance=1),
+                  _resident(mft.DATA, b"r" * length, instance=2))
+    record = mft.parse_record(raw, 24)
+    native = SimpleNamespace(record=lambda _ordinal: record, attributes=lambda _base: record.attributes)
+    info = SimpleNamespace(st_ino=record.reference, st_size=length, st_mtime_ns=100, st_nlink=1)
+    path = SimpleNamespace(name="fixture.bin", lstat=lambda: info,
+                           parent=SimpleNamespace(lstat=lambda: SimpleNamespace(st_ino=5 | (7 << 48))))
+    monkeypatch.setattr(probe, "file_allocation", lambda *_args: length)
+    observed = probe._observe(native, path)
+    assert observed["raw_allocated"] == 0 and observed["native_allocated"] == length
+    monkeypatch.setattr(probe, "file_allocation", lambda *_args: length + 1)
+    with pytest.raises(RuntimeError, match="allocation differs"):
         probe._observe(native, path)

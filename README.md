@@ -429,6 +429,8 @@ scanner. `core/mft_reader.py` adds bounded read-only access for an existing admi
 fixed local NTFS volumes, checked geometry and sequence/owner-checked extensions, without requesting
 elevation or modifying privileges. A CI diagnostic uses a new private image for native metadata
 comparisons; native evidence and ACL-aware tree/options/fallback parity remain prerequisites to enable it.
+Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` can still report
+resident bytes. The diagnostic records these two allocation observations separately.
 
 For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
 duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.
