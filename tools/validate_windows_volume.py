@@ -37,7 +37,7 @@ def _write(path: Path, data: bytes) -> None:
         os.fsync(stream.fileno())
 
 
-def _sparse(path: Path) -> None:
+def _sparse(path: Path, *, logical_size: int = 64 * _MIB) -> None:
     kernel = _kernel()
     kernel.DeviceIoControl.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32,
                                       ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32),
@@ -53,7 +53,7 @@ def _sparse(path: Path) -> None:
     finally:
         kernel.CloseHandle(handle)
     with path.open("r+b") as stream:
-        stream.seek(64 * _MIB - 4096)
+        stream.seek(logical_size - 4096)
         stream.write(b"s" * 4096)
         stream.flush()
         os.fsync(stream.fileno())
@@ -68,6 +68,7 @@ def _fixtures(volume: OwnedVolume) -> Path:
     os.link(plain, root / "alias.bin")
     _write(root / "compressed.txt", b"owned compressible payload\n" * 262144)
     _sparse(root / "sparse.bin")
+    _sparse(root / "sparse-recovery.bin", logical_size=8 * _MIB)
     tree = scan(root, options=_OPTIONS).root
     candidate = next(node for node in tree.children if node.name == "compressed.txt")
     before = hashlib.sha256(Path(candidate.path).read_bytes()).hexdigest()

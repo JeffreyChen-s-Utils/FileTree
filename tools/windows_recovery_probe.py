@@ -36,7 +36,8 @@ def _keeper(path: Path | None) -> dict | None:
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
-def _trash(volume: OwnedVolume, paths: list[Path], snapshots: list[bytes]) -> None:
+def _trash(volume: OwnedVolume, paths: list[Path], snapshots: list[bytes]) -> list[dict]:
+    receipts = []
     for path, captured in zip(paths, snapshots, strict=True):
         verify_volume(volume)
         require(stat_snapshot(str(path)) == captured, "Recovery fixture changed before Trash")
@@ -44,9 +45,12 @@ def _trash(volume: OwnedVolume, paths: list[Path], snapshots: list[bytes]) -> No
         require(receipt.success and not os.path.lexists(path), "Owned recovery fixture was not moved to Trash")
         if receipt.destination:
             require(Path(receipt.destination).is_relative_to(volume.root), "Recovery Trash escaped private volume")
+        receipts.append({"source": str(path), "success": receipt.success, "destination": receipt.destination})
+    return receipts
 
 
-def _case(volume: OwnedVolume, root: Path, names: tuple[str, ...], keeper: Path | None = None) -> dict:
+def _case(volume: OwnedVolume, root: Path, names: tuple[str, ...], keeper: Path | None = None,
+          pending: Callable[[dict], None] | None = None) -> dict:
     verify_volume(volume)
     require(root == volume.root / "owned-fixtures" and root.resolve(strict=True) == root,
             "Refusing a foreign/linked recovery source scope")
@@ -62,11 +66,17 @@ def _case(volume: OwnedVolume, root: Path, names: tuple[str, ...], keeper: Path 
     savings = estimate_savings(selected, root=result.root)
     retained = _keeper(keeper)
     before = _free(volume)
-    _trash(volume, paths, captured)
+    receipts = _trash(volume, paths, captured)
     after_trash = _free(volume)
     with bins.owned_bin_dialog(volume) as (app, dialog, called):
         bins._settled(app, dialog)
         reviewed = bins._row(volume).trash
+        evidence = {"names": list(names), "estimate": asdict(savings), "free_before_trash": before,
+                    "free_after_trash": after_trash, "bin_after_trash": asdict(reviewed),
+                    "trash_receipts": receipts, "phase": "after_trash", "native_empty_completed": False,
+                    "directory_metadata_bytes": None, "guaranteed_file_data_recovery": None}
+        if pending is not None:
+            pending(evidence)
         require(reviewed.count == len(names), "Native bin count differs from the owned recovery selection")
         questions = bins._review(app, dialog, volume, QMessageBox.StandardButton.Yes)
         bins._wait(app, lambda: bins._row(volume).trash.count == 0)
@@ -78,8 +88,7 @@ def _case(volume: OwnedVolume, root: Path, names: tuple[str, ...], keeper: Path 
     if retained is not None:
         require(all(remaining[key] == retained[key] for key in ("identity", "size", "sha256"))
                 and remaining["links"] == 1, "Remaining hard-link alias changed identity/content/link count")
-    return {"names": list(names), "estimate": asdict(savings), "free_before_trash": before,
-            "free_after_trash": after_trash, "free_after_empty": after_empty,
+    return {**evidence, "phase": "complete", "native_empty_completed": True, "free_after_empty": after_empty,
             "observed_net_free_delta": after_empty - before, "observed_empty_free_delta": after_empty - after_trash,
             "bin_before_empty": asdict(reviewed), "two_questions": questions,
             "remaining_alias_before": retained, "remaining_alias_after": remaining,
@@ -93,8 +102,10 @@ def recovery_proof(volume: OwnedVolume, root: Path, record: Callable[[str, dict]
     file-data estimate. QFile Trash and two-question joined native emptying use only the private drive.
     A failed case propagates with its preceding evidence intact; no host drive/bin is accepted.
     """
-    record("one_hard_link", _case(volume, root, ("plain 測試.bin",), root / "alias.bin"))
-    record("last_hard_link", _case(volume, root, ("alias.bin",)))
+    def run(name: str, names: tuple[str, ...], keeper: Path | None = None) -> None:
+        record(name, _case(volume, root, names, keeper, lambda pending: record(name, pending)))
+    run("one_hard_link", ("plain 測試.bin",), root / "alias.bin")
+    run("last_hard_link", ("alias.bin",))
     verify_volume(volume)
     original, alias = root / "all names.bin", root / "all alias.bin"
     require(not os.path.lexists(original) and not os.path.lexists(alias), "Refusing existing all-link fixtures")
@@ -103,6 +114,6 @@ def recovery_proof(volume: OwnedVolume, root: Path, record: Callable[[str, dict]
         stream.flush()
         os.fsync(stream.fileno())
     os.link(original, alias)
-    record("all_hard_links", _case(volume, root, (original.name, alias.name)))
-    record("compressed", _case(volume, root, ("compressed.txt",)))
-    record("sparse", _case(volume, root, ("sparse.bin",)))
+    run("all_hard_links", (original.name, alias.name))
+    run("compressed", ("compressed.txt",))
+    run("sparse", ("sparse-recovery.bin",))

@@ -553,4 +553,9 @@ runs both fresh formats and preserves their separate JSON evidence for seven day
 NTFS measurements through production savings, native Trash and reviewed native bin emptying.
 It records OS free before Trash, after Trash and after emptying, exact remaining alias identity/full
 hash/link counts, and per-case phase evidence. Raw free deltas include unmeasured directory/bin
-metadata and are not a guaranteed file-data recovery bound. First native CI execution remains pending.
+metadata and are not a guaranteed file-data recovery bound. Native one/last/all hard-link and compressed recovery passed; sparse rerun remains pending.
+
+The 64 MiB sparse fixture reported successful Qt Trash but no native bin item; its emptying was
+not approved or claimed. It remains in the allocation proof; recovery now uses a separate 8 MiB
+sparse fixture. Post-Trash pending records persist actual receipts/free/bin metadata before native
+emptying authorization, including an explicit incomplete phase when counts differ.

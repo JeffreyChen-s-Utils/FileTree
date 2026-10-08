@@ -46,7 +46,8 @@ def test_trash_destination_outside_private_volume_is_refused(tmp_path, monkeypat
     assert (tmp_path / "retained.bin").read_bytes() == b"owned payload"
 
 
-def test_case_records_raw_deltas_separately_and_rechecks_remaining_alias(tmp_path, monkeypatch):
+@pytest.mark.parametrize("bin_count", [0, 1])
+def test_case_records_raw_deltas_separately_and_rechecks_remaining_alias(tmp_path, monkeypatch, bin_count):
     root = tmp_path / "owned-fixtures"
     root.mkdir()
     payload, keeper = root / "owned.bin", root / "alias.bin"
@@ -58,18 +59,32 @@ def test_case_records_raw_deltas_separately_and_rechecks_remaining_alias(tmp_pat
     monkeypatch.setattr(recovery, "_free", lambda _volume: next(free))
     empty = SimpleNamespace(complete=True, count=0, size=0)
     from je_file_tree.core.trash_size import TrashUsage
-    values = iter([TrashUsage(0, 0, True), TrashUsage(payload.stat().st_size, 1, True), TrashUsage(0, 0, True)])
+    values = iter([TrashUsage(0, 0, True), TrashUsage(payload.stat().st_size, bin_count, True), TrashUsage(0, 0, True)])
     monkeypatch.setattr(recovery.bins, "_row", lambda _volume: SimpleNamespace(trash=next(values)))
-    monkeypatch.setattr(recovery, "_trash", lambda *_args: payload.unlink())
+    def trash(*_args):
+        payload.unlink()
+        return [{"source": str(payload), "success": True, "destination": None}]
+    monkeypatch.setattr(recovery, "_trash", trash)
     dialog = SimpleNamespace(last_error="", model=SimpleNamespace(rows=lambda: [SimpleNamespace(trash=empty)]))
     @contextmanager
     def owned(_volume):
         yield object(), dialog, [str(tmp_path)]
     monkeypatch.setattr(recovery.bins, "owned_bin_dialog", owned)
     monkeypatch.setattr(recovery.bins, "_settled", lambda *_args: None)
-    monkeypatch.setattr(recovery.bins, "_review", lambda *_args: ["private first", "private second"])
+    def review(*_args):
+        assert bin_count == 1, "Incomplete bin must not reach permanent native emptying"
+        return ["private first", "private second"]
+    monkeypatch.setattr(recovery.bins, "_review", review)
     monkeypatch.setattr(recovery.bins, "_wait", lambda _app, predicate: predicate())
-    result = recovery._case(volume, root, (payload.name,), keeper)
+    pending = []
+    if not bin_count:
+        with pytest.raises(RuntimeError, match="Native bin count differs"):
+            recovery._case(volume, root, (payload.name,), keeper, pending.append)
+        assert pending[0]["phase"] == "after_trash" and not pending[0]["native_empty_completed"]
+        assert pending[0]["bin_after_trash"]["count"] == 0 and pending[0]["trash_receipts"][0]["success"]
+        return
+    result = recovery._case(volume, root, (payload.name,), keeper, pending.append)
+    assert pending[0]["phase"] == "after_trash" and result["native_empty_completed"]
     assert result["estimate"]["recoverable_max"] == 0
     assert result["observed_net_free_delta"] == 500
     assert result["observed_empty_free_delta"] == 1000

@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-29 | 2026-10-08 | Preserve incomplete Trash evidence and isolate sparse recovery fixture | #validation #implementation | [2026-10-b](2026-10-b.md) |
 | U-20261008-28 | 2026-10-08 | Verify populated VHD compaction and add per-case NTFS recovery evidence | #implementation #validation #done | [2026-10-b](2026-10-b.md) |
 | U-20261008-27 | 2026-10-08 | Review detached owned disk after setup and expose each CI failure | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-26 | 2026-10-08 | Populated owned VHD compaction validation tooling | #implementation #validation #virtual-disks | [2026-10-b](2026-10-b.md) |

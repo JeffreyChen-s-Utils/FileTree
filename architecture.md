@@ -628,7 +628,7 @@ sparse files, recording OS free before Trash, after Trash and after native empty
 savings bounds and the remaining alias identity/full hash/link count. It shares a joined private-bin
 dialog with native device/GUID checks, one exact drive and two questions. Each completed case saves
 phase evidence; raw free deltas do not independently measure file data or directory/bin metadata.
-Its first native run remains pending. Provider placeholders, shared
+Native one/last/all hard-link and compressed recovery passed; sparse rerun remains pending. Provider placeholders, shared
 extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
 failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
 application's bool/tuple-compatible Qt Trash receipt adapter.
@@ -885,3 +885,8 @@ any other `pip install`, builds with isolation, or when the lock does not satisf
 
 When a module is added, removed or changes layer; when a flow in §4 changes; when an extension point or a
 constraint changes; when another repository starts depending on FileTree (§6).
+
+The 64 MiB sparse fixture reported successful Qt Trash but no native bin item; its emptying was
+not approved or claimed. It remains in the allocation proof; recovery now uses a separate 8 MiB
+sparse fixture. Post-Trash pending records persist actual receipts/free/bin metadata before native
+emptying authorization, including an explicit incomplete phase when counts differ.
