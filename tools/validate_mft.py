@@ -78,22 +78,22 @@ def _proof(volume) -> dict:
     verify_volume(volume)
     tiny = root / "resident.bin"
     _write(tiny, b"private resident fixture")
-    stream = Path(str(tiny) + ":owned")
-    _write(stream, b"private named stream")
+    named_stream = Path(str(tiny) + ":owned")
+    _write(named_stream, b"private named stream")
     for size in (0, 1, 7, 9, 31, 127):
         _write(root / f"resident-{size:03}.bin", b"r" * size)
     truncated = root / "resident-truncated.bin"
     _write(truncated, b"t" * 127)
-    with truncated.open("r+b") as stream:
-        stream.truncate(1)
-        stream.flush()
-        os.fsync(stream.fileno())
+    with truncated.open("r+b") as truncated_stream:
+        truncated_stream.truncate(1)
+        truncated_stream.flush()
+        os.fsync(truncated_stream.fileno())
     linked = root / "extensions.bin"
     _write(linked, b"private extension fixture" * 4096)
     for index in range(128):
         os.link(linked, root / (f"alias-{index:03}-" + "long-name-" * 8 + ".bin"))
     paths = sorted(root.iterdir())
-    before = _capture([*paths, stream])
+    before = _capture([*paths, named_stream])
     observations = {}
     with NTFSReader(str(root)) as native:
         for path in paths:
@@ -102,11 +102,11 @@ def _proof(volume) -> dict:
                 "Fresh fixture did not exercise resident/named metadata")
         require(observations[linked.name]["attribute_list"], "Fresh aliases did not exercise MFT extensions")
         references = {item.reference for item in native.records() if item.in_use and not item.base_reference}
-        require(all(item[1] in references for name, item in before.items() if name != str(stream)),
+        require(all(item[1] in references for name, item in before.items() if name != str(named_stream)),
                 "Bounded raw streaming omitted a fresh native file reference")
         native.verify()
     verify_volume(volume)
-    require(_capture([*paths, stream]) == before, "MFT observations changed fixture identity/data/streams")
+    require(_capture([*paths, named_stream]) == before, "MFT observations changed fixture identity/data/streams")
     return {"files": observations, "source_preserved": True, "stream_preserved": True,
             "raw_stream_complete": True, "scanner_enabled": False}
 

@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import json
+from pathlib import Path
 import stat
 import struct
 from types import SimpleNamespace
@@ -77,3 +78,26 @@ def test_resident_clusters_logical_length_and_native_capacity_are_distinct(monke
     monkeypatch.setattr(probe, "file_allocation", lambda *_args: capacity + 1)
     with pytest.raises(RuntimeError, match="allocation differs"):
         probe._observe(native, path)
+
+
+def test_real_fixture_preparation_keeps_named_stream_path_through_truncation(tmp_path, monkeypatch):
+    monkeypatch.setattr(probe, "_fixtures", lambda _volume: tmp_path)
+    monkeypatch.setattr(probe, "verify_volume", lambda _volume: None)
+    captures = []
+    original = probe._capture
+
+    def capture(paths):
+        result = original(paths)
+        captures.append(paths)
+        return result
+
+    def ready(_path):
+        raise RuntimeError("fixture metadata ready; no native reader used")
+
+    monkeypatch.setattr(probe, "_capture", capture)
+    monkeypatch.setattr(probe, "NTFSReader", ready)
+    with pytest.raises(RuntimeError, match="fixture metadata ready"):
+        probe._proof(SimpleNamespace(root=tmp_path))
+    assert len(captures) == 1 and all(isinstance(path, Path) for path in captures[0])
+    assert (tmp_path / "resident-truncated.bin").read_bytes() == b"t"
+    assert Path(str(tmp_path / "resident.bin") + ":owned").read_bytes() == b"private named stream"
