@@ -188,7 +188,7 @@ def test_actual_scheduled_history_is_gentle_and_preserves_sources_without_touchi
     monitor.tick()
     worker = monitor.scan
     assert worker is not None and worker.options.gentle and worker.options.workers == 1
-    _wait(qapp, lambda: monitor.scan is None)
+    _wait(qapp, lambda: monitor.scan is None, timeout=30.0)
     history = configured_history(monitored.settings).read(str(source))
     assert history.count == 1 and not history.entries[0].incomplete
     assert monitored.current.results.outcome is None

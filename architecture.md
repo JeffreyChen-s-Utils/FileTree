@@ -1119,3 +1119,8 @@ The fresh APFS sparse image is 1 GiB so the container permits the primary volume
 unmounted reservation peer. Apple documents `nx_max_file_systems` as container bytes divided
 by 512 MiB, rounded up; the former 512 MiB fixture allowed only one volume. No existing image
 is resized, and native ownership/detach checks remain mandatory.
+
+FreeBSD phase evidence uses the existing `_atomic_file(..., encoding="utf-8")` contract.
+The initial evidence write is inside the owned cleanup lifetime, so a write error before the first
+mount still attempts verified scratch cleanup. Regression tests exercise the real atomic writer
+and the initial-write failure path without asserting native mount equivalence.

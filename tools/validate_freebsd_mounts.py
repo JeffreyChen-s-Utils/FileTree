@@ -181,11 +181,11 @@ def main() -> int:
     proof["owned_scratch"] = str(owned.root)
 
     def save() -> None:
-        with _atomic_file(options.output) as stream:
+        with _atomic_file(options.output, encoding="utf-8") as stream:
             json.dump(proof, stream, ensure_ascii=False, indent=2)
 
-    save()
     try:
+        save()
         proof["static"] = static_proof(owned)
         proof["phase"] = "static"
         save()

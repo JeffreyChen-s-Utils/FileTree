@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-58 | 2026-10-08 | Preserve UTF-8 native phase evidence and bounded gentle-scan waits | #incident #validation #background | [2026-10-b](2026-10-b.md) |
 | U-20261008-57 | 2026-10-08 | Parse bounded raw NTFS FILE and attribute metadata | #snapshot #scanner #ntfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-56 | 2026-10-08 | Guard FreeBSD native mounts and confirm APFS reservation evidence | #snapshot #scanner #capacity #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-55 | 2026-10-08 | Allow a second APFS fixture volume with a 1 GiB sparse image | #incident #capacity #validation | [2026-10-b](2026-10-b.md) |

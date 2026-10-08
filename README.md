@@ -390,6 +390,7 @@ CI guest tests fresh read-only nullfs mounts with one/four workers and live moun
 and after opening a directory; JSON includes source preservation and confirmed unmount/cleanup.
 Native evidence remains pending. FreeBSD gives nullfs a different device ID; this case does not establish
 same-device behavior. The diagnostic refuses desktop hosts and accepts no existing mount selector.
+Phase JSON uses explicit UTF-8 atomic writes; even an initial evidence-write error enters owned cleanup.
 
 ## Command line without a window
 
