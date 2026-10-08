@@ -150,4 +150,6 @@ def compaction_proof(volume: OwnedVolume, captured: dict[str, dict[str, object]]
     return {"outcome": asdict(outcome), "guest_records": captured, "guest_full_hashes_and_ids_preserved": True,
             "guest_named_stream_preserved": True, "guest_hard_link_preserved": True,
             "read_only_reattach": True, "production_runtime_checks": True,
-            "durable_approval_and_compacted_outcome": True, "guest_used": None}
+            "durable_approval_and_compacted_outcome": True, "guest_used": None,
+            "creation_uuid": volume.creation_identifier.hex(), "reviewed_detached_uuid": volume.identifier.hex(),
+            "setup_changed_uuid": volume.creation_identifier != volume.identifier}

@@ -638,7 +638,11 @@ ADS hashes, namespace/IDs/lengths/link counts and written/zeroed blocks, then us
 runtime/executor and durable operation-worker audit while detached. Only the captured UUID is
 reattached read-only without a drive letter/formatting and compared through its original volume GUID.
 Read-only detach failure retains the image. CI runs both fresh formats and saves separate phase JSON;
-populated native proof is pending, and guest usage/guaranteed recovery remain unknown.
+populated VHD native proof passed; VHDX awaits a corrected rerun. Each format has a separate command
+step so PowerShell cannot mask earlier failure. After setup/detachment, the original pinned backing
+identity is queried read-only and its current UUID becomes the fresh review baseline; creation UUID
+is retained separately as evidence. Production frozen UUID/snapshot checks remain unchanged.
+Guest usage/guaranteed recovery remain unknown.
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
 documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.

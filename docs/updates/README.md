@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-27 | 2026-10-08 | Review detached owned disk after setup and expose each CI failure | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-26 | 2026-10-08 | Populated owned VHD compaction validation tooling | #implementation #validation #virtual-disks | [2026-10-b](2026-10-b.md) |
 | U-20261008-25 | 2026-10-08 | Reviewed virtual disk compaction with durable outcomes | #implementation #virtual-disks #gui #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-24 | 2026-10-08 | Captured native virtual-disk compaction and private NTFS evidence | #implementation #virtual-disks #validation | [2026-10-b](2026-10-b.md) |

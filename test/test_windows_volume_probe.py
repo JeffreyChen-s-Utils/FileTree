@@ -192,11 +192,19 @@ def test_detached_hook_pins_captured_image_and_retains_it_on_hook_failure(tmp_pa
         yield
         entered.append("released")
     monkeypatch.setattr(volumes, "_pinned_file", pin)
+    monkeypatch.setattr(native, "inspect_virtual_disk", lambda _disk:
+                        SimpleNamespace(identifier=bytes(range(16)), dynamic=True, loaded=False))
+    volume = volumes.OwnedVolume(image, bytes(16), "owned-device", tmp_path, "owned-guid", "owned-label",
+                                ctypes.c_void_p(), bytes(16))
     def fail(_volume):
         assert entered == ["pinned"]
+        assert _volume.identifier == bytes(range(16))
+        assert _volume.creation_identifier == bytes(16)
+        assert _volume.image == image
+        assert (image.stat().st_dev, image.stat().st_ino) == identities[1]
         raise RuntimeError("owned guest proof failed")
     with pytest.raises(RuntimeError, match="guest proof"):
-        volumes._after_detach(owned, image, identities, None, fail)
+        volumes._after_detach(owned, image, identities, volume, fail)
     assert image.read_bytes() == b"owned fixture"
 
 
@@ -240,6 +248,8 @@ def test_owned_context_closes_created_handle_and_retains_image_on_observation_or
     monkeypatch.setattr(volumes, "_initialize", lambda *_args:
                         dict(root="Z:\\", volume_id="owned-guid", label="FT-0123456789ab"))
     monkeypatch.setattr(volumes, "verify_volume", lambda _volume: None)
+    monkeypatch.setattr(native, "inspect_virtual_disk", lambda _disk:
+                        SimpleNamespace(identifier=bytes(range(16)), dynamic=True, loaded=False))
     lstat = Path.lstat
     def fail_stat(path):
         if path == image:

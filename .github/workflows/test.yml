@@ -24,12 +24,14 @@ jobs:
         python-version: "3.12"
     - name: Install dependencies
       run: python -m pip install -r dev_requirements.txt
-    - name: Validate fresh owned VHD/VHDX, private NTFS bins and detached compaction
+    - name: Validate fresh owned VHDX, private NTFS bin and detached compaction
       env:
         QT_QPA_PLATFORM: offscreen
-      run: |
-        python tools/validate_windows_volume.py --output windows-volume.json
-        python tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
+      run: python tools/validate_windows_volume.py --output windows-volume.json
+    - name: Validate fresh owned VHD, private NTFS bin and detached compaction
+      env:
+        QT_QPA_PLATFORM: offscreen
+      run: python tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
     - name: Preserve private volume evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

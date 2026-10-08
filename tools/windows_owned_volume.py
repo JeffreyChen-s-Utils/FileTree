@@ -3,7 +3,7 @@
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 import ctypes
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 import os
 from pathlib import Path
@@ -17,6 +17,8 @@ import uuid
 from je_file_tree.core import virtual_disk_info as native
 from je_file_tree.core.copy_io import _pinned_file
 from je_file_tree.core.no_replace import anchored_directory, directory_stamps
+from je_file_tree.core.snapshot import pack_snapshot
+from je_file_tree.core.virtual_disks import VirtualDisk
 
 _CAPACITY = 512 * 1024 * 1024
 _PREFIX = "filetree-owned-ntfs-"
@@ -46,6 +48,7 @@ class OwnedVolume:
     volume_id: str
     label: str
     handle: ctypes.c_void_p
+    creation_identifier: bytes = b""
 
 
 def require(condition: bool, message: str) -> None:
@@ -172,7 +175,15 @@ def _after_detach(owned: Path, image: Path, identities: tuple[tuple[int, int], t
     _owned_image(owned, image, *identities)
     with anchored_directory(directory_stamps(str(owned))), _pinned_file(str(image)):
         _owned_image(owned, image, *identities)
-        callback(volume)
+        # Setup explicitly writes/formats the newly created disk. Review only its final detached
+        # header; creation-time UUID is evidence, not approval for the setup-modified backing file.
+        info = image.lstat()
+        disk = VirtualDisk(str(image), image.suffix.removeprefix("."), "scan", image.name, None,
+                           info.st_size, None, pack_snapshot(info))
+        observed = native.inspect_virtual_disk(disk)
+        require(observed.identifier is not None and observed.dynamic and not observed.loaded,
+                "Owned setup did not produce a valid detached dynamic disk")
+        callback(replace(volume, identifier=observed.identifier))
 
 
 def verify_volume(volume: OwnedVolume) -> None:
@@ -222,7 +233,8 @@ def owned_ntfs_volume(*, kind: str = "vhdx",
         physical = _physical(library, handle)
         data = _initialize(physical, "FT-" + uuid.uuid4().hex[:12])
         require(_physical(library, handle) == physical, "Native fixture mapping changed during formatting")
-        volume = OwnedVolume(image, identity, physical, Path(data["root"]), data["volume_id"], data["label"], handle)
+        volume = OwnedVolume(image, identity, physical, Path(data["root"]), data["volume_id"], data["label"],
+                             handle, identity)
         verify_volume(volume)
         yield volume
         completed = True
