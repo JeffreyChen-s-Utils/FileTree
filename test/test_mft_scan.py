@@ -1,11 +1,13 @@
 """Experimental metadata trees retain one published root, ACL authority and ordinary fallback semantics."""
 
 from contextlib import nullcontext
+import ctypes
 import errno
 from itertools import count
 import os
 from pathlib import Path
 import stat
+import sys
 import threading
 from types import SimpleNamespace
 
@@ -212,3 +214,18 @@ def test_raw_metadata_mismatches_refuse_before_nodes(case, monkeypatch):
     parent = 124 if case == "parent" else 123
     with pytest.raises(mft.MFTParseError):
         mft_scan._audit(native, info, visible, parent, lambda: None)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Native Windows token fallback")
+def test_actual_unelevated_windows_token_falls_back_without_another_root_or_source_change(tmp_path):
+    if ctypes.WinDLL("shell32.dll", winmode=0x800).IsUserAnAdmin():
+        pytest.skip("Requires an actual unelevated token; never changes process privileges")
+    source = tmp_path / "keep.bin"
+    source.write_bytes(b"owned unelevated fixture")
+    before, published = source.stat(), []
+    result = scanner.scan(tmp_path, options=scanner.ScanOptions(experimental_mft=True), on_root=published.append)
+    after = source.stat()
+    assert result.backend == "ordinary" and result.root is published[0] and len(published) == 1
+    assert result.root.file_count == 1 and source.read_bytes() == b"owned unelevated fixture"
+    assert (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) == (
+        after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)

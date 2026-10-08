@@ -141,7 +141,7 @@ class NTFSReader:
 
     Construction requires an existing administrator token; it never requests elevation or enables
     privileges. Records and attribute lists are metadata observations, not a transactional snapshot.
-    This reader does not perform ACL-aware Node construction or replace the ordinary scanner yet.
+    The opt-in mft_scan audit separately checks native ACL visibility before Node construction.
     """
 
     def __init__(self, path: str) -> None:

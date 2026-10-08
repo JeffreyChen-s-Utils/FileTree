@@ -1014,6 +1014,14 @@ Native ACL/options/full-drive parity and performance baselines are required befo
 `tools/validate_mft.py` accepts only a new owned private
 NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
 CI retains phase evidence. Synthetic tests are not proof of native metadata parity.
+`tools/mft_tree_probe.py` compares ordinary versus explicitly selected audit snapshots, owners,
+allocation, hard-link accounting, hidden/excluded/link coverage and cancellation on that private image.
+Three whole-private-drive pairs retain medians without extrapolating to large real volumes. An owned
+denied-listing branch freezes its original DACL and restores it in finally, including failed probes;
+fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern, volume GUID, unique
+fixture label and nonreparse directory before ACL access. It denies only LIST_DIRECTORY on that owned
+folder. Phase evidence retains comparisons/refusal and original payload/ADS identities/hashes; no host
+ACL, privilege change or source removal occurs. Native artifact review is required before parity claims.
 `core/windows_directory.py` streams bounded FILE_ID_EXTD_DIR_INFO under ordinary scandir listing
 permission, checked native file ID/volume and a no-follow handle pinned against rename/delete.
 It rejects unsafe/corrupt chains, reparse/cloud directory scopes and changed identities, propagates

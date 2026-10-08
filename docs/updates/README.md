@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-77 | 2026-10-08 | Compare native NTFS audit options ACL refusal cancellation and private-drive timings | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-76 | 2026-10-08 | Generate native macOS ICNS and inspect complete Linux packaging proof | #snapshot #packaging #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-75 | 2026-10-08 | Stage an explicitly selected ACL-aware NTFS metadata audit with ordinary fallback | #snapshot #mft #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-74 | 2026-10-08 | Verify cross-platform compiler wheel hashes and correct native package publication | #snapshot #distribution #validation | [2026-10-c](2026-10-c.md) |

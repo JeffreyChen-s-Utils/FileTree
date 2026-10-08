@@ -457,6 +457,9 @@ Allocation, owners, options and link boundaries retain ordinary Node rules. Unsu
 discard the candidate and restart ordinary scanning after a root identity check; progress may restart.
 Success or cancellation adopts into the single published root. Native ACL/options/full-drive parity
 and performance baselines remain pending; the audit does not promise a speed improvement.
+The private-image probe now compares Node snapshots, options, hard-link accounting and three
+whole-private-drive timings. Its owned denied-listing branch must stay incomplete; the exact DACL is
+restored on every outcome. Cancellation keeps a single partial root. Native evidence is still pending.
 Raw resident DATA owns no separate data clusters; native `FILE_STANDARD_INFO` can still report
 resident space with alignment padding. The parser retains logical length and bounded resident value
 capacity separately, and the diagnostic records raw/native allocation observations separately.

@@ -19,6 +19,7 @@ from je_file_tree.core.windows_allocation import file_allocation  # noqa: E402
 from je_file_tree.core.windows_directory import directory_entries  # noqa: E402
 from tools.validate_windows_volume import _fixtures, _write  # noqa: E402
 from tools.windows_owned_volume import owned_ntfs_volume, require, verify_volume  # noqa: E402
+from tools.mft_tree_probe import validate_tree  # noqa: E402
 
 _DOS_NAMESPACE = 2
 
@@ -150,6 +151,15 @@ def main() -> None:
             evidence.update(phase="reading", owned_volume=str(volume.root))
             save()
             evidence.update(_proof(volume))
+            sources = [*list((volume.root / "owned-fixtures").iterdir()),
+                       Path(str(volume.root / "owned-fixtures/resident.bin") + ":owned")]
+            before_tree = _capture(sources)
+            def retain_tree(update):
+                evidence.setdefault("tree", {}).update(update)
+                save()
+            evidence["tree"] = validate_tree(volume, volume.root / "owned-fixtures", retain_tree)
+            require(_capture(sources) == before_tree, "Tree audit changed original file identities/data/ADS")
+            evidence["tree"]["original_sources_preserved"] = True
             evidence["phase"] = "validated"
             save()
         evidence.update(phase="complete", cleanup_verified=True)

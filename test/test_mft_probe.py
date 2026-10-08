@@ -33,6 +33,14 @@ def test_atomic_utf8_phase_evidence_and_fixture_exit(tmp_path, monkeypatch, fail
 
     monkeypatch.setattr(probe, "owned_ntfs_volume", owned)
     monkeypatch.setattr(probe, "_proof", proof)
+    fixture = tmp_path / "owned/owned-fixtures"
+    fixture.mkdir(parents=True)
+    monkeypatch.setattr(probe, "_capture", lambda _paths: {})
+    def tree(_volume, _root, save):
+        save({"partial_phase": True})
+        assert json.loads(output.read_text(encoding="utf-8"))["tree"]["partial_phase"]
+        return {"tree_payloads_preserved": True}
+    monkeypatch.setattr(probe, "validate_tree", tree)
     monkeypatch.setattr(probe.sys, "argv", ["validate_mft.py", "--output", str(output)])
     if fail:
         with pytest.raises(ValueError, match="metadata rejected"):
@@ -43,6 +51,8 @@ def test_atomic_utf8_phase_evidence_and_fixture_exit(tmp_path, monkeypatch, fail
     assert exits == [True]
     assert evidence["phase"] == ("failed" if fail else "complete")
     assert evidence["cleanup_verified"] is not fail
+    if not fail:
+        assert evidence["tree"]["original_sources_preserved"]
 
 
 def test_native_allocation_difference_refuses_with_bounded_metadata_evidence(monkeypatch):

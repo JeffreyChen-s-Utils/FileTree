@@ -42,6 +42,9 @@ the ordinary Node rules. No elevation occurs. Unsupported/raw errors discard the
 and restart the ordinary scan after a root identity check; progress may restart. Success or cancellation
 adopts the sorted candidate into the same root published once by on_root. Native ACL/parity/full-drive
 and performance baselines remain required before default enabling; this is no speed claim.
+Private-image CI now compares option/snapshot/ACL/cancellation behavior and whole-private-drive
+timings, including exact restoration of an owned denied-listing DACL. Native results await review;
+private-drive timings never establish large-volume performance.
 `core.windows_directory.directory_entries(path, expected, check=None)` streams checked
 `WindowsEntry` metadata from FILE_ID_EXTD_DIR_INFO: native 128-bit file identity, name, sizes,
 attributes/reparse tag and four nanosecond dates. `expected` is a captured directory `Snapshot`.
