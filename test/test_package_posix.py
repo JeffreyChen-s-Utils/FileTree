@@ -85,7 +85,7 @@ def test_internal_framework_links_preserved_and_external_links_refused(tmp_path)
     source = _source(tmp_path, "macos")
     link = source / "Framework"
     try:
-        link.symlink_to("Contents/Frameworks", target_is_directory=True)
+        link.symlink_to(Path("Contents") / "Frameworks", target_is_directory=True)
     except OSError as error:
         pytest.skip(f"Native symlink fixture unavailable: {error}")
     assert packager._inventory(source, links=True)["Framework"][0] == "link"

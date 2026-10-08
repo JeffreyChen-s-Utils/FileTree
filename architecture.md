@@ -965,7 +965,13 @@ evidence is retained. An owned 1.2.3-to-1.2.4 upgrade changes a library fixture 
 the new related product/version, unchanged source hashes and removal of the upgraded installation.
 Store publishing and signing require external accounts/credentials.
 `tools/install_compiler.py` is the shared pinned desktop compiler/runtime installation contract
-for Release and Desktop builds. The latter keeps unsigned compiled ZIP/MSI and owned installation
+for native Windows/Linux/macOS. Compiler runtime locks retain exact versions and all published
+non-yanked wheel SHA-256 values. `tools/lock_compiler_wheels.py` regenerates only the three
+fixed runtime locks from bounded PyPI metadata with four read-only request workers; unsupported
+pins/releases, changed lock inputs and missing/invalid hashes fail before writes. It downloads or
+executes no packages and leaves the isolated PyPI publishing lock unchanged. Native pip still requires
+hashes and wheels only; only the separately pinned Nuitka compiler may be an sdist.
+Release and Desktop builds share this installer. The latter keeps unsigned compiled ZIP/MSI and owned installation
 evidence without a release token. `validate_msi.ps1 -DisposableRunner -CompiledPayload` accepts only
 the fixed hosted workspace's sole standalone output, copies no-follow contents into fresh runner
 scratch, verifies every original/installed hash, checks a package-version upgrade, and uninstalls

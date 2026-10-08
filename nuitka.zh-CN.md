@@ -14,9 +14,11 @@
 
 Excel 报告在仅使用标准库的核心之外导入 `openpyxl`。编译前先安装 `requirements.txt`，Nuitka 会收集此导入与其 `et-xmlfile` 依赖包。可执行文件发布按 `.github/requirements/reports.txt` 的已验证哈希安装通用 wheel，与发布任务使用的工具锁定文件独立。HTML 内嵌 Qt 编码的 PNG，不需要浏览器或图像依赖包。
 
-压缩文件预览在仅使用标准库的核心之外，按需导入 `py7zr` 与 `rarfile`。编译前安装 `requirements.txt`，Nuitka 会按适配器导入收集解码依赖包。Windows Python 3.12 发布 wheel 按 `.github/requirements/archives.txt` 的已验证哈希锁定。未附带外部 RAR 工具：PATH 须有 `unrar` 或 `bsdtar`；预览不会运行这些工具或解压。
+压缩文件预览在仅使用标准库的核心之外，按需导入 `py7zr` 与 `rarfile`。编译前安装 `requirements.txt`，Nuitka 会按适配器导入收集解码依赖包。原生 Windows／Linux／macOS Python 3.12 发布 wheel 按 `.github/requirements/archives.txt` 的已验证哈希锁定。未附带外部 RAR 工具：PATH 须有 `unrar` 或 `bsdtar`；预览不会运行这些工具或解压。
 
-相似照片搜索只在需要时于仅使用标准库的核心之外导入 `Pillow`。Nuitka 会按图像适配器导入收集原生解码库。Windows Python 3.12 可执行文件构建按 `.github/requirements/photos.txt` 的已验证二进制 wheel 锁定；本地编译前先安装 `requirements.txt`。未附带外部图像程序或模型资源。
+相似照片搜索只在需要时于仅使用标准库的核心之外导入 `Pillow`。Nuitka 会按图像适配器导入收集原生解码库。原生 Windows／Linux／macOS Python 3.12 构建按 `.github/requirements/photos.txt` 的已验证二进制 wheel 锁定；本地编译前先安装 `requirements.txt`。未附带外部图像程序或模型资源。
+
+使用 py -3 tools/lock_compiler_wheels.py 重新生成编译运行时哈希：保留全部固定依赖版本，已发布 wheel 哈希覆盖原生平台，排除源代码与已撤回产物。不变更独立的 PyPI 发布锁文件。
 
 ### 1.1 Python 包（每个系统都要）
 

@@ -175,7 +175,8 @@ Desktop builds CI also prepares a complete x86_64 Linux AppImage on Ubuntu 22.04
 hashes/identities; the app is not launched. CI retains development artifacts and proof for seven days.
 Formal release attachment is gated by `FILETREE_POSIX_RELEASE_VERIFIED=true` after the macOS checks
 in progress item #4. Developer ID signing/notarization and Finder/OS consent remain unverified.
-See the [Nuitka guide](nuitka.md) for native packaging commands. AppImage login registration uses the
+Compiler runtime wheel locks cover native Windows/Linux/macOS while retaining exact versions and
+hash verification. See the [Nuitka guide](nuitka.md) for native packaging commands. AppImage login registration uses the
 original executable outside its temporary mount; keep that file at its registered location.
 
 **With Python 3.10 or newer**, from PyPI:

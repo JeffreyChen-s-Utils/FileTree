@@ -190,7 +190,8 @@ def package_posix(kind: str, source: Path, version: str, output: Path) -> Path:
         ready.mkdir()
         artifact.rename(ready / artifact.name)
         (ready / "proof.json").write_text(json.dumps(proof, indent=2) + "\n", encoding="utf-8")
-        rename_no_replace(str(ready), str(output), descriptor, descriptor)
+        with anchored_directory(directory_stamps(str(scratch))) as source_descriptor:
+            rename_no_replace(str(ready), str(output), source_descriptor, descriptor)
         destination = output / artifact.name
     return destination
 

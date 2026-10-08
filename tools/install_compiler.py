@@ -18,7 +18,7 @@ _INSTALLS = (
 
 
 def install() -> None:
-    """Install fixed versions and existing hash locks; only Nuitka may use a source distribution."""
+    """Install fixed native versions and cross-platform wheel hash locks; only Nuitka may use an sdist."""
     for arguments in _INSTALLS:
         subprocess.run([sys.executable, "-m", "pip", "install", *arguments], cwd=_ROOT,  # noqa: S603 # nosec B603
                        check=True, timeout=900)
