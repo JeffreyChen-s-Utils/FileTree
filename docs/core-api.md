@@ -15,6 +15,9 @@ already repaired native replies are not raw input. File and parent references re
 and FILE flags retain known system/view-index bits; only the filename-index bit marks a directory.
 Unknown FILE flag bits remain unsupported. Attribute continuation sizes remain unknown,
 and resident main/named DATA never retains payload contents.
+Live segments can have zero links; unused formatted segments can have sequence zero.
+Neither establishes a visible tree entry: consumers must check a live name, parent reference
+and native directory permissions/visibility. Live zero-sequence records remain invalid.
 Resident `Attribute.allocated == 0` denotes no separately allocated DATA clusters, while
 `Attribute.size` retains its logical byte length. `Attribute.resident_capacity` retains the bounded
 space between ValueOffset and RecordLength, including alignment padding; it is None for nonresident

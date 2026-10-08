@@ -963,6 +963,8 @@ offsets, instances, mapping widths, signs, extents and list counts are bounded a
 Sparse holes do not alter previous LCNs; extension sizes remain unknown outside LowestVcn zero.
 Known FILE system/view-index bits are retained without treating view indexes as directories;
 unknown flag bits are refused alongside the existing geometry and identity checks.
+Zero-link live records are retained as metadata; formatted unused records may have sequence zero.
+Only independently checked live names/parents/native directory visibility can become tree entries.
 The parser performs no volume I/O. `core/mft_reader.py` owns an exclusively read-only raw volume
 handle with bounded aligned reads, checked NTFS 3.1 geometry/physical mapping, streaming batches and
 an LRU record cache. It checks extension sequences/base ownership and refuses nested/split lists.

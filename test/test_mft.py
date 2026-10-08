@@ -233,6 +233,21 @@ def test_known_system_and_view_index_flags_preserve_directory_and_live_bits(flag
     assert record.attributes[0].value is None
 
 
+def test_live_zero_link_segment_retains_metadata_without_inventing_a_name():
+    record = mft.parse_record(_record(_resident(mft.DATA, b"private"), ordinal=12,
+                                    sequence=12, links=0, flags=1), 12)
+    assert record.in_use and record.links == 0 and record.base_reference == 0
+    assert record.reference == 12 | (12 << 48)
+    assert not any(attribute.kind == mft.FILE_NAME for attribute in record.attributes)
+    assert record.attributes[0].value is None
+
+
+def test_unused_formatted_segment_may_have_zero_sequence_and_links():
+    record = mft.parse_record(_record(sequence=0, links=0, flags=0), 24)
+    assert not record.in_use and record.sequence == record.links == 0
+    assert record.attributes == ()
+
+
 def test_large_record_metadata_crossing_sector_tail_is_repaired():
     value = b"metadata" * 70
     record = mft.parse_record(_record(_resident(0x20, value)), 24)

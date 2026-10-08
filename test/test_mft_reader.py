@@ -169,7 +169,8 @@ def test_cache_is_bounded_and_closed_reader_refuses_cached_records(monkeypatch):
 
 def test_stream_records_skip_unused_and_preserve_directory_filter(monkeypatch):
     value = _reader()
-    raw = _record(ordinal=0, flags=3) + bytes(1024) + _record(ordinal=2)
+    raw = (_record(ordinal=0, flags=3) + _record(ordinal=1, sequence=0, links=0, flags=0)
+           + _record(ordinal=2))
     value.geometry = replace(value.geometry, mft_size=len(raw))
     monkeypatch.setattr(value, "_stream", lambda *_args: raw)
     checks = []

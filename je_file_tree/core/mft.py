@@ -80,6 +80,8 @@ class FileRecord:
     """One FILE segment with its complete sequence-qualified identity and base-record reference.
 
     System and view-index flags are preserved; only the filename-index bit marks a directory.
+    Zero links do not imply an unused segment; an unused segment may have sequence zero.
+    Tree consumers must separately establish a live name, parent and native directory visibility.
     """
 
     ordinal: int
@@ -256,7 +258,7 @@ def parse_record(data: bytes, ordinal: int) -> FileRecord:
     number, = struct.unpack_from("<I", raw, 44)
     _require(allocated == len(raw) and _RECORD_HEADER <= first < used <= allocated and first % _ALIGN == 0
              and not flags & ~_RECORD_FLAGS and number == ordinal & _END, "Invalid FILE record header")
-    _require(sequence > 0 and (not flags & 1 or links > 0 or base > 0), "Invalid FILE record identity")
+    _require(sequence > 0 or not flags & 1, "Invalid FILE record identity")
     attributes, instances = [], set()
     offset = first
     while offset + 4 <= used:
