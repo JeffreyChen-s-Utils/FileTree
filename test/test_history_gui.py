@@ -94,6 +94,7 @@ def test_dialog_stop_close_join_and_late_reply_are_ignored(window, qapp, sample_
     _wait(qapp, started.is_set)
     dialog.stop()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert not dialog.worker.isRunning()
     dialog._show(original)
     assert dialog.model.rowCount() == 0 and not dialog.compare_button.isEnabled()

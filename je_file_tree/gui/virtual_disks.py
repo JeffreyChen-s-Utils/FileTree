@@ -8,7 +8,7 @@ from typing import Any
 import uuid
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QHBoxLayout, QLabel, QPushButton,
                               QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.formatting import format_count, format_size
@@ -20,6 +20,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.reasons import problem_text
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.virtual_disk_compaction import VirtualDiskCompactionDialog
 
@@ -122,7 +123,7 @@ class VirtualDiskInfoWorker(QThread):
             self.ready.emit(info, error)
 
 
-class VirtualDisksDialog(QDialog):
+class VirtualDisksDialog(WorkerDialog):
     """Backing-file inventory and an explicit owned compaction review; discovery remains read-only."""
 
     selected = Signal(object)
@@ -288,19 +289,23 @@ class VirtualDisksDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Ignore late replies and join all owned work before destruction."""
         self._closed = True
         if self.compaction is not None:
             self.compaction.reject()
-            self.compaction.shutdown()
+            self.compaction.shutdown(wait=wait)
         self.worker.cancel.set()
         if self.info_worker is not None:
             self.info_worker.cancel.set()
-            wait_for(self.info_worker)
-        wait_for(self.worker)
+            if wait:
+                wait_for(self.info_worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: Close/Escape/activation cannot destroy a current native header query."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

@@ -48,6 +48,7 @@ def test_stop_close_joins_preview_and_ignores_late_result(window, qapp, sample_t
     _wait(qapp, entered.is_set)
     dialog.stop_button.click()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(plan)
     assert not dialog.worker.isRunning() and dialog.plan is None and dialog.model.rowCount() == 0
     dialog.deleteLater()
@@ -107,6 +108,7 @@ def test_confirmed_operation_captures_only_listed_files_and_reports_partial_resu
     assert "<error>" in dialog.output.toPlainText() and dialog.changed
     assert not dialog.mode.isEnabled() and not dialog.apply_button.isEnabled()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog.deleteLater()
 
 
@@ -130,6 +132,7 @@ def test_declined_operation_and_close_cancel_joins_owned_command(window, qapp, s
     dialog._apply()
     _wait(qapp, entered.is_set)
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert dialog.operation.cancel.is_set() and not dialog.operation.isRunning()
     assert dialog._closed and dialog.changed
     dialog.deleteLater()

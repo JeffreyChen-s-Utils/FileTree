@@ -6,7 +6,7 @@ import threading
 from collections.abc import Sequence
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel,
                               QPushButton, QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.duplicates import DuplicateSearchCancelledError
@@ -16,6 +16,7 @@ from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, scan
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import ExportWorker, wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -73,7 +74,7 @@ class ComparisonWorker(QThread):
             self.ready.emit(result)
 
 
-class LiveCompareDialog(QDialog):
+class LiveCompareDialog(WorkerDialog):
     """Read-only side-by-side comparison; workers are canceled and joined on close."""
 
     def __init__(self, paths: tuple[str, str], unit: str, parent: QWidget | None = None) -> None:
@@ -189,15 +190,19 @@ class LiveCompareDialog(QDialog):
         self._exports.add(worker)
         worker.start()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join every owned worker before the dialog and its models are destroyed."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
         for worker in list(self._exports):
-            wait_for(worker)
+            if wait:
+                wait_for(worker)
 
     def done(self, result: int) -> None:
         """Qt: invalidate delayed results and join before closing."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

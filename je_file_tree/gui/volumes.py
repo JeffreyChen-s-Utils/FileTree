@@ -8,7 +8,7 @@ import threading
 from typing import Any
 
 from PySide6.QtCore import QSortFilterProxyModel, QStorageInfo, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialogButtonBox, QLabel, QPushButton,
                               QStyledItemDelegate, QStyle, QStyleOptionProgressBar, QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.allocation import allocation_unit
@@ -17,6 +17,7 @@ from je_file_tree.core.trash_size import TrashUsage, trash_usage
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 _LIMIT = 256
@@ -134,7 +135,7 @@ class VolumesWorker(QThread):
             self.ready.emit(rows, count)
 
 
-class VolumesDialog(QDialog):
+class VolumesDialog(WorkerDialog):
     """Choose a mounted root to scan without changing any filesystem entry."""
 
     scan_requested = Signal(str)
@@ -174,16 +175,18 @@ class VolumesDialog(QDialog):
 
     def refresh(self) -> None:
         """Replace a completed survey and refresh capacity/Trash after an explicit OS operation."""
+        if self._closed:
+            return
         previous = getattr(self, "worker", None)
         if previous is not None:
             previous.cancel.set()
-            wait_for(previous)
-            previous.deleteLater()
+            retire_worker(previous, self)
         self.status.setText(tr("volume_reading"))
         self.stop_button.setEnabled(True)
         self.worker = VolumesWorker(self)
-        self.worker.ready.connect(self._show)
-        self.worker.start()
+        worker = self.worker
+        worker.ready.connect(lambda rows, count: self.worker is worker and self._show(rows, count))
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _show(self, rows: list[Volume], count: int) -> None:
         if self._closed or self.worker.cancel.is_set():
@@ -204,13 +207,16 @@ class VolumesDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join the owned survey before destroying the modal view."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: ignore queued replies and join before closing."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

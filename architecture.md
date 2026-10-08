@@ -1384,3 +1384,11 @@ folder errors are delivered asynchronously. `WelcomePage.drives_changed` publish
 ready-drive action uses `drive_rows` snapshots, while every scan revalidates its actual root independently.
 `ThreadFence` invokes its continuation once on the GUI thread only after captured workers join; it grants
 no source-operation approval and never starts a canceled replacement.
+
+Owned worker-dialog contract: WorkerDialog.defer_done first requests subclass shutdown(wait=False),
+invalidates late replies and retains the first result. ThreadFence keeps the GUI loop live until every
+descendant QThread joins. The existing done/reporting path then runs with joined workers, reports
+retained outcomes and releases the modal source-operation guard. shutdown(wait=True) remains the
+explicit destruction contract. queue_worker serializes replaced previews and approved execution behind
+retained workers, with a captured current-plan/request/cancellation predicate before starting. Replaced
+workers use retire_worker instead of synchronous GUI joins; stale volume replies check worker identity.

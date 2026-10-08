@@ -5,7 +5,7 @@ import os
 
 from PySide6.QtCore import QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import (
-    QAbstractItemView, QComboBox, QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel,
+    QAbstractItemView, QComboBox, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel,
     QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QTableView, QVBoxLayout, QWidget,
 )
 
@@ -16,6 +16,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.namespace_worker import NamespaceOperationWorker, NamespacePreviewWorker, NamespaceRequest
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -46,7 +47,7 @@ class NamespaceModel(_TableModel[NamespaceItem]):
         return None
 
 
-class NamespaceDialog(QDialog):
+class NamespaceDialog(WorkerDialog):
     """Review batch paths, confirm eligible rows, freeze controls and join owned workers on close."""
 
     def __init__(self, root: Node, nodes: Sequence[Node], unit: str, parent: QWidget, *, rename: bool) -> None:
@@ -139,8 +140,7 @@ class NamespaceDialog(QDialog):
             return
         if self.worker is not None:
             self.worker.cancel.set()
-            wait_for(self.worker)
-            self.worker.deleteLater()
+            retire_worker(self.worker, self)
         self._stopped, self.plan = False, None
         self.model.set_rows([])
         self.output.hide()
@@ -157,7 +157,7 @@ class NamespaceDialog(QDialog):
                               and self._failed(reason))
         worker.finished.connect(lambda: self.worker is worker and self.operation is None
                                 and self.stop_button.setEnabled(False))
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _show(self, plan: NamespacePlan) -> None:
         if self._closed or self._stopped or self.worker is None or self.worker.cancel.is_set():
@@ -198,7 +198,8 @@ class NamespaceDialog(QDialog):
             tr("namespace_refreshing", path=path)))
         worker.failed.connect(self._failed)
         worker.finished.connect(lambda: not self._closed and self.stop_button.setEnabled(False))
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self.operation is worker
+                     and self.plan is plan and not worker.cancel.is_set(), self)
 
     def _preview_worker(self, request: NamespaceRequest) -> NamespacePreviewWorker:
         return NamespacePreviewWorker(request, self)
@@ -242,16 +243,19 @@ class NamespaceDialog(QDialog):
             self.status.setText(tr("scan_cancelled"))
         self.stop_button.setEnabled(False)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join both owned workers before result-tree edits or dialog destruction."""
         self._closed = True
         for worker in (self.worker, self.operation):
             if worker is not None:
                 worker.cancel.set()
-                wait_for(worker)
+                if wait:
+                    wait_for(worker)
 
     def done(self, result: int) -> None:
         """Qt: closing requests cancellation and waits through the current native operation."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         self._report_unseen()
         super().done(result)

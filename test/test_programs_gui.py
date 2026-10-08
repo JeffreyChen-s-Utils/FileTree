@@ -48,6 +48,7 @@ def test_stop_close_join_and_late_inventory_is_ignored(window, qapp, sample_tree
     _wait(qapp, entered.is_set)
     dialog.stop()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(Programs([Program("late", "", "", "registry", "", 4096)], 1, 0))
     assert not dialog.worker.isRunning() and dialog.model.rowCount() == 0
     dialog.deleteLater()

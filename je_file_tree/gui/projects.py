@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QLabel, QPushButton,
                               QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.cleanup_policy import CleanupPolicy
@@ -17,6 +17,7 @@ from je_file_tree.core.projects import Project, Projects, projects
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.tree_model import NODE_ROLE
 
@@ -61,7 +62,7 @@ class ProjectsWorker(QThread):
             self.ready.emit(result)
 
 
-class ProjectsDialog(QDialog):
+class ProjectsDialog(WorkerDialog):
     """Review eligible generated entries only through MainWindow.move_to_trash."""
 
     selected = Signal(object)
@@ -145,13 +146,16 @@ class ProjectsDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Reject late replies and join before the modal view is destroyed."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: finish only after the recorded-data worker ends."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

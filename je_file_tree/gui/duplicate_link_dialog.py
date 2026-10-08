@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from PySide6.QtCore import QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import (
-    QAbstractItemView, QDialog, QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
+    QAbstractItemView, QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
     QPushButton, QTableView, QVBoxLayout, QWidget,
 )
 
@@ -18,6 +18,7 @@ from je_file_tree.gui.duplicate_link_worker import LinkOperationWorker, LinkPrev
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -54,7 +55,7 @@ class LinkModel(_TableModel[LinkOutcome]):
         return None
 
 
-class DuplicateLinksDialog(QDialog):
+class DuplicateLinksDialog(WorkerDialog):
     """Review explicit keepers, require default-No approval and retain partial native results on close."""
 
     def __init__(self, root: Node, groups: Sequence[DuplicateGroup], journal: OperationJournal,
@@ -136,7 +137,6 @@ class DuplicateLinksDialog(QDialog):
         if (question.exec() != QMessageBox.StandardButton.Yes or self._closed or self.plan is not plan
                 or self.worker.cancel.is_set()):
             return
-        wait_for(self.worker)
         self.changed = True
         self.apply_button.setEnabled(False)
         self.stop_button.setEnabled(True)
@@ -145,7 +145,9 @@ class DuplicateLinksDialog(QDialog):
             tr("link_progress", path=path)))
         self.operation.ready.connect(self._completed)
         self.operation.finished.connect(lambda: not self._closed and self.stop_button.setEnabled(False))
-        self.operation.start()
+        worker = self.operation
+        queue_worker(worker, lambda: not self._closed and self.operation is worker
+                     and self.plan is plan and not worker.cancel.is_set(), self)
 
     def _completed(self, result: LinkResult) -> None:
         if self._closed:
@@ -188,16 +190,19 @@ class DuplicateLinksDialog(QDialog):
             self.status.setText(tr("scan_cancelled"))
         self.stop_button.setEnabled(False)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join preview and execution before a result tree may be replaced or destroyed."""
         self._closed = True
         for worker in (self.worker, self.operation):
             if worker is not None:
                 worker.cancel.set()
-                wait_for(worker)
+                if wait:
+                    wait_for(worker)
 
     def done(self, result: int) -> None:
         """Qt: stop, join and report unobserved retained/partial outcomes before dismissal."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         if self.operation is not None and not self._reported:
             lines = self._lines()

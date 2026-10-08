@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDialog, QDialogButtonBox, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDialogButtonBox, QHBoxLayout, QLabel,
                               QPushButton, QSpinBox, QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.file_times import TimeInventory, files_older_than
@@ -17,6 +17,7 @@ from je_file_tree.core.node import Node
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.tree_model import NODE_ROLE
 
@@ -62,7 +63,7 @@ class FileTimesWorker(QThread):
             self.ready.emit(result)
 
 
-class FileTimesDialog(QDialog):
+class FileTimesDialog(WorkerDialog):
     """Filter recorded access/creation dates; activation returns an existing node after joining work."""
 
     selected = Signal(object)
@@ -121,15 +122,14 @@ class FileTimesDialog(QDialog):
             return
         if self.worker is not None:
             self.worker.cancel.set()
-            wait_for(self.worker)
-            self.worker.deleteLater()
+            retire_worker(self.worker, self)
         self.model.set_rows([])
         self.status.setText(tr("file_times_reading"))
         self.stop_button.setEnabled(True)
         worker = FileTimesWorker(self.root, self.mode.currentData(), self.days.value(), self)
         self.worker = worker
         worker.ready.connect(lambda result: self._show(worker, result))
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _show(self, worker: FileTimesWorker, result: TimeInventory) -> None:
         if self._closed or self.worker is not worker or worker.cancel.is_set():
@@ -156,14 +156,17 @@ class FileTimesDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Ignore queued replies and join the owned worker before destruction."""
         self._closed = True
         if self.worker is not None:
             self.worker.cancel.set()
-            wait_for(self.worker)
+            if wait:
+                wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Join enumeration before closing the dialog."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

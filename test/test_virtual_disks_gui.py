@@ -77,6 +77,7 @@ def test_explicit_header_query_preserves_recorded_bytes_and_reports_separate_nat
     assert "03020100-0504-0706-0809-0a0b0c0d0e0f" in dialog.model.extra_data(row, Qt.ItemDataRole.ToolTipRole)
     assert dialog.status.textFormat() == Qt.TextFormat.PlainText
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog.deleteLater()
 
 
@@ -98,6 +99,7 @@ def test_header_failure_is_literal_and_external_provider_has_no_tree_action(wind
     assert dialog.model.rows()[0].info is None and dialog.model.rows()[0].error == "<b>native refusal</b>"
     assert "<b>native refusal</b>" in dialog.status.text() and dialog.status.textFormat() == Qt.TextFormat.PlainText
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog.deleteLater()
 
 
@@ -113,6 +115,7 @@ def test_stop_close_joins_inventory_and_ignores_late_rows(window, qapp, tmp_path
     _wait(qapp, entered.is_set)
     dialog.stop()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(inventory)
     assert not dialog.worker.isRunning() and dialog.model.rowCount() == 0
     dialog.deleteLater()
@@ -136,12 +139,14 @@ def test_stop_close_joins_native_header_and_suppresses_late_information(window, 
     _wait(qapp, entered.is_set)
     worker = dialog.info_worker
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._information(worker, info, "")
-    assert not worker.isRunning() and all(row.info is None for row in dialog.model.rows())
+    assert dialog.info_worker is None and all(row.info is None for row in dialog.model.rows())
     dialog.deleteLater()
 
 
-def test_main_window_requires_results_serializes_owned_dialog_and_joins_at_close(window, sample_tree, monkeypatch):
+def test_main_window_requires_results_serializes_owned_dialog_and_joins_at_close(
+        window, qapp, sample_tree, monkeypatch):
     assert window._actions["virtual_disks"].isVisible()
     assert not window._actions["virtual_disks"].isEnabled()
     window.results.show_outcome(analyse(scan(sample_tree)))
@@ -154,6 +159,7 @@ def test_main_window_requires_results_serializes_owned_dialog_and_joins_at_close
         window.start_scan(str(sample_tree))
         assert window._worker is None
         dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
         assert dialog._closed and not dialog.worker.isRunning()
         return 0
     monkeypatch.setattr(gui.VirtualDisksDialog, "exec", execute)

@@ -52,6 +52,7 @@ def test_plain_complete_preview_default_no_keeps_independent_sources(window, qap
     assert dialog.model.rowCount() == 1
     assert not dialog.model.flags(dialog.model.index(0, 0)) & Qt.ItemFlag.ItemIsEditable
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_native_review_persists_approval_before_link_and_records_original_identity(
@@ -79,6 +80,7 @@ def test_native_review_persists_approval_before_link_and_records_original_identi
     assert open_bytes(item.pair.copy_path) == open_bytes(item.pair.keeper_path)
     assert item.pair.copy_path in dialog.output.toPlainText() and not dialog.apply_button.isEnabled()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_approval_audit_failure_prevents_native_execution(window, tmp_path, monkeypatch):
@@ -135,6 +137,7 @@ def test_preview_stop_close_joins_and_drops_late_authority(window, qapp, tmp_pat
     _wait(qapp, entered.is_set)
     dialog.stop()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(prepare_links(root, [group]))
     assert not dialog.worker.isRunning() and dialog.plan is None and dialog._closed
     assert not dialog.apply_button.isEnabled() and all(os.stat(node.path).st_nlink == 1 for node in group.files)
@@ -161,6 +164,7 @@ def test_close_joins_and_reports_late_partial_retained_paths_in_plain_text(windo
     dialog._apply()
     _wait(qapp, entered.is_set)
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert not dialog.operation.isRunning() and dialog.operation.result.outcomes[0].linked
     assert len(messages) == 2 and messages[1][0] == Qt.TextFormat.PlainText
     assert "<retained>&" in messages[1][1] and "<partial>&" in messages[1][1]
@@ -219,6 +223,7 @@ def test_protected_decision_is_visible_and_cannot_open_approval(window, qapp, tm
     dialog._apply()
     assert dialog.operation is None and not dialog.changed
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_replaced_root_after_dialog_never_receives_old_root_refresh(window, tmp_path, monkeypatch):
@@ -266,6 +271,7 @@ def test_native_main_workflow_refreshes_keeper_and_extra_scan_identities(window,
         _wait(qapp, lambda: not dialog.operation.isRunning() and dialog._reported)
         assert all(row.linked and not row.error for row in dialog.operation.result.outcomes)
         dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
         return 0
 
     monkeypatch.setattr(DuplicateLinksDialog, "exec", review)

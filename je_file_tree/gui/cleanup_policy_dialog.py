@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QThread, Qt, Signal
 from PySide6.QtWidgets import (
-    QCheckBox, QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel, QMessageBox, QPlainTextEdit,
+    QCheckBox, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel, QMessageBox, QPlainTextEdit,
     QPushButton, QSpinBox, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
@@ -19,6 +19,7 @@ from je_file_tree.core.node import Node
 from je_file_tree.gui.cleanup_text import explanation
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 _IMPORT_LIMIT = 256_000
 
@@ -51,7 +52,7 @@ class PolicyPreviewWorker(QThread):
                          sum(node.size for node in removed), coverage.complete))
 
 
-class CleanupPolicyDialog(QDialog):
+class CleanupPolicyDialog(WorkerDialog):
     """A policy editor whose Save button requires a current read-only preview."""
 
     def __init__(self, policy: CleanupPolicy, root: Node | None, unit: str, parent: QWidget | None = None) -> None:
@@ -183,15 +184,18 @@ class CleanupPolicyDialog(QDialog):
 
     def done(self, result: int) -> None:
         """Join every preview thread before closing the editor."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Cancel and join previews, including replaced workers."""
         self._current = None
         for worker in self._running.copy():
             worker.stop()
-            wait_for(worker)
+            if wait:
+                wait_for(worker)
 
     def _import(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self, tr("policy_import"), "", tr("json_filter"))

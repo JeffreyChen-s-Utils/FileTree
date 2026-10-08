@@ -8,7 +8,7 @@ from collections.abc import Sequence
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
 from PySide6.QtWidgets import (
-    QAbstractItemView, QComboBox, QDialog, QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
+    QAbstractItemView, QComboBox, QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
     QPushButton, QTableView, QVBoxLayout, QWidget,
 )
 
@@ -21,6 +21,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.compression_worker import CompactWorker
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -61,7 +62,7 @@ class CompressionWorker(QThread):
             self.ready.emit(result)
 
 
-class CompressionDialog(QDialog):
+class CompressionDialog(WorkerDialog):
     """Review bounded exact files, confirm operations, cancel/join and request a fresh allocation scan."""
 
     selected = Signal(object)
@@ -124,8 +125,7 @@ class CompressionDialog(QDialog):
             return
         if hasattr(self, "worker"):
             self.worker.cancel.set()
-            wait_for(self.worker)
-            self.worker.deleteLater()
+            retire_worker(self.worker, self)
         self._stopped, self.plan = False, None
         self.model.set_rows([])
         self.status.setText(tr("compression_reading"))
@@ -137,7 +137,7 @@ class CompressionDialog(QDialog):
         worker.finished.connect(lambda: self.worker is worker and self.operation is None
                                 and self.stop_button.setEnabled(False))
         self.worker = worker
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self.worker is worker and not worker.cancel.is_set(), self)
 
     def _show(self, plan: CompressionPlan) -> None:
         if self._closed or self._stopped or self.worker.cancel.is_set():
@@ -181,19 +181,21 @@ class CompressionDialog(QDialog):
             self.status.setText(tr("scan_cancelled"))
 
     def _apply(self) -> None:
-        if self.plan is None or not self.plan.ntfs or self.operation is not None or self.changed:
+        plan = self.plan
+        if self._closed or plan is None or not plan.ntfs or self.operation is not None or self.changed:
             return
-        files = tuple(self.plan.rows)
+        files = tuple(plan.rows)
         if not files:
             return
         question = QMessageBox(QMessageBox.Icon.Warning, tr("menu_compression"), "",
                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(tr("compression_confirm", path=self.root.path, mode=self.mode.currentText(),
-                            count=format_count(len(files)), total=format_count(self.plan.count),
+                            count=format_count(len(files)), total=format_count(plan.count),
                             size=format_size(sum(node.size for node in files), self.unit)))
         question.setDefaultButton(QMessageBox.StandardButton.No)
-        if question.exec() != QMessageBox.StandardButton.Yes:
+        if (question.exec() != QMessageBox.StandardButton.Yes or self._closed or self.plan is not plan
+                or self.operation is not None or self.worker.cancel.is_set()):
             return
         worker = CompactWorker(self.root, files, self.mode.currentData(), self)
         self.operation = worker
@@ -207,7 +209,8 @@ class CompressionDialog(QDialog):
         worker.ready.connect(self._completed)
         worker.failed.connect(self._failed)
         worker.finished.connect(lambda: self.stop_button.setEnabled(False))
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self.operation is worker
+                     and self.plan is plan and not worker.cancel.is_set(), self)
 
     def _completed(self, result: CompressionResult) -> None:
         if self._closed:
@@ -225,16 +228,20 @@ class CompressionDialog(QDialog):
         if not self._closed:
             self.status.setText(tr("compression_failed", reason=reason))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join the owned query through the shared GUI wait helper."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
         if self.operation is not None:
             self.operation.cancel.set()
-            wait_for(self.operation)
+            if wait:
+                wait_for(self.operation)
 
     def done(self, result: int) -> None:
         """Qt: cancel and join before this preview can be destroyed."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

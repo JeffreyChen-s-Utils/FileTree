@@ -242,11 +242,12 @@ class BinDialog(VolumesDialog):
         if self._empty_worker is None:
             super().done(result)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join any native operation and the current metadata survey before destruction."""
-        if self._empty_worker is not None:
+        if wait and self._empty_worker is not None:
             wait_for(self._empty_worker)
         if self._approval_worker is not None:
             self._approval_worker.cancel.set()
-            wait_for(self._approval_worker)
-        super().shutdown()
+            if wait:
+                wait_for(self._approval_worker)
+        super().shutdown(wait=wait)

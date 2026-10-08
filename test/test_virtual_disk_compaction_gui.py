@@ -66,6 +66,7 @@ def test_literal_frozen_review_defaults_to_no_and_never_audits_or_executes(windo
     assert len(questions) == 1 and dialog.operation is None and not dialog.changed
     assert not journal.recent().records
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_durable_approval_precedes_execution_and_post_success_error_keeps_completed_audit(
@@ -91,6 +92,7 @@ def test_durable_approval_precedes_execution_and_post_success_error_keeps_comple
     assert len(records) == 1 and records[0].outcome.status == "compacted" and not records[0].outcome.destination
     assert records[0].identity == dialog.operation.record.identity and records[0].reason == "virtual_disk_compaction"
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 @pytest.mark.parametrize("fail_after_success", [False, True])
@@ -119,6 +121,7 @@ def test_approval_write_failure_blocks_execution_and_result_write_failure_retain
     assert "owned audit refused" in dialog.status.text()
     assert appends == (["approved", "compacted"] if fail_after_success else ["approved"])
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_close_cancels_preview_joins_and_ignores_late_review(window, qapp, tmp_path, monkeypatch):
@@ -132,6 +135,7 @@ def test_close_cancels_preview_joins_and_ignores_late_review(window, qapp, tmp_p
     dialog = gui.VirtualDiskCompactionDialog(disk, journal, "auto", window)
     _wait(qapp, entered.is_set)
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(plan)
     assert not dialog.worker.isRunning() and dialog.plan is None and not dialog.apply_button.isEnabled()
 
@@ -154,6 +158,7 @@ def test_close_joins_active_operation_reports_real_result_and_audits_it(window, 
     dialog.apply()
     _wait(qapp, entered.is_set)
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert dialog.changed and dialog._reported and not dialog.operation.isRunning()
     assert len(reports) == 2 and tr("journal_status_compacted") in reports[-1]
     assert journal.recent().records[0].outcome.status == "compacted"
@@ -173,6 +178,7 @@ def test_inventory_disables_stale_authority_and_main_window_rescans_complete_roo
         dialog.apply()
         _wait(qapp, lambda: not dialog.operation.isRunning() and dialog._reported)
         dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
         return 0
     monkeypatch.setattr(gui.VirtualDiskCompactionDialog, "exec", review)
     outer = inventory.VirtualDisksDialog(root, "auto", window, journal=journal)
@@ -192,6 +198,7 @@ def test_inventory_disables_stale_authority_and_main_window_rescans_complete_roo
         assert dialog in window._path_dialogs and dialog.journal is window._journal
         dialog.changed = True
         dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
         return 0
     monkeypatch.setattr(inventory.VirtualDisksDialog, "exec", inventory_review)
     window.show_virtual_disks()

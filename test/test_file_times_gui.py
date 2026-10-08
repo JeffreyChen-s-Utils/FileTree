@@ -70,6 +70,7 @@ def test_stop_close_joins_time_query_and_ignores_late_inventory(window, qapp, sa
     worker = dialog.worker
     dialog.stop()
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     dialog._show(worker, TimeInventory([dialog.root], 1, 0, 0, 1, AccessPolicy("disabled")))
     assert not worker.isRunning() and dialog.model.rowCount() == 0
     dialog.deleteLater()

@@ -20,6 +20,7 @@ from je_file_tree.core.history import HistoryCancelledError, HistoryEntry, Histo
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import Column, _TableModel
 
 _MIB = 1024 * 1024
@@ -173,7 +174,7 @@ class HistoryWorker(QThread):
             self.ready.emit(result)
 
 
-class HistoryDialog(QDialog):
+class HistoryDialog(WorkerDialog):
     """Review past totals and choose an earlier scan, without selecting an export file."""
 
     compare_requested = Signal(object)
@@ -269,13 +270,16 @@ class HistoryDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Reject queued replies and join the owned worker before destroying this dialog."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: wait for worker cancellation on Close, Escape or successful selection."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

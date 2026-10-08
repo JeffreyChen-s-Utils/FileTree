@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QLabel, QPushButton,
                               QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.formatting import format_count, format_size
@@ -17,6 +17,7 @@ from je_file_tree.core.special_files import SpecialEntry, SpecialFiles, special_
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.tree_model import NODE_ROLE
 
@@ -61,7 +62,7 @@ class SpecialFilesWorker(QThread):
             self.ready.emit(result)
 
 
-class SpecialFilesDialog(QDialog):
+class SpecialFilesDialog(WorkerDialog):
     """Inspect the completed scan; double-click selects an existing entry and closes the dialog."""
 
     selected = Signal(object)
@@ -124,13 +125,16 @@ class SpecialFilesDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Invalidate queued replies and join the owned worker before destruction."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Join background enumeration before closing."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

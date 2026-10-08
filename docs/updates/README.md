@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-16 | 2026-10-09 | Join owned dialog workers without freezing the GUI | #fix #gui #threads #done | [2026-10-c](2026-10-c.md) |
 | U-20261009-15 | 2026-10-09 | Keep scan replacement and drive discovery responsive | #fix #gui #threads #done | [2026-10-c](2026-10-c.md) |
 | U-20261009-14 | 2026-10-09 | Record repeated native Qt confirmation and APFS cleanup proof | #snapshot #background #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-13 | 2026-10-09 | Keep owned native review confirmation controls in Qt | #incident #background #validation | [2026-10-c](2026-10-c.md) |

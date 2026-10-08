@@ -9,7 +9,7 @@ from typing import Any
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QLabel, QPushButton,
                               QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.formatting import format_count, format_size
@@ -18,6 +18,7 @@ from je_file_tree.core.programs import Program, Programs, installed_programs
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 from je_file_tree.gui.tree_model import NODE_ROLE
 
@@ -75,7 +76,7 @@ class ProgramsWorker(QThread):
             self.ready.emit(result)
 
 
-class ProgramsDialog(QDialog):
+class ProgramsDialog(WorkerDialog):
     """Review installer/game names and known totals; all uninstalling remains in the OS/launcher."""
 
     selected = Signal(object)
@@ -150,13 +151,16 @@ class ProgramsDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Reject late replies and join the owned worker before destroying the view."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: wait for cancellation on Close, Escape or tree activation."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

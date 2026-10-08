@@ -6,7 +6,7 @@ import threading
 from collections.abc import Sequence
 
 from PySide6.QtCore import QSortFilterProxyModel, QThread, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QLabel, QPushButton,
+from PySide6.QtWidgets import (QAbstractItemView, QDialogButtonBox, QLabel, QPushButton,
                               QTableView, QVBoxLayout, QWidget)
 
 from je_file_tree.core.formatting import format_count, format_size
@@ -14,6 +14,7 @@ from je_file_tree.core.git_history import GitHistory, GitHistoryCancelledError, 
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
 
@@ -51,7 +52,7 @@ class GitHistoryWorker(QThread):
             self.ready.emit(result)
 
 
-class GitHistoryDialog(QDialog):
+class GitHistoryDialog(WorkerDialog):
     """Inspect a selected working folder without running gc or modifying the repository."""
 
     def __init__(self, path: str, unit: str, parent: QWidget | None = None) -> None:
@@ -115,13 +116,16 @@ class GitHistoryDialog(QDialog):
         self.stop_button.setEnabled(False)
         self.status.setText(tr("scan_cancelled"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join the worker and its owned Git processes/pipe threads before destruction."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: reject late replies and wait for cancellation before closing."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

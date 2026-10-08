@@ -7,13 +7,14 @@ from pathlib import Path
 from PySide6.QtCore import QStandardPaths, QThread, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
-    QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel, QMessageBox, QPushButton, QTableView,
+    QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel, QMessageBox, QPushButton, QTableView,
     QVBoxLayout, QWidget,
 )
 
 from je_file_tree.core.operation_journal import JournalRead, OperationJournal, OperationRecord, export_journal
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import ExportWorker, wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 _HEADERS = ("journal_time", "journal_source", "journal_identity", "review_reason", "journal_result",
             "journal_detail", "journal_destination")
@@ -42,7 +43,7 @@ class JournalWorker(QThread):
             self.failed.emit(str(error))
 
 
-class RecentActions(QDialog):
+class RecentActions(WorkerDialog):
     """Show the latest 500 actions; exports contain metadata with redacted home prefixes."""
 
     def __init__(self, journal: OperationJournal, parent: QWidget | None = None) -> None:
@@ -124,14 +125,18 @@ class RecentActions(QDialog):
 
     def done(self, result: int) -> None:
         """Wait for reads and atomic exports before destroying their dialog."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join all current workers, including an export finishing after its dialog closes."""
-        wait_for(self._worker)
+        if wait:
+            wait_for(self._worker)
         for worker in self._exports.copy():
-            wait_for(worker)
+            if wait:
+                wait_for(worker)
 
 
 def _record_text(key: str, original: str) -> str:

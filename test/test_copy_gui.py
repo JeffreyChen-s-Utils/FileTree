@@ -49,6 +49,7 @@ def test_preview_refuses_same_volume_and_no_automatic_source_trash(window, qapp,
     assert not dialog.redirect.isChecked() and not dialog.finish_button.isEnabled()
     assert (source / "folder" / "file").read_bytes() == b"payload" and not list(destination.iterdir())
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_confirmed_copy_freezes_options_and_requires_separate_finish(window, qapp, tmp_path, monkeypatch):
@@ -93,6 +94,7 @@ def test_partial_failure_is_visible_and_cannot_offer_original_trash(window, qapp
     assert not dialog.finish_button.isEnabled() and dialog.approval is None
     assert (source / "folder" / "file").read_bytes() == b"payload"
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
 
 
 def test_close_joins_and_reports_retained_partial_paths(window, qapp, tmp_path, monkeypatch):
@@ -112,6 +114,7 @@ def test_close_joins_and_reports_retained_partial_paths(window, qapp, tmp_path, 
     dialog._apply()
     _wait(qapp, entered.is_set)
     dialog.reject()
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert len(questions) == 2 and str(destination / "folder") in questions[1]
     assert not dialog.operation.isRunning() and dialog.operation.result.canceled and dialog.approval is None
     assert (source / "folder" / "file").read_bytes() == b"payload"

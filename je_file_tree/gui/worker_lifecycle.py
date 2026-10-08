@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 
 from PySide6.QtCore import QObject, QThread, QTimer
+from PySide6.QtWidgets import QDialog, QWidget
 from shiboken6 import isValid
 
 from je_file_tree.core.pacing import WINDOW
@@ -43,3 +44,51 @@ def after_threads(workers: Iterable[QThread], done: Callable[[], None], parent: 
     fence = ThreadFence(workers, done, parent)
     fence.start()
     return fence
+
+
+def retire_worker(worker: QThread, parent: QObject) -> None:
+    """Release a replaced, already canceled worker only after a full nonblocking join."""
+    after_threads((worker,), worker.deleteLater, parent)
+
+
+def queue_worker(worker: QThread, current: Callable[[], bool], parent: QObject) -> None:
+    """Coalesce replacements behind retained workers; canceled/stale requests never start."""
+    previous = (pending for pending in parent.findChildren(QThread) if pending is not worker)
+    after_threads(previous, lambda: current() and worker.start(), parent)
+
+
+class WorkerDialog(QDialog):
+    """Retain a modal operation guard until canceled workers have joined with the GUI still live."""
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._finish_waiting = False
+        self._finish_ready = False
+
+    def shutdown(self, *, wait: bool = True) -> None:
+        """Subclasses invalidate replies/cancel work; join only when ``wait`` is requested."""
+        raise NotImplementedError("Worker dialogs must define their owned cancellation lifecycle")
+
+    def defer_done(self, result: int) -> bool:
+        """Defer dismissal until all descendant workers join; retain the first close decision."""
+        if self._finish_ready:
+            return False
+        if self._finish_waiting:
+            return True
+        self.shutdown(wait=False)
+        workers = tuple(self.findChildren(QThread))
+        if all(not isValid(worker) or worker.wait(0) for worker in workers):
+            return False
+        self._finish_waiting = True
+        self.setEnabled(False)
+        after_threads(workers, lambda: self._finish_done(result), self)
+        return True
+
+    def _finish_done(self, result: int) -> None:
+        self._finish_waiting = False
+        self._finish_ready = True
+        self.setEnabled(True)
+        try:
+            self.done(result)
+        finally:
+            self._finish_ready = False

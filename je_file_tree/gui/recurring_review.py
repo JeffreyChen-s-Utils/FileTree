@@ -21,6 +21,7 @@ from je_file_tree.core.recurring import ProposalCancelledError, RecurringProposa
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.recurring_settings import ProposalSettings
 from je_file_tree.gui.scan_worker import ScanOutcome, wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 if TYPE_CHECKING:
     from je_file_tree.gui.background_monitor import BackgroundMonitor
@@ -88,7 +89,7 @@ class ReviewWorker(QThread):
             self.status, self.error = "unavailable", str(error)
 
 
-class ValidationDialog(QDialog):
+class ValidationDialog(WorkerDialog):
     """Joinable validation under the owning tab's source-operation guard; Cancel grants no approval."""
 
     def __init__(self, report: RecurringProposal, root: Node, binding: ReviewBinding, parent: MainWindow) -> None:
@@ -121,14 +122,17 @@ class ValidationDialog(QDialog):
                                + ("\n" + self.worker.error if self.worker.error else ""))
             self.buttons.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Cancel and join before closing, including when the owning workspace quits."""
         self.start_timer.stop()
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: join before returning either acceptance or cancellation."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)
 

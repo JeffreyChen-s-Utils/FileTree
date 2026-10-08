@@ -4,7 +4,7 @@ import threading
 import uuid
 
 from PySide6.QtCore import QThread, Qt, Signal
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
+from PySide6.QtWidgets import (QDialogButtonBox, QLabel, QMessageBox, QPlainTextEdit,
                               QPushButton, QVBoxLayout, QWidget)
 
 from je_file_tree.core.formatting import format_size
@@ -16,6 +16,7 @@ from je_file_tree.core.virtual_disk_compaction import (
 from je_file_tree.core.virtual_disks import VirtualDisk
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker
 
 
 class CompactionPreviewWorker(QThread):
@@ -74,7 +75,7 @@ class DiskCompactionWorker(QThread):
         return True
 
 
-class VirtualDiskCompactionDialog(QDialog):
+class VirtualDiskCompactionDialog(WorkerDialog):
     """One exact disk, default-No stopped-machine review, retained outcomes and owned native lifetime."""
 
     execution_requested = Signal()
@@ -147,7 +148,6 @@ class VirtualDiskCompactionDialog(QDialog):
         if (question.exec() != QMessageBox.StandardButton.Yes or self._closed or self.plan is not plan
                 or self.worker.cancel.is_set()):
             return
-        wait_for(self.worker)
         self.execution_requested.emit()
         self.apply_button.setEnabled(False)
         self.stop_button.setEnabled(True)
@@ -155,7 +155,9 @@ class VirtualDiskCompactionDialog(QDialog):
         self.operation = DiskCompactionWorker(plan, self.journal, self)
         self.operation.ready.connect(self._completed)
         self.operation.finished.connect(lambda: not self._closed and self.stop_button.setEnabled(False))
-        self.operation.start()
+        worker = self.operation
+        queue_worker(worker, lambda: not self._closed and self.operation is worker
+                     and self.plan is plan and not worker.cancel.is_set(), self)
 
     def _lines(self) -> str:
         worker = self.operation
@@ -193,16 +195,19 @@ class VirtualDiskCompactionDialog(QDialog):
             self.status.setText(tr("scan_cancelled"))
         self.stop_button.setEnabled(False)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join all work and retain actual results before any source tree can be replaced."""
         self._closed = True
         for worker in (self.worker, self.operation):
             if worker is not None:
                 worker.cancel.set()
-                wait_for(worker)
+                if wait:
+                    wait_for(worker)
 
     def done(self, result: int) -> None:
         """Qt: join and show unobserved actual completion/partial errors before dismissal."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         if self.operation is not None and not self._reported:
             report = QMessageBox(QMessageBox.Icon.Information, self.windowTitle(), "",

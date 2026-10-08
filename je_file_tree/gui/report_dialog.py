@@ -7,7 +7,7 @@ import threading
 
 from PySide6.QtCore import QThread, Qt, Signal
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDialogButtonBox, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from je_file_tree.core.analysis import AGES, CATEGORIES, Summary
 from je_file_tree.core.report import ReportCancelledError, prepare_report, write_html
@@ -15,6 +15,7 @@ from je_file_tree.gui.charts import ChartStack
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.report_export import capture_report_charts, encode_charts, write_xlsx
 from je_file_tree.gui.scan_worker import ScanOutcome, wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 
 def _labels() -> dict[str, str]:
@@ -75,7 +76,7 @@ class ReportWorker(QThread):
         self.saved.emit(count)
 
 
-class ReportDialog(QDialog):
+class ReportDialog(WorkerDialog):
     """Own the worker and keep scan mutations unavailable until preparation/export completes."""
 
     def __init__(self, outcome: ScanOutcome, kind: str, target: str, unit: str, charts: ChartStack,
@@ -115,13 +116,16 @@ class ReportDialog(QDialog):
         self.worker.cancel.set()
         self.stop_button.setEnabled(False)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Cancel and join before destroying the modal view, rejecting late replies."""
         self._closed = True
         self.worker.cancel.set()
-        wait_for(self.worker)
+        if wait:
+            wait_for(self.worker)
 
     def done(self, result: int) -> None:
         """Qt: finish after preparation/writing has stopped."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)

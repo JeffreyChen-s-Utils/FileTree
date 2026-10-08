@@ -6,7 +6,7 @@ import threading
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QThread, Qt, Signal
 from PySide6.QtWidgets import (
-    QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QAbstractItemView, QDialogButtonBox, QHBoxLayout, QHeaderView, QLabel, QPushButton,
     QSizePolicy, QTableView, QVBoxLayout, QWidget,
 )
 
@@ -19,6 +19,7 @@ from je_file_tree.gui import file_actions
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.cleanup_text import explanation
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 _HEADERS = ("review_select", "column_path", "review_rule", "review_reason", "column_modified",
             "column_size", "column_allocated", "review_protection", "review_consequence")
@@ -117,7 +118,7 @@ class _EstimateWorker(QThread):
             self.ready.emit(result)
 
 
-class CleanupReview(QDialog):
+class CleanupReview(WorkerDialog):
     """Review every proposal and its consequences; accepting only returns a selection, never moves it."""
 
     def __init__(self, nodes: list[Node], reasons: dict[Node, str | CleanupGroup], places: list[Protection],
@@ -169,15 +170,18 @@ class CleanupReview(QDialog):
         """The final checked outermost entries."""
         return self.model.selected_nodes()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Stop estimate workers before closing or destroying the dialog."""
         self._current = None
         for worker in self._running.copy():
             worker.stop()
-            wait_for(worker)
+            if wait:
+                wait_for(worker)
 
     def done(self, result: int) -> None:
         """Qt: cancellation and acceptance both end the estimate workers."""
+        if self.defer_done(result):
+            return
         self.shutdown()
         super().done(result)
 
