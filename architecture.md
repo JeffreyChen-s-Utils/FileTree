@@ -927,3 +927,12 @@ registry settings and backing images are never selected or modified by this diag
 Read-only virtual-disk matching canonicalizes extended Windows UNC/drive registrations while
 retaining the original captured row. Unknown device/volume-GUID prefixes remain explicit; no
 network path is queried again when a registration matches a recorded file, and no authority changes.
+
+TrashWorker routes every source move through move_batch's optional boundary veto. The Windows
+gate reads only a fixed local NTFS/GUID scope, per-volume recycling preferences and disabling
+policy, refuses unknown/incomplete/full scopes and repeats the observation before dispatch.
+Core source/ancestor identity and cancellation are checked again after the veto; skipped rows
+retain ordinary durable audit and parent rescan. Passing observations grant no new authority
+and do not lock OS preferences or guarantee retention. Native private diagnostics additionally
+run the real worker for refused rows, preserve full hashes/IDs and inspect its durable audit;
+raw Qt size-boundary probing remains confined to fresh owned disposable fixtures.

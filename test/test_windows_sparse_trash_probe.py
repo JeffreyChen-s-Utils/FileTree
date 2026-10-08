@@ -44,6 +44,7 @@ def test_missing_bin_is_retained_as_unknown_and_never_authorizes_emptying(tmp_pa
     volume = SimpleNamespace(root=tmp_path)
     monkeypatch.setattr(probe, "verify_volume", lambda _volume: None)
     length = 8
+    monkeypatch.setattr(probe, "recycle_reason", lambda _node: None)
     def create(path, expected):
         assert expected == length
         path.write_bytes(b"payload!")

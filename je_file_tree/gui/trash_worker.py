@@ -14,6 +14,7 @@ from je_file_tree.core.verified_copy import verify_copy
 from je_file_tree.core.lock_holders import find_holders
 from je_file_tree.core.operations import move_batch
 from je_file_tree.core.operations import MoveReceipt, MoveResult
+from je_file_tree.core.windows_trash import recycle_reason
 from je_file_tree.core.operation_journal import JournalApproval, OperationOutcome, OperationRecord
 from je_file_tree.core.duplicates import DuplicateGroup
 from je_file_tree.core.duplicate_decisions import check_group
@@ -91,7 +92,8 @@ class TrashWorker(QThread):
 
     def _move(self, nodes: list[Node]) -> MoveResult:
         return move_batch(self._root, nodes, self._copy_move, places=self._places,
-                          approved=self._approvals, cancel=self._cancel)
+                          approved=self._approvals, cancel=self._cancel,
+                          before_move=lambda node: recycle_reason(node, self._cancel))
 
     def _copy_move(self, path: str) -> MoveReceipt:
         approval = self.copy_approval

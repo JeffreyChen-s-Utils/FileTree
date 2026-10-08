@@ -606,3 +606,19 @@ Read-only virtual-disk provider matching normalizes extended Windows UNC and dri
 corresponding ordinary path, preserving the original captured row/node/snapshot. Volume-GUID
 and other device prefixes remain explicit. This lexical match never grants mutation authority;
 actual UNC allocation, permission and disconnect behavior remains unverified without a share.
+
+`core.windows_trash.recycle_reason(node, cancel=None)` returns an additional Windows Trash veto
+or None on other platforms/passing observations. Only a current fixed drive-letter NTFS scope,
+volume GUID, typed current-user MaxCapacity/NukeOnDelete and non-disabling user/machine policy
+qualify for further checks. Missing/unsupported preferences, incomplete source sizes or native
+bin metadata are refused. Named source bytes plus existing native bin logical bytes and 1 MiB
+headroom must fit the observed preference. Volume/preferences are freshly checked twice. These
+are conservative refusal observations, never authoritative effective quota or retention guarantees;
+concurrent OS policy/bin changes are not transactionally locked. Nothing changes registry settings.
+`move_batch(..., before_move=None)` adds an optional Node veto after source validation, then
+rechecks source/ancestor identity and cancellation. It never replaces normal source approval.
+TrashWorker supplies this gate for ordinary, duplicate and copy-then-Trash source moves; refused
+rows remain attached, are audited as skipped and receive normal parent refresh/translated reasons.
+The private sparse diagnostic runs the actual production worker for each observed veto, verifies
+durable skipped status and full source preservation, then independently probes raw Qt only on
+its newly owned disposable payload. Native gate conclusions await CI evidence.

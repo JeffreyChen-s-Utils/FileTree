@@ -33,6 +33,35 @@ def test_replaced_same_size_same_timestamp_file_is_skipped(tmp_path: Path) -> No
     assert moved == [] and file.read_bytes() == b"new"
 
 
+def test_optional_boundary_veto_cannot_replace_source_revalidation(tmp_path: Path) -> None:
+    file = tmp_path / "owned.bin"
+    file.write_bytes(b"owned")
+    root = scan(tmp_path).root
+    node = root.children[0]
+    moved = []
+    result = move_batch(root, [node], lambda path: moved.append(path) or True,
+                        before_move=lambda _node: "recycle_capacity")
+    assert result.skipped == [(node, "recycle_capacity")] and not moved and file.read_bytes() == b"owned"
+    def changed(_node):
+        file.write_bytes(b"changed after source validation")
+    result = move_batch(root, [node], lambda path: moved.append(path) or True, before_move=changed)
+    assert result.skipped == [(node, "changed")] and not moved
+
+
+def test_cancel_during_boundary_veto_skips_unstarted_mover(tmp_path: Path) -> None:
+    file = tmp_path / "owned.bin"
+    file.write_bytes(b"owned")
+    root = scan(tmp_path).root
+    cancel = threading.Event()
+    def boundary(_node):
+        cancel.set()
+    moved = []
+    result = move_batch(root, root.children, lambda path: moved.append(path) or True,
+                        before_move=boundary, cancel=cancel)
+    assert result.skipped == [(root.children[0], "cancelled")] and not moved
+    assert file.read_bytes() == b"owned"
+
+
 @pytest.mark.parametrize("change,reason", [("resize", "changed"), ("missing", "missing"), ("folder", "kind")])
 def test_changed_kind_size_and_missing_files(tmp_path: Path, change: str, reason: str) -> None:
     file = tmp_path / "selected.txt"

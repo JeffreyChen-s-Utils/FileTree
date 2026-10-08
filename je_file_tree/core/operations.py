@@ -149,8 +149,9 @@ def _changed(node: Node, before: Snapshot, current: Snapshot, identity_only: boo
 
 def move_batch(root: Node, nodes: Sequence[Node], mover: Callable[[str], bool | MoveReceipt], *,
                places: Sequence[Protection] = (), approved: dict[Node, Protection | None] | None = None,
-               cancel: threading.Event | None = None) -> MoveResult:
-    """Revalidate and move an approved batch, keeping failed/skipped nodes attached for later rescans."""
+               cancel: threading.Event | None = None,
+               before_move: Callable[[Node], str | None] | None = None) -> MoveResult:
+    """Revalidate and move an approved batch; optional boundary veto never replaces source validation."""
     result = MoveResult()
     approvals = approved or {}
     for node in outermost(nodes):
@@ -161,6 +162,10 @@ def move_batch(root: Node, nodes: Sequence[Node], mover: Callable[[str], bool | 
             # A folder walk can take seconds. Recheck its own entry and ancestors at the actual move boundary.
             reason = (_check_ancestors(node) or _check_location(node, root, places, approvals.get(node))
                       or _check_node(node))
+        if reason is None and before_move is not None:
+            reason = before_move(node) or _check_ancestors(node) or _check_node(node)
+        if reason is None and cancel is not None and cancel.is_set():
+            reason = "cancelled"
         if reason is not None:
             result.skipped.append((node, reason))
             continue

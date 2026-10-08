@@ -15,6 +15,10 @@ from PySide6.QtWidgets import QMessageBox
 
 from je_file_tree.core.scanner import scan
 from je_file_tree.core.snapshot import stat_snapshot
+from je_file_tree.core.node import Node
+from je_file_tree.core.windows_trash import recycle_reason
+from je_file_tree.core.operation_journal import JournalApproval, OperationJournal
+from je_file_tree.gui.trash_worker import TrashWorker
 from tools import windows_recovery_probe as recovery
 from tools.windows_owned_volume import OwnedVolume, require, verify_volume
 
@@ -65,12 +69,31 @@ def _write_sparse(path: Path, length: int) -> dict:
     require(not os.path.lexists(path), "Refusing an existing diagnostic payload")
     _sparse(path, logical_size=length)
     captured = stat_snapshot(str(path))
+    digest = _digest(path)
+    require(stat_snapshot(str(path)) == captured, "Owned diagnostic payload changed while hashing")
+    return {"snapshot": captured.hex(), "logical": length, "sha256": digest}
+
+
+def _digest(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         while chunk := stream.read(_MIB):
             digest.update(chunk)
-    require(stat_snapshot(str(path)) == captured, "Owned diagnostic payload changed while hashing")
-    return {"snapshot": captured.hex(), "logical": length, "sha256": digest.hexdigest()}
+    return digest.hexdigest()
+
+
+def _guard_worker(volume: OwnedVolume, root: Node, node: Node, veto: str) -> dict:
+    verify_volume(volume)
+    journal = OperationJournal(volume.root / "owned-preflight-audit")
+    worker = TrashWorker(root, [node], [], {}, audit=JournalApproval(journal, {}))
+    worker.run()
+    require(worker.result is not None and worker.result.skipped == [(node, veto)]
+            and not worker.result.moved and not worker.result.failed and not worker.result.journal_errors,
+            "Production private preflight worker did not preserve its veto")
+    record = next(record for record in journal.recent().records if record.source == node.path)
+    require(record.outcome.status == "skipped" and record.outcome.detail == veto,
+            "Production private preflight veto was not durably audited")
+    return {"status": record.outcome.status, "reason": record.outcome.detail, "native_dispatched": False}
 
 
 def _case(volume: OwnedVolume, root: Path, length: int, pending: Callable[[dict], None]) -> dict:
@@ -85,6 +108,12 @@ def _case(volume: OwnedVolume, root: Path, length: int, pending: Callable[[dict]
     selected = next(node for node in result.root.children if node.name == path.name)
     require(not result.errors and not selected.is_link and selected.snapshot == bytes.fromhex(captured["snapshot"]),
             "Diagnostic scan did not retain the owned payload proof")
+    veto = recycle_reason(selected)
+    guard_result = _guard_worker(volume, result.root, selected, veto) if veto is not None else None
+    preserved = stat_snapshot(str(path)).hex() == captured["snapshot"]
+    if veto is not None:
+        preserved &= _digest(path) == captured["sha256"]
+    require(preserved, "Production recycling preflight changed the diagnostic source")
     before = recovery._free(volume)
     receipts = recovery._trash(volume, [path], [bytes.fromhex(captured["snapshot"])])
     after = recovery._free(volume)
@@ -92,6 +121,8 @@ def _case(volume: OwnedVolume, root: Path, length: int, pending: Callable[[dict]
         recovery.bins._settled(app, dialog)
         observed = recovery.bins._row(volume).trash
         evidence = {**captured, "allocated": selected.allocated, "source_absent": not os.path.lexists(path),
+                    "production_preflight_reason": veto, "preflight_source_preserved": preserved,
+                    "production_worker_veto": guard_result,
                     "qt_receipts": receipts, "native_bin": asdict(observed), "bin_inventory": _inventory(volume),
                     "volume_settings": _settings(volume), "free_before": before, "free_after_trash": after,
                     "observed_trash_free_delta": after - before, "native_empty_completed": False,

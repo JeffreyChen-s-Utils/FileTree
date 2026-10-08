@@ -90,3 +90,12 @@ def qapp():
 
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture(autouse=True)
+def _modeled_gui_recycling(request, monkeypatch):
+    """GUI mover fixtures do not read the host bin/policy; dedicated guard tests restore the boundary."""
+    if "qapp" in request.fixturenames:
+        from je_file_tree.gui import trash_worker
+
+        monkeypatch.setattr(trash_worker, "recycle_reason", lambda _node, _cancel: None)

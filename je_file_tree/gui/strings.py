@@ -9,6 +9,15 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'trash_skip_recycle_unverified': (
+        'Windows recycling settings, complete source size or native bin metadata could not be verified; source kept.'
+    ),
+    'trash_skip_recycle_disabled': (
+        'Windows recycling is disabled for this scope; source kept.'
+    ),
+    'trash_skip_recycle_capacity': (
+        'Selection and current bin contents exceed the observed recycling limit with headroom; source kept.'
+    ),
     'action_check_updates': 'Check for updates daily',
     'action_check_updates_tip': 'Ask PyPI over HTTPS at most once a day; notice only, with no installation.',
     'update_available': 'FileTree {version} is available',
@@ -1332,6 +1341,15 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'trash_skip_recycle_unverified': (
+        '無法核對 Windows 回收設定、完整來源大小或原生回收筒資料；已保留來源。'
+    ),
+    'trash_skip_recycle_disabled': (
+        '此範圍的 Windows 回收功能已停用；已保留來源。'
+    ),
+    'trash_skip_recycle_capacity': (
+        '選取項目及目前回收筒內容超過觀察到的回收上限與預留空間；已保留來源。'
+    ),
     'action_check_updates': '每天檢查更新',
     'action_check_updates_tip': '每天最多透過 HTTPS 向 PyPI 查詢一次；僅通知，不安裝更新。',
     'update_available': 'FileTree {version} 已推出',
@@ -2527,6 +2545,15 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'trash_skip_recycle_unverified': (
+        '无法核对 Windows 回收设置、完整来源大小或原生回收站数据；已保留来源。'
+    ),
+    'trash_skip_recycle_disabled': (
+        '此范围的 Windows 回收功能已禁用；已保留来源。'
+    ),
+    'trash_skip_recycle_capacity': (
+        '选中项目及当前回收站内容超过观察到的回收上限与预留空间；已保留来源。'
+    ),
     'action_check_updates': '每天检查更新',
     'action_check_updates_tip': '每天最多通过 HTTPS 向 PyPI 查询一次；仅通知，不安装更新。',
     'update_available': 'FileTree {version} 已发布',
