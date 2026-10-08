@@ -34,7 +34,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Over time
 
 - **#38** (P3) [UNVERIFIED] Verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
-- **#86** (P2) Connect recurring.capture/prepare and bounded ScanHistory baselines to gentle scheduled workers, then show “new junk since last scan” and “largest new growth” per selected root. Open dated proposals through a fresh validated foreground scan and the same review queue as #77, preserving expiry for missed schedules, stale receipts, changed rules/paths and incomplete coverage. Scheduled preparation must never move sources automatically; finish native GUI/review/source-preservation validation.
+- **#86** (P2) Open dated scheduled proposals through a fresh validated foreground scan and the same review queue as #77, preserving expiry for missed schedules, stale receipts, changed rules/paths and incomplete coverage. Finish native review/source-preservation validation; no scheduled preparation may move sources automatically.
 
 ### Everyday use
 

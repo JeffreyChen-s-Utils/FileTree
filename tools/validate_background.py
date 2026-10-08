@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -17,11 +18,15 @@ from PySide6.QtCore import QSettings, Qt, qVersion  # noqa: E402
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon  # noqa: E402
 
 from je_file_tree.core.background import MonitorConfig, load_attempts  # noqa: E402
+from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting  # noqa: E402
 from je_file_tree.core.export import _atomic_file  # noqa: E402
 from je_file_tree.gui import history  # noqa: E402
 from je_file_tree.gui.app import create_workspace  # noqa: E402
 from je_file_tree.gui.autostart import Registration  # noqa: E402
 from je_file_tree.gui.background_dialog import BackgroundDialog  # noqa: E402
+from je_file_tree.gui.recurring_dialog import RecurringDialog  # noqa: E402
+
+_EXPECTED_SCHEDULES = 2
 
 
 def require(condition: bool, detail: str) -> None:
@@ -80,8 +85,45 @@ def _source(owned: Path) -> tuple[Path, Path, tuple]:
     (source / "中文資料夾").mkdir(parents=True)
     kept = source / "中文資料夾" / "保留.txt"
     kept.write_bytes("原生排程保留內容".encode() * 4096)
+    (source / "既有.dmp").write_bytes(b"owned old dump" * 4096)
     captured = (kept.stat().st_dev, kept.stat().st_ino, hashlib.sha256(kept.read_bytes()).hexdigest())
     return source, kept, captured
+
+
+def _proposal(app: QApplication, workspace, source: Path, config: MonitorConfig, evidence: Path) -> dict:
+    first = next(iter(workspace.background.reports.values()))
+    require(not first.comparison_complete and len(first.baseline.candidates) == 1,
+            "First proposal did not keep the missing baseline unknown")
+    old = source / "既有.dmp"
+    old_proof = old.stat().st_ino, hashlib.sha256(old.read_bytes()).hexdigest()
+    new = source / "新增.dmp"
+    new.write_bytes(b"owned new dump" * 4096)
+    new_proof = new.stat().st_ino, hashlib.sha256(new.read_bytes()).hexdigest()
+    workspace.background.configure(replace(config, interval_hours=config.interval_hours + 1))
+    workspace.background.tick()
+    pump(app, lambda: workspace.background.scan is None and bool(workspace.background.reports))
+    report = next(iter(workspace.background.reports.values()))
+    require(report.comparison_complete and [row.path for row in report.new_junk] == [str(new)]
+            and report.growth[0].path == str(source) and report.growth[0].change == new.stat().st_size,
+            "Native scheduled comparison did not match owned history")
+    require(workspace.background.report_status(report) is None, "Native proposal binding failed")
+    dialog = RecurringDialog((report,), workspace.background.report_status, workspace.current)
+    try:
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+        dialog.show()
+        app.processEvents()
+        require(dialog.grab().save(str(evidence / "recurring-dialog-zh-TW.png")), "Proposal capture failed")
+    finally:
+        dialog.shutdown()
+        dialog.reject()
+        dialog.deleteLater()
+    require(old_proof == (old.stat().st_ino, hashlib.sha256(old.read_bytes()).hexdigest())
+            and new_proof == (new.stat().st_ino, hashlib.sha256(new.read_bytes()).hexdigest()),
+            "Proposal preparation/view changed owned sources")
+    require(history.configured_history(workspace.settings).read(str(source)).count == _EXPECTED_SCHEDULES,
+            "Proposal did not preserve both scheduled history entries")
+    return {"comparison_complete": True, "new_junk_rows": len(report.new_junk), "growth_rows": len(report.growth),
+            "binding_current": True, "source_preserved": True, "review_execution_verified": False}
 
 
 def _session(app: QApplication, owned: Path, args) -> dict:
@@ -90,6 +132,7 @@ def _session(app: QApplication, owned: Path, args) -> dict:
     settings.setValue("language", "zh-TW")
     settings.setValue("check_updates", False)
     settings.setValue("history_enabled", True)
+    settings.setValue("cleanup_policy", CleanupPolicy((RuleSetting("crash_dumps", True, 0),)).dumps())
     original = history.history_folder
     history.history_folder = lambda: owned / "private-history"
     workspace = create_workspace(settings)
@@ -115,6 +158,7 @@ def _session(app: QApplication, owned: Path, args) -> dict:
             require(workspace.current.results.outcome is None, "Scheduled history replaced a foreground tab")
             proof.update(scheduled_history_complete=True, native_capacity_rows=len(capacity.rows),
                          foreground_unchanged=True)
+            proof["recurring"] = _proposal(app, workspace, source, config, args.evidence)
             if args.notification or args.require_notification:
                 proof["notification"] = _notification(app, workspace, args.evidence, required=args.require_notification)
             workspace.close()
@@ -130,7 +174,7 @@ def _session(app: QApplication, owned: Path, args) -> dict:
         require(captured == (kept.stat().st_dev, kept.stat().st_ino, hashlib.sha256(kept.read_bytes()).hexdigest()),
                 "Native background work changed source identity or content")
         proof["source_preserved"] = True
-        _capture_dialog(app, config, workspace, args.evidence)
+        _capture_dialog(app, workspace.background.config, workspace, args.evidence)
         workspace.quit_application()
         require(workspace.background.scan is None and workspace.background.capacity is None, "Quit did not join work")
         proof["quit_joined"] = True

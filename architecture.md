@@ -85,8 +85,14 @@ stays readable and incomplete/truncated/mismatched baselines cannot prove new ca
 errors also flag saved history incomplete. Root device/inode binding refuses a replacement physical
 scope at the same path. ProposalContext binds one schedule claim/date and expiry
 at the next due time; validation rejects missed periods, replaced/failed/canceled receipts, changed
-policy or any captured descendant metadata. Valid observations grant no action authority. GUI
-scheduled preparation and the existing review queue connection remain #86.
+policy or any captured descendant metadata. Valid observations grant no action authority.
+ScheduledWorker captures strict current policy and the durable claim/interval, reads the latest bounded
+history/baseline and prepares observations on its thread before saving the bound baseline. Optional
+proposal failures retain ordinary saved history plus a visible error; cancellation publishes neither.
+BackgroundMonitor retains metadata-only current-session reports for at most 32 selected roots. The File
+menu opens RecurringDialog under OperationGroup ownership: three read-only 100-row lists, plain dates/
+coverage/expiry/unknowns, literal full-path tooltips and copy. A small settings/receipt binding check
+refreshes status without walking sources on the GUI thread. Fresh-scan review connection remains #86.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
@@ -931,6 +937,10 @@ never substitute for actual registration or authorize overwriting another applic
 Saved history keeps its existing folder-JSON format and optional versioned `recurring` scalar header.
 Historical candidate metadata never reconstructs operation Nodes or approves actions; rule fingerprints,
 physical root identity and dated schedule receipts are comparison/expiry contracts only.
+`recurring.binding_status` checks small schedule/policy/receipt metadata without a tree walk;
+`proposal_status` additionally checks the whole captured tree and belongs on a worker. Workspace-only
+report viewing leaves the standalone create_window factory passive. Session reports are not persisted
+as actions; only bounded observation baselines use the existing history format/retention contract.
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.

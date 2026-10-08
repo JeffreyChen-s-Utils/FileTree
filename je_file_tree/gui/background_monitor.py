@@ -15,12 +15,15 @@ from je_file_tree.core.background import (
     MonitorConfig, ScanAttempt, SpaceWarnings, claim_scan, due_roots, dump_attempts, load_attempts, load_config,
 )
 from je_file_tree.core.formatting import format_size
+from je_file_tree.core.cleanup_policy import CleanupPolicy, load_policy
+from je_file_tree.core.recurring import RecurringProposal, binding_status
 from je_file_tree.gui import autostart
 from je_file_tree.gui.background_dialog import BackgroundDialog
 from je_file_tree.gui.background_worker import CapacityWorker, ScheduledWorker
 from je_file_tree.gui.history import configured_history
 from je_file_tree.gui.icon import app_icon
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.recurring_dialog import RecurringDialog
 from je_file_tree.gui.scan_worker import wait_for
 
 if TYPE_CHECKING:
@@ -61,6 +64,7 @@ class BackgroundMonitor(QObject):
         self.capacity: CapacityWorker | None = None
         self.scan: ScheduledWorker | None = None
         self.attempt: ScanAttempt | None = None
+        self.reports: dict[str, RecurringProposal] = {}
         self.warnings = SpaceWarnings()
         self.active, self.closing = False, False
         self.error, self._status, self._detail = "", "background_off", ""
@@ -138,6 +142,7 @@ class BackgroundMonitor(QObject):
             self._failed("Could not save background monitoring preferences")
             return
         self.config = config
+        self._retain_reports(config)
         self.error = ""
         if not config.enabled or not self.active or self.closing:
             self._set_status("background_off")
@@ -186,9 +191,13 @@ class BackgroundMonitor(QObject):
 
     def _start_scan(self) -> None:
         try:
+            policy = self._policy()
             attempt = self._claim()
             if attempt is None:
                 return
+            self.reports.pop(attempt.key, None)
+            config = configuration(self.settings)
+            self._retain_reports(config)
             history = configured_history(self.settings)
             if history is None:
                 self._finish_attempt(replace(attempt, state="failed"))
@@ -197,11 +206,50 @@ class BackgroundMonitor(QObject):
         except (OSError, ValueError) as error:
             self._failed(str(error))
             return
-        worker = ScheduledWorker(attempt.root, self.workspace.current._scan_options(), history, self)
+        worker = ScheduledWorker(attempt.root, self.workspace.current._scan_options(), history, self,
+                                 proposal_context=(attempt, config.interval_hours), policy=policy)
         worker.finished.connect(lambda: self._scan_finished(worker, attempt))
         self.attempt, self.scan = attempt, worker
         self._set_status("background_scanning", attempt.root)
         worker.start()
+
+    def _policy(self) -> CleanupPolicy:
+        text = self.settings.value("cleanup_policy", None)
+        return CleanupPolicy() if text is None else load_policy(text)
+
+    def _retain_reports(self, config: MonitorConfig) -> None:
+        selected = {claim_scan(config, root, time.time()).key for root in config.roots}
+        self.reports = {key: report for key, report in self.reports.items() if key in selected}
+
+    def report_status(self, report: RecurringProposal) -> str | None:
+        """Recheck only bounded settings/receipt metadata; no filesystem traversal on the GUI thread."""
+        try:
+            self.settings.sync()
+            attempts = load_attempts(self.settings.value(ATTEMPTS_KEY, dump_attempts({})))
+            return binding_status(report, self._policy(), configuration(self.settings),
+                                  attempts.get(report.context.attempt.key), time.time())
+        except (OSError, ValueError) as error:
+            self._failed(str(error))
+            return "unavailable"
+
+    def show_proposals(self) -> None:
+        """Show current-session bounded observations while serializing all source-operation owners."""
+        if (self.closing or self.workspace.operations.busy
+                or any(window._worker is not None or window._analysers
+                       for window in self.workspace.operations.windows)):
+            return
+        self.quiesce()
+        owner = self.workspace.current
+        dialog = RecurringDialog(tuple(self.reports.values()), self.report_status, owner)
+        owner._path_dialogs.add(dialog)
+        owner._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            owner._path_dialogs.discard(dialog)
+            owner._update_actions()
+            dialog.deleteLater()
 
     def _claim(self) -> ScanAttempt | None:
         lock = _lock(self.settings)
@@ -277,10 +325,14 @@ class BackgroundMonitor(QObject):
             worker.deleteLater()
             return
         if not self.closing:
+            if worker.state == "complete" and worker.proposal is not None:
+                self.reports[attempt.key] = worker.proposal
             if worker.error:
                 self._failed(worker.error)
             elif worker.state == "canceled":
                 self._set_status("background_canceled", worker.root)
+            elif worker.proposal_error:
+                self._failed(tr("recurring_prepare_failed", detail=worker.proposal_error))
             else:
                 self._set_status("background_saved_partial" if worker.entry.incomplete else "background_saved",
                                  worker.root)

@@ -60,6 +60,7 @@ class ScanWorkspace(QMainWindow):
         window._close_all = self.quit_application
         window._background_settings = self.background.configure_dialog
         window._background_pause = self.background.quiesce
+        window._recurring_show = self.background.show_proposals
         window._actions["background_monitor"].setEnabled(True)
         window._language_changed = self.retranslate
         window.setWindowFlags(Qt.WindowType.Widget)

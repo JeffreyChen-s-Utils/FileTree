@@ -10,7 +10,6 @@ Run from the repository root:
 
 | To find | Command |
 |---|---|
-| [2026-10-b](2026-10-b.md) | 2026-10 |
 | every entry, one line each | `rg -n "^## U-2" docs/updates` |
 | entries of one type | `rg -n "^## U-2.*#done" docs/updates` |
 | entries with a topic tag | `rg -n "^## U-2.*#<tag>" docs/updates` |
@@ -59,6 +58,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10-b](2026-10-b.md) | 2026-10 |
 | [2026-10](2026-10.md) | 2026-10 |
 | [2026-09](2026-09.md) | 2026-09 |
 
@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-46 | 2026-10-08 | Scheduled recurring reports and read-only review viewer | #snapshot #background #recurring #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-45 | 2026-10-08 | Bounded recurring observations and history binding | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-44 | 2026-10-08 | Native background desktop validation fixtures | #validation #implementation | [2026-10-b](2026-10-b.md) |
 | U-20261008-43 | 2026-10-08 | Owned removable per-user login startup | #implementation #validation | [2026-10-b](2026-10-b.md) |

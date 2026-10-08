@@ -711,13 +711,22 @@ suppress notifications. Unknown capacity never triggers a warning or falsely cle
 QLockFile serializes QSettings claims before dispatch across processes. Failed/canceled attempts
 remain throttled; bad/locked/unpersistable receipts never dispatch a source scan. ScheduledWorker
 captures the current options but forces gentle=True/workers=1, refuses linked roots and saves only
-normal bounded ScanHistory. Finished unread scopes retain incomplete history; cancellation keeps
+normal bounded ScanHistory. A captured durable claim/interval and strict effective policy also prepare
+bounded recurring observations from the last bound history on that worker; saving includes the new
+baseline. Optional preparation errors retain normal saved history plus visible errors. Finished unread scopes retain incomplete history; cancellation keeps
 a canceled receipt/partial result without publishing incomplete saved data. Results never replace
 foreground tabs and never invoke source operations. Foreground scans/reviews cancel/join the gentle
 worker; explicit Quit joins capacity and scans. Close-to-tray requires explicit opt-in and an actual
 available tray; losing a tray restores a hidden workspace. Disabling restores the window and joins.
 The GUI entry accepts --background, skips elevation and hides only when enabled/native tray is ready;
 disabled/unavailable monitoring stays visible. The flag alone never enables monitoring or startup.
+
+File → Scheduled scan proposals opens a metadata-only current-session view of at most 32 selected roots,
+with new/current candidates and logical folder growth capped at 100 rows per list. Dates/expiry, omitted
+rows, coverage and unknown comparisons remain visible. Literal full-path tooltips and Ctrl+C copy never
+open recorded sources. OperationGroup guards the modal view across tabs. Status refresh checks bounded
+settings/receipts only; review through a fresh foreground scan remains pending. Baselines persist under
+normal history retention; reports appear after a scheduled scan in the current session.
 
 `gui.autostart.registration()` reads native registration without creating metadata; `set_enabled(bool)`
 applies only an explicit dialog choice. Windows uses one fixed HKCU Run value and a separate strict
@@ -753,6 +762,8 @@ effective disabled/empty-folder settings and exclusions. No historical absence g
 `proposal_status(proposal, root, policy, config, attempt, now, cancel=...)` rejects next-period expiry,
 clock rollback, changed/disabled schedules, any replaced or non-complete receipt, changed rules,
 incomplete/missing identity or changed captured descendants. None means current observations only.
+`binding_status(proposal, policy, config, attempt, now)` performs the small settings/date/receipt part
+without a tree walk; a caller still needs worker-side captured-tree validation and ordinary source review.
 
 `ScanHistory.save(root, baseline=...)` optionally binds observations to the owned header's actual
 root/size/date; their bytes share the existing cap and retention. `load_recurring(entry)` rejects a

@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
         self._close_all: Callable[[], object] | None = None
         self._background_settings: Callable[[], object] | None = None
         self._background_pause: Callable[[], object] | None = None
+        self._recurring_show: Callable[[], object] | None = None
         self._language_changed: Callable[[], object] = self.retranslate
         self.settings = settings if settings is not None else QSettings()
         self._journal = OperationJournal(journal_folder())
@@ -187,6 +188,11 @@ class MainWindow(QMainWindow):
         """Open the owning workspace's explicit preferences; standalone integrations remain passive."""
         if self._background_settings is not None:
             self._background_settings()
+
+    def show_recurring(self) -> None:
+        """Open the workspace's dated observations, including before a foreground result exists."""
+        if self._recurring_show is not None:
+            self._recurring_show()
 
     @property
     def local_operation_busy(self) -> bool:
@@ -1068,6 +1074,7 @@ class MainWindow(QMainWindow):
             ("live_compare", None, self.compare_live_folders),
             ("git_history", None, self.show_git_history),
             ("history", None, self.show_history),
+            ("recurring", None, self.show_recurring),
             ("history_settings", None, self.configure_history),
             ("projects", None, self.show_projects),
             ("programs", None, self.show_programs),
@@ -1106,6 +1113,7 @@ class MainWindow(QMainWindow):
         self._actions["follow_changes"].setEnabled(follow_supported())
         self._actions["follow_changes"].toggled.connect(self._follow.configure)
         self._actions["background_monitor"].setEnabled(False)
+        self._actions["recurring"].setEnabled(False)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
         self._actions["gentle"].setCheckable(True)
@@ -1143,7 +1151,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history",
-                    "programs", "virtual_disks", "file_times"):
+                    "programs", "virtual_disks", "file_times", "recurring"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -1244,6 +1252,7 @@ class MainWindow(QMainWindow):
         if self._operations is not None:
             self._operations.refresh(self)
         scanning = self._worker is not None or self.operation_busy
+        self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
         self._actions["open"].setEnabled(not self.operation_busy)

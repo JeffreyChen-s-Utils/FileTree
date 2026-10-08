@@ -12,10 +12,15 @@ from PySide6.QtWidgets import QSystemTrayIcon
 from test_gui import _wait
 from je_file_tree.core.background import CapacityObservation, MonitorConfig, load_attempts
 from je_file_tree.core.scanner import ScanCancelledError, scan
+from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting
+from je_file_tree.core.history import ScanHistory, load_recurring
+from je_file_tree.core.recurring import ProposalCancelledError
 from je_file_tree.gui import app as gui_app, background_monitor as service, background_worker as workers
 from je_file_tree.gui.background_dialog import BackgroundDialog
 from je_file_tree.gui.app import create_workspace
 from je_file_tree.gui.history import configured_history
+from je_file_tree.gui.recurring_dialog import RecurringDialog
+from je_file_tree.gui.scan_worker import wait_for
 
 
 class _Tray(QSystemTrayIcon):
@@ -190,6 +195,9 @@ def test_actual_scheduled_history_is_gentle_and_preserves_sources_without_touchi
     assert (file.stat().st_ino, hashlib.sha256(file.read_bytes()).hexdigest()) == proof
     receipt = next(iter(load_attempts(monitored.settings.value(service.ATTEMPTS_KEY)).values()))
     assert receipt.state == "complete"
+    report = monitor.reports[receipt.key]
+    assert monitor.report_status(report) is None and not report.comparison_complete
+    assert load_recurring(history.entries[0]).identity == report.baseline.identity
     monitor.tick()
     assert monitor.scan is None
 
@@ -290,3 +298,129 @@ def test_background_entry_skips_elevation_and_only_hides_when_tray_is_available(
     monitor.can_hide = False
     calls.clear()
     assert gui_app.main(["--background"]) == 0 and calls == ["show", "services"]
+
+
+def test_actual_second_schedule_compares_bound_baseline_without_source_mutations(monitored, qapp, tmp_path):
+    source = tmp_path / "排程"
+    source.mkdir()
+    policy = CleanupPolicy((RuleSetting("crash_dumps", True, 0),))
+    monitored.settings.setValue("cleanup_policy", policy.dumps())
+    (source / "old.dmp").write_bytes(b"old payload")
+    monitor = _enable(monitored, (str(source),))
+    monitor.tick()
+    _wait(qapp, lambda: monitor.scan is None)
+    first = next(iter(monitor.reports.values()))
+    assert len(first.baseline.candidates) == 1 and not first.comparison_complete
+    (source / "new.dmp").write_bytes(b"new owned payload" * 100)
+    proof = {path.name: (path.stat().st_ino, hashlib.sha256(path.read_bytes()).hexdigest())
+             for path in source.iterdir()}
+    monitor.configure(replace(monitor.config, interval_hours=monitor.config.interval_hours + 1))
+    monitor.tick()
+    _wait(qapp, lambda: monitor.scan is None)
+    second = next(iter(monitor.reports.values()))
+    assert second.comparison_complete and [row.path for row in second.new_junk] == [str(source / "new.dmp")]
+    assert second.growth[0].path == str(source) and second.growth[0].change == (source / "new.dmp").stat().st_size
+    assert monitored.current.results.outcome is None and monitor.report_status(second) is None
+    assert proof == {path.name: (path.stat().st_ino, hashlib.sha256(path.read_bytes()).hexdigest())
+                     for path in source.iterdir()}
+    monitored.settings.setValue("cleanup_policy", CleanupPolicy((RuleSetting("crash_dumps", False, 0),)).dumps())
+    assert monitor.report_status(second) == "rule_changed"
+    monitored.settings.setValue("cleanup_policy", "invalid")
+    assert monitor.report_status(second) == "unavailable" and monitor.error
+    monitor.configure(replace(monitor.config, roots=()))
+    assert not monitor.reports
+
+
+def test_invalid_proposal_metadata_keeps_saved_history_and_visible_error(monitored, qapp, tmp_path, monkeypatch):
+    source = tmp_path / "kept-source"
+    source.mkdir()
+    (source / "kept").write_bytes(b"kept")
+    monkeypatch.setattr(workers, "load_recurring", lambda _entry: (_ for _ in ()).throw(ValueError("invalid baseline")))
+    configured_history(monitored.settings).save(scan(source).root)
+    monitor = _enable(monitored, (str(source),))
+    monitor.tick()
+    _wait(qapp, lambda: monitor.scan is None)
+    assert configured_history(monitored.settings).read(str(source)).count == 2
+    assert not monitor.reports and "invalid baseline" in monitor.error
+    assert next(iter(load_attempts(monitored.settings.value(service.ATTEMPTS_KEY)).values())).state == "complete"
+    assert (source / "kept").read_bytes() == b"kept"
+
+
+def test_cancellation_during_preparation_never_publishes_history_or_report(monitored, tmp_path, monkeypatch):
+    source = tmp_path / "owned-source"
+    source.mkdir()
+    (source / "kept").write_bytes(b"kept")
+    config = MonitorConfig(True, roots=(str(source),))
+    monitored.settings.setValue(service.CONFIG_KEY, config.dumps())
+    attempt = monitored.background._claim()
+    store = ScanHistory(tmp_path / "private-history")
+    worker = workers.ScheduledWorker(str(source), monitored.current._scan_options(), store, monitored,
+                                     proposal_context=(attempt, config.interval_hours))
+
+    def cancel(*_args, **_kwargs):
+        worker.cancel.set()
+        raise ProposalCancelledError()
+
+    monkeypatch.setattr(workers, "prepare", cancel)
+    worker.start()
+    wait_for(worker)
+    assert worker.state == "canceled" and worker.entry is None and worker.proposal is None
+    assert store.read(str(source)).count == 0 and (source / "kept").read_bytes() == b"kept"
+    worker.deleteLater()
+
+
+def test_recurring_readonly_dialog_uses_literal_paths_and_refreshes_expiry(monitored, qapp, tmp_path):
+    source = tmp_path / "literal & path"
+    source.mkdir()
+    (source / "owned.dmp").write_bytes(b"owned")
+    monitored.settings.setValue("cleanup_policy", CleanupPolicy((RuleSetting("crash_dumps", True, 0),)).dumps())
+    monitor = _enable(monitored, (str(source),))
+    monitor.tick()
+    _wait(qapp, lambda: monitor.scan is None)
+    report = next(iter(monitor.reports.values()))
+    status = [None]
+    dialog = RecurringDialog((report,), lambda _report: status[0], monitored.current)
+    assert "Unknown" in dialog.summary.text() and dialog.current.rowCount() == 1
+    assert dialog.current.data(dialog.current.index(0, 0)) == str(source / "owned.dmp")
+    assert dialog.current.data(dialog.current.index(0, 1)) == "Crash dumps"
+    status[0] = "expired"
+    dialog._summary()
+    assert "Expired" in dialog.summary.text()
+    dialog.shutdown()
+    dialog.deleteLater()
+    assert (source / "owned.dmp").read_bytes() == b"owned"
+    assert not monitored.current._path_dialogs and monitored.current.results.outcome is None
+    empty = RecurringDialog((), monitor.report_status, monitored.current)
+    assert "No scheduled report" in empty.summary.text()
+    empty.shutdown()
+    empty.deleteLater()
+
+
+def test_recurring_view_guard_serializes_tabs_and_never_runs_sources(monitored, monkeypatch):
+    owner = monitored.current
+    other = monitored.add_tab()
+    called = []
+
+    def view(dialog):
+        assert monitored.operations.busy and not owner._actions["recurring"].isEnabled()
+        assert not other._actions["recurring"].isEnabled()
+        called.append(True)
+        return 0
+
+    monkeypatch.setattr(RecurringDialog, "exec", view)
+    assert owner._actions["recurring"].isEnabled()
+    owner.show_recurring()
+    assert called == [True] and not monitored.operations.busy
+    assert other._actions["recurring"].isEnabled() and owner.results.outcome is None
+    owner._analysers.add(object())
+    owner.show_recurring()
+    assert called == [True]
+    owner._analysers.clear()
+
+
+def test_invalid_scheduled_policy_refuses_dispatch_before_claim(monitored, tmp_path):
+    monitored.settings.setValue("cleanup_policy", "invalid")
+    monitor = _enable(monitored, (str(tmp_path),))
+    monitor.tick()
+    assert monitor.scan is None and not monitored.settings.contains(service.ATTEMPTS_KEY)
+    assert monitor.error and not monitor.reports

@@ -9,6 +9,29 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'action_recurring': 'Scheduled scan proposals…',
+    'action_recurring_tip': 'View dated scheduled observations and their coverage; no automatic clean-up.',
+    'recurring_rule': 'Rule',
+    'recurring_unknown': 'Unknown',
+    'recurring_new': 'New junk since last scan',
+    'recurring_current': 'Current candidates',
+    'recurring_growth': 'Largest new growth',
+    'recurring_empty': 'No scheduled report in this session. Enable background monitoring and select scan folders.',
+    'recurring_hint': ('Observations only; nothing is moved automatically. Up to 100 rows per list. '
+                       'Growth is logical bytes, not recoverable space. Unknown comparisons do not prove no new junk. '
+                       'Reports appear after a scheduled scan in this session; baselines are kept in local history.'),
+    'recurring_summary': ('Prepared: {prepared}\nPrevious baseline: {previous}\nExpires: {expires}\n'
+                          'Candidates shown: {retained} / {total}; coverage: {coverage}; comparison: {comparison}\n'
+                          'Status: {status}'),
+    'recurring_status_current': 'Observed; fresh source validation required before review',
+    'recurring_status_expired': 'Expired (including a missed schedule or clock rollback)',
+    'recurring_status_schedule_changed': 'Schedule changed or disabled',
+    'recurring_status_stale_scan': 'Scan receipt changed or unavailable',
+    'recurring_status_rule_changed': 'Clean-up rules changed',
+    'recurring_status_incomplete': 'Incomplete coverage or unknown identity',
+    'recurring_status_paths_changed': 'Source paths changed',
+    'recurring_status_unavailable': 'Settings or receipt could not be verified',
+    'recurring_prepare_failed': 'History saved; scheduled proposal unavailable: {detail}',
     'workspace_new': 'New scan tab',
     'workspace_new_tip': 'Open an independent scan tab (Ctrl+T); close the current tab with Ctrl+W.',
     'workspace_close': 'Close scan tab',
@@ -1387,6 +1410,29 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'action_recurring': '排程掃描建議…',
+    'action_recurring_tip': '查看排程觀察的日期與涵蓋範圍；不會自動清理。',
+    'recurring_rule': '規則',
+    'recurring_unknown': '未知',
+    'recurring_new': '上次掃描後新增的垃圾候選',
+    'recurring_current': '目前的清理候選',
+    'recurring_growth': '容量成長最多的資料夾',
+    'recurring_empty': '本次執行尚無排程報告。請啟用背景監控並選擇掃描資料夾。',
+    'recurring_hint': ('僅供查看，不會自動移動檔案。每份清單最多顯示 100 筆。'
+                       '成長量是邏輯位元組，不代表可回收空間。比較未知不代表沒有新增垃圾。'
+                       '報告會在本次執行的排程掃描後出現；基準資料儲存在本機掃描歷史。'),
+    'recurring_summary': ('產生時間：{prepared}\n上次基準：{previous}\n到期時間：{expires}\n'
+                          '顯示候選：{retained} / {total}；涵蓋範圍：{coverage}；比較：{comparison}\n'
+                          '狀態：{status}'),
+    'recurring_status_current': '已觀察；審查前仍須重新驗證來源',
+    'recurring_status_expired': '已到期（包含錯過排程或時鐘倒退）',
+    'recurring_status_schedule_changed': '排程已變更或停用',
+    'recurring_status_stale_scan': '掃描紀錄已變更或無法取得',
+    'recurring_status_rule_changed': '清理規則已變更',
+    'recurring_status_incomplete': '涵蓋範圍不完整或檔案識別未知',
+    'recurring_status_paths_changed': '來源路徑已變更',
+    'recurring_status_unavailable': '無法驗證設定或掃描紀錄',
+    'recurring_prepare_failed': '歷史已儲存；無法產生排程建議：{detail}',
     'workspace_new': '新增掃描分頁',
     'workspace_new_tip': '開啟獨立的掃描分頁（Ctrl+T）；以 Ctrl+W 關閉目前分頁。',
     'workspace_close': '關閉掃描分頁',
@@ -2635,6 +2681,29 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'action_recurring': '计划扫描建议…',
+    'action_recurring_tip': '查看计划观察的日期与覆盖范围；不会自动清理。',
+    'recurring_rule': '规则',
+    'recurring_unknown': '未知',
+    'recurring_new': '上次扫描后新增的垃圾候选',
+    'recurring_current': '当前的清理候选',
+    'recurring_growth': '容量增长最多的文件夹',
+    'recurring_empty': '本次运行尚无计划报告。请启用后台监控并选择扫描文件夹。',
+    'recurring_hint': ('仅供查看，不会自动移动文件。每份列表最多显示 100 条。'
+                       '增长量是逻辑字节，不代表可回收空间。比较未知不代表没有新增垃圾。'
+                       '报告会在本次运行的计划扫描后出现；基准数据保存在本地扫描历史。'),
+    'recurring_summary': ('生成时间：{prepared}\n上次基准：{previous}\n到期时间：{expires}\n'
+                          '显示候选：{retained} / {total}；覆盖范围：{coverage}；比较：{comparison}\n'
+                          '状态：{status}'),
+    'recurring_status_current': '已观察；审核前仍须重新验证来源',
+    'recurring_status_expired': '已到期（包括错过计划或时钟倒退）',
+    'recurring_status_schedule_changed': '计划已更改或停用',
+    'recurring_status_stale_scan': '扫描记录已更改或无法获取',
+    'recurring_status_rule_changed': '清理规则已更改',
+    'recurring_status_incomplete': '覆盖范围不完整或文件标识未知',
+    'recurring_status_paths_changed': '源路径已更改',
+    'recurring_status_unavailable': '无法验证设置或扫描记录',
+    'recurring_prepare_failed': '历史已保存；无法生成计划建议：{detail}',
     'workspace_new': '新建扫描标签页',
     'workspace_new_tip': '打开独立的扫描标签页（Ctrl+T）；用 Ctrl+W 关闭当前标签页。',
     'workspace_close': '关闭扫描标签页',

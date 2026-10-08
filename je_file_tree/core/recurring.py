@@ -295,9 +295,9 @@ def prepare(root: Node, policy: CleanupPolicy, context: ProposalContext, *, prev
     return RecurringProposal(baseline, context, fresh, growth, comparable, previous.saved if comparable else "")
 
 
-def proposal_status(proposal: RecurringProposal, root: Node, policy: CleanupPolicy, config: MonitorConfig,
-                    attempt: ScanAttempt | None, now: float, *, cancel: threading.Event | None = None) -> str | None:
-    """Return an expiry reason or None for current observations; even None grants no operation authority."""
+def binding_status(proposal: RecurringProposal, policy: CleanupPolicy, config: MonitorConfig,
+                   attempt: ScanAttempt | None, now: float) -> str | None:
+    """Check small dated policy/schedule metadata without traversing a tree; None is not action authority."""
     baseline, context = proposal.baseline, proposal.context
     ScanAttempt(baseline.root, now, baseline.policy)
     if now < context.prepared_at or now >= context.expires_at:
@@ -313,11 +313,18 @@ def proposal_status(proposal: RecurringProposal, root: Node, policy: CleanupPoli
         return "rule_changed"
     if not baseline.complete or baseline.signature is None:
         return "incomplete"
-    if root.path != baseline.root or tree_signature(root, cancel=cancel) != baseline.signature:
-        status = "paths_changed"
-    else:
-        status = None
-    return status
+    return None
+
+
+def proposal_status(proposal: RecurringProposal, root: Node, policy: CleanupPolicy, config: MonitorConfig,
+                    attempt: ScanAttempt | None, now: float, *, cancel: threading.Event | None = None) -> str | None:
+    """Return an expiry reason or None for current observations; even None grants no operation authority."""
+    status = binding_status(proposal, policy, config, attempt, now)
+    if status is not None:
+        return status
+    if root.path != proposal.baseline.root or tree_signature(root, cancel=cancel) != proposal.baseline.signature:
+        return "paths_changed"
+    return None
 
 
 def dump_baseline(baseline: Baseline) -> str:
