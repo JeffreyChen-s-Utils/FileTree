@@ -78,7 +78,7 @@ def _parity_detail(ordinary: ScanResult, audited: ScanResult) -> str:
     if len(before) != len(after):
         return f"node counts ordinary={len(before)}, mft={len(after)}"
     for left, right in zip(before, after, strict=True):
-        if left != right:
+        if not _same_rows([left], [right]):
             changes = {name: _field_difference(name, a, b)
                        for name, a, b in zip(_ROW_FIELDS, left, right, strict=True) if a != b}
             return f"first owned node {left[0]!r}: {changes!r}"[:2048]
@@ -100,7 +100,7 @@ def _diagnose(root: Path, ordinary: ScanResult) -> None:
     raise RuntimeError("Experimental private-image tree refused despite matching per-entry raw metadata")
 
 
-def _compare(root: Path, options: ScanOptions) -> dict:
+def _compare(root: Path, options: ScanOptions, *, allow_fallback: bool = False) -> dict:
     started = time.perf_counter()
     ordinary = scan(root, options=options)
     ordinary_seconds = time.perf_counter() - started
@@ -108,14 +108,16 @@ def _compare(root: Path, options: ScanOptions) -> dict:
     started = time.perf_counter()
     audited = scan(root, options=replace(options, experimental_mft=True), on_root=published.append)
     mft_seconds = time.perf_counter() - started
-    if audited.backend != "mft":
+    if audited.backend != "mft" and not allow_fallback:
         _diagnose(root, ordinary)
-    require(audited.root is published[0] and len(published) == 1, "Native scan published another root")
+    require(audited.backend in ("mft", "ordinary"), "Unknown native scan backend")
+    require(len(published) == 1 and audited.root is published[0], "Native scan published another root")
     require(_same_rows(_rows(ordinary), _rows(audited)) and sorted(ordinary.errors) == sorted(audited.errors),
             "Native metadata tree differs from ordinary Node/options/coverage: " + _parity_detail(ordinary, audited))
     require(ordinary.hard_links == audited.hard_links, "Native metadata hard-link accounting differs")
     return {"options": asdict(options), "ordinary_seconds": ordinary_seconds,
-            "mft_seconds": mft_seconds, "nodes": len(_rows(audited)), "errors": len(audited.errors),
+            "mft_seconds": mft_seconds if audited.backend == "mft" else None,
+            "requested_mft_seconds": mft_seconds, "nodes": len(_rows(audited)), "errors": len(audited.errors),
             "files": audited.root.file_count, "logical_bytes": audited.root.size,
             "allocated_bytes": audited.root.allocated, "backend": audited.backend, "equal": True,
             "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"}
@@ -209,14 +211,24 @@ def validate_tree(volume: OwnedVolume, root: Path, save: Callable[[dict], None])
         comparisons.append(comparison)
         save({"tree_comparisons": comparisons})
     denied = _denied(volume, root, save)
+    save({"denied_branch": denied})
     cancelled = _cancel(root)
-    full_drive = [_compare(volume.root, ScanOptions()) for _ in range(3)]
+    save({"cancellation": cancelled})
+    full_drive = []
+    for _ in range(3):
+        # Windows-managed volume metadata may refuse the audit; its ordinary fallback must still match.
+        full_drive.append(_compare(volume.root, ScanOptions(), allow_fallback=True))
+        save({"full_private_drive": full_drive})
+    mft_times = [row["mft_seconds"] for row in full_drive if row["backend"] == "mft"]
     medians = {f"{backend}_seconds": statistics.median(row[f"{backend}_seconds"] for row in full_drive)
-               for backend in ("ordinary", "mft")}
+               for backend in ("ordinary", "requested_mft")}
+    medians["mft_seconds"] = statistics.median(mft_times) if mft_times else None
     require((branch / "keep.bin").read_bytes() == b"owned tree bytes"
             and (root / ".tree-hidden.bin").read_bytes() == b"owned hidden bytes"
             and (root / "tree-link").is_symlink() and os.readlink(root / "tree-link") == str(branch),
             "Additional tree payloads/link changed")
     return {"tree_comparisons": comparisons, "denied_branch": denied, "cancellation": cancelled,
             "full_private_drive": full_drive, "full_private_drive_medians": medians,
+            "full_private_drive_mft_samples": len(mft_times),
+            "full_private_drive_fallback_samples": len(full_drive) - len(mft_times),
             "default_enabled": False, "large_real_drive_validated": False, "tree_payloads_preserved": True}

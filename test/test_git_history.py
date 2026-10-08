@@ -87,6 +87,8 @@ def test_environment_cannot_redirect_the_selected_repository(repository, tmp_pat
 
 
 def test_not_a_repository_and_invalid_limits_are_clear_errors(tmp_path):
+    # A scratch folder can be inside the workspace Git repository; stop ancestor discovery here.
+    (tmp_path / ".git").write_text(f"gitdir: {(tmp_path / 'missing.git').as_posix()}\n", encoding="utf-8")
     with pytest.raises(OSError, match="not a git repository"):
         history.git_history(str(tmp_path))
     for limits in ({"limit": 0}, {"seconds": 0}):

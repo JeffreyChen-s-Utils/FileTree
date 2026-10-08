@@ -90,6 +90,23 @@ def test_snapshot_diagnostics_report_exact_trailing_attribute_and_link_fields():
     }
 
 
+def test_diagnostics_skip_equivalent_directory_attributes_to_report_actual_later_mismatch(tmp_path):
+    info = _directory_info()
+    ordinary = ScanResult(Node(str(tmp_path), True, children=[]), [])
+    audited = ScanResult(Node(str(tmp_path), True, children=[]), [], backend="mft")
+    for name in ("a-equivalent", "z-changed"):
+        before = pack_snapshot(info)
+        info.st_file_attributes |= 0x10000000
+        if name == "z-changed":
+            info.st_mtime_ns += 1
+        after = pack_snapshot(info)
+        ordinary.root.children.append(Node(name, True, children=[], parent=ordinary.root, snapshot=before))
+        audited.root.children.append(Node(name, True, children=[], parent=audited.root, snapshot=after))
+    assert not probe._same_rows(probe._rows(ordinary), probe._rows(audited))
+    detail = probe._parity_detail(ordinary, audited)
+    assert "z-changed" in detail and "modified_ns" in detail and "a-equivalent" not in detail
+
+
 def _directory_info():
     return SimpleNamespace(st_dev=1, st_ino=2, st_size=0, st_mode=0o40777, st_mtime_ns=100,
                            st_ctime_ns=100, st_file_attributes=0x10, st_nlink=1)
@@ -197,3 +214,52 @@ def test_probe_timings_measure_wall_clock_even_when_scan_elapsed_is_zero(tmp_pat
     result = probe._compare(tmp_path, probe.ScanOptions())
     assert result["ordinary_seconds"] == pytest.approx(0.005)
     assert result["mft_seconds"] == pytest.approx(0.205)
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_whole_drive_fallback_still_requires_exact_nodes_and_single_published_root(tmp_path, monkeypatch, changed):
+    replies = iter((ScanResult(Node(str(tmp_path), True, allocated=123, children=[]), []),
+                    ScanResult(Node(str(tmp_path), True, allocated=456 if changed else 123, children=[]), [])))
+    def scan(_root, *, on_root=None, **_kwargs):
+        result = next(replies)
+        if on_root is not None:
+            on_root(result.root)
+        return result
+    monkeypatch.setattr(probe, "scan", scan)
+    def unexpected_diagnostic(*_args):
+        pytest.fail("A permitted whole-drive fallback must be compared, not assumed to be an MFT result")
+    monkeypatch.setattr(probe, "_diagnose", unexpected_diagnostic)
+    if changed:
+        with pytest.raises(RuntimeError, match="allocated.*123.*456"):
+            probe._compare(tmp_path, probe.ScanOptions(), allow_fallback=True)
+    else:
+        result = probe._compare(tmp_path, probe.ScanOptions(), allow_fallback=True)
+        assert result["backend"] == "ordinary" and result["equal"]
+        assert result["mft_seconds"] is None and result["requested_mft_seconds"] >= 0
+
+
+def test_owned_tree_comparison_cannot_silently_accept_ordinary_fallback(tmp_path, monkeypatch):
+    def scan(_root, *, on_root=None, **_kwargs):
+        result = ScanResult(Node(str(tmp_path), True, children=[]), [])
+        if on_root is not None:
+            on_root(result.root)
+        return result
+    monkeypatch.setattr(probe, "scan", scan)
+    def refused(*_args):
+        raise RuntimeError("owned fixture requires actual MFT backend")
+    monkeypatch.setattr(probe, "_diagnose", refused)
+    with pytest.raises(RuntimeError, match="requires actual MFT"):
+        probe._compare(tmp_path, probe.ScanOptions())
+
+
+@pytest.mark.parametrize("publications", [0, 2])
+def test_native_comparison_refuses_missing_or_repeated_root_publication(tmp_path, monkeypatch, publications):
+    def scan(_root, *, on_root=None, **_kwargs):
+        result = ScanResult(Node(str(tmp_path), True, children=[]), [], backend="mft")
+        if on_root is not None:
+            for _ in range(publications):
+                on_root(result.root)
+        return result
+    monkeypatch.setattr(probe, "scan", scan)
+    with pytest.raises(RuntimeError, match="published another root"):
+        probe._compare(tmp_path, probe.ScanOptions(), allow_fallback=True)

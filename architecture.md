@@ -1037,7 +1037,13 @@ CI retains phase evidence. Synthetic tests are not proof of native metadata pari
 `tools/mft_tree_probe.py` compares ordinary versus explicitly selected audit snapshots, owners,
 allocation, hard-link accounting, hidden/excluded/link coverage and cancellation on that private image.
 Three whole-private-drive pairs retain medians without extrapolating to large real volumes. Each
-comparison measures both complete calls with perf_counter, avoiding zero-duration baselines from
+owned-folder/options/DACL comparison requires the actual MFT backend. Whole-private-drive pairs
+also validate a permitted ordinary fallback when Windows-managed metadata refuses the audit;
+every Node/snapshot/coverage/accounting field and the single published root must still agree.
+The evidence names the actual backend and separates requested-audit timings from actual MFT
+samples; no successful MFT sample means its median is null. Completed denied/cancel/drive phases
+are retained immediately, including later failures. Production time/identity checks remain strict.
+Each comparison measures both complete calls with perf_counter, avoiding zero-duration baselines from
 the coarse Windows clock used by older runtimes. The ACL child receives only the fixed Windows
 PowerShell system Modules directory in PSModulePath; parent environment and host settings remain
 intact, and incompatible inherited PowerShell 7 modules cannot override the native ACL cmdlets.
@@ -1049,7 +1055,7 @@ auto-inherited DACL; legacy non-auto-inherited fixtures use System32 SetFileSecu
 DACL_SECURITY_INFORMATION, without propagating to children or writing owner/group/SACL sections.
 This use of the obsolete API is confined to the owned fixture because Set-Acl converts the legacy
 model. Exact descriptor equality remains mandatory; no AI flag or ACE differences are ignored.
-fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern, volume GUID, unique
+The fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern, volume GUID, unique
 fixture label and nonreparse directory before ACL access. It denies only LIST_DIRECTORY on that owned
 folder. Phase evidence retains comparisons/refusal and original payload/ADS identities/hashes; no host
 ACL, privilege change or source removal occurs. Native artifact review is required before parity claims.
