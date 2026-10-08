@@ -83,10 +83,10 @@ python tools/build_nuitka.py --onefile
 
 ```bash
 python tools/build_nuitka.py --app
-python tools/package_posix.py --platform macos --source build/app/FileTree.app --version 0.1.0
+python tools/package_posix.py --platform macos --source build/app/start_file_tree.app --version 0.1.0
 ```
 
-包是 `build/app/FileTree.app`。打包命令将完整 ZIP 与证据写入全新 `desktop-package` 文件夹。原生 ditto 解压必须保留每个普通文件与内部 framework 链接，并核对包标识／版本／可执行文件；拒绝外部链接。
+编译包是 `build/app/start_file_tree.app`；打包在 ZIP 内建立独立 `FileTree.app`，封装前及解压后都核对完整内容。打包命令将完整 ZIP 与证据写入全新 `desktop-package` 文件夹。原生 ditto 解压必须保留每个普通文件与内部 framework 链接，并核对包标识／版本／可执行文件；拒绝外部链接。
 
 在 Windows、Linux 与 macOS 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`。macOS 脚本通过 Qt 的 PNG 编码器直接生成原生多尺寸 ICNS，无需 Nuitka 的可选 PNG 转换依赖包。
 

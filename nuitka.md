@@ -108,10 +108,10 @@ but every start unpacks it to a temporary folder first, so it opens a little mor
 
 ```bash
 python tools/build_nuitka.py --app
-python tools/package_posix.py --platform macos --source build/app/FileTree.app --version 0.1.0
+python tools/package_posix.py --platform macos --source build/app/start_file_tree.app --version 0.1.0
 ```
 
-The bundle is `build/app/FileTree.app`. The package command writes its complete ZIP and proof into
+The compiler bundle is `build/app/start_file_tree.app`; packaging stages a separate `FileTree.app` in the ZIP and verifies its complete content before and after extraction. The package command writes its complete ZIP and proof into
 a fresh `desktop-package` folder. Native ditto extraction must preserve every ordinary file and
 internal framework link. Bundle identity/version/executable are checked; external links are refused.
 

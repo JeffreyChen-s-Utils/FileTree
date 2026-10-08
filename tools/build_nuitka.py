@@ -2,7 +2,7 @@
 
     python tools/build_nuitka.py             # a program folder: build/standalone/start_file_tree.dist/
     python tools/build_nuitka.py --onefile   # one file: build/onefile/FileTree.exe
-    python tools/build_nuitka.py --app       # macOS: build/app/FileTree.app
+    python tools/build_nuitka.py --app       # macOS: build/app/start_file_tree.app
 
 Any other option is passed on to Nuitka unchanged (for example
 ``--windows-icon-from-ico=icon.ico``). The script exists because one option

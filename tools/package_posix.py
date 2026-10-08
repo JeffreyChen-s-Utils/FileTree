@@ -145,11 +145,15 @@ def _macos(source: Path, scratch: Path, version: str, before: dict) -> Path:
             or metadata.get("CFBundleExecutable") != "FileTree"):
         raise ValueError("Compiled macOS bundle metadata differs from the program contract")
     target = scratch / f"FileTree-{version}-macos-{platform.machine()}.zip"
-    _run(["/usr/bin/ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(source), str(target)], scratch)
+    bundle = scratch / "FileTree.app"
+    _run(["/usr/bin/ditto", str(source), str(bundle)], scratch)
+    if _inventory(bundle, links=True) != before:
+        raise OSError("Native macOS staging differs from the complete compiler bundle")
+    _run(["/usr/bin/ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(bundle), str(target)], scratch)
     extracted = scratch / "extracted"
     extracted.mkdir()
     _run(["/usr/bin/ditto", "-x", "-k", str(target), str(extracted)], scratch)
-    if _inventory(extracted / source.name, links=True) != before:
+    if _inventory(extracted / bundle.name, links=True) != before:
         raise OSError("Native macOS extraction differs from the complete bundle")
     return target
 

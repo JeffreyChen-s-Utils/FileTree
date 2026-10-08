@@ -944,6 +944,8 @@ Linux x86_64 uses fixed SHA-256-pinned appimagetool 1.9.1 and type2 runtime 2025
 with complete Qt runtime/catalogues, generated icon and literal AppRun. The tool runs without FUSE;
 the owned image is extracted into fresh scratch and the full AppDir compared. macOS uses fixed
 `/usr/bin/ditto` to archive/extract an identity/version/executable-checked bundle; internal framework
+links and metadata are copied into an owned canonical FileTree.app, compared before archiving, then
+compared again after extraction. The compiler's actual start_file_tree.app stays untouched. Internal
 links remain links and external/special entries are refused. Every source hash/mode/identity/time
 and anchored ancestor is rechecked. Artifact/proof publish as one exclusive fresh directory; arrivals
 and source changes refuse publication. Proof distinguishes extraction/source checks from app launch,

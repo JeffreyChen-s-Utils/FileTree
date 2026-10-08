@@ -15,7 +15,7 @@ from tools import package_posix as packager
 
 
 def _source(tmp_path, kind="linux"):
-    root = tmp_path / ("FileTree.app" if kind == "macos" else "build/standalone/program.dist")
+    root = tmp_path / ("start_file_tree.app" if kind == "macos" else "build/standalone/program.dist")
     root.mkdir(parents=True)
     names = ("FileTree", "libQt6Core.so.6", "libqxcb.so", *packager._CATALOGUES)
     if kind == "macos":
@@ -115,7 +115,8 @@ def test_download_hash_is_verified_before_the_tool_can_run(tmp_path, monkeypatch
     assert requests == [("https://github.com/AppImage/appimagetool/releases/download/1.9.1/tool", 30)]
 
 
-def test_macos_metadata_and_native_extraction_preserve_the_full_bundle(tmp_path, monkeypatch):
+@pytest.mark.parametrize("changed", [False, True])
+def test_macos_metadata_and_native_extraction_preserve_the_full_bundle(tmp_path, monkeypatch, changed):
     source, scratch = _source(tmp_path, "macos"), tmp_path / "scratch"
     scratch.mkdir()
     metadata = {"CFBundleIdentifier": "io.github.jechen.FileTree", "CFBundleShortVersionString": "1.2.3",
@@ -127,12 +128,23 @@ def test_macos_metadata_and_native_extraction_preserve_the_full_bundle(tmp_path,
         calls.append(arguments)
         if "-c" in arguments:
             Path(arguments[-1]).write_bytes(b"native zip fixture")
+        elif "-x" not in arguments:
+            shutil.copytree(source, Path(arguments[-1]))
+            if changed:
+                (Path(arguments[-1]) / "Contents/MacOS/FileTree").write_bytes(b"changed staging fixture")
         else:
-            shutil.copytree(source, Path(arguments[-1]) / source.name)
+            shutil.copytree(scratch / "FileTree.app", Path(arguments[-1]) / "FileTree.app")
     monkeypatch.setattr(packager, "_run", run)
+    if changed:
+        with pytest.raises(OSError, match="staging"):
+            packager._macos(source, scratch, "1.2.3", before)
+        assert len(calls) == 1
+        return
     assert packager._macos(source, scratch, "1.2.3", before).is_file()
     assert all(arguments[0] == "/usr/bin/ditto" for arguments in calls)
-    assert "--sequesterRsrc" in calls[0] and "--keepParent" in calls[0]
+    assert "--sequesterRsrc" in calls[1] and "--keepParent" in calls[1]
+    assert calls[0][-1] == str(scratch / "FileTree.app")
+    assert (scratch / "extracted/FileTree.app/Contents/MacOS/FileTree").is_file()
     metadata["CFBundleIdentifier"] = "foreign"
     (source / "Contents/Info.plist").write_bytes(plistlib.dumps(metadata))
     with pytest.raises(ValueError, match="metadata"):
