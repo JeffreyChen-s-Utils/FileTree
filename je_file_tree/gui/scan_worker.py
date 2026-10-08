@@ -23,6 +23,7 @@ from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCance
 from je_file_tree.core.similar_photos import PhotoSearchCancelledError
 from je_file_tree.core.node import Node
 from je_file_tree.core.mounts import MountChangedError
+from je_file_tree.core.multi_scan import scan_roots
 from je_file_tree.core.history import HistoryCancelledError, ScanHistory
 from je_file_tree.core.pacing import WINDOW
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
@@ -265,7 +266,7 @@ class ScanWorker(QThread):
     analysing = Signal()
     history_failed = Signal(str)
 
-    def __init__(self, path: str, options: ScanOptions, parent: QObject | None = None, *,
+    def __init__(self, path: str | tuple[str, ...], options: ScanOptions, parent: QObject | None = None, *,
                  history: ScanHistory | None = None) -> None:
         super().__init__(parent)
         self.path = path
@@ -295,7 +296,8 @@ class ScanWorker(QThread):
     def run(self) -> None:
         """Thread body: scan, analyse, report."""
         try:
-            result = scan(self.path, options=self._options, progress=self.progressed.emit,
+            scanning = scan_roots if isinstance(self.path, tuple) else scan
+            result = scanning(self.path, options=self._options, progress=self.progressed.emit,
                           cancel=self._cancel, on_root=self.started.emit, pause=self._pause)
         except ScanCancelledError as stopped:
             self.cancelled.emit(self._analyse(stopped.partial, partial=True) if stopped.partial else None)
@@ -303,8 +305,8 @@ class ScanWorker(QThread):
         except MountChangedError:
             self.failed.emit(tr("scan_mount_changed"))
             return
-        except OSError as error:
-            self.failed.emit(error.strerror or str(error))
+        except (OSError, ValueError) as error:
+            self.failed.emit(getattr(error, "strerror", None) or str(error))
             return
         if self._cancel.is_set():
             self.cancelled.emit(self._analyse(result, partial=True))
@@ -320,7 +322,11 @@ class ScanWorker(QThread):
             return False
         if self._history is not None:
             try:
-                self._history.save(outcome.result.root, cancel=self._cancel)
+                root = outcome.result.root
+                roots = root.children if root.path is None else (root,)
+                for source in roots:
+                    if source.snapshot is not None:
+                        self._history.save(source, cancel=self._cancel)
             except HistoryCancelledError:
                 return False
             except (OSError, ValueError, UnicodeError, RecursionError) as error:

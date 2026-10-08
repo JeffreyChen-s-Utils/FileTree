@@ -9,6 +9,7 @@ from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QHBoxLayout, QMenu, QScrollArea, QSizePolicy, QToolButton, QWidget
 
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.gui.i18n import tr
 
 _HISTORY_LIMIT = 100
@@ -166,9 +167,10 @@ class Breadcrumbs(QWidget):
                                         self._ancestors_menu(entries, anchor))
                 self._crumbs.addWidget(button)
             button = QToolButton()
-            label = node.name if node.parent is not None else os.path.basename(node.name.rstrip("\\/")) or node.name
+            label = node_name(node) if node.path is None or node.parent is not None else (
+                os.path.basename(node.name.rstrip("\\/")) or node.name)
             button.setText(self.fontMetrics().elidedText(label, Qt.TextElideMode.ElideMiddle, _LABEL_WIDTH))
-            button.setToolTip(node.path)
+            button.setToolTip(node_path(node))
             button.setAccessibleName(label)
             button.setAutoRaise(True)
             button.setEnabled(node is not self._node)
@@ -184,7 +186,7 @@ class Breadcrumbs(QWidget):
     def _ancestors_menu(self, entries: list[Node], anchor: QWidget) -> None:
         menu = QMenu(self)
         for node in entries:
-            action = menu.addAction(node.name)
+            action = menu.addAction(node_name(node))
             action.triggered.connect(lambda _checked=False, entry=node: self.navigate.emit(entry))
         menu.aboutToHide.connect(menu.deleteLater)
         menu.popup(anchor.mapToGlobal(anchor.rect().bottomLeft()))

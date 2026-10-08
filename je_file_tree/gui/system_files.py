@@ -66,7 +66,7 @@ class SystemFileInfo(QWidget):
     def set_node(self, node: Node | None) -> None:
         """Update the explanation from a single path; no descendants/files are read."""
         self.node = node
-        self.info = system_file(node.path) if node is not None else None
+        self.info = system_file(node.path) if node is not None and node.path is not None else None
         self.setVisible(self.info is not None)
         if self.info is not None:
             self.explanation.setText(tr(f'system_file_{self.info.kind}'))

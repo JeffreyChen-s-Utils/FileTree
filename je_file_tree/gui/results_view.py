@@ -58,6 +58,7 @@ from je_file_tree.core.analysis import (
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.capacity import CapacityLedger
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_path
 from je_file_tree.core.compare import SavedScan
 from je_file_tree.core.scanner import ScanProgress, ScanResult
 from je_file_tree.core.type_locations import TypeMatches
@@ -1010,14 +1011,16 @@ class ResultsView(QWidget):
         root = outcome.result.root if outcome is not None else self.tree_model.root
         if root is None:
             return ""
-        self.summary.setToolTip(root.path)
-        values = {"path": html.escape(self._fitting_path(root.path)), "size": format_size(root.size),
+        self.summary.setToolTip(node_path(root))
+        values = {"path": html.escape(self._fitting_path(node_path(root))), "size": format_size(root.size),
                   "allocated": format_size(root.allocated), "files": format_count(root.file_count),
                   "folders": format_count(root.dir_count)}
         if outcome is None:
             return tr("summary_live", **values)
         key = "summary_partial" if outcome.partial else "summary"
         text = tr(key, time=format_duration(outcome.result.elapsed), **values)
+        if root.path is None:
+            text += "<br>" + html.escape(tr("multi_hint"))
         if outcome.result.hard_links is not None:
             info = outcome.result.hard_links
             text += "<br>" + tr("hard_links_summary", size=format_size(root.accounted_size),

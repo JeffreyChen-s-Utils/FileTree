@@ -26,6 +26,7 @@ from PySide6.QtWidgets import QApplication, QStyle
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from je_file_tree.core.archives import VirtualEntry
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.scanner import EXCLUDED, NOT_SCANNED
 from je_file_tree.core.snapshot import unpack_snapshot
 from je_file_tree.gui.i18n import tr
@@ -86,7 +87,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._archive_done: set[Node] = set()
         self._archive_errors: dict[Node, str] = {}
         self._texts: dict[int, Callable[[Node], str]] = {
-            NAME: lambda node: node.name,
+            NAME: node_name,
             SIZE: lambda node: format_size(node.size, self._unit),
             ALLOCATED: lambda node: "" if node.is_link else format_size(node.allocated, self._unit),
             ACCOUNTED_SIZE: lambda node: format_size(node.accounted_size, self._unit),
@@ -448,7 +449,7 @@ class FolderTreeModel(QAbstractItemModel):
             return tr("tooltip_link", path=node.path)
         extra = (tr("archive_failed", reason=self._archive_errors[node]) if node in self._archive_errors
                  else tr("archive_virtual_hint") if node in self._archives else "")
-        return node.path + ("\n" + extra if extra else "")
+        return node_path(node) + ("\n" + extra if extra else "")
 
     def _icon(self, node: Node) -> QIcon:
         if node.error == EXCLUDED:

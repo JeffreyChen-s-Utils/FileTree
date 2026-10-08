@@ -901,4 +901,10 @@ Failed roots retain errors, cancellation retains active/pending coverage, and ha
 is applied once across the combined tree. Virtual capacity has observed allocation but no summed
 OS total/free/remainder; source operations refuse virtual scope. JSON adds a validated virtual
 marker and SavedScan.root=None, CSV/report leave the root path blank. History refuses a virtual
-root before touching storage. GUI/CLI integration remains a separate stage.
+root before touching storage. ScanWorker captures either one path or an immutable root tuple and
+saves per-source history after a combined scan. MainWindow offers a bounded literal folder dialog
+and a welcome ready-drive action, owns cancellation/join/rescan for the captured roots, and keeps
+combined views read-only. Display helpers translate only the pathless root; menus, cleanup,
+duplicate linking, copying, compression and compaction never derive authority from that label.
+All four charts, search, exports and saved comparison preserve actual child paths. CLI --also
+routes through the same API and adds actual roots while leaving virtual root/OS capacity null.

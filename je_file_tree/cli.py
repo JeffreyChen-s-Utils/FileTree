@@ -17,6 +17,7 @@ from je_file_tree.core.compare import SavedScan, compare, load_saved
 from je_file_tree.core.capacity import capacity_ledger
 from je_file_tree.core.coverage import Coverage, coverage_of
 from je_file_tree.core.scanner import ScanCancelledError, ScanOptions, ScanResult, scan
+from je_file_tree.core.multi_scan import scan_roots
 
 OK, INCOMPLETE, INVALID_ARGUMENTS, IO_ERROR, INTERRUPTED = 0, 1, 2, 3, 130
 
@@ -33,6 +34,7 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     scanning = commands.add_parser("scan")
     scanning.add_argument("root")
+    scanning.add_argument("--also", action="append", default=[], metavar="ROOT")
     for kind in ("folders", "largest", "json", "compare"):
         scanning.add_argument(f"--{kind}")
     scanning.add_argument("--workers", type=_positive, default=2)
@@ -53,7 +55,8 @@ def _run_scan(args: argparse.Namespace, cancel: threading.Event) -> tuple[ScanRe
     try:
         options = ScanOptions(workers=args.workers, include_hidden=not args.no_hidden,
                               exclude=tuple(args.exclude), gentle=args.gentle, count_hard_links=args.count_hard_links)
-        return scan(args.root, options=options, cancel=cancel), False
+        return (scan_roots([args.root, *args.also], options=options, cancel=cancel) if args.also else
+                scan(args.root, options=options, cancel=cancel)), False
     except ScanCancelledError as stopped:
         if stopped.partial is None:
             raise
@@ -80,6 +83,8 @@ def _summary(result: ScanResult, coverage: Coverage, interrupted: bool) -> dict:
     capacity = {field.name: getattr(ledger, field.name) for field in dataclasses.fields(ledger)
                 if field.name != "coverage"}
     return {"format": "file-tree-cli/1", "kind": "scan", "root": result.root.path,
+            "roots": ([child.path for child in result.root.children] if result.root.path is None else
+                      [result.root.path]),
             "partial": interrupted or not coverage.complete, "interrupted": interrupted,
             "files": result.root.file_count, "folders": result.root.dir_count,
             "logical_bytes": result.root.size, "allocated_estimate_bytes": result.root.allocated,

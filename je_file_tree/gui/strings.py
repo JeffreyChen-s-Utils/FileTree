@@ -9,6 +9,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'multi_roots': 'Multiple roots',
+    'action_multi_scan': 'Scan several folders…',
+    'action_multi_scan_tip': 'Review explicit folders in one combined scan.',
+    'multi_choose': 'Scan several folders',
+    'multi_add': 'Add folder…',
+    'multi_remove': 'Remove selected roots',
+    'scan_all_drives': 'Scan all drives',
+    'multi_hint': ('Combine up to 256 selected roots. Results are read-only; scan a source separately '
+                   'for file operations. OS capacity stays per volume.'),
+    'capacity_multiple_roots': 'Multiple roots: OS capacity is per volume.',
     'vc_title': (
         'Compact selected VHD…'
     ),
@@ -1319,6 +1329,15 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'multi_roots': '多個掃描來源',
+    'action_multi_scan': '掃描多個資料夾…',
+    'action_multi_scan_tip': '檢視明確選取的資料夾並合併掃描。',
+    'multi_choose': '掃描多個資料夾',
+    'multi_add': '加入資料夾…',
+    'multi_remove': '移除選取的來源',
+    'scan_all_drives': '掃描所有磁碟',
+    'multi_hint': '合併最多 256 個選取來源。結果為唯讀；檔案操作請另掃描該來源。OS 容量仍依各磁碟呈現。',
+    'capacity_multiple_roots': '多個來源：OS 容量依各磁碟呈現。',
     'vc_title': (
         '壓縮所選 VHD…'
     ),
@@ -2502,6 +2521,15 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'multi_roots': '多个扫描来源',
+    'action_multi_scan': '扫描多个文件夹…',
+    'action_multi_scan_tip': '检查明确选取的文件夹并合并扫描。',
+    'multi_choose': '扫描多个文件夹',
+    'multi_add': '添加文件夹…',
+    'multi_remove': '移除选取的来源',
+    'scan_all_drives': '扫描所有磁盘',
+    'multi_hint': '合并最多 256 个选取来源。结果为只读；文件操作请另扫描该来源。OS 容量仍按各磁盘显示。',
+    'capacity_multiple_roots': '多个来源：OS 容量按各磁盘显示。',
     'vc_title': (
         '压缩所选 VHD…'
     ),

@@ -69,7 +69,8 @@ from je_file_tree.gui.scan_worker import AnalyseWorker, ExportWorker, ScanOutcom
 from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
-from je_file_tree.gui.welcome import WelcomePage
+from je_file_tree.gui.welcome import WelcomePage, drives
+from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
@@ -122,7 +123,7 @@ class MainWindow(QMainWindow):
         self._analysers: set[AnalyseWorker] = set()
         self._exports: set[ExportWorker] = set()
         self._protected = protected_places()  # system and program folders: ask twice before moving them
-        self._last_path = ""
+        self._last_path, self._last_roots = "", ()
         self._unit = str(self.settings.value("unit", AUTO_UNIT))
         if self._unit not in _UNITS:
             self._unit = AUTO_UNIT
@@ -180,11 +181,39 @@ class MainWindow(QMainWindow):
         if not os.path.isdir(path):
             QMessageBox.warning(self, tr("scan_failed_title"), tr("not_a_folder", path=path))
             return
+        self._begin_scan(path, exact_allocation=exact_allocation)
+
+    def start_scan_roots(self, paths: tuple[str, ...], *, exact_allocation: bool = False) -> None:
+        """Scan an immutable explicit root list; the virtual root never acquires source authority."""
+        if self.operation_busy or self._closing or not paths:
+            return
+        self._begin_scan(tuple(paths), exact_allocation=exact_allocation)
+
+    def scan_all_drives(self) -> None:
+        """Capture the currently ready mounted roots once; discovery does not grant mutation authority."""
+        self.start_scan_roots(tuple(volume.rootPath() for volume in drives()))
+
+    def choose_roots(self) -> None:
+        """Start a combined scan only after accepting an owned explicit-folder list."""
+        if self.operation_busy or self._closing:
+            return
+        dialog = MultiScanDialog(self)
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self.start_scan_roots(dialog.roots)
+        finally:
+            dialog.deleteLater()
+
+    def _begin_scan(self, path: str | tuple[str, ...], *, exact_allocation: bool = False) -> None:
+        self._undo.expire()
+        self._trash_rescans.clear()
         self.stop_scan(wait=True)
         self._bin_labels.stop()
         self._analyser = None
-        self._last_path = path
-        self.path_edit.setText(path)
+        self._last_roots = path if isinstance(path, tuple) else ()
+        self._last_path = path if isinstance(path, str) else ""
+        self.path_edit.setText(self._last_path)
+        self.path_edit.setToolTip("\n".join(self._last_roots) if self._last_roots else self._last_path)
         worker = ScanWorker(path, self._scan_options(exact_allocation=exact_allocation), self,
                             history=configured_history(self.settings))
         # Signals of a worker that was replaced (a new scan started while it was
@@ -232,14 +261,19 @@ class MainWindow(QMainWindow):
 
     def rescan(self) -> None:
         """Scan the last folder again."""
-        if self._last_path:
+        if self._last_roots:
+            self.start_scan_roots(self._last_roots)
+        elif self._last_path:
             self.start_scan(self._last_path)
 
     def _scan_succeeded(self, outcome: ScanOutcome) -> None:
         self._scan_ended()
         self.results.show_outcome(outcome)
         self.pages.setCurrentIndex(RESULTS_PAGE)
-        self._remember(outcome.result.root.path)
+        root = outcome.result.root
+        for source in root.children if root.path is None else (root,):
+            if source.snapshot is not None:
+                self._remember(source.path)
         self._update_actions()
 
         if outcome.result.warnings:
@@ -248,7 +282,8 @@ class MainWindow(QMainWindow):
     def _scan_failed(self, reason: str) -> None:
         self._scan_ended()
         self._back_from_scan()
-        QMessageBox.warning(self, tr("scan_failed_title"), tr("scan_failed", path=self._last_path, reason=reason))
+        path = tr("multi_roots") if self._last_roots else self._last_path
+        QMessageBox.warning(self, tr("scan_failed_title"), tr("scan_failed", path=path, reason=reason))
 
     def _scan_cancelled(self, outcome: ScanOutcome | None) -> None:
         self._scan_ended()
@@ -277,6 +312,9 @@ class MainWindow(QMainWindow):
 
     def show_menu_for(self, node: Node, picked: Sequence[Node], point: QPoint, *, chart: bool = False) -> None:
         """Pop up the menu of things to do with ``node``; its *Move to Recycle Bin* takes all of ``picked``."""
+        if node.path is None:
+            self._show_in_chart(node)
+            return
         menu = QMenu(self)
         entries: list[tuple[str, Callable[[], object]]] = [
             ("menu_open_item", lambda: file_actions.open_path(node.path)),
@@ -291,11 +329,13 @@ class MainWindow(QMainWindow):
             entries.append(("menu_show_chart", lambda: self._show_in_chart(node)))
             entries.append(("menu_rescan_here", lambda: self.rescan_folder(node)))
             entries.append(("menu_scan_here", lambda: self.start_scan(node.path)))
-            if elevation.supported() and self._worker is None and not self.operation_busy:
+            if (elevation.supported() and self._worker is None and not self.operation_busy
+                    and self.results.outcome is not None and self.results.outcome.result.root.path is not None):
                 entries.append(("menu_compression", lambda: self.show_compression(node)))
         for key, handler in entries:
             menu.addAction(tr(key)).triggered.connect(handler)
-        movable = [entry for entry in _movable(picked) if system_file(entry.path) is None]
+        virtual = self.results.outcome is not None and self.results.outcome.result.root.path is None
+        movable = [] if virtual else [entry for entry in _movable(picked) if system_file(entry.path) is None]
         if movable:
             menu.addSeparator()
             if self._worker is None and not self.operation_busy:
@@ -325,6 +365,8 @@ class MainWindow(QMainWindow):
                 or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
             return
         root = outcome.result.root
+        if root.path is None:
+            return
         dialog = NamespaceDialog(root, nodes, self._unit, self, rename=rename)
         self._undo.expire()
         self._path_dialogs.add(dialog)
@@ -349,6 +391,8 @@ class MainWindow(QMainWindow):
                 or any(node.parent is None or not node.is_in(outcome.result.root) for node in nodes)):
             return
         root = outcome.result.root
+        if root.path is None:
+            return
         dialog = CopyDialog(root, nodes, self._unit, self)
         self._undo.expire()
         self._path_dialogs.add(dialog)
@@ -377,6 +421,8 @@ class MainWindow(QMainWindow):
                 or any(group not in panel.link_groups for group in groups)):
             return
         root = outcome.result.root
+        if root.path is None:
+            return
         if any(group.kept is None or any(not node.is_in(root) for node in group.files) for group in groups):
             return
         panel.stop(wait=True)
@@ -400,7 +446,8 @@ class MainWindow(QMainWindow):
         """Review/confirm scoped native operations, then rescan with per-file allocation if attempted."""
         outcome = self.results.outcome
         if (not elevation.supported() or self._worker is not None or self.operation_busy
-                or outcome is None or not node.is_dir or node.is_link or not node.is_in(outcome.result.root)):
+                or outcome is None or outcome.result.root.path is None or not node.is_dir or node.is_link
+                or not node.is_in(outcome.result.root)):
             return
         dialog = CompressionDialog(node, self._unit, self, partial=outcome.partial)
         dialog.selected.connect(self.results.select_node)
@@ -417,6 +464,10 @@ class MainWindow(QMainWindow):
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
         self._undo.expire()
+        if self.results.outcome.result.root.path is None:
+            roots = tuple(child.path for child in self.results.outcome.result.root.children)
+            self.start_scan_roots(roots, exact_allocation=exact_allocation)
+            return
         if self.results.outcome.result.hard_links is not None or self._actions["count_hard_links"].isChecked():
             root = self.results.outcome.result.root
             self._trash_rescans.clear()
@@ -486,7 +537,7 @@ class MainWindow(QMainWindow):
         """
         chosen = _movable(nodes)
         root = self.results.tree_model.root
-        if (not chosen or root is None or self._worker is not None or self.operation_busy
+        if (not chosen or root is None or root.path is None or self._worker is not None or self.operation_busy
                 or copies is not None and not copies.matches(root, chosen)):
             return
         chosen = self._without_managed(chosen)
@@ -787,7 +838,8 @@ class MainWindow(QMainWindow):
         if outcome is None:
             return
         is_json = kind == "json"
-        suggested = f"{_safe_name(outcome.result.root.name)}-{kind}.{'json' if is_json else 'csv'}"
+        name = outcome.result.root.name or tr("multi_roots")
+        suggested = f"{_safe_name(name)}-{kind}.{'json' if is_json else 'csv'}"
         start = os.path.join(str(self.settings.value("export_dir", os.path.expanduser("~"))), suggested)
         target, _ = QFileDialog.getSaveFileName(self, tr("export_title"), start,
                                                 tr("json_filter") if is_json else tr("csv_filter"))
@@ -939,6 +991,7 @@ class MainWindow(QMainWindow):
         self._captures: set[ListCapture] = set()
         definitions: list[tuple[str, QKeySequence | str | None, Callable[[], object]]] = [
             ("open", QKeySequence.StandardKey.Open, self.choose_folder),
+            ("multi_scan", None, self.choose_roots),
             ("rescan", QKeySequence.StandardKey.Refresh, self.rescan),
             ("stop", "Esc", self.stop_scan),
             ("export_folders", None, lambda: self.export_results("folders")),
@@ -1013,7 +1066,7 @@ class MainWindow(QMainWindow):
     def _build_menus(self) -> None:
         bar = self.menuBar()
         file_menu = bar.addMenu("")
-        for key in ("open", "rescan", "stop", "find"):
+        for key in ("open", "multi_scan", "rescan", "stop", "find"):
             file_menu.addAction(self._actions[key])
         export_menu = file_menu.addMenu("")
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "export_chart_svg"):
@@ -1092,6 +1145,7 @@ class MainWindow(QMainWindow):
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
+        self.welcome.scan_all_requested.connect(self.scan_all_drives)
         self.welcome.overview_requested.connect(self.show_volumes)
         self.welcome.bins_requested.connect(self.show_bins)
         self.welcome.bin_refresh_requested.connect(self.refresh_bin_labels)
@@ -1124,7 +1178,7 @@ class MainWindow(QMainWindow):
         self._actions["live_compare"].setEnabled(not scanning)
         self._actions["volumes"].setEnabled(not scanning)
         self._actions["bins"].setEnabled(not scanning)
-        self._actions["rescan"].setEnabled(bool(self._last_path) and not scanning)
+        self._actions["rescan"].setEnabled(bool(self._last_path or self._last_roots) and not scanning)
         for key in ("export_folders", "export_largest", "export_json", "export_chart_png", "trash", "find", "compare"):
             self._actions[key].setEnabled(has_results and not scanning)
         self._actions["export_chart_svg"].setEnabled(has_results and not scanning
@@ -1137,6 +1191,11 @@ class MainWindow(QMainWindow):
                                           and not self._analysers)
         self._actions['export_list'].setEnabled(has_results and not scanning
                                               and self.results.current_list() is not None)
+        virtual = has_results and self.results.outcome.result.root.path is None
+        for key in ("trash", "history", "git_history"):
+            self._actions[key].setEnabled(has_results and not scanning and not virtual)
+        self._actions["multi_scan"].setEnabled(not self.operation_busy)
+        self.welcome.scan_all.setEnabled(not scanning and bool(drives()))
         self._update_bin_buttons()
 
     def _update_bin_buttons(self) -> None:
@@ -1150,7 +1209,7 @@ class MainWindow(QMainWindow):
         if self._closing or self._worker is not None or self.operation_busy:
             return
         outcome = self.results.outcome
-        self._bin_labels.refresh(outcome.result.root.path if outcome is not None else "")
+        self._bin_labels.refresh((outcome.result.root.path or "") if outcome is not None else "")
 
     def _bin_metadata_ready(self, rows: dict[str, TrashUsage], root: str) -> None:
         self.welcome.set_bin_metadata(rows)
@@ -1165,7 +1224,7 @@ class MainWindow(QMainWindow):
             return
         outcome = self.results.outcome
         dialog = VirtualDisksDialog(outcome.result.root, self._unit, self, partial=outcome.partial,
-                                    journal=self._journal)
+                                    journal=self._journal if outcome.result.root.path is not None else None)
         dialog.selected.connect(self.results.select_node)
         dialog.execution_requested.connect(self._undo.expire)
         self._path_dialogs.add(dialog)
@@ -1227,6 +1286,8 @@ class MainWindow(QMainWindow):
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
         root = self.results.outcome.result.root
+        if root.path is None:
+            return
         store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
         dialog = HistoryDialog(store, root.path, self._unit, self)
         dialog.compare_requested.connect(self.results.compare_saved)
@@ -1353,7 +1414,7 @@ class MainWindow(QMainWindow):
             return
         node = self.results.selected_node() or outcome.result.root
         folder = node if node.is_dir else node.parent
-        if folder is None or folder.is_link:
+        if folder is None or folder.path is None or folder.is_link:
             return
         if folder.name == ".git" and folder.parent is not None:
             folder = folder.parent

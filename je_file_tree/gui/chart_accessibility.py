@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QScrollArea
 
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_path
 from je_file_tree.gui.bar_chart import BarChartWidget
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.sunburst_widget import SunburstWidget
@@ -50,9 +51,9 @@ class ChartAccessibility(QObject):
         controls = tr('chart_access_tree_keys' if isinstance(chart, TreeDiagramWidget) else 'chart_access_keys')
         description = controls
         if root is not None:
-            description += '\n' + tr('chart_access_folder', path=root.path)
+            description += '\n' + tr('chart_access_folder', path=node_path(root))
         if node is not None and root is not None and _within(node, root):
-            description += '\n' + tr('chart_access_selected', path=node.path,
+            description += '\n' + tr('chart_access_selected', path=node_path(node),
                                       size=format_size(node.size, chart.unit),
                                       allocated=format_size(node.allocated, chart.unit),
                                       files=format_count(node.file_count), folders=format_count(node.dir_count))

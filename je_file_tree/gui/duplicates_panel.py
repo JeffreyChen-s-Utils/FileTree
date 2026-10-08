@@ -385,6 +385,7 @@ class DuplicatesPanel(QWidget):
         eligible = self._savings is not None and any(issue is None for issue in self._savings.issues)
         self.select_extra.setEnabled(bool(self._groups) and eligible and not self.running)
         self.link_extra.setEnabled(not self.running and not photos and self._found is not None
+                                   and self._root is not None and self._root.path is not None
                                    and any(group.kept is not None for group in self._groups))
         self._keeper_button()
         self.status.setText(self._status_text())

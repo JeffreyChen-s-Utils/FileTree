@@ -139,7 +139,7 @@ class ChangesPanel(QWidget):
             return ""
         if root is None:
             return tr("changes_waiting")
-        return tr("changes_summary", path=saved.root, when=_when(saved.saved),
+        return tr("changes_summary", path=saved.root or tr("multi_roots"), when=_when(saved.saved),
                   before=format_size(saved.size, self.model.unit), now=format_size(root.size, self.model.unit),
                   change=format_change(root.size - saved.size, self.model.unit),
                   count=format_count(self.model.rowCount()))

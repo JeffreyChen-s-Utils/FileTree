@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QLabel, QLayout, QScrollArea, QSizePolicy, QToolBu
 from je_file_tree.core.details import Breakdown, breakdown
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size, format_time
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_path
 from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
@@ -104,7 +105,7 @@ class DetailsPanel(QWidget):
         self.toggle.setText(tr('details_title'))
         node = self.node
         self.system_info.set_node(node)
-        self.path_label.setText(node.path if node is not None else tr('details_empty'))
+        self.path_label.setText(node_path(node) if node is not None else tr('details_empty'))
         fields = () if node is None else (
             ('column_size', format_size(node.size, self.unit)),
             ('column_allocated', format_size(node.allocated, self.unit)),

@@ -26,6 +26,7 @@ from PySide6.QtWidgets import QToolTip, QWidget
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.sunburst import Segment, layout, segment_at
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.age_colours import age_colour
@@ -266,7 +267,7 @@ class SunburstWidget(QWidget):
         painter.drawEllipse(centre, inner - 2, inner - 2)
         painter.setPen(self.palette().text().color())
         box = QRectF(centre.x() - inner, centre.y() - inner, 2 * inner, 2 * inner).adjusted(6, 6, -6, -6)
-        name = painter.fontMetrics().elidedText(root.name, Qt.TextElideMode.ElideMiddle, int(box.width()))
+        name = painter.fontMetrics().elidedText(node_name(root), Qt.TextElideMode.ElideMiddle, int(box.width()))
         painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.accounted_size, self.unit)}")
 
     def _draw_label(self, painter: QPainter, segment: Segment, radius: float, ring: float) -> None:
@@ -295,4 +296,4 @@ class SunburstWidget(QWidget):
         root = self._view_root
         share = node.accounted_size / root.accounted_size if root is not None and root.accounted_size else 0.0
         return tr("treemap_tooltip", name=node.name, size=format_size(node.accounted_size, self.unit),
-                  share=format_share(share), path=node.path)
+                  share=format_share(share), path=node_path(node))

@@ -35,6 +35,7 @@ from PySide6.QtWidgets import QToolTip, QWidget
 from je_file_tree.core.analysis import category_of, extension_of
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.treemap import Rect, Tile, layout
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.age_colours import age_colour
@@ -330,8 +331,8 @@ class TreemapWidget(QWidget):
         total = self._view_root.accounted_size if self._view_root else 0
         share = format_share(size / total if total else 0.0)
         if not tile.grouped:
-            return tr("treemap_tooltip", name=html.escape(node.name), size=format_size(size, self.unit),
-                      share=share, path=html.escape(node.path))
-        text = tr("treemap_more_tooltip", count=format_count(tile.grouped), name=html.escape(node.name),
+            return tr("treemap_tooltip", name=html.escape(node_name(node)), size=format_size(size, self.unit),
+                      share=share, path=html.escape(node_path(node)))
+        text = tr("treemap_more_tooltip", count=format_count(tile.grouped), name=html.escape(node_name(node)),
                   size=format_size(size, self.unit), share=share)
         return text if node is self._view_root else f"{text}<br>{tr('treemap_more_open')}"

@@ -195,7 +195,8 @@ class CleanupPanel(QWidget):
         self._update_status()
 
     def _update_status(self) -> None:
-        has_entries = bool(self._groups) and self._current is None
+        has_entries = (bool(self._groups) and self._current is None and self._root is not None
+                       and self._root.path is not None)
         self.select_all.setEnabled(has_entries and any(group.details.risk == "low" for group in self._groups)
                                    and not self._partial and self._coverage is not None
                                    and self._coverage.complete)

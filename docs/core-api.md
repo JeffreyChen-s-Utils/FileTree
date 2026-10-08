@@ -573,3 +573,11 @@ CapacityLedger.status="multiple_roots" has no OS total/used/free/remainder but p
 allocation and coverage. JSON adds virtual:true only at the pathless root; load_saved validates the
 marker/name and returns SavedScan.root=None. CSV/report root paths are blank. ScanHistory.save
 rejects this root before creating history storage; save physical roots individually.
+
+CLI `scan ROOT --also ROOT` accepts repeatable additional roots and uses the same bounded API.
+Single-root scan records retain the actual `root`; every scan record adds an actual `roots` list.
+Combined records use `root: null`, capacity status `multiple_roots` and null OS capacity fields;
+missing/incomplete roots still produce exit 1. Atomic folder/file/JSON exports and saved comparison
+support the virtual tree. GUI workers capture root tuples, preserve joined cancellation/close,
+rescan those sources and save only individual physical roots with captured snapshots to history.
+Combined GUI results are read-only; translated virtual display labels never become OS paths.

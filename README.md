@@ -64,7 +64,7 @@ The four charts expose accessible names, keyboard instructions and the current f
 **View → Theme → System / Light / Dark** switches immediately and remembers the choice. System restores the native platform style/palette; explicit themes use consistent Qt controls and contrasting text, selection and disabled colours. Palette/style changes invalidate chart images. Treemap and Sunburst choose black/white labels by actual fill contrast; treemap gradients are retained only when both ends keep at least 4.5:1 contrast. Bar names and values use the active palette, outside their coloured bars.
 
 
-The new `multi_scan.scan_roots(paths, ...)` core API scans up to 256 explicit roots under one virtual root. Duplicate/overlapping ordinary paths are collapsed; separately selected mount scopes stay independent. Each child keeps its actual absolute source path, while the virtual `Node.path` is `None` and grants no filesystem operation or OS-capacity authority. Failed/pending roots retain incomplete coverage; cancellation joins active crawlers and preserves partial data. Optional hard-link counting is applied once across all observed roots. JSON marks the virtual root explicitly, saved comparisons preserve it, and CSV/report root paths stay blank. History requires individual source roots. GUI/CLI routing and Scan all drives remain in progress.
+The new `multi_scan.scan_roots(paths, ...)` core API scans up to 256 explicit roots under one virtual root. Duplicate/overlapping ordinary paths are collapsed; separately selected mount scopes stay independent. Each child keeps its actual absolute source path, while the virtual `Node.path` is `None` and grants no filesystem operation or OS-capacity authority. Failed/pending roots retain incomplete coverage; cancellation joins active crawlers and preserves partial data. Optional hard-link counting is applied once across all observed roots. JSON marks the virtual root explicitly, saved comparisons preserve it, and CSV/report root paths stay blank. History requires individual source roots. Use **File → Scan several folders…** to capture a folder list, or **Scan all drives** on the welcome page to capture currently ready drives. Combined results support charts, search, comparison and exports; source-changing actions are disabled. Rescan reuses the captured source list, and history stores each actual source separately. CLI `scan ROOT --also ROOT` accepts repeated `--also` arguments; its scan record has `root: null`, actual `roots`, and unknown combined OS capacity. Single-root scans keep their normal behavior.
 
 ## Features
 
@@ -376,6 +376,7 @@ je-file-tree-cli scan D:\ --folders folders.csv --largest largest.csv --json tre
 je-file-tree-cli scan D:\ --compare old.json --limit 20
 python -m je_file_tree.cli scan D:\ --exclude node_modules --workers 2
 python -m je_file_tree.cli scan D:\ --count-hard-links
+python -m je_file_tree.cli scan C:\ --also D:\ --json drives.json
 ```
 
 Exit codes: **0** complete coverage, **1** incomplete coverage (including exclusions/unreadable entries),

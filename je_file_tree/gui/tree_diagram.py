@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QToolTip, QWidget
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.tree_layout import MAX_VISIBLE, PAGE_SIZE, DiagramItem, layout
 from je_file_tree.gui.i18n import tr
 
@@ -163,7 +164,7 @@ class TreeDiagramWidget(QWidget):
         if item is None:
             QToolTip.hideText()
         elif item.node is not None:
-            QToolTip.showText(event.globalPosition().toPoint(), html.escape(item.node.path), self)
+            QToolTip.showText(event.globalPosition().toPoint(), html.escape(node_path(item.node)), self)
         super().mouseMoveEvent(event)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
@@ -248,7 +249,7 @@ class TreeDiagramWidget(QWidget):
                        size=format_size(item.hidden_size, self.unit))
             symbol = "+"
         else:
-            label = node.name
+            label = node_name(node)
             symbol = "!" if node.error is not None else (
                 "−" if node is self._view_root or id(node) in self._expanded else "+")
         line = rect.adjusted(8 * self._zoom, 2 * self._zoom, -8 * self._zoom, -2 * self._zoom)
