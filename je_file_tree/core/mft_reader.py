@@ -28,6 +28,7 @@ _MAX_EXTENSIONS = 4096
 _MAX_UNIT = 65536
 _MIN_UNIT = 512
 _MIN_RECORDS = 16
+_HEADER_SIZE = 48
 _FIXED_DRIVE = 3
 _GUID = re.compile(r"\\\\\?\\Volume\{[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\}\\\Z")
 
@@ -48,6 +49,19 @@ class VolumeData:
 def _require(condition: bool, detail: str) -> None:
     if not condition:
         raise mft.MFTParseError(detail)
+
+
+def _parse_record(raw: bytes, ordinal: int) -> mft.FileRecord:
+    try:
+        return mft.parse_record(raw, ordinal)
+    except mft.MFTParseError as error:
+        detail = ""
+        if len(raw) >= _HEADER_SIZE:
+            sequence, links, first, flags, used, allocated, base = struct.unpack_from("<HHHHIIQ", raw, 16)
+            number, = struct.unpack_from("<I", raw, 44)
+            detail = (f"; sequence={sequence}, links={links}, first={first}, flags={flags}, "
+                      f"used={used}, allocated={allocated}, base={base}, header_number={number}")
+        raise mft.MFTParseError(f"MFT record {ordinal}: {error}{detail}") from error
 
 
 def parse_volume_data(data: bytes) -> VolumeData:
@@ -149,7 +163,7 @@ class NTFSReader:
             _require(self.initial.st_dev in (self.geometry.serial, self.geometry.serial & 0xFFFFFFFF),
                      "NTFS root/volume serial changed")
             raw = self._read(self.geometry.mft_lcn * self.geometry.cluster, self.geometry.record_size)
-            base = mft.parse_record(raw, 0)
+            base = _parse_record(raw, 0)
             _require(base.in_use and not base.base_reference, "Invalid MFT base record")
             heads = [item for item in base.attributes if item.kind == mft.DATA and not item.name
                      and item.lowest_vcn == 0]
@@ -232,7 +246,7 @@ class NTFSReader:
                  "Closed reader or MFT ordinal out of bounds")
         if ordinal not in self._cache:
             raw = self._stream(self.runs, ordinal * self.geometry.record_size, self.geometry.record_size)
-            self._cache[ordinal] = mft.parse_record(raw, ordinal)
+            self._cache[ordinal] = _parse_record(raw, ordinal)
             if len(self._cache) > _CACHE_RECORDS:
                 self._cache.popitem(last=False)
         self._cache.move_to_end(ordinal)
@@ -305,7 +319,7 @@ class NTFSReader:
                 _require(value[:4] == b"FILE", "Invalid MFT record signature")
                 flags, = struct.unpack_from("<H", value, 22)
                 if flags & 1 and (not directories_only or flags & 2):
-                    record = mft.parse_record(value, (offset + start) // size)
+                    record = _parse_record(value, (offset + start) // size)
                     if record.is_dir:
                         give_way()
                     yield record

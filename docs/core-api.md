@@ -26,6 +26,8 @@ token. It never elevates, changes privileges, locks/dismounts a volume or expose
 bound reads/caches, reject torn records, stale/foreign/nested extensions, sparse/off-volume metadata,
 unsupported geometry and changed root/volume/MFT mappings. `records` propagates the caller's check
 exception before each batch; `close()` closes only its owned handle. Observations are not transactional.
+Refused records include their ordinal and bounded numeric header fields, retaining the original
+parse exception as cause; diagnostic errors never include raw records or DATA payloads.
 Split attribute-list streams and unsupported bootstrap mappings refuse. Raw access does not establish
 directory ACL coverage. `scan` still uses its ordinary backend; native reading/tree/options/fallback
 parity must be validated before enabling MFT scanning.

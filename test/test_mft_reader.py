@@ -196,3 +196,18 @@ def test_torn_in_use_record_and_bad_signature_are_visible(monkeypatch):
         monkeypatch.setattr(value, "_stream", lambda *_args, raw=raw: raw)
         with pytest.raises(mft.MFTParseError):
             list(value.records())
+
+
+def test_refused_record_diagnostics_identify_header_without_payload():
+    raw = _record(_resident(mft.DATA, b"private payload"), ordinal=24, flags=5)
+    with pytest.raises(mft.MFTParseError) as caught:
+        reader._parse_record(raw, 24)
+    assert "MFT record 24" in str(caught.value) and "flags=5" in str(caught.value)
+    assert "header_number=24" in str(caught.value) and "private payload" not in str(caught.value)
+    assert isinstance(caught.value.__cause__, mft.MFTParseError)
+
+
+def test_short_refused_record_diagnostic_preserves_original_error():
+    with pytest.raises(mft.MFTParseError, match="MFT record 24") as caught:
+        reader._parse_record(b"FILE", 24)
+    assert isinstance(caught.value.__cause__, mft.MFTParseError)
