@@ -923,3 +923,7 @@ read-only observed preferences and OS free changes; missing inventory grants no 
 and the fixed PowerShell RAW/no-host formatter whitelist exactly 512 MiB/2 GiB and check the selected
 capacity. CI runs each command separately and always retains partial JSON. Existing user bins,
 registry settings and backing images are never selected or modified by this diagnostic.
+
+Read-only virtual-disk matching canonicalizes extended Windows UNC/drive registrations while
+retaining the original captured row. Unknown device/volume-GUID prefixes remain explicit; no
+network path is queried again when a registration matches a recorded file, and no authority changes.

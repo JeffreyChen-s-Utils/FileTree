@@ -16,6 +16,7 @@ from je_file_tree.core.windows_allocation import file_allocation
 FORMATS = frozenset({"vhdx", "vhd", "vmdk", "vdi", "qcow2"})
 MAX_DISKS = 1000
 _UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
+_EXTENDED_DRIVE_LENGTH = len("\\\\?\\c:\\")
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +49,12 @@ class VirtualDisks:
 
 def _key(path: str) -> str:
     path = os.path.normcase(os.path.normpath(os.path.abspath(path)))
-    return path[4:] if os.name == "nt" and path.startswith("\\\\?\\") else path
+    if os.name == "nt" and path.startswith("\\\\?\\unc\\"):
+        return "\\\\" + path[8:]
+    if (os.name == "nt" and path.startswith("\\\\?\\") and len(path) >= _EXTENDED_DRIVE_LENGTH and
+            "a" <= path[4] <= "z" and path[5:7] == ":\\"):
+        return path[4:]
+    return path
 
 
 def _kind(path: str) -> str:
@@ -115,8 +121,9 @@ def find_virtual_disks(root: Node, *, registrations: Sequence[DiskRegistration] 
 
     Iterate folders off the GUI thread, yielding per folder; no headers, guests, mounts or commands
     are opened. Registered locations outside the scan use no-follow file metadata only. Merge exact
-    paths with recorded rows, retaining the provider name and original scan node. Display at most
-    1,000 largest files; include full discovered/omitted counts and incomplete coverage. Missing,
+    paths with recorded rows, retaining the provider name and original scan node. Windows extended
+    UNC/drive forms match ordinary recorded paths; other device prefixes remain explicit. Display
+    at most 1,000 largest files; include full discovered/omitted counts and incomplete coverage. Missing,
     linked/cloud/changed external entries remain visible as unknown. File lengths/allocation are
     backing-file observations, never guest-used bytes or virtual capacity, and grant no compaction
     permission. Cancellation returns None, including after final provider metadata reads.

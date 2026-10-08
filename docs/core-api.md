@@ -601,3 +601,8 @@ The normal validator retains 512 MiB VHD/VHDX fixtures; validate_windows_sparse_
 a fresh fixed 2 GiB VHDX for comparison. Creation and RAW/private formatting accept exactly these
 two capacities and prove the selected size; no existing disk/image/drive selector is available.
 Native size-boundary conclusions require CI artifacts; mocked tests do not establish OS behavior.
+
+Read-only virtual-disk provider matching normalizes extended Windows UNC and drive forms to the
+corresponding ordinary path, preserving the original captured row/node/snapshot. Volume-GUID
+and other device prefixes remain explicit. This lexical match never grants mutation authority;
+actual UNC allocation, permission and disconnect behavior remains unverified without a share.

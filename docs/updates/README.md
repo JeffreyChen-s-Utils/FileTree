@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-34 | 2026-10-08 | Preserve extended UNC discovery paths and record sparse Trash boundaries | #fix #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-33 | 2026-10-08 | Add isolated sparse Trash size-boundary diagnostics | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-32 | 2026-10-08 | Add opt-out daily PyPI update notices | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-31 | 2026-10-08 | Complete multi-root GUI and CLI scanning | #implementation #validation #done | [2026-10-b](2026-10-b.md) |
