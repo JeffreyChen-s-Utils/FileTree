@@ -33,8 +33,8 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Over time
 
-- **#38** (P3) Review native tray/notification and scheduled-history CI proof on supported desktops, plus native per-user startup fixture results and real login launch. Unavailable trays must keep/restore the visible workspace and explicit Quit must join all work. Actual login startup can be suppressed by OS policy; fixture registration does not prove it.
-- **#86** (P2) Reviewable recurring clean-up: combine #37's scan history with the policy in #81 to show “new junk since last scan” and “largest new growth” per drive; a scheduled scan may prepare a dated proposal but never move anything automatically. The proposal records the scan coverage and rule version, expires when paths change, and opens the same review queue as #77. Test that a missed schedule, stale scan or changed rule cannot silently turn an old proposal into an action.
+- **#38** (P3) [UNVERIFIED] Verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
+- **#86** (P2) Connect recurring.capture/prepare and bounded ScanHistory baselines to gentle scheduled workers, then show “new junk since last scan” and “largest new growth” per selected root. Open dated proposals through a fresh validated foreground scan and the same review queue as #77, preserving expiry for missed schedules, stale receipts, changed rules/paths and incomplete coverage. Scheduled preparation must never move sources automatically; finish native GUI/review/source-preservation validation.
 
 ### Everyday use
 

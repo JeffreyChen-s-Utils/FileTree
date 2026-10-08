@@ -10,6 +10,8 @@
 
 原生 CI 会保留后台／历史／容量测试来源的阶段 JSON 与 CJK 截图。隔离的 Linux X11 桌面要求实际托盘与可见通知截图；Windows／macOS 明确记录托盘可用或不可用的行为。仅调用通知不证明系统显示权限。这些验证不注册主机登录任务，也不改动既有用户来源。
 
+独立 Python API `recurring.capture`／`prepare` 结合已记录的扫描元数据、有效清理策略及相符的历史记录，描述新增候选项目与最大的文件夹增长。历史观察最多 100 行／48 KiB；缺少、部分、不相符或截短的基准保持未知。`ScanHistory.save(..., baseline=...)` 将可选观察存入一般保留上限内，`load_recurring` 检查历史关联。只有文件读取错误时，也会标示历史不完整。带日期的建议在下次计划到期时失效，规则、记录或扫描路径改变也会拒绝。它们不扫描或移动来源；定期界面的准备与审核仍待接入。
+
 [English](../README.md) | [繁體中文](README_zh-TW.md) | [简体中文](README_zh-CN.md)
 
 ![FileTree 显示一个用户文件夹：左边是文件夹树，右边是方块图](../docs/images/main_window_zh-CN.png)

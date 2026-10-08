@@ -736,3 +736,26 @@ visible paused unavailable-tray state. Notification opt-in is explicit in the pr
 XEmbed desktop additionally requires a visible native QBalloonTip screenshot. Dispatch alone never
 claims notification permission or successful user login. No startup registration or bin/source action
 is invoked by this proof. Windows/macOS artifacts retain unavailable states without claiming support.
+
+`recurring.capture(root, policy, now, cancel=...)` records bounded Candidate rows, explicit five-field
+coverage and an order-independent SHA-256 digest of every captured path/snapshot/size/error. It performs
+no filesystem reads or mutations, adds no Node fields and checks cancellation/pacing on the worker.
+Missing identities leave its signature unknown; the recorded root device/inode must also match before
+historical comparisons can describe the same physical scope. Baselines contain at most 100 largest observed rows /
+48 KiB; omitted paths still count and cannot prove absence. Strict `load_baseline` refuses unknown
+fields, duplicate keys/paths, outside roots, invalid totals/dates/rules and action/approval fields.
+
+`recurring.prepare(root, policy, ProposalContext, previous=..., saved=..., cancel=...)` derives new
+candidate paths/rules and up to 100 largest logical folder growth rows only when both complete candidate
+inventories and effective policy match the saved baseline's exact root/date. Legacy/partial/mismatched/
+truncated histories keep comparison unknown. Rule fingerprints include built-in recognizers/details,
+effective disabled/empty-folder settings and exclusions. No historical absence grants cleanup authority.
+`proposal_status(proposal, root, policy, config, attempt, now, cancel=...)` rejects next-period expiry,
+clock rollback, changed/disabled schedules, any replaced or non-complete receipt, changed rules,
+incomplete/missing identity or changed captured descendants. None means current observations only.
+
+`ScanHistory.save(root, baseline=...)` optionally binds observations to the owned header's actual
+root/size/date; their bytes share the existing cap and retention. `load_recurring(entry)` rejects a
+changed entry or mismatched root/size/date/coverage. Existing `load_history` and export compatibility
+remain unchanged; file-only errors now also flag incomplete history. ProposalCancelledError never
+publishes a partial proposal. These APIs neither dispatch scans nor invoke source operations.

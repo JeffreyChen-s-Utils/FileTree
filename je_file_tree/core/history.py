@@ -14,7 +14,7 @@ import time
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from typing import TextIO
 
@@ -24,6 +24,7 @@ from je_file_tree.core.export import JSON_FORMAT, _atomic_file, _folder_json
 from je_file_tree.core.node import Node
 from je_file_tree.core.operation_journal import _lock
 from je_file_tree.core.pacing import give_way
+from je_file_tree.core.recurring import Baseline, MAX_BYTES as MAX_BASELINE_BYTES, dump_baseline, load_baseline
 
 DEFAULT_LIMIT = 1024 * 1024 * 1024
 _HEADER_LIMIT = 65536
@@ -168,7 +169,8 @@ class ScanHistory:
             raise ValueError("History byte limit must be positive")
         self.directory, self.max_bytes = Path(directory), max_bytes
 
-    def save(self, root: Node, *, cancel: threading.Event | None = None) -> HistoryEntry:
+    def save(self, root: Node, *, cancel: threading.Event | None = None,
+             baseline: Baseline | None = None) -> HistoryEntry:
         """Save a stable completed tree on its scan worker; retain globally across root buckets.
 
         A scan exceeding the cap is refused before publication. Cancellation preserves prior entries.
@@ -196,7 +198,14 @@ class ScanHistory:
             header = {"format": JSON_FORMAT, "saved": datetime.now(timezone.utc).isoformat(timespec="microseconds"),
                       "history": {"format": "file-tree-history/1", "id": name, "root": root.path,
                                   "size": root.size, "allocated": root.allocated,
-                                  "incomplete": not coverage.complete}}
+                                  "incomplete": not coverage.complete or bool(coverage.unsafe)}}
+            if baseline is not None:
+                if baseline.root != root.path or baseline.size != root.size:
+                    raise ValueError("Recurring baseline does not match the saved root")
+                text = dump_baseline(replace(baseline, saved=header["saved"]))
+                if len(text) > MAX_BASELINE_BYTES:
+                    raise ValueError("Recurring baseline exceeds its metadata limit")
+                header["recurring"] = json.loads(text)
             encoded = json.dumps(header, ensure_ascii=False)[:-1] + _SUFFIX
             if len(encoded) > _HEADER_LIMIT:
                 raise ValueError("History header exceeds the limit")
@@ -312,3 +321,21 @@ def load_history(entry: HistoryEntry, *, cancel: threading.Event | None = None) 
             if opened:
                 stack.append(path)
     raise ValueError("Truncated history tree")
+
+
+def load_recurring(entry: HistoryEntry) -> Baseline | None:
+    """Read optional bounded historical observations, bound to this exact owned history header."""
+    if _read_entry(entry.path) != entry:
+        raise ValueError("History changed; refresh recurring observations")
+    with entry.path.open(encoding="utf-8") as stream:
+        line = stream.readline(_HEADER_LIMIT + 1)
+        if len(line) > _HEADER_LIMIT or not line.endswith(_SUFFIX):
+            raise ValueError("Invalid history header")
+        data = json.loads(line[:-len(_SUFFIX)] + "}")
+    if "recurring" not in data:
+        return None
+    baseline = load_baseline(json.dumps(data["recurring"], ensure_ascii=True, separators=(",", ":")))
+    if (baseline.root != entry.root or baseline.saved != entry.saved or baseline.size != entry.size
+            or baseline.complete == entry.incomplete):
+        raise ValueError("Recurring observations do not match the saved history")
+    return baseline

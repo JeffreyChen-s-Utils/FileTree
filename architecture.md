@@ -77,6 +77,17 @@ phase JSON/CJK captures. Linux's private X11 session starts an owned XEmbed tray
 notification capture; other platforms explicitly retain unavailable trays or dispatch-only evidence.
 CI never registers host login jobs, and notification calls never imply actual OS permission.
 
+`core.recurring` captures immutable bounded candidate metadata and whole-captured-tree fingerprints
+on workers, reusing recorded snapshots without payload/stat calls or Node fields. Effective policy
+fingerprints include built-in definitions, risk and disabled/empty-folder overrides. Optional 100-row /
+48-KiB Baseline metadata binds to the normal owned history header and retention cap; legacy history
+stays readable and incomplete/truncated/mismatched baselines cannot prove new candidates. File-only
+errors also flag saved history incomplete. Root device/inode binding refuses a replacement physical
+scope at the same path. ProposalContext binds one schedule claim/date and expiry
+at the next due time; validation rejects missed periods, replaced/failed/canceled receipts, changed
+policy or any captured descendant metadata. Valid observations grant no action authority. GUI
+scheduled preparation and the existing review queue connection remain #86.
+
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
 sources; close cancels and joins only that owner, while workspace Quit joins every tab. `OperationGroup`
@@ -917,6 +928,9 @@ The flag alone never enables monitoring. Window close may keep an opted-in monit
 Per-user login registration passes only absolute FileTree launcher arguments and `--background`.
 Its native entry names and strict ownership marker are persistent removal contracts; app preferences
 never substitute for actual registration or authorize overwriting another application's entry.
+Saved history keeps its existing folder-JSON format and optional versioned `recurring` scalar header.
+Historical candidate metadata never reconstructs operation Nodes or approves actions; rule fingerprints,
+physical root identity and dated schedule receipts are comparison/expiry contracts only.
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.

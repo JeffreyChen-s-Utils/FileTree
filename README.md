@@ -13,6 +13,8 @@ In **Options → Follow changes** (off by default), each result tab follows its 
 
 Native CI retains phase JSON and CJK screenshots for owned background/history/capacity sources. The isolated Linux X11 desktop requires an actual tray and visible notification capture. Windows/macOS report available or unavailable tray behavior explicitly; notification dispatch alone does not prove OS display permission. These probes never register a host login job or mutate existing user sources.
 
+The independent Python API `recurring.capture` / `prepare` combines captured scan metadata, effective clean-up policy and a bound saved history to describe new candidates and the largest folder growth. It keeps at most 100 rows / 48 KiB of historical observations; missing, partial, mismatched or truncated baselines stay unknown. `ScanHistory.save(..., baseline=...)` stores optional observations under the normal retention cap; `load_recurring` checks their history binding. File-only scan errors also flag incomplete history. Dated proposals expire at the next scheduled period and reject changed rules, receipts or captured paths. They never scan or move sources; scheduled UI preparation and review remain pending.
+
 [English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md)
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)

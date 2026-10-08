@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-45 | 2026-10-08 | Bounded recurring observations and history binding | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-44 | 2026-10-08 | Native background desktop validation fixtures | #validation #implementation | [2026-10-b](2026-10-b.md) |
 | U-20261008-43 | 2026-10-08 | Owned removable per-user login startup | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-42 | 2026-10-08 | Background tray and scheduled history service | #implementation #validation | [2026-10-b](2026-10-b.md) |
