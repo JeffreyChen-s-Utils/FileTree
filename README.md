@@ -176,7 +176,8 @@ hashes/identities; the app is not launched. CI retains development artifacts and
 Formal release attachment is gated by `FILETREE_POSIX_RELEASE_VERIFIED=true` after the macOS checks
 in progress item #4. Developer ID signing/notarization and Finder/OS consent remain unverified.
 Compiler runtime wheel locks cover native Windows/Linux/macOS while retaining exact versions and
-hash verification. See the [Nuitka guide](nuitka.md) for native packaging commands. AppImage login registration uses the
+hash verification. The macOS build draws a native multi-size ICNS without external PNG conversion.
+See the [Nuitka guide](nuitka.md) for native packaging commands. AppImage login registration uses the
 original executable outside its temporary mount; keep that file at its registered location.
 
 **With Python 3.10 or newer**, from PyPI:

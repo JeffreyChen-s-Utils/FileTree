@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT))
 import PySide6  # noqa: E402
 from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
-from je_file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
+from je_file_tree.gui.icon import draw, icns_bytes, ico_bytes, png_bytes  # noqa: E402
 from je_file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
 from je_file_tree import __version__  # noqa: E402
 
@@ -62,8 +62,8 @@ def translation_options(translations: Path, packages: Path) -> list[str]:
 def icon_options(folder: Path, extra: list[str]) -> list[str]:
     """Write the program icon into ``folder`` and return the Nuitka option that uses it.
 
-    Windows gets a multi-size ``.ico``; Linux/macOS get a PNG (Nuitka converts
-    the macOS bundle icon). Nothing is added when ``extra`` already
+    Windows gets a multi-size ``.ico``, macOS a native multi-size ``.icns`` and Linux a PNG.
+    No external conversion dependency is required. Nothing is added when ``extra`` already
     names an icon.
     """
     if any(option.split("=")[0].endswith("-icon") or "-icon-" in option for option in extra):
@@ -73,11 +73,14 @@ def icon_options(folder: Path, extra: list[str]) -> list[str]:
         path = folder / f"{PROGRAM_NAME}.ico"
         path.write_bytes(ico_bytes())
         return [f"--windows-icon-from-ico={path}"]
-    if sys.platform.startswith("linux") or sys.platform == "darwin":
+    if sys.platform == "darwin":
+        path = folder / f"{PROGRAM_NAME}.icns"
+        path.write_bytes(icns_bytes())
+        return [f"--macos-app-icon={path}"]
+    if sys.platform.startswith("linux"):
         path = folder / f"{PROGRAM_NAME}.png"
-        path.write_bytes(png_bytes(draw(1024 if sys.platform == "darwin" else 256)))
-        option = "macos-app-icon" if sys.platform == "darwin" else "linux-icon"
-        return [f"--{option}={path}"]
+        path.write_bytes(png_bytes(draw(256)))
+        return [f"--linux-icon={path}"]
     return []
 
 

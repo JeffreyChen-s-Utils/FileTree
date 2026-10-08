@@ -118,7 +118,8 @@ internal framework link. Bundle identity/version/executable are checked; externa
 The program gets FileTree's own icon on Windows, Linux and macOS (the script draws it into `build/`). Any other
 option is passed on to Nuitka unchanged, for example a different icon:
 `python tools/build_nuitka.py --windows-icon-from-ico=icon.ico` (Windows), `--linux-icon=icon.png` or
-`--macos-app-icon=icon.icns` (Nuitka converts the generated PNG for macOS by default).
+`--macos-app-icon=icon.icns`. The script generates a native multi-size ICNS for macOS using Qt's
+PNG encoder, avoiding Nuitka's optional PNG conversion dependency.
 
 ### 2.4 A Linux AppImage
 
@@ -151,7 +152,7 @@ consent. AppImage login registration uses its original executable outside the mo
 | `--output-dir=build/standalone` (or `build/onefile`, `build/app`) | Everything Nuitka creates goes into `build/`, which Git ignores; each form has its own folder, so building one does not delete another |
 | `--output-filename=FileTree` | The program is called FileTree instead of start_file_tree |
 | `--assume-yes-for-downloads` | Lets Nuitka fetch helper tools it needs without asking |
-| `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` / `--macos-app-icon=build/FileTree.png` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
+| `--windows-icon-from-ico=build/FileTree.ico` / `--linux-icon=build/FileTree.png` / `--macos-app-icon=build/FileTree.icns` | FileTree's icon, drawn by the script (left out when you pass an icon yourself) |
 | `--macos-app-name=FileTree` (with `--app` only) | The name shown in Finder and the Dock |
 | `--macos-signed-app-name=io.github.jechen.FileTree` (with `--app` only) | Stable bundle identity; this does not provide a Developer ID certificate |
 | `--macos-app-version=<checked-in version>` (with `--app` only) | Bundle version matches the program without a manual bump |

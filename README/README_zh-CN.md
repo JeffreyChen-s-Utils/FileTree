@@ -136,7 +136,7 @@ FileTree 可在 Windows、macOS 与 Linux 上运行。
 
 下一次发布流程也会从完整独立程序文件夹构建 `FileTree-<版本>-windows-x64.msi`。它需要管理员批准，为所有用户安装至 Program Files，添加开始菜单快捷方式，并支持通过 Windows 升级／卸载。安装包 CI 使用全新可丢弃测试数据。独立的 Desktop builds CI 会实际编译独立程序、保留 ZIP／MSI，并在可丢弃的 Windows 主机按全部内容哈希核对安装、包版本升级与卸载。原生核对已通过升级后全部 104 个文件、快捷方式、来源保留与完整移除。包升级只在相同编译内容添加验证标记；保留原始输出且不启动程序。`tools/prepare_packages.py` 使用实际 MSI／ZIP 哈希与只读 MSI 元数据生成 winget、Scoop、Chocolatey 审阅草稿。CI 保留草稿，发布附上 package-drafts ZIP。本地原生 winget 验证已通过。草稿尚未上架，发布网址须有匹配的已发布产物。签名与商店提交仍需要所有者的证书／账号。
 
-Desktop builds CI 也会在 Ubuntu 22.04 准备完整 x86_64 Linux AppImage，在 macOS 15 准备 arm64 `.app` ZIP。原生解压比较完整运行时／包，并保留来源哈希／标识，不启动程序。CI 保留开发产物与证据七天。正式发布附件受 `FILETREE_POSIX_RELEASE_VERIFIED=true` 控制，须先完成进度项目 #4 的 macOS 验证。Developer ID 签名／公证与 Finder／系统授权仍未验证。编译运行时 wheel 锁覆盖原生 Windows／Linux／macOS，保留固定版本与哈希验证。原生打包命令见 [Nuitka 指南](../nuitka.zh-CN.md)。AppImage 登录注册使用临时挂载外的原始可执行文件，请将该文件保留在注册位置。
+Desktop builds CI 也会在 Ubuntu 22.04 准备完整 x86_64 Linux AppImage，在 macOS 15 准备 arm64 `.app` ZIP。原生解压比较完整运行时／包，并保留来源哈希／标识，不启动程序。CI 保留开发产物与证据七天。正式发布附件受 `FILETREE_POSIX_RELEASE_VERIFIED=true` 控制，须先完成进度项目 #4 的 macOS 验证。Developer ID 签名／公证与 Finder／系统授权仍未验证。编译运行时 wheel 锁覆盖原生 Windows／Linux／macOS，保留固定版本与哈希验证。macOS 构建直接绘制原生多尺寸 ICNS，无需外部 PNG 转换。原生打包命令见 [Nuitka 指南](../nuitka.zh-CN.md)。AppImage 登录注册使用临时挂载外的原始可执行文件，请将该文件保留在注册位置。
 
 **有 Python 3.10 或更新版本**，从 PyPI 安装：
 

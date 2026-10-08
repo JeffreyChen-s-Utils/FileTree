@@ -1,7 +1,7 @@
 """FileTree's icon: a small treemap, drawn in code so no image file has to ship.
 
 ``app_icon()`` gives the window and taskbar icon; ``ico_bytes()`` packs the same
-pictures into a Windows ``.ico`` for the Nuitka build (``tools/build_nuitka.py``).
+pictures into a Windows ``.ico``; ``icns_bytes()`` supplies the native macOS build icon.
 """
 
 from __future__ import annotations
@@ -104,3 +104,17 @@ def ico_bytes(sizes: tuple[int, ...] = SIZES) -> bytes:
         entries += struct.pack("<BBBBHHII", side, side, 0, 0, 1, 32, len(data), offset)
         offset += len(data)
     return header + entries + b"".join(data for _, data in pictures)
+
+
+def icns_bytes() -> bytes:
+    """Native macOS ICNS with PNG icons at 128, 256, 512 and 1024 pixels, without conversion tools.
+
+    Each big-endian block length includes its eight-byte type/length header; the outer icns header
+    includes all blocks. Modern ic07/ic08/ic09/ic10 types carry Qt-encoded PNGs directly.
+    """
+    chunks = []
+    for kind, size in ((b"ic07", 128), (b"ic08", 256), (b"ic09", 512), (b"ic10", 1024)):
+        data = png_bytes(draw(size))
+        chunks.append(kind + struct.pack(">I", len(data) + 8) + data)
+    payload = b"".join(chunks)
+    return b"icns" + struct.pack(">I", len(payload) + 8) + payload

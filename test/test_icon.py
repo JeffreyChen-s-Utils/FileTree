@@ -57,7 +57,7 @@ def _build_script():
 @pytest.mark.parametrize(("platform", "option", "file"), [
     ("win32", "--windows-icon-from-ico=", "FileTree.ico"),
     ("linux", "--linux-icon=", "FileTree.png"),
-    ("darwin", "--macos-app-icon=", "FileTree.png"),
+    ("darwin", "--macos-app-icon=", "FileTree.icns"),
 ])
 def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                               platform: str, option: str, file: str) -> None:
@@ -66,6 +66,26 @@ def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path
     options = build.icon_options(tmp_path, [])
     assert options == [f"{option}{tmp_path / file}"]
     assert (tmp_path / file).stat().st_size > 0
+
+
+def test_native_icns_has_four_readable_sizes_and_complete_bounds(qapp: QApplication, tmp_path: Path) -> None:
+    data = icon.icns_bytes()
+    assert data[:4] == b"icns" and struct.unpack_from(">I", data, 4)[0] == len(data)
+    at = 8
+    for kind, size in ((b"ic07", 128), (b"ic08", 256), (b"ic09", 512), (b"ic10", 1024)):
+        length = struct.unpack_from(">I", data, at + 4)[0]
+        assert data[at:at + 4] == kind and data[at + 8:at + 16] == b"\x89PNG\r\n\x1a\n"
+        assert struct.unpack_from(">II", data, at + 24) == (size, size)
+        at += length
+    assert at == len(data)
+    path = tmp_path / "FileTree.icns"
+    path.write_bytes(data)
+    reader = QImageReader(str(path))
+    assert reader.canRead() and reader.imageCount() == 4
+    for index, size in enumerate((128, 256, 512, 1024)):
+        assert reader.jumpToImage(index)
+        image = reader.read()
+        assert image.width() == image.height() == size and image.pixelColor(0, 0).alpha() < 32
 
 
 @pytest.mark.parametrize("platform, option", [("win32", "--windows-icon-from-ico=mine.ico"),

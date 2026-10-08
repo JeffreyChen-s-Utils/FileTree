@@ -2,6 +2,7 @@
 
 from contextlib import nullcontext
 import errno
+from itertools import count
 import os
 from pathlib import Path
 import stat
@@ -135,6 +136,8 @@ def test_progress_callback_errors_are_not_interpreted_as_metadata_fallback(tmp_p
 
 def test_stop_after_root_listing_retains_unread_branch_and_counted_partial_totals(tmp_path, monkeypatch):
     root, closed = _model(tmp_path, monkeypatch)
+    ticks = count()
+    monkeypatch.setattr(scanner.time, "monotonic", lambda: next(ticks) / 10)
     cancel, published = threading.Event(), []
     with pytest.raises(scanner.ScanCancelledError) as captured:
         scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True, count_hard_links=True),

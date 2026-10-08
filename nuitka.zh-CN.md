@@ -88,7 +88,7 @@ python tools/package_posix.py --platform macos --source build/app/FileTree.app -
 
 包是 `build/app/FileTree.app`。打包命令将完整 ZIP 与证据写入全新 `desktop-package` 文件夹。原生 ditto 解压必须保留每个普通文件与内部 framework 链接，并核对包标识／版本／可执行文件；拒绝外部链接。
 
-在 Windows、Linux 与 macOS 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`（macOS 默认由 Nuitka 转换生成的 PNG）。
+在 Windows、Linux 与 macOS 上，程序会带着 FileTree 自己的图标（脚本把它画到 `build/`）。其他选项会原样交给 Nuitka，例如换一个图标：`python tools/build_nuitka.py --windows-icon-from-ico=icon.ico`（Windows）、`--linux-icon=icon.png` 或 `--macos-app-icon=icon.icns`。macOS 脚本通过 Qt 的 PNG 编码器直接生成原生多尺寸 ICNS，无需 Nuitka 的可选 PNG 转换依赖包。
 
 ### 2.4 Linux AppImage
 
@@ -112,7 +112,7 @@ Desktop builds CI 使用 Ubuntu 22.04 x86_64 与 macOS 15 arm64，保留开发�
 | `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 生成的东西都放在 `build/`，Git 会忽略这个文件夹；每种形式各有自己的文件夹，编其中一种不会删掉另一种 |
 | `--output-filename=FileTree` | 程序叫 FileTree，而不是 start_file_tree |
 | `--assume-yes-for-downloads` | 让 Nuitka 不经询问就下载它需要的辅助工具 |
-| `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png`／`--macos-app-icon=build/FileTree.png` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
+| `--windows-icon-from-ico=build/FileTree.ico`／`--linux-icon=build/FileTree.png`／`--macos-app-icon=build/FileTree.icns` | FileTree 的图标，由脚本画出来（你自己指定图标时就不加） |
 | `--macos-app-name=FileTree`（只在 `--app` 时） | 在 Finder 与 Dock 显示的名称 |
 | `--macos-signed-app-name=io.github.jechen.FileTree`（只在 `--app` 时） | 固定包标识，不提供 Developer ID 证书 |
 | `--macos-app-version=<仓库版本>`（只在 `--app` 时） | 包版本符合程序，不手动更新版本 |

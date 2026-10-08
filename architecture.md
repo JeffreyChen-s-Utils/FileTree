@@ -938,6 +938,8 @@ recent folders.
 ## 6. Cross-project boundaries
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
+`gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
+build_nuitka passes that file directly on macOS, avoiding optional external PNG conversion.
 Linux x86_64 uses fixed SHA-256-pinned appimagetool 1.9.1 and type2 runtime 20251108, supplied explicitly,
 with complete Qt runtime/catalogues, generated icon and literal AppRun. The tool runs without FUSE;
 the owned image is extracted into fresh scratch and the full AppDir compared. macOS uses fixed
