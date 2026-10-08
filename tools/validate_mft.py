@@ -52,7 +52,9 @@ def _observe(native: NTFSReader, path: Path) -> dict:
     require(len(heads) == 1 and heads[0].size == info.st_size, "Raw unnamed size differs from native file")
     allocation = file_allocation(str(path), info)
     require(allocation is not None and heads[0].allocated == allocation,
-            "Raw unnamed allocation differs from native FILE_STANDARD_INFO")
+            f"Raw unnamed allocation differs from native FILE_STANDARD_INFO: {path.name}; "
+            f"raw={heads[0].allocated}, native={allocation}, resident={heads[0].resident}, "
+            f"flags={heads[0].flags}, logical={heads[0].size}")
     standard = [mft.parse_standard_information(item.value) for item in attributes
                 if item.kind == mft.STANDARD_INFORMATION]
     require(len(standard) == 1 and standard[0].modified_ns == info.st_mtime_ns,
