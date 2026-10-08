@@ -10,6 +10,35 @@ permissions:
   contents: read
 
 jobs:
+  macos:
+    runs-on: macos-15
+    name: macOS arm64 / Python 3.12
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python 3.12
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: python -m pip install -r dev_requirements.txt
+    - name: Run tests
+      env:
+        QT_QPA_PLATFORM: offscreen
+        PYTHONFAULTHANDLER: "1"
+      run: python -m pytest -v --tb=short -p no:unraisableexception
+    - name: Validate owned native metadata and cocoa rendering
+      run: python tools/validate_macos_sources.py --evidence macos-evidence
+    - name: Preserve macOS evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: macos-native-sources
+        path: macos-evidence/
+        if-no-files-found: warn
+        retention-days: 7
   windows-volume:
     runs-on: windows-latest
     name: Windows private NTFS volume

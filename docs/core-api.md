@@ -633,3 +633,11 @@ exits. Workspace close joins all owners. These factories schedule no network req
 point invokes start_services after showing the workspace. Existing create_window retains its return
 type and behavior. Shared OperationGroup exclusion is additional to exact source revalidation and
 never authorizes filesystem operations. Combined scan roots remain one read-only tab.
+
+`tools/validate_macos_sources.py --evidence DIRECTORY` requires native macOS and a non-overridden
+cocoa Qt platform. It accepts no source, image, volume or bin selector: every source is a newly owned
+temporary fixture. Production copy_folders/verify_copy and prepare_links/execute_links must preserve
+complete main/resource-fork/xattr bytes and expected native identities. Length-only attributes fail
+the proof. A separate GUI scan renders zh-TW/all chart modes and must leave the source proof unchanged.
+Phase JSON is written even after failure; only complete plus owned_fixture_cleanup=true confirms the
+scoped native proof. No Trash/Finder operations, cross-volume proof or APFS recovery is implied.

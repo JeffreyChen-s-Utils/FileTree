@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [BLOCKED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation, CJK rendering, native duplicate hard-link execution/metadata and cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS; no Mac or macOS VM is available from the owner.
+- **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation, CJK rendering, native duplicate hard-link execution/metadata and cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS. Hosted macOS metadata/CJK evidence requires CI review; no Mac or macOS VM is available from the owner for Finder interaction/consent.
 
 ### Safety
 

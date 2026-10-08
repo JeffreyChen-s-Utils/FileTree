@@ -21,6 +21,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
+cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
+copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all
+chart modes. Phase JSON/PNG survive later failures; host Trash and Finder automation are not invoked.
+Same-volume source proofs do not establish cross-volume behavior, Finder consent or APFS recovery.
+
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
 sources; close cancels and joins only that owner, while workspace Quit joins every tab. `OperationGroup`
