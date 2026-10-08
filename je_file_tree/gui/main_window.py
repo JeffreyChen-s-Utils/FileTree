@@ -74,6 +74,7 @@ from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
 from je_file_tree.gui.operation_group import OperationGroup
+from je_file_tree.gui.change_watch import FollowChanges, supported as follow_supported
 
 WELCOME_PAGE, RESULTS_PAGE = range(2)
 # How often the tree of a running scan is refreshed.
@@ -134,6 +135,7 @@ class MainWindow(QMainWindow):
             self._unit = AUTO_UNIT
         self.welcome = WelcomePage()
         self.results = ResultsView(settings=self.settings)
+        self._follow = FollowChanges(self)
         self._undo = TrashUndo(self)
         self._bin_labels = BinLabels(self)
         self._bin_labels.ready.connect(self._bin_metadata_ready)
@@ -225,6 +227,7 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def _begin_scan(self, path: str | tuple[str, ...], *, exact_allocation: bool = False) -> None:
+        self._follow.stop(clear=True)
         self._undo.expire()
         self._trash_rescans.clear()
         self.stop_scan(wait=True)
@@ -298,6 +301,7 @@ class MainWindow(QMainWindow):
 
         if outcome.result.warnings:
             self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+        self._follow.adopt(root)
 
     def _scan_failed(self, reason: str) -> None:
         self._scan_ended()
@@ -523,6 +527,7 @@ class MainWindow(QMainWindow):
         worker.start()
 
     def _branch_rescanned(self, old: Node, outcome: ScanOutcome, before: int) -> None:
+        self._follow.stop()
         self._scan_ended()
         self.results.scan_bar.hide()
         new = self.results.replace_branch(old, outcome.result)
@@ -540,6 +545,7 @@ class MainWindow(QMainWindow):
         self._analyser = analyser
         self._analysers.add(analyser)
         analyser.start()
+        self._follow.adopt(root)
         if outcome.result.warnings:
             self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
@@ -931,6 +937,7 @@ class MainWindow(QMainWindow):
         self.theme_menu.retranslate()
         self._undo.retranslate()
         self._updates.retranslate()
+        self._follow.retranslate()
         self._language_actions[current_language()].setChecked(True)
 
     def _remember(self, path: str) -> None:
@@ -960,6 +967,7 @@ class MainWindow(QMainWindow):
         self._actions["capture_owners"].setChecked(read_flag(self.settings, "capture_owners", False))
         self._actions["exact_allocation"].setChecked(read_flag(self.settings, "exact_allocation", False))
         self._actions["count_hard_links"].setChecked(read_flag(self.settings, "count_hard_links", False))
+        self._actions["follow_changes"].setChecked(read_flag(self.settings, "follow_changes", False))
         self._unit_actions[self._unit].setChecked(True)
         self.results.set_unit(self._unit)
         self.welcome.set_unit(self._unit)
@@ -969,6 +977,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self._follow.shutdown()
         self._updates.shutdown()
         self._undo.shutdown()
         for dialog in self._path_dialogs.copy():
@@ -1057,6 +1066,7 @@ class MainWindow(QMainWindow):
             ("capture_owners", None, lambda: None),
             ("exact_allocation", None, lambda: None),
             ("count_hard_links", None, lambda: None),
+            ("follow_changes", None, lambda: None),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.quit_application),  # Windows has no standard Quit key
@@ -1080,6 +1090,9 @@ class MainWindow(QMainWindow):
             self._actions[key] = action
         self._actions["check_updates"].setCheckable(True)
         self._actions["check_updates"].toggled.connect(self._updates.configure)
+        self._actions["follow_changes"].setCheckable(True)
+        self._actions["follow_changes"].setEnabled(follow_supported())
+        self._actions["follow_changes"].toggled.connect(self._follow.configure)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
         self._actions["gentle"].setCheckable(True)
@@ -1153,7 +1166,8 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
-        options_menu.addAction(self._actions["check_updates"])
+        for key in ("check_updates", "follow_changes"):
+            options_menu.addAction(self._actions[key])
         for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
             options_menu.addAction(self._actions[key])
         options_menu.addAction(self._actions["shell_integration"])
@@ -1210,6 +1224,8 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        if self.operation_busy:
+            self._follow.quiesce()
         if self._operations is not None:
             self._operations.refresh(self)
         scanning = self._worker is not None or self.operation_busy

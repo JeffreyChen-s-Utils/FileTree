@@ -23,6 +23,7 @@ _TIMEOUT, _WAIT_MS = 258, 250
 _MAJOR_V2 = 2
 _CURSOR_BYTES = 8
 _HARD_LINK_CHANGE = 0x10000
+_ACTION_MODIFIED = 3
 _RENAME_DELETE = 0x200 | 0x1000 | 0x2000
 _LOG = logging.getLogger(__name__)
 
@@ -60,7 +61,9 @@ def parse_notifications(payload: bytes, root: str, scopes: set[str]) -> ChangeBa
         if action not in (1, 2, 3, 4, 5) or length % 2 or not length or end > len(payload):
             raise ValueError("Invalid Windows notification record")
         name = payload[offset + _NOTIFY.size:end].decode("utf-16-le")
-        paths.add(_parent(root, name, scopes))
+        parent = _parent(root, name, scopes)
+        named = ntpath.normpath(ntpath.join(root, name))
+        paths.add(named if action == _ACTION_MODIFIED and named in scopes else parent)
         if not next_offset:
             return changed(paths)
         if next_offset % 4 or next_offset < _NOTIFY.size + length or offset + next_offset >= len(payload):
@@ -92,11 +95,12 @@ def parse_usn(payload: bytes, scopes: dict[int, str], root: str, start: int,
             raise ValueError("Invalid USN filename")
         if reason & _HARD_LINK_CHANGE:
             return next_usn, changed(set(), full=True, reason="hard_links_changed")
-        if parent in scopes:
+        known_folder = inode in scopes and attributes & 0x10
+        if parent in scopes and (not known_folder or reason & _RENAME_DELETE):
             paths.add(scopes[parent])
         if shared is not None and inode in shared:
             paths.update(shared[inode])
-        if inode in scopes and attributes & 0x10:
+        if known_folder:
             path = scopes[inode]
             if path == root and reason & _RENAME_DELETE:
                 return next_usn, changed(set(), full=True, reason="root_changed")

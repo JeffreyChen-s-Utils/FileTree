@@ -133,6 +133,8 @@ class ChartStack(QStackedWidget):
             for chart in self._charts.values():
                 if chart.view_root is not node:
                     chart.set_view_root(node)
+                else:
+                    chart.invalidate()
         finally:
             self._moving = False
         self._root = node

@@ -36,7 +36,18 @@ fallback because external aliases are not covered. `linux_watch` uses one inotif
 anchored folder and captured shared-inode watches, exposing kernel limit failures. Bounded events
 map to captured folder paths; overflow/gaps request full scans, malformed records fail visibly.
 Native cancellation joins outstanding Windows I/O before freeing storage. Notifications are
-observational rescan requests and never operation authority. GUI controller integration remains #34.
+observational rescan requests and never operation authority. Reviewed native CI confirms Windows USN
+and Linux inotify/external-alias events with source preservation and joined cancellation.
+
+`gui.change_watch.FollowChanges` owns one default-off monitor per result tab. Its worker builds maps
+and coalesces native events under a lock to avoid unbounded Qt signal queues. The one-second GUI
+timer defers dirty folders during scans/analysis, source reviews, modal questions and Undo offers;
+bounded ancestor selection reuses rescan_folder and branch replacement. Events continue during
+branch scanning, then monitoring joins before tree replacement. Lost scopes/overflow, counted
+hard-link totals, operation gaps and five-minute periodic reconciliation force full roots. Branch
+rearming preserves the periodic deadline and unrelated pending paths; new roots discard old data.
+Shared OperationGroup exclusion quiesces peer monitors before source mutation/tree changes. Native
+failures remain visible without retry loops; opt-out/tab close cancel/join through wait_for.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured

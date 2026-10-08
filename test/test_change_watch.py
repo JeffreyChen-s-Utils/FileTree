@@ -19,10 +19,11 @@ def _notify(name="資料\\file.bin", action=3, next_offset=0):
     return struct.pack("<III", next_offset, action, len(encoded)) + encoded
 
 
-def _usn(*, inode=55, parent=22, reason=1, major=2, usn=100, name="資料.bin"):
+def _usn(*, inode=55, parent=22, reason=1, major=2, usn=100, name="資料.bin", directory=False):
     encoded = name.encode("utf-16-le")
     size = -(-(60 + len(encoded)) // 8) * 8
-    row = windows_watch._USN.pack(size, major, 0, inode, parent, usn, 0, reason, 0, 0, 0, len(encoded), 60)
+    row = windows_watch._USN.pack(size, major, 0, inode, parent, usn, 0, reason, 0, 0,
+                                  0x10 if directory else 0, len(encoded), 60)
     return struct.pack("<q", usn + size) + row + encoded + bytes(size - 60 - len(encoded))
 
 
@@ -111,6 +112,19 @@ def test_windows_notification_parents_are_known_and_new_descendants_use_known_an
     assert windows_watch.parse_notifications(_notify(), root, scopes).folders == (root + "\\資料",)
     assert windows_watch.parse_notifications(_notify("new\\deep\\file"), root, scopes).folders == (root,)
     assert windows_watch.parse_notifications(b"", root, scopes).full
+
+
+def test_known_directory_metadata_refreshes_itself_but_namespace_changes_refresh_parent():
+    root = "C:\\owned"
+    branch = root + "\\資料"
+    scopes = {root, branch}
+    assert windows_watch.parse_notifications(_notify("資料"), root, scopes).folders == (branch,)
+    assert windows_watch.parse_notifications(_notify("資料", action=2), root, scopes).folders == (root,)
+    _, modified = windows_watch.parse_usn(_usn(inode=55, directory=True), {22: root, 55: branch}, root, 100)
+    assert modified.folders == (branch,)
+    _, renamed = windows_watch.parse_usn(_usn(inode=55, reason=0x1000, directory=True),
+                                        {22: root, 55: branch}, root, 100)
+    assert renamed.folders == (root,)
 
 
 @pytest.mark.parametrize("name", ["..\\escape", "C:\\foreign", "\\foreign", "x\\..\\foreign", "a\0b"])

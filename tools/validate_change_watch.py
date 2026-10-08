@@ -84,8 +84,10 @@ def validate(output: Path) -> None:
         scratch = tempfile.TemporaryDirectory(prefix="filetree-watch-owned-")
         evidence["owned_source"] = scratch.name
         evidence["ordinary"] = _case(Path(scratch.name))
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or evidence["ordinary"]["backends"] == ["usn"]:
             evidence["external_alias"] = _case(Path(scratch.name), external=True)
+        else:
+            evidence["external_alias_unavailable"] = "A partial shared-file scope requires readable USN"
         scratch.cleanup()
         evidence["owned_fixture_cleanup"] = True
         evidence["phase"] = "complete"

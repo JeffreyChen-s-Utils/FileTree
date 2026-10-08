@@ -661,11 +661,24 @@ Linux uses one inotify descriptor, anchored folder watches and captured shared-i
 kernel resource limits are visible failures. Unsupported/corrupt records raise OSError/ValueError.
 Cancellation closes native resources; Windows cancels and joins outstanding kernel I/O before
 releasing its buffers. Setup/rearm races remain observational, and notifications confer no source
-operation authority. This core API is available independently; GUI following remains outstanding.
+operation authority. This core API remains independent of the GUI.
 
 `tools/validate_change_watch.py --output PATH` accepts only an evidence destination and creates
 fresh owned sources. It records the actual backend, native notification, cancellation/join and
-unchanged keeper identity/SHA-256. Linux additionally writes through an owned outside hard-link
+unchanged keeper identity/SHA-256. Linux/readable-USN additionally write through an owned outside hard-link
 alias. Complete JSON plus owned_fixture_cleanup=true is required for success; failed native lifetime
-checks retain fixtures. Local Windows evidence used recursive directory notifications; readable
-existing-USN and Linux evidence still require review of CI artifacts. No journals are created.
+checks retain fixtures. Reviewed CI JSON confirms existing-USN Windows and ordinary/external-alias
+Linux inotify events with source preservation and joined cancellation. Local Windows evidence used
+recursive directory notifications. No journals are created.
+
+GUI Options → Follow changes is default off and persisted with `follow_changes`. Each tab owns a
+ChangeWorker with worker-built captured folder/Node maps and one lock-protected bounded batch;
+events never accumulate as Qt signals. The controller polls/coalesces for one second, defers scans
+during source reviews/operations, scan/analysis, modal questions and live Undo offers, and invokes
+the existing rescan_folder/branch replacement only for captured nodes. Unrelated dirty folders survive
+the first refresh. Unknown maps, lost events or hard-link accounting require a full-root scan.
+Source-operation gaps and a five-minute periodic reconciliation also require full scans; branch
+rearming does not postpone that deadline. Ordinary notifications continue during branch scanning,
+then cancel/join before tree replacement/rearming. New roots discard old events; opt-out/tab close
+cancel and join through wait_for. Unsupported/incomplete scopes and native errors stay visible in
+plain-text status, with no automatic error retry loop. Notifications never grant mutation approval.
