@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-90 | 2026-10-08 | Allow explicit full-suite native validation dispatch | #ci #validation #ntfs | [2026-10-c](2026-10-c.md) |
 | U-20261008-89 | 2026-10-08 | Clarify signing gates and prior PyPI publication | #docs #signing #distribution | [2026-10-c](2026-10-c.md) |
 | U-20261008-88 | 2026-10-08 | Compare proven NTFS directory snapshot representations | #snapshot #ntfs #validation | [2026-10-c](2026-10-c.md) |
 | U-20261008-87 | 2026-10-08 | Report exact differing snapshot fields in native tree validation | #snapshot #ntfs #validation | [2026-10-c](2026-10-c.md) |

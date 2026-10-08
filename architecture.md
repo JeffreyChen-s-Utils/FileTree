@@ -19,6 +19,11 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 | Tools | `tools/` | GUI | `make_screenshots.py` (README pictures), `build_nuitka.py` (stand-alone builds, see `nuitka.md`) |
 | Tests | `test/` | both | one file per area; Qt tests on the offscreen platform |
 
+The Tests workflow supports manual dispatch as well as push/pull-request checks. If a pushed
+commit has no execution record, `gh workflow run test.yml --ref dev` requests the complete suite
+and owned native probes on that ref. This does not invoke the release workflow; a dispatch request
+alone never establishes a passing result or native evidence.
+
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
