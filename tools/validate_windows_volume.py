@@ -23,6 +23,7 @@ from je_file_tree.core.windows_allocation import file_allocation  # noqa: E402
 from tools.windows_owned_volume import owned_ntfs_volume, OwnedVolume, require, verify_volume  # noqa: E402
 from tools.windows_bin_probe import bin_proof  # noqa: E402
 from tools.windows_compaction_probe import capture_guest, compaction_proof  # noqa: E402
+from tools.windows_recovery_probe import recovery_proof  # noqa: E402
 from tools.volume_evidence import ledger_record  # noqa: E402
 
 _MIB = 1024 * 1024
@@ -145,6 +146,10 @@ def main() -> int:
         evidence["compaction"] = compaction_proof(volume, captured)
         evidence["phase"] = "guest_compaction"
         _save(args.output, evidence)
+    def record_recovery(name: str, result: dict) -> None:
+        evidence.setdefault("actual_recovery", {})[name] = result
+        evidence["phase"] = "recovery_" + name
+        _save(args.output, evidence)
     with owned_ntfs_volume(kind=args.kind, after_detach=after_detach) as volume:
         root = _fixtures(volume)
         evidence = {"fresh_owned_disk": True, "kind": args.kind, "native_device": volume.physical,
@@ -157,6 +162,7 @@ def main() -> int:
         evidence["bin"] = bin_proof(volume)
         evidence["phase"] = "private_bin"
         _save(args.output, evidence)
+        recovery_proof(volume, root, record_recovery)
         evidence["capacity_after_empty"] = _ledger(volume)
         captured = capture_guest(volume)
         evidence["phase"] = "guest_captured"

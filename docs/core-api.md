@@ -535,7 +535,10 @@ cloud providers, independently reserved/shared bytes and APFS remain separate va
 
 `validate_windows_volume.py --kind vhd --output windows-volume-vhd.json` selects only a fresh owned
 VHD fixture; the default remains VHDX and no existing image/device/drive selector is accepted. The
-new populated compaction stage awaits native CI proof. It captures complete main/ADS hashes and
+populated compaction stage passed native CI for both VHD and VHDX with complete guest data and
+confirmed cleanup; observed backing allocation reductions were 31,518,720 bytes and zero. After
+owned setup, the original pinned stopped backing file is queried read-only for its fresh review UUID.
+Creation/review UUIDs are separately retained; production execution checks remain unchanged. It captures complete main/ADS hashes and
 guest namespace/identities/lengths/link counts for fresh files, including a hard link and written then
 zeroed blocks. After successful body/detachment/handle-close, an owned callback rechecks and pins the
 original scratch/image identities before production preview/runtime/native compaction and durable
@@ -545,3 +548,9 @@ Hook or read-only detach failure retains the image; failed bodies never enter th
 handle now closes even if initial image stat fails. Phase JSON precedes later native stages; confirmed
 cleanup is written only after successful callback/detach and captured cleanup. The Windows CI job
 runs both fresh formats and preserves their separate JSON evidence for seven days.
+
+`windows_recovery_probe` adds per-case one/last/all hard-link names, compressed and sparse private
+NTFS measurements through production savings, native Trash and reviewed native bin emptying.
+It records OS free before Trash, after Trash and after emptying, exact remaining alias identity/full
+hash/link counts, and per-case phase evidence. Raw free deltas include unmeasured directory/bin
+metadata and are not a guaranteed file-data recovery bound. First native CI execution remains pending.

@@ -15,7 +15,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Freeing space
 
 - **#21** (P2) macOS bin querying/Finder-wide emptying remains blocked on a native environment; no Mac is available from the owner. Verify native macOS automation consent, APFS/firmlink scope deduplication, multi-volume coverage, active-operation lifetime and failed/partial metadata refresh; fixture/mocked execution does not prove native behavior.
-- **#76** (P1) Finish actual per-case free recovery on isolated NTFS/APFS volumes for one/all hard-link names, compression and sparse files, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown. Extend `tools/validate_windows_volume.py` on the administrator Windows CI runner; local administrator access is unavailable. APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
+- **#76** (P1) Finish actual per-case free recovery on isolated NTFS/APFS volumes for one/all hard-link names, compression and sparse files, plus real cloud placeholders (fixtures do not prove actual placeholder allocation). Keep unmeasurable shared extents and directory metadata unknown. Verify the new `tools/windows_recovery_probe.py` per-case phase JSON on the administrator Windows CI runner; local administrator access is unavailable. APFS needs a Mac and actual cloud placeholders need a provider environment. Drive reconciliation remains #75.
 
 ### Finding things
 
@@ -23,7 +23,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Windows space explained
 
-- **#59** (P2) VHD populated native compaction passed; verify the corrected separate-step VHDX compaction results from `tools/windows_compaction_probe.py` through the administrator `windows-volume` CI job, including full guest main/ADS hashes, exact namespace/identities/link counts, read-only reattachment, joined detachment and captured cleanup. Preserve actual partial/unknown/zero savings; guest-used bytes stay unknown. VMDK/VDI/QCOW2 remain explicitly unsupported until a suitable fixed backend is available.
 
 ### Scanning
 

@@ -623,8 +623,12 @@ job saves JSON for seven days. Native Windows private-volume proof passed, inclu
 allocation/hard-link bounds/compression/sparse guards, No/arrival refusal, two questions and one scoped
 native bin-empty call, active-close refusal, joined metadata refresh and owned detach/cleanup. The
 unreadable System Volume Information branch retained incomplete/null remainder; zero OS bin items
-still had observed metadata bytes, so bin allocation remains a subset. Actual per-case recovery,
-provider placeholders, shared
+still had observed metadata bytes, so bin allocation remains a subset. The new `windows_recovery_probe` measures individual one/last/all hard-link names and compressed/
+sparse files, recording OS free before Trash, after Trash and after native emptying, plus reviewed
+savings bounds and the remaining alias identity/full hash/link count. It shares a joined private-bin
+dialog with native device/GUID checks, one exact drive and two questions. Each completed case saves
+phase evidence; raw free deltas do not independently measure file data or directory/bin metadata.
+Its first native run remains pending. Provider placeholders, shared
 extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
 failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
 application's bool/tuple-compatible Qt Trash receipt adapter.
@@ -638,7 +642,8 @@ ADS hashes, namespace/IDs/lengths/link counts and written/zeroed blocks, then us
 runtime/executor and durable operation-worker audit while detached. Only the captured UUID is
 reattached read-only without a drive letter/formatting and compared through its original volume GUID.
 Read-only detach failure retains the image. CI runs both fresh formats and saves separate phase JSON;
-populated VHD native proof passed; VHDX awaits a corrected rerun. Each format has a separate command
+populated VHD/VHDX native proof passed with full guest records/audit and confirmed cleanup.
+Observed backing reductions were 31,518,720 bytes and zero respectively. Each format has a separate command
 step so PowerShell cannot mask earlier failure. After setup/detachment, the original pinned backing
 identity is queried read-only and its current UUID becomes the fresh review baseline; creation UUID
 is retained separately as evidence. Production frozen UUID/snapshot checks remain unchanged.

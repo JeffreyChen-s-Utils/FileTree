@@ -1,5 +1,7 @@
 """Native bin proof using only the live fresh owned VHDX drive; fixture approval is scoped explicitly."""
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 import shutil
@@ -86,6 +88,31 @@ def _review(app: QApplication, dialog, volume: OwnedVolume, answer, *, arrival: 
     return messages
 
 
+@contextmanager
+def owned_bin_dialog(volume: OwnedVolume) -> Iterator[tuple[QApplication, bins.BinDialog, list[str]]]:
+    """Own a joined native bin dialog whose survey and SDK call accept only the live private drive."""
+    verify_volume(volume)
+    app = QApplication.instance() or QApplication([])
+    native_empty, called = _shell32().SHEmptyRecycleBinW, []
+    def empty(window, root, flags):
+        verify_volume(volume)
+        require(root == str(volume.root) and flags == _EMPTY_FLAGS, "Native empty attempted a foreign/global bin")
+        called.append(root)
+        return native_empty(window, root, flags)
+    def survey(worker):
+        if not worker.cancel.is_set():
+            worker.ready.emit([_row(volume)], 1)
+    with patch.object(VolumesWorker, "run", survey), patch.object(_shell32(), "SHEmptyRecycleBinW", empty):
+        dialog = bins.BinDialog("auto")
+        try:
+            yield app, dialog, called
+        finally:
+            dialog.shutdown()
+            dialog.reject()
+            dialog.deleteLater()
+            app.processEvents()
+
+
 def bin_proof(volume: OwnedVolume) -> dict:
     """Verify default-No, arrivals, native scoped emptying, joined lifetime and metadata refresh.
 
@@ -102,45 +129,30 @@ def bin_proof(volume: OwnedVolume) -> dict:
     _trash(volume, "first 測試.bin")
     before = _row(volume).trash
     require(before.count == 1 and before.size > 0, "Native private bin did not report the owned payload")
-    native_empty, called = _shell32().SHEmptyRecycleBinW, []
-    def empty(window, root, flags):
-        verify_volume(volume)
-        require(root == str(volume.root) and flags == _EMPTY_FLAGS, "Native empty attempted a foreign/global bin")
-        called.append(root)
-        return native_empty(window, root, flags)
-    def survey(worker):
-        if not worker.cancel.is_set():
-            worker.ready.emit([_row(volume)], 1)
-    with patch.object(VolumesWorker, "run", survey), patch.object(_shell32(), "SHEmptyRecycleBinW", empty):
-        dialog = bins.BinDialog("auto")
-        try:
-            _settled(app, dialog)
-            declined = _review(app, dialog, volume, QMessageBox.StandardButton.No)
-            require(len(declined) == 1 and not called and _row(volume).trash == before,
-                    "Declined approval changed the native bin")
-            changed = _review(app, dialog, volume, QMessageBox.StandardButton.Yes, arrival=True)
-            after_arrival = _row(volume).trash
-            require(len(changed) == _QUESTIONS and not called and bool(dialog.last_error)
-                    and after_arrival.count == _ARRIVAL_COUNT,
-                    "Changed native totals did not refuse execution/refresh the failure")
-            refusal = dialog.last_error
-            ledger = capacity_ledger(scan(volume.root, options=ScanOptions(exact_windows_allocation=True)).root)
-            free_before = shutil.disk_usage(volume.root).free
-            approved = _review(app, dialog, volume, QMessageBox.StandardButton.Yes)
-            _wait(app, lambda: _row(volume).trash.count == 0)
-            after = _row(volume).trash
-            require(len(approved) == _QUESTIONS and called == [str(volume.root)] and not dialog.last_error
-                    and after.size == after.count == 0 and dialog.model.rows()[0].trash == after,
-                    "Native scoped emptying/result refresh failed")
-            require(ledger.recycle_bin_seen is not None and ledger.recycle_bin_seen > 0,
-                    "Recorded bin allocation was not attributed as an included subset")
-            return {"before": asdict(before), "arrival": asdict(after_arrival), "after": asdict(after),
-                    "native_calls": called, "declined_preserved": True, "arrival_refused": refusal,
-                    "two_questions": approved, "active_close_refused": True,
-                    "ledger_before_empty": ledger_record(ledger), "free_before": free_before,
-                    "free_after": shutil.disk_usage(volume.root).free}
-        finally:
-            dialog.shutdown()
-            dialog.reject()
-            dialog.deleteLater()
-            app.processEvents()
+    with owned_bin_dialog(volume) as (owned_app, dialog, called):
+        require(owned_app is app, "Private fixture lost its application lifetime")
+        _settled(app, dialog)
+        declined = _review(app, dialog, volume, QMessageBox.StandardButton.No)
+        require(len(declined) == 1 and not called and _row(volume).trash == before,
+                "Declined approval changed the native bin")
+        changed = _review(app, dialog, volume, QMessageBox.StandardButton.Yes, arrival=True)
+        after_arrival = _row(volume).trash
+        require(len(changed) == _QUESTIONS and not called and bool(dialog.last_error)
+                and after_arrival.count == _ARRIVAL_COUNT,
+                "Changed native totals did not refuse execution/refresh the failure")
+        refusal = dialog.last_error
+        ledger = capacity_ledger(scan(volume.root, options=ScanOptions(exact_windows_allocation=True)).root)
+        free_before = shutil.disk_usage(volume.root).free
+        approved = _review(app, dialog, volume, QMessageBox.StandardButton.Yes)
+        _wait(app, lambda: _row(volume).trash.count == 0)
+        after = _row(volume).trash
+        require(len(approved) == _QUESTIONS and called == [str(volume.root)] and not dialog.last_error
+                and after.size == after.count == 0 and dialog.model.rows()[0].trash == after,
+                "Native scoped emptying/result refresh failed")
+        require(ledger.recycle_bin_seen is not None and ledger.recycle_bin_seen > 0,
+                "Recorded bin allocation was not attributed as an included subset")
+        return {"before": asdict(before), "arrival": asdict(after_arrival), "after": asdict(after),
+                "native_calls": called, "declined_preserved": True, "arrival_refused": refusal,
+                "two_questions": approved, "active_close_refused": True,
+                "ledger_before_empty": ledger_record(ledger), "free_before": free_before,
+                "free_after": shutil.disk_usage(volume.root).free}
