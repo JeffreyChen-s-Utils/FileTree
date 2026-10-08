@@ -11,7 +11,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Safety
 
-- **#89** (P2) Fix the cropped recovery summary in the native cocoa cleanup review (`je_file_tree/gui/cleanup_review.py`); verify complete wrapped text after the estimate updates and retain native screenshot evidence.
+- **#89** (P2) [UNVERIFIED] Confirm complete wrapped recovery-summary text on native cocoa after estimate/width changes (`je_file_tree/gui/cleanup_review.py`) and inspect its CI screenshot evidence.
 
 ### Freeing space
 

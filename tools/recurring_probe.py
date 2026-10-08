@@ -74,6 +74,10 @@ class _ReviewProbe(QObject):
             dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
         button = dialog.buttons.button(QDialogButtonBox.StandardButton.Ok)
         if button.isEnabled():
+            if dialog.summary.height() < dialog.summary.heightForWidth(dialog.summary.width()):
+                self.state["error"] = "Native review recovery summary was clipped"
+                dialog.reject()
+                return
             if not dialog.grab().save(str(self.evidence / "recurring-review-zh-TW.png")):
                 self.state["error"] = "Native review capture failed"
                 dialog.reject()
@@ -119,6 +123,7 @@ def validate_review(app: QApplication, workspace: ScanWorkspace, source: Path, e
                 or workspace.current._trash_worker is not None):
             raise RuntimeError(state["error"] or "Native review altered source or dispatched a move")
         return {"fresh_foreground_scan": True, "native_review_queue": True, "manual_selection_required": True,
-                "confirmation_canceled": True, "source_preserved": True, "native_trash_move": False}
+                "confirmation_canceled": True, "source_preserved": True, "native_trash_move": False,
+                "wrapped_summary_visible": True}
     finally:
         probe.shutdown()

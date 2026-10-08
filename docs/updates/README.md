@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-49 | 2026-10-08 | Preserve wrapped recovery summary during review | #snapshot #review #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-48 | 2026-10-08 | Owned APFS capacity and recovery evidence tooling | #snapshot #apfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-47 | 2026-10-08 | Fresh recurring proposal validation and ordinary cleanup review | #done #recurring #safety #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-46 | 2026-10-08 | Scheduled recurring reports and read-only review viewer | #snapshot #background #recurring #validation | [2026-10-b](2026-10-b.md) |

@@ -222,4 +222,15 @@ class CleanupReview(QDialog):
         self.summary.setText(tr("review_summary", count=format_count(len(self.selected_nodes())),
                                 logical=format_size(value.logical, self._unit),
                                 allocated=format_size(value.allocated, self._unit), recoverable=recovery, free=free))
+        self._fit_summary()
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.selected_nodes()))
+
+    def resizeEvent(self, event) -> None:
+        """Qt: preserve every wrapped estimate line when the review width changes."""
+        super().resizeEvent(event)
+        self._fit_summary()
+
+    def _fit_summary(self) -> None:
+        self.summary.setMinimumHeight(max(self.summary.fontMetrics().height(),
+                                          self.summary.heightForWidth(self.summary.width())))
+        self.layout().activate()

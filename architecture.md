@@ -384,6 +384,8 @@ The newest descendant disqualifies active folders. Exact cache namespaces and pr
 evidence replace bare-name guesses; package stores are excluded. Manual-risk groups start unchecked
 in `CleanupReview` and are excluded from bulk selection; `cleanup_text` translates metadata in all
 three languages. `CleanupGroup` carries the effective details through to the review.
+CleanupReview recomputes the wrapped recovery summary's minimum height on estimate/width changes
+and activates layout before enabling Continue. Native review evidence refuses clipped summary geometry.
 
 `core.cleanup_policy` validates versioned JSON rule enable/age overrides and independent clean-up
 exclusions. Excluded descendants block whole-ancestor proposals while remaining in scan accounting.

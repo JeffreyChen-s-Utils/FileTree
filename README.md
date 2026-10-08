@@ -234,6 +234,7 @@ full explanation appears below the table. Uncheck entries to keep them or open t
 Parent/child selections collapse to the outermost entry. The background estimate counts shared hard-link
 allocation once and gives no recovery credit for a file whose other names remain. Recoverable file data
 is a conservative range after emptying Trash; shared extents and directory metadata remain unknown.
+The full recovery summary wraps below the table and stays visible as estimates and window width change.
 
 **File → Recent actions** shows the latest 500 approved operations, including moves, skips and failures.
 The journal keeps only time, original path, device/file identity, reason, outcome and the Trash
