@@ -38,6 +38,11 @@ or malformed configuration stops before compilation; enabled signing never silen
 unsigned output. `tools/check_signing.py` writes only the enabled boolean to the workflow output and
 does not echo identifiers or contact the service.
 
+This gate protects Windows artifacts and the GitHub release. The preceding `release` job has
+already committed/tagged the version and uploaded the Python packages to PyPI before `build-exe`
+starts. A Windows configuration, signing or verification failure cannot undo that publication.
+The workflow does not provide an atomic release across PyPI and GitHub.
+
 The local signing action checks exact nonlinked release paths, then signs only
 `build/onefile/FileTree.exe` and `build/standalone/start_file_tree.dist/FileTree.exe`. It uses SHA-256
 file digests and RFC 3161 SHA-256 timestamps. Native `Get-AuthenticodeSignature` must report a valid

@@ -20,7 +20,7 @@
 
 macOS arm64 原生编译与打包已通过 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)：167 个源项目全部保留，解压内容一致。该证据确认此提交的编译与打包，未启动或发布程序。Finder／同意验证与 Developer ID／公证仍缺环境，因此 POSIX 发布门控保持关闭。
 
-Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止发布。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](../docs/windows-signing.md)。
+Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止 Windows 产物与 GitHub 发行版的发布。版本提交、标签和 PyPI 上传会先完成，后续 Windows 失败不会撤销这些发布。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](../docs/windows-signing.md)。
 
 ![FileTree 显示一个用户文件夹：左边是文件夹树，右边是方块图](../docs/images/main_window_zh-CN.png)
 
