@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-11 | 2026-10-09 | Record scoped native SMB parity and failure evidence | #snapshot #scanner #network | [2026-10-c](2026-10-c.md) |
 | U-20261009-10 | 2026-10-09 | Repeat native Cocoa probe with per-process logs | #snapshot #background #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-09 | 2026-10-09 | Reserve history date space in recurring metadata | #done #background #history | [2026-10-c](2026-10-c.md) |
 | U-20261009-08 | 2026-10-09 | Capture stable owned SMB permission baseline | #incident #scanner #network | [2026-10-c](2026-10-c.md) |

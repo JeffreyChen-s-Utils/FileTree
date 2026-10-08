@@ -17,11 +17,10 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Scanning
 
 - **#33** (P3) [BLOCKED] Validate successful large-real-drive MFT parity and throughput against ordinary scanning before considering default enablement of `ScanOptions.experimental_mft`. A qualified disposable large-drive/admin validation environment has not been supplied. Preserve ordinary visibility, no-follow path authority, exact metadata and incomplete coverage; fallback timings do not establish MFT throughput. The serial audit makes no speed claim.
-- **#35** (P2) [UNVERIFIED] Inspect native owned SMB loopback CI proof for UNC/mapped-drive worker parity, share-root allocation units, denied branches and a mid-scan disconnect. Slow remote-link worker throughput still requires an unavailable owner share environment. Preserve incomplete coverage and confirm failures never create empty-folder clean-up proposals.
+- **#35** (P2) [BLOCKED] Measure UNC/mapped-drive worker-count throughput on a genuinely slow remote SMB link before recommending concurrency for that environment. No owner remote share/slow-link validation environment is available; native loopback timings cannot establish remote performance.
 - **#75** (P1) [BLOCKED] Verify same-device mount boundaries on macOS/other POSIX with native traversal guards; no disposable environment for that case is available from the owner. FreeBSD nullfs has a distinct st_dev and cannot prove that case. Unmounted APFS peer capacity remains unknown. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Direct bin labels and Finder emptying remain #21.
 
 ### Over time
-
 
 - **#38** (P3) [UNVERIFIED] Diagnose intermittent native macOS background/tray probe blocking from retained phases and stacks, then verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
 

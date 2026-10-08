@@ -970,6 +970,12 @@ performance, and source preservation does not establish complete coverage after 
 Only the fresh denied-directory fixture's DACL is initialized before capturing the native denial
 baseline; original/restored descriptors are retained and exact equality is required. Set-Acl's
 legacy-to-automatic inheritance conversion must not be counted as successful restoration.
+Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
+cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
+real share removal after six files were observed. The latter records 254 errors/incomplete coverage
+and zero empty-folder proposals; exact DACL restoration and final source identity/hashes passed.
+`docs/updates/share-20261009-native.json` retains provenance and observed timings, with no slow
+remote-link or concurrency speed claim. Both push/PR Tests runs at that head passed all 14 jobs.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
