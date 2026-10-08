@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-55 | 2026-10-08 | Allow a second APFS fixture volume with a 1 GiB sparse image | #incident #capacity #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-54 | 2026-10-08 | Keep owned APFS reservation peers unmounted | #incident #apfs #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-53 | 2026-10-08 | Keep Linux descriptor fixtures on their intended backend | #incident #scanner #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-52 | 2026-10-08 | Guard Darwin scans with native mount metadata | #snapshot #scanner #mounts #validation | [2026-10-b](2026-10-b.md) |

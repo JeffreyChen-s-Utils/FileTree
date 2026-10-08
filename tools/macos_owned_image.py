@@ -77,7 +77,7 @@ class OwnedImage:
     def create(self) -> None:
         """Refuse overwrite: no -ov, existing image, mountpoint or block-device selector is accepted."""
         require(not self.image.exists() and not os.path.ismount(self.root), "Existing fixture target refused")
-        command(["/usr/bin/hdiutil", "create", "-size", "512m", "-type", "SPARSE", "-fs", "APFS",
+        command(["/usr/bin/hdiutil", "create", "-size", "1g", "-type", "SPARSE", "-fs", "APFS",
                  "-volname", self.name, str(self.image)])
         info = self.image.lstat()
         require(stat.S_ISREG(info.st_mode) and info.st_uid == os.getuid() and info.st_nlink == 1,

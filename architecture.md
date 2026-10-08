@@ -1094,3 +1094,8 @@ checks refuse changed scans without history publication; no filesystem transacti
 Core remains stdlib-only, with no mount command or mutation. Buffer/refusal tests do not prove native
 same-device mounts; native CI must establish the new ABI and traversal behavior. APFS failure phase
 JSON additionally retains at most 64 KiB per native command stdout/stderr for actionable diagnostics.
+
+The fresh APFS sparse image is 1 GiB so the container permits the primary volume and its
+unmounted reservation peer. Apple documents `nx_max_file_systems` as container bytes divided
+by 512 MiB, rounded up; the former 512 MiB fixture allowed only one volume. No existing image
+is resized, and native ownership/detach checks remain mandatory.
