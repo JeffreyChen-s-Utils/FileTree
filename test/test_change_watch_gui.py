@@ -206,7 +206,15 @@ def test_tab_close_joins_only_its_monitor_and_pending_state_is_independent(qapp,
 
 
 @pytest.mark.skipif(not (sys.platform == "win32" or sys.platform.startswith("linux")), reason="native feed platform")
-def test_native_event_replaces_one_branch_preserves_other_source_and_joins(window, qapp, tmp_path):
+def test_native_event_replaces_one_branch_preserves_other_source_and_joins(window, qapp, tmp_path, monkeypatch):
+    if sys.platform == "win32":
+        from je_file_tree.core import windows_watch
+
+        # Volume-wide USN changes can legitimately require a full rescan; this case proves branch notifications.
+        def unavailable(*_args):
+            raise PermissionError("Native GUI branch test uses recursive directory notifications")
+
+        monkeypatch.setattr(windows_watch, "_watch_usn", unavailable)
     source, root = _source(window, tmp_path)
     untouched = next(child for child in root.children if child.name == "另一個")
     file = source / "另一個" / "untouched"
@@ -216,6 +224,8 @@ def test_native_event_replaces_one_branch_preserves_other_source_and_joins(windo
     window._actions["follow_changes"].setChecked(True)
     _wait(qapp, lambda: window._follow.worker is not None and bool(window._follow.worker.backend))
     worker = window._follow.worker
+    if sys.platform == "win32":
+        assert worker.backend == "directory_changes"
     finished = QSignalSpy(worker.finished)
     cancelled = worker.cancel
     (source / "資料" / "新增.bin").write_bytes(b"owned event" * 2048)

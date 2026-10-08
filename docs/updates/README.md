@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-71 | 2026-10-08 | Isolate native GUI branch notification validation from volume-wide reconciliation | #incident #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-70 | 2026-10-08 | Check native Windows directory identity metadata before MFT tree construction | #snapshot #mft #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-69 | 2026-10-08 | Preserve live zero-link and formatted unused MFT segments | #snapshot #mft #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-68 | 2026-10-08 | Build actual compiled Windows installers with owned native validation | #snapshot #distribution #validation | [2026-10-b](2026-10-b.md) |
