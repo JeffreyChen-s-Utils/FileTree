@@ -1,4 +1,4 @@
-"""Validate capacity/savings/bin emptying only on a freshly created owned VHDX/NTFS volume."""
+"""Validate capacity/savings/bin/compaction only on a freshly created owned VHD/VHDX NTFS volume."""
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ from je_file_tree.core.savings import estimate_savings  # noqa: E402
 from je_file_tree.core.windows_allocation import file_allocation  # noqa: E402
 from tools.windows_owned_volume import owned_ntfs_volume, OwnedVolume, require, verify_volume  # noqa: E402
 from tools.windows_bin_probe import bin_proof  # noqa: E402
+from tools.windows_compaction_probe import capture_guest, compaction_proof  # noqa: E402
 from tools.volume_evidence import ledger_record  # noqa: E402
 
 _MIB = 1024 * 1024
@@ -135,10 +136,18 @@ def main() -> int:
     """Run only an administrator-owned private image; no input disk/path selector or UAC prompt."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--kind", choices=("vhd", "vhdx"), default="vhdx",
+                        help="Create only a fresh owned fixture in this format (default: vhdx)")
     args = parser.parse_args()
-    with owned_ntfs_volume() as volume:
+    captured = {}
+    evidence = {}
+    def after_detach(volume: OwnedVolume) -> None:
+        evidence["compaction"] = compaction_proof(volume, captured)
+        evidence["phase"] = "guest_compaction"
+        _save(args.output, evidence)
+    with owned_ntfs_volume(kind=args.kind, after_detach=after_detach) as volume:
         root = _fixtures(volume)
-        evidence = {"fresh_owned_vhdx": True, "native_device": volume.physical,
+        evidence = {"fresh_owned_disk": True, "kind": args.kind, "native_device": volume.physical,
                     "volume_id": volume.volume_id, "capacity": _ledger(volume), "savings": _savings(volume, root),
                     "cloud_placeholders": "unavailable: actual provider required",
                     "shared_extents": "unknown", "reserved_bytes": "not independently measured"}
@@ -149,6 +158,9 @@ def main() -> int:
         evidence["phase"] = "private_bin"
         _save(args.output, evidence)
         evidence["capacity_after_empty"] = _ledger(volume)
+        captured = capture_guest(volume)
+        evidence["phase"] = "guest_captured"
+        _save(args.output, evidence)
     evidence["owned_disk_detached_and_removed"] = True
     evidence["phase"] = "complete"
     _save(args.output, evidence)

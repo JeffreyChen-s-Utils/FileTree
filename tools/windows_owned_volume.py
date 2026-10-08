@@ -1,6 +1,6 @@
-"""Fresh disposable VHDX/NTFS validation fixtures; never accept existing images, drives or disks."""
+"""Fresh disposable VHD/VHDX NTFS fixtures; never accept existing images, drives or disks."""
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 import ctypes
 from dataclasses import dataclass
@@ -15,6 +15,7 @@ import tempfile
 import uuid
 
 from je_file_tree.core import virtual_disk_info as native
+from je_file_tree.core.copy_io import _pinned_file
 from je_file_tree.core.no_replace import anchored_directory, directory_stamps
 
 _CAPACITY = 512 * 1024 * 1024
@@ -101,7 +102,9 @@ def _library():
 
 def _create(library, path: Path, identity: bytes) -> ctypes.c_void_p:
     require(not os.path.lexists(path), "Refusing an existing fixture image")
-    storage = native._Storage(3, native._Guid.from_buffer_copy(native._MICROSOFT))
+    kind = path.suffix.removeprefix(".")
+    require(kind in native._DEVICES, "Refusing an unsupported fresh fixture format")
+    storage = native._Storage(native._DEVICES[kind], native._Guid.from_buffer_copy(native._MICROSOFT))
     parameters = _Create()
     parameters.version, parameters.guid = 2, native._Guid.from_buffer_copy(identity)
     parameters.maximum, parameters.sector = _CAPACITY, 512
@@ -144,6 +147,14 @@ def _initialize(physical: str, label: str) -> dict[str, str]:
 
 
 def _cleanup(owned: Path, image: Path, directory_id: tuple[int, int], image_id: tuple[int, int]) -> None:
+    _owned_image(owned, image, directory_id, image_id)
+    with anchored_directory(directory_stamps(str(owned))):
+        _owned_image(owned, image, directory_id, image_id)
+        image.unlink()
+    owned.rmdir()
+
+
+def _owned_image(owned: Path, image: Path, directory_id: tuple[int, int], image_id: tuple[int, int]) -> None:
     require(owned.name.startswith(_PREFIX) and owned.resolve(strict=True) == owned,
             "Refusing redirected/unowned fixture cleanup")
     info = owned.lstat()
@@ -154,9 +165,14 @@ def _cleanup(owned: Path, image: Path, directory_id: tuple[int, int], image_id: 
     info = image.lstat()
     require(stat.S_ISREG(info.st_mode) and not getattr(info, "st_file_attributes", 0) & 0x400
             and (info.st_dev, info.st_ino) == image_id, "Fixture image identity changed; retain it")
-    with anchored_directory(directory_stamps(str(owned))):
-        image.unlink()
-    owned.rmdir()
+
+
+def _after_detach(owned: Path, image: Path, identities: tuple[tuple[int, int], tuple[int, int]],
+                  volume: OwnedVolume, callback: Callable[[OwnedVolume], None]) -> None:
+    _owned_image(owned, image, *identities)
+    with anchored_directory(directory_stamps(str(owned))), _pinned_file(str(image)):
+        _owned_image(owned, image, *identities)
+        callback(volume)
 
 
 def verify_volume(volume: OwnedVolume) -> None:
@@ -171,27 +187,33 @@ def verify_volume(volume: OwnedVolume) -> None:
 
 
 @contextmanager
-def owned_ntfs_volume() -> Iterator[OwnedVolume]:
-    """Create, map and format only one new private VHDX, then detach before removing its owned image.
+def owned_ntfs_volume(*, kind: str = "vhdx",
+                      after_detach: Callable[[OwnedVolume], None] | None = None) -> Iterator[OwnedVolume]:
+    """Create, map and format only one new private VHD/VHDX, then detach before owned image cleanup.
 
     No existing path, drive, physical disk or bin is accepted. Format only the exact native mapping
     of this newly created UUID with a RAW/no-partitions/no-boot/no-system/size proof in the fixed
     PowerShell script. The OS assigns the unused drive letter. Detachment failure retains scratch.
     This validation-only tool requires an existing administrator token; it never prompts for UAC.
+    An optional hook runs only after successful body/detach/handle-close, with original directory/file
+    identities rechecked and pinned. Hook failure retains the image, including possible attachment.
     """
     _administrator()
     _enable_volume_privilege()
+    require(kind in native._DEVICES, "Only fresh VHD/VHDX fixture formats are allowed")
     owned = Path(tempfile.mkdtemp(prefix=_PREFIX)).resolve(strict=True)
     initial = owned.lstat()
     require(not list(owned.iterdir()) and not getattr(initial, "st_file_attributes", 0) & 0x400,
             "Fresh owned scratch required")
-    image, identity = owned / "owned.vhdx", uuid.uuid4().bytes_le
+    image, identity = owned / ("owned." + kind), uuid.uuid4().bytes_le
     library = _library()
     handle = _create(library, image, identity)
-    image_info = image.lstat()
     attached = False
     detached = False
+    image_info = volume = None
+    completed = False
     try:
+        image_info = image.lstat()
         require(bytes(native._query(library, handle, 2).value.guid) == identity, "Created UUID differs")
         code = library.AttachVirtualDisk(handle, None, 2, 0, None, None)
         if code:
@@ -203,6 +225,7 @@ def owned_ntfs_volume() -> Iterator[OwnedVolume]:
         volume = OwnedVolume(image, identity, physical, Path(data["root"]), data["volume_id"], data["label"], handle)
         verify_volume(volume)
         yield volume
+        completed = True
     finally:
         try:
             code = library.DetachVirtualDisk(handle, 0, 0) if attached else 0
@@ -211,5 +234,9 @@ def owned_ntfs_volume() -> Iterator[OwnedVolume]:
             detached = True
         finally:
             native._kernel().CloseHandle(handle)
-            if detached:
+            if detached and image_info is not None:
+                # A failed hook may have retained an attachment; never delete its image as a fallback.
+                if completed and after_detach is not None:
+                    identities = ((initial.st_dev, initial.st_ino), (image_info.st_dev, image_info.st_ino))
+                    _after_detach(owned, image, identities, volume, after_detach)
                 _cleanup(owned, image, (initial.st_dev, initial.st_ino), (image_info.st_dev, image_info.st_ino))

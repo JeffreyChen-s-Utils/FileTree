@@ -23,7 +23,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Windows space explained
 
-- **#59** (P2) Verify populated owned private VHD/VHDX compaction and guest-data preservation on an administrator Windows CI runner using the reviewed fixed native zero-block backend, without touching existing user disks. Preserve actual partial/unknown/zero savings and exact disk/guest identities; guest-used bytes stay unknown. VMDK/VDI/QCOW2 remain explicitly unsupported until a suitable fixed backend is available.
+- **#59** (P2) Verify the populated VHD/VHDX compaction results from `tools/windows_compaction_probe.py` through the administrator `windows-volume` CI job, including full guest main/ADS hashes, exact namespace/identities/link counts, read-only reattachment, joined detachment and captured cleanup. Preserve actual partial/unknown/zero savings; guest-used bytes stay unknown. VMDK/VDI/QCOW2 remain explicitly unsupported until a suitable fixed backend is available.
 
 ### Scanning
 

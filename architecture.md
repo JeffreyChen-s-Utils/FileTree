@@ -630,6 +630,15 @@ failures, with detachment/cleanup confirmed only on complete success; the privat
 application's bool/tuple-compatible Qt Trash receipt adapter.
 Validation ledger serialization retains scalar coverage counts and the unsafe-folder count rather
 than deep-copying/serializing Node authorization graphs; unknown buckets remain null.
+The validation fixture accepts only a fresh VHD/VHDX format choice, never an existing image selector.
+Successful body/detach/handle-close may enter a callback guarded by original scratch/image identities,
+anchors and file pins; failed bodies skip it, failed callbacks retain the image and initial stat
+failure still closes the creation handle. `windows_compaction_probe` captures fresh guest full main/
+ADS hashes, namespace/IDs/lengths/link counts and written/zeroed blocks, then uses production preview/
+runtime/executor and durable operation-worker audit while detached. Only the captured UUID is
+reattached read-only without a drive letter/formatting and compared through its original volume GUID.
+Read-only detach failure retains the image. CI runs both fresh formats and saves separate phase JSON;
+populated native proof is pending, and guest usage/guaranteed recovery remain unknown.
 
 The supported core library imports, result fields, ownership and error/cancellation contracts are
 documented in [the core API guide](docs/core-api.md); private helpers and packed snapshots are internal.

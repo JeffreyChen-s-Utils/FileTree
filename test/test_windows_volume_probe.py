@@ -12,6 +12,7 @@ from tools import windows_owned_volume as volumes
 from tools import windows_bin_probe as bins
 from tools import validate_windows_volume as probe
 from tools.volume_evidence import ledger_record
+from tools import windows_compaction_probe as compaction
 
 
 def test_existing_image_is_preserved_before_native_creation(tmp_path):
@@ -152,3 +153,104 @@ def test_phase_json_serializes_real_unsafe_coverage_counts_and_preserves_unknown
     assert evidence["ledger"]["metadata_bytes"] is None
     with pytest.raises(TypeError):
         probe._save(output, {"unknown": object()})
+
+
+def test_fresh_unknown_disk_format_never_reaches_native_creation(tmp_path):
+    library = SimpleNamespace(CreateVirtualDisk=lambda *_args: pytest.fail("Unsupported native format"))
+    with pytest.raises(RuntimeError, match="unsupported"):
+        volumes._create(library, tmp_path / "owned.qcow2", bytes(16))
+
+
+def test_detached_hook_refuses_replacement_and_preserves_both_owned_original_and_arrival(tmp_path):
+    owned = tmp_path / "filetree-owned-ntfs-detached"
+    owned.mkdir()
+    image = owned / "owned.vhdx"
+    image.write_bytes(b"owned original fixture")
+    directory_id = (owned.stat().st_dev, owned.stat().st_ino)
+    image_id = (image.stat().st_dev, image.stat().st_ino)
+    original = tmp_path / "retained-original.vhdx"
+    image.rename(original)
+    image.write_bytes(b"foreign arrival")
+    with pytest.raises(RuntimeError, match="identity changed"):
+        volumes._after_detach(owned, image, (directory_id, image_id), None,
+                             lambda _volume: pytest.fail("Replaced image reached callback"))
+    assert image.read_bytes() == b"foreign arrival" and original.read_bytes() == b"owned original fixture"
+
+
+def test_detached_hook_pins_captured_image_and_retains_it_on_hook_failure(tmp_path, monkeypatch):
+    owned = tmp_path / "filetree-owned-ntfs-hook"
+    owned.mkdir()
+    image = owned / "owned.vhdx"
+    image.write_bytes(b"owned fixture")
+    identities = ((owned.stat().st_dev, owned.stat().st_ino), (image.stat().st_dev, image.stat().st_ino))
+    entered = []
+    from contextlib import contextmanager
+    @contextmanager
+    def pin(path):
+        assert path == str(image)
+        entered.append("pinned")
+        yield
+        entered.append("released")
+    monkeypatch.setattr(volumes, "_pinned_file", pin)
+    def fail(_volume):
+        assert entered == ["pinned"]
+        raise RuntimeError("owned guest proof failed")
+    with pytest.raises(RuntimeError, match="guest proof"):
+        volumes._after_detach(owned, image, identities, None, fail)
+    assert image.read_bytes() == b"owned fixture"
+
+
+def test_guest_verification_requires_exact_namespace_before_any_payload_read(tmp_path, monkeypatch):
+    from contextlib import nullcontext
+    root = tmp_path / "owned-guest-preservation"
+    root.mkdir()
+    (root / "arrival.bin").write_bytes(b"owned changed fixture")
+    volume = SimpleNamespace(root=tmp_path)
+    monkeypatch.setattr(compaction, "_readonly_guest", lambda _volume: nullcontext(volume))
+    monkeypatch.setattr(compaction, "_hash", lambda _path: pytest.fail("Changed namespace hashed"))
+    with pytest.raises(RuntimeError, match="namespace changed"):
+        compaction.verify_guest(volume, {"expected.bin": {}})
+
+
+@pytest.mark.parametrize("failure", ["image_stat", "detached_hook"])
+def test_owned_context_closes_created_handle_and_retains_image_on_observation_or_hook_failure(
+        tmp_path, monkeypatch, failure):
+    owned = tmp_path / "filetree-owned-ntfs-handle"
+    owned.mkdir()
+    image = owned / "owned.vhdx"
+    monkeypatch.setattr(volumes, "_administrator", lambda: None)
+    monkeypatch.setattr(volumes, "_enable_volume_privilege", lambda: None)
+    monkeypatch.setattr(volumes.tempfile, "mkdtemp", lambda **_kwargs: str(owned))
+    closed, detached = [], []
+    def detach(*_args):
+        detached.append(True)
+        return 0
+    library = SimpleNamespace(AttachVirtualDisk=lambda *_args: 0, DetachVirtualDisk=detach)
+    monkeypatch.setattr(volumes, "_library", lambda: library)
+    def create(_library, path, identity):
+        path.write_bytes(b"owned fresh fixture")
+        library.identity = identity
+        return ctypes.c_void_p(123)
+    monkeypatch.setattr(volumes, "_create", create)
+    monkeypatch.setattr(native, "_query", lambda *_args: native._Info(2, native._Value(
+        guid=native._Guid.from_buffer_copy(library.identity))))
+    monkeypatch.setattr(native, "_kernel", lambda: SimpleNamespace(
+        CloseHandle=lambda handle: closed.append(handle.value)))
+    monkeypatch.setattr(volumes, "_physical", lambda *_args: r"\\.\PhysicalDrive9")
+    monkeypatch.setattr(volumes, "_initialize", lambda *_args:
+                        dict(root="Z:\\", volume_id="owned-guid", label="FT-0123456789ab"))
+    monkeypatch.setattr(volumes, "verify_volume", lambda _volume: None)
+    lstat = Path.lstat
+    def fail_stat(path):
+        if path == image:
+            raise OSError("owned image observation failed")
+        return lstat(path)
+    if failure == "image_stat":
+        monkeypatch.setattr(Path, "lstat", fail_stat)
+    def hook(_volume):
+        assert closed == [123] and detached == [True]
+        raise OSError("owned hook failed; retain possible attachment")
+    with pytest.raises(OSError), volumes.owned_ntfs_volume(after_detach=hook):
+        assert failure == "detached_hook"
+    assert closed == [123] and image.read_bytes() == b"owned fresh fixture"
+    assert detached == ([True] if failure == "detached_hook" else [])

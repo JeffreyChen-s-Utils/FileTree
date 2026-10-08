@@ -273,7 +273,10 @@ python tools/validate_linux_volume.py --evidence volume-evidence
 
 ```powershell
 py -3 tools/validate_windows_volume.py --output windows-volume.json
+py -3 tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
 ```
+
+CI 工具另以 `--kind vhd` 建立全新 VHD 测试镜像，默认仍是 VHDX。新增的客户机数据压缩验证仍待原生 CI 运行。只写入新的客户机文件、硬链接与命名数据流，哈希完整内容，分离／关闭自有 handle，核对并固定原始镜像／临时目录身份后，使用正式运行状态／预览／原生执行及持久操作日志。只将该标识符重新以只读方式挂载，不分配驱动器盘符、不格式化，再比较完整客户机名称范围、文件身份／链接数／长度及主内容／数据流的完整哈希。后续验证或只读分离失败会保留镜像，只有完整证据确认清理。不接受已有镜像选择器或真实用户客户机。
 
 ## 许可证
 

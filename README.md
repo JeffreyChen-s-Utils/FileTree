@@ -430,7 +430,10 @@ A separate Windows CI job runs `validate_windows_volume.py` as administrator. It
 
 ```powershell
 py -3 tools/validate_windows_volume.py --output windows-volume.json
+py -3 tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
 ```
+
+The CI tool also creates fresh VHD fixtures with `--kind vhd` (VHDX remains default). Its new populated compaction proof is pending native CI execution. It writes only new guest files, a hard link and named stream, hashes complete contents, detaches/closes the owned handle, verifies and pins the original image/scratch identities, then uses production runtime/preview/native execution and durable audit. It reattaches only that UUID read-only with no drive letter or formatting and compares exact guest namespace, file identities/link counts/lengths and full main/stream hashes. A failed hook or read-only detach retains the image; only complete evidence confirms cleanup. No existing image selector or real user guest is accepted.
 
 ## License
 

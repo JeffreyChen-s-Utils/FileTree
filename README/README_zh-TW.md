@@ -273,7 +273,10 @@ python tools/validate_linux_volume.py --evidence volume-evidence
 
 ```powershell
 py -3 tools/validate_windows_volume.py --output windows-volume.json
+py -3 tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
 ```
+
+CI 工具另以 `--kind vhd` 建立全新 VHD 測試映像，預設仍是 VHDX。新增的客體資料壓縮驗證仍待原生 CI 執行。只寫入新的客體檔案、硬連結與具名資料串流，雜湊完整內容，卸離／關閉自有 handle，核對並固定原始映像／暫存身分後，使用正式執行狀態／預覽／原生執行及持久操作紀錄。只將該識別碼重新以唯讀方式掛載，不指派磁碟機代號、不格式化，再比對完整客體名稱範圍、檔案身分／連結數／長度及主要內容／串流的完整雜湊。後續驗證或唯讀卸離失敗會保留映像，只有完整證據確認清理。不接受既有映像選擇器或真實使用者客體。
 
 ## 授權
 

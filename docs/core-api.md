@@ -532,3 +532,16 @@ denied System Volume Information branch correctly retained incomplete coverage/n
 Bin payload/metadata is a subset of allocation, not an extra total; after emptying, 136 observed
 metadata bytes remained with zero OS items. Actual per-case hard-link/compression/sparse free recovery,
 cloud providers, independently reserved/shared bytes and APFS remain separate validation scope.
+
+`validate_windows_volume.py --kind vhd --output windows-volume-vhd.json` selects only a fresh owned
+VHD fixture; the default remains VHDX and no existing image/device/drive selector is accepted. The
+new populated compaction stage awaits native CI proof. It captures complete main/ADS hashes and
+guest namespace/identities/lengths/link counts for fresh files, including a hard link and written then
+zeroed blocks. After successful body/detachment/handle-close, an owned callback rechecks and pins the
+original scratch/image identities before production preview/runtime/native compaction and durable
+approval/outcome. Only the exact owned UUID is reattached read-only/NO_DRIVE_LETTER without formatting,
+and every guest record is compared through the recorded volume GUID root. Guest usage stays unknown.
+Hook or read-only detach failure retains the image; failed bodies never enter the hook. A created
+handle now closes even if initial image stat fails. Phase JSON precedes later native stages; confirmed
+cleanup is written only after successful callback/detach and captured cleanup. The Windows CI job
+runs both fresh formats and preserves their separate JSON evidence for seven days.
