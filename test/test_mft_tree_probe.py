@@ -146,6 +146,10 @@ def test_native_acl_script_refuses_arbitrary_host_paths_before_volume_or_acl_acc
     assert script.index("Only the fresh private-image") < script.index("Get-CimInstance")
     assert "[IO.FileAttributes]::ReparsePoint" in script and "VolumeId" in script
     assert "FileSystemRights]::ListDirectory" in script and "SetSecurityDescriptorSddlForm" in script
+    assert script.index("Refusing a redirected fixture") < script.index("Add-Type")
+    assert "ControlFlags]::DiscretionaryAclAutoInherited" in script
+    assert "DefaultDllImportSearchPaths(DllImportSearchPath.System32)" in script
+    assert "SetFileSecurityW(path, 4, descriptor)" in script
 
 
 def test_failed_native_acl_subprocess_retains_bounded_stderr_in_phase_error(tmp_path, monkeypatch):

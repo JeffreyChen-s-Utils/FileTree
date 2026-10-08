@@ -1044,6 +1044,11 @@ intact, and incompatible inherited PowerShell 7 modules cannot override the nati
 An owned denied-listing branch freezes its original DACL and restores it in finally, including failed probes;
 phase evidence retains the exact original/restored descriptors before enforcing equality, so failed
 native restoration cannot be mistaken for completed validation or lose its permission metadata.
+The fixed ACL script preserves the captured inheritance model: ordinary Set-Acl handles an already
+auto-inherited DACL; legacy non-auto-inherited fixtures use System32 SetFileSecurityW with only
+DACL_SECURITY_INFORMATION, without propagating to children or writing owner/group/SACL sections.
+This use of the obsolete API is confined to the owned fixture because Set-Acl converts the legacy
+model. Exact descriptor equality remains mandatory; no AI flag or ACE differences are ignored.
 fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern, volume GUID, unique
 fixture label and nonreparse directory before ACL access. It denies only LIST_DIRECTORY on that owned
 folder. Phase evidence retains comparisons/refusal and original payload/ADS identities/hashes; no host
