@@ -426,7 +426,7 @@ can compute an unaccounted remainder; omitted bytes, filesystem metadata and oth
 unknown. `gui/capacity_panel.py` shows the ledger and its limits. Tree edits invalidate it immediately;
 whole-tree analysis after a branch rescan refreshes it. Replaced analysis signals are ignored and all
 analysis threads are joined at close. CLI scan JSON includes the same ledger. Accuracy validation on
-isolated NTFS/APFS volumes is outstanding; the owned ext4 cases below have passed CI. Different-device mounts are listed without
+isolated owned NTFS/ext4/APFS volumes has passed its scoped native CI cases; independent shared/reserved bytes remain unknown. Different-device mounts are listed without
 traversal. `core.mounts` reads the Linux process namespace before traversal and before publication, strictly parsing mountinfo
 and decoding escaped whitespace/backslashes exactly once. The immutable directory boundary set is
 rebased for ancestor aliases and shared by crawler threads. A `MountSurvey` opens each Linux directory
@@ -1069,3 +1069,13 @@ The APFS diagnostic runs after the existing cocoa/background probes so its failu
 independent native evidence. The first native image confirmed bin/capacity/sparse/compression/clone
 metadata with successful detach/cleanup, including a null remainder when clone allocation exceeded
 OS used bytes; complete recovery/cross-volume evidence remains required by #75/#76.
+Native run 37738787491 subsequently completed all seven APFS recovery cases and cross-volume
+fcopyfile/resource-fork/source-preservation proof with verified detach/cleanup. The first clone
+released zero bytes, its final peer 8 MiB: distinct inode allocation cannot determine shared recovery.
+It also completed the native cocoa wrapped-summary check and its screenshot was inspected.
+`tools/macos_apfs_peer.py` derives a container only from this image's native checked physical store,
+checks installed diskutil options and adds one fresh private peer with 16 MiB reserve/64 MiB quota.
+Native volume-list UUID/name/device and configured byte values must match before accepting evidence.
+Its statvfs/ledger samples retain raw shared-container effects and null independent reservation bytes;
+capacity rows are never summed. The image holder recognizes only its registered fresh mountpoints
+and normally detaches the complete owned image. This additional peer's native evidence remains pending.

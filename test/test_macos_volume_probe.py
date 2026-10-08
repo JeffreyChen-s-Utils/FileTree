@@ -70,6 +70,7 @@ def test_macos_savings_marks_unknown_shared_extents_without_a_positive_lower_bou
 def test_attachment_foreign_mount_refuses_before_diskutil(tmp_path, monkeypatch):
     image = object.__new__(owned.OwnedImage)
     image.owned, image.root = tmp_path, tmp_path / "volume"
+    image._mountpoints = {image.root}
     image.image, image.device = tmp_path / "owned.sparseimage", "/dev/disk9"
     monkeypatch.setattr(image, "_image_check", lambda: None)
     metadata = {"images": [{"image-path": str(image.image), "system-entities": [

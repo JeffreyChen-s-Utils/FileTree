@@ -68,6 +68,7 @@ class OwnedImage:
         self.image = self.owned / (self.name + ".sparseimage")
         self.root = self.owned / "volume"
         self.root.mkdir(mode=0o700)
+        self._mountpoints = {self.root}
         self.identity: tuple[int, int] | None = None
         self.device, self.volume_uuid = "", ""
         self.attached = False
@@ -115,9 +116,18 @@ class OwnedImage:
         entries = entities(images[0])
         require(image_device(images[0]) == self.device, "Owned image device changed")
         points = [entry["mount-point"] for entry in entries if entry.get("mount-point")]
-        require(points and all(isinstance(point, str) and Path(point).resolve() == self.root for point in points),
+        require(points and all(isinstance(point, str) and Path(point).resolve() in self._mountpoints
+                               for point in points),
                 "Image escaped the private fixture mountpoint")
         return images[0]
+
+    def new_mountpoint(self) -> Path:
+        """Register only a fresh private sibling for this image's additional owned APFS volume."""
+        self.check()
+        path = self.owned / ("peer-" + uuid.uuid4().hex)
+        path.mkdir(mode=0o700)
+        self._mountpoints.add(path)
+        return path
 
     def check(self) -> dict:
         """Check image/device mapping, APFS identity and the exact private volume name/mountpoint."""

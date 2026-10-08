@@ -230,6 +230,10 @@ def main() -> int:
         save(args.evidence, proof)
         recovery_proof(image, paths, record=record)
         proof["cross_volume"] = cross_volume_proof(image)
+        save(args.evidence, proof)
+        from tools.macos_apfs_peer import reservation_proof  # noqa: PLC0415
+
+        proof["reservation"] = reservation_proof(image)
         proof["phase"] = "validated"
         save(args.evidence, proof)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
