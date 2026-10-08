@@ -54,8 +54,19 @@ and bounded capacity warning transitions from GUI services. Versioned configurat
 commands or action permissions. Claim receipts bind root, timestamp and schedule fingerprint;
 failed/canceled claims suppress same-period redispatch, missed periods coalesce once and clock
 rollback postpones work. OS available capacity is distinct from scan allocation; unknown values do
-not reset low-space latches. These metadata APIs never scan or mutate sources; the tray, persisted
-claim serialization, gentle history scans and removable per-user startup integration remain #38.
+not reset low-space latches. These metadata APIs never scan or mutate sources. Strict bounded
+attempt serialization rejects action fields, duplicate normalized roots and overflowing timestamps.
+
+`gui.background_monitor` is one passive workspace service with Options configuration and a native
+tray. start_services activates only persisted opt-in; factories never show a tray or schedule scans.
+CapacityWorker copies bounded OS available-capacity scalars without bin queries; crossings are
+informational notifications plus plain-text status/tooltips. QLockFile and synchronized QSettings
+claim before scheduled dispatch; malformed/locked/unpersistable receipts fail closed. ScheduledWorker
+forces gentle/one-thread scans and normal bounded history, recording incomplete scopes/errors while
+leaving foreground tabs untouched. Foreground scans/source reviews cancel and join gentle work.
+Explicit Quit joins everything; window close hides only with enabled/available tray, and tray loss
+restores the window. --background skips elevation and only hides a configured native tray session;
+it never enables monitoring. Removable per-user automatic startup remains #38.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
@@ -889,6 +900,11 @@ recent folders.
   `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
+
+The GUI entry point accepts `--background` for an explicitly enabled monitor. It skips elevation
+and hides the workspace only when the saved opt-in configuration and native system tray are usable.
+The flag alone never enables monitoring. Window close may keep an opted-in monitor in the tray;
+`Workspace.quit_application` is the explicit exit boundary and joins every owned worker.
 
 None. FileTree is standalone: no other repository imports it or calls its command line, and it depends on
 no other repository in the workspace — only on PySide6.

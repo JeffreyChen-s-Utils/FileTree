@@ -33,7 +33,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Over time
 
-- **#38** (P3) Integrate default-off background configuration into Options, owned tray/window lifetime and OS capacity notifications. Persist/serialize schedule claims, run gentle chosen-folder history scans and retain failures/partial coverage. Add opt-in removable per-user startup (Windows HKCU Run, Linux autostart desktop file, macOS LaunchAgent), with owned-registration collision checks and no background elevation prompt; verify native tray behavior and join on explicit Quit.
+- **#38** (P3) Add opt-in removable per-user startup (Windows HKCU Run, Linux autostart desktop file, macOS LaunchAgent), with owned-registration collision checks. Review native tray/notification and scheduled-history CI proof on supported desktops; unavailable trays must keep/restore the visible workspace and explicit Quit must join all work.
 - **#86** (P2) Reviewable recurring clean-up: combine #37's scan history with the policy in #81 to show “new junk since last scan” and “largest new growth” per drive; a scheduled scan may prepare a dated proposal but never move anything automatically. The proposal records the scan coverage and rule version, expires when paths change, and opens the same review queue as #77. Test that a missed schedule, stale scan or changed rule cannot silently turn an old proposal into an action.
 
 ### Everyday use

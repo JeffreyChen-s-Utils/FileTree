@@ -63,12 +63,15 @@ def main(argv: Sequence[str]) -> int:
     folder = next((argument for argument in argv if not argument.startswith("-")), None)
     settings = QSettings()
     # Like TreeSize: ask first, so every folder can be read. Declining keeps this copy.
-    if wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
+    background = "--background" in argv
+    if not background and wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
         return 0
     pace_workers()  # background work waits while the window is busy
     window = create_workspace(settings, folder)
     window.show()
     window.start_services()
+    if background and window.background.can_hide:
+        window.hide()
     return app.exec()
 
 

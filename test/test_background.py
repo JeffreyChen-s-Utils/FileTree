@@ -8,7 +8,7 @@ import pytest
 
 from je_file_tree.core.background import (
     CapacityObservation, MAX_CONFIG_BYTES, MAX_ROOTS, MAX_VOLUMES, MonitorConfig,
-    ScanAttempt, SpaceWarnings, claim_scan, due_roots, load_config,
+    ScanAttempt, SpaceWarnings, claim_scan, due_roots, dump_attempts, load_attempts, load_config,
 )
 
 
@@ -67,7 +67,7 @@ def test_attempts_claim_before_dispatch_and_missed_periods_never_replay_backlog(
 def test_corrupt_receipts_and_clock_values_cannot_dispatch(tmp_path):
     root = str(tmp_path)
     config = MonitorConfig(True, roots=(root,))
-    for now in (True, -1, float("nan"), float("inf"), "now"):
+    for now in (True, -1, float("nan"), float("inf"), "now", 10 ** 4000):
         with pytest.raises(ValueError):
             due_roots(config, {}, now)
     for state in ("remove", {}, False):
@@ -106,3 +106,21 @@ def test_invalid_capacity_batch_does_not_consume_warning_latch(tmp_path):
     for amount in (-1, 1001, True):
         with pytest.raises(ValueError):
             CapacityObservation(root, 1000, amount)
+
+
+def test_attempt_serialization_rejects_duplicate_or_unknown_authority_fields(tmp_path):
+    config = MonitorConfig(True, roots=(str(tmp_path),))
+    attempt = claim_scan(config, str(tmp_path), 1000)
+    assert load_attempts(dump_attempts({attempt.key: attempt})) == {attempt.key: attempt}
+    value = json.loads(dump_attempts({attempt.key: attempt}))
+    value["attempts"].append(value["attempts"][0].copy())
+    with pytest.raises(ValueError, match="Duplicate"):
+        load_attempts(json.dumps(value))
+    value["attempts"] = value["attempts"][:1]
+    value["attempts"][0]["approved_removal"] = True
+    with pytest.raises(ValueError, match="fields"):
+        load_attempts(json.dumps(value))
+    with pytest.raises(ValueError, match="does not match"):
+        dump_attempts({"foreign": attempt})
+    with pytest.raises(ValueError):
+        load_attempts('{"version":1,"version":1,"attempts":[]}')

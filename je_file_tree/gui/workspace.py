@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QMainWindow, QTabWidget, QToolButton
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
+from je_file_tree.gui.background_monitor import BackgroundMonitor
 
 MAX_TABS = 16
 
@@ -29,6 +30,8 @@ class ScanWorkspace(QMainWindow):
         self.tabs.currentChanged.connect(self._activated)
         self.setCentralWidget(self.tabs)
         self._closing, self._services = False, False
+        self._force_close = False
+        self.background = BackgroundMonitor(self)
         self.new_button = QToolButton(self)
         self.new_button.clicked.connect(lambda _checked=False: self.add_tab())
         self.tabs.setCornerWidget(self.new_button, Qt.Corner.TopRightCorner)
@@ -54,7 +57,10 @@ class ScanWorkspace(QMainWindow):
 
     def _insert(self, window: MainWindow) -> None:
         window._operations = self.operations
-        window._close_all = self.close
+        window._close_all = self.quit_application
+        window._background_settings = self.background.configure_dialog
+        window._background_pause = self.background.quiesce
+        window._actions["background_monitor"].setEnabled(True)
         window._language_changed = self.retranslate
         window.setWindowFlags(Qt.WindowType.Widget)
         self.operations.windows.append(window)
@@ -111,6 +117,7 @@ class ScanWorkspace(QMainWindow):
         """Schedule application services only after the actual application has shown the workspace."""
         self._services = True
         self.current._updates.start()
+        self.background.start()
 
     def retranslate(self) -> None:
         """Language is application-wide; translate every result tab and the workspace controls."""
@@ -122,10 +129,21 @@ class ScanWorkspace(QMainWindow):
             window.retranslate()
             self._label(window)
         self.setWindowTitle(self.current.windowTitle())
+        self.background.retranslate()
+
+    def quit_application(self) -> None:
+        """Explicit Quit always exits, independently of the opt-in close-to-tray preference."""
+        self._force_close = True
+        self.close()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Join every owned tab before closing the application; never leave a scan thread behind."""
+        if not self._force_close and self.background.can_hide:
+            self.hide()
+            event.ignore()
+            return
         self._closing = True
+        self.background.shutdown()
         for window in tuple(self.operations.windows):
             window.close()
         self.settings.setValue("workspace_geometry", self.saveGeometry())

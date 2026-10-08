@@ -696,4 +696,25 @@ same-period work; clock rollback postpones dispatch, and changed schedules inval
 and returns informational below-threshold crossings. Unknown capacity never means zero or resets a
 low-space latch; actual recovery permits a new crossing warning. Invalid batches leave latches intact.
 These core APIs perform no scans, notification dispatch, startup installation or source mutation;
-tray integration, gentle scheduled history scans and opt-in removable autostart remain #38.
+the separate GUI service supplies scans/notifications. Opt-in removable autostart remains #38.
+
+`background.dump_attempts` / `load_attempts` strictly serialize at most 32 scalar claim receipts,
+bounded at 128 KiB. Unknown action fields and duplicate normalized roots are refused. Timestamp
+validation rejects non-finite/oversized values without overflowing display or schedule arithmetic.
+`gui.background_monitor.BackgroundMonitor` belongs to ScanWorkspace. Factories are passive;
+start_services starts monitoring only when persisted background_config explicitly enables it and
+a system tray is available. Options → Background monitor reviews selected folders, threshold and
+interval; no automatic startup registration or clean-up follows acceptance. CapacityWorker copies
+at most 256 OS capacity rows on its thread, without bin queries. Informational crossing warnings
+appear as supported system notifications and plain-text status/tray tooltips; OS preferences may
+suppress notifications. Unknown capacity never triggers a warning or falsely clears its latch.
+QLockFile serializes QSettings claims before dispatch across processes. Failed/canceled attempts
+remain throttled; bad/locked/unpersistable receipts never dispatch a source scan. ScheduledWorker
+captures the current options but forces gentle=True/workers=1, refuses linked roots and saves only
+normal bounded ScanHistory. Finished unread scopes retain incomplete history; cancellation keeps
+a canceled receipt/partial result without publishing incomplete saved data. Results never replace
+foreground tabs and never invoke source operations. Foreground scans/reviews cancel/join the gentle
+worker; explicit Quit joins capacity and scans. Close-to-tray requires explicit opt-in and an actual
+available tray; losing a tray restores a hidden workspace. Disabling restores the window and joins.
+The GUI entry accepts --background, skips elevation and hides only when enabled/native tray is ready;
+disabled/unavailable monitoring stays visible. The flag alone never enables monitoring or startup.

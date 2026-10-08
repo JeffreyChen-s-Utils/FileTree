@@ -13,9 +13,11 @@ import re
 MAX_ROOTS = 32
 MAX_VOLUMES = 256
 MAX_CONFIG_BYTES = 65536
+MAX_ATTEMPT_BYTES = 131072
 _MAX_ROOT_LENGTH = 1024
 _MAX_HOURS = 720
 _MAX_THRESHOLD = 50
+_MAX_EPOCH = 253402300799  # 9999-12-31 23:59:59 UTC; never overflow a displayed timestamp.
 _SECONDS_PER_HOUR = 3600
 _FINGERPRINT = re.compile(r"[0-9a-f]{64}\Z")
 _ATTEMPT_STATES = frozenset({"claimed", "complete", "failed", "canceled"})
@@ -29,7 +31,8 @@ def _root(path: str) -> str:
 
 
 def _epoch(value: float) -> None:
-    if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or value < 0:
+    if (isinstance(value, bool) or not isinstance(value, (float, int)) or value < 0
+            or value > _MAX_EPOCH or not math.isfinite(value)):
         raise ValueError("Invalid background schedule timestamp")
 
 
@@ -112,6 +115,45 @@ class ScanAttempt:
     def key(self) -> str:
         """Canonical metadata map key; normalization grants no filesystem identity or authority."""
         return _root(self.root)
+
+
+def dump_attempts(attempts: Mapping[str, ScanAttempt]) -> str:
+    """Serialize at most 32 validated claims; metadata never contains filesystem action permissions."""
+    if len(attempts) > MAX_ROOTS:
+        raise ValueError("Too many background attempt receipts")
+    rows = []
+    for key, attempt in sorted(attempts.items()):
+        if not isinstance(attempt, ScanAttempt) or key != attempt.key:
+            raise ValueError("Background receipt does not match its selected root")
+        rows.append({"root": attempt.root, "claimed_at": attempt.claimed_at,
+                     "schedule_id": attempt.schedule_id, "state": attempt.state})
+    text = json.dumps({"version": 1, "attempts": rows}, ensure_ascii=True, separators=(",", ":"))
+    if len(text) > MAX_ATTEMPT_BYTES:
+        raise ValueError("Oversized background attempt receipts")
+    return text
+
+
+def load_attempts(text: str) -> dict[str, ScanAttempt]:
+    """Strictly load bounded scalar receipts; malformed state fails closed rather than becoming due."""
+    if not isinstance(text, str) or len(text) > MAX_ATTEMPT_BYTES:
+        raise ValueError("Oversized background attempt receipts")
+    try:
+        value = json.loads(text, object_pairs_hook=_unique)
+    except RecursionError as error:
+        raise ValueError("Invalid background attempt nesting") from error
+    if (not isinstance(value, dict) or set(value) != {"version", "attempts"}
+            or type(value["version"]) is not int or value["version"] != 1
+            or not isinstance(value["attempts"], list) or len(value["attempts"]) > MAX_ROOTS):
+        raise ValueError("Invalid background attempt document")
+    result = {}
+    for row in value["attempts"]:
+        if not isinstance(row, dict) or set(row) != {"root", "claimed_at", "schedule_id", "state"}:
+            raise ValueError("Invalid background attempt fields")
+        attempt = ScanAttempt(row["root"], row["claimed_at"], row["schedule_id"], row["state"])
+        if attempt.key in result:
+            raise ValueError("Duplicate background attempt roots")
+        result[attempt.key] = attempt
+    return result
 
 
 def due_roots(config: MonitorConfig, attempts: Mapping[str, ScanAttempt], now: float) -> tuple[str, ...]:

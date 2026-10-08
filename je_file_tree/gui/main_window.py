@@ -117,6 +117,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._operations = operations
         self._close_all: Callable[[], object] | None = None
+        self._background_settings: Callable[[], object] | None = None
+        self._background_pause: Callable[[], object] | None = None
         self._language_changed: Callable[[], object] = self.retranslate
         self.settings = settings if settings is not None else QSettings()
         self._journal = OperationJournal(journal_folder())
@@ -181,6 +183,11 @@ class MainWindow(QMainWindow):
         else:
             self._close_all()
 
+    def configure_background(self) -> None:
+        """Open the owning workspace's explicit preferences; standalone integrations remain passive."""
+        if self._background_settings is not None:
+            self._background_settings()
+
     @property
     def local_operation_busy(self) -> bool:
         """Whether this tab owns Trash, restoration or a source-operation review."""
@@ -227,6 +234,8 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def _begin_scan(self, path: str | tuple[str, ...], *, exact_allocation: bool = False) -> None:
+        if self._background_pause is not None:
+            self._background_pause()
         self._follow.stop(clear=True)
         self._undo.expire()
         self._trash_rescans.clear()
@@ -497,6 +506,8 @@ class MainWindow(QMainWindow):
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
+        if self._background_pause is not None:
+            self._background_pause()
         self._undo.expire()
         if self.results.outcome.result.root.path is None:
             roots = tuple(child.path for child in self.results.outcome.result.root.children)
@@ -1067,6 +1078,7 @@ class MainWindow(QMainWindow):
             ("exact_allocation", None, lambda: None),
             ("count_hard_links", None, lambda: None),
             ("follow_changes", None, lambda: None),
+            ("background_monitor", None, self.configure_background),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.quit_application),  # Windows has no standard Quit key
@@ -1093,6 +1105,7 @@ class MainWindow(QMainWindow):
         self._actions["follow_changes"].setCheckable(True)
         self._actions["follow_changes"].setEnabled(follow_supported())
         self._actions["follow_changes"].toggled.connect(self._follow.configure)
+        self._actions["background_monitor"].setEnabled(False)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
         self._actions["gentle"].setCheckable(True)
@@ -1166,7 +1179,7 @@ class MainWindow(QMainWindow):
         options_menu.addAction(self._actions["gentle"])
         options_menu.addAction(self._actions["scan_workers"])
         options_menu.addAction(self._actions["history_settings"])
-        for key in ("check_updates", "follow_changes"):
+        for key in ("check_updates", "follow_changes", "background_monitor"):
             options_menu.addAction(self._actions[key])
         for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
             options_menu.addAction(self._actions[key])
@@ -1225,6 +1238,8 @@ class MainWindow(QMainWindow):
 
     def _update_actions(self) -> None:
         if self.operation_busy:
+            if self._background_pause is not None:
+                self._background_pause()
             self._follow.quiesce()
         if self._operations is not None:
             self._operations.refresh(self)
