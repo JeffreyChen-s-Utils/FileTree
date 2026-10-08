@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, drag-to-scan source preservation, CJK rendering, native duplicate hard-link execution/metadata and cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS. Hosted macOS metadata/CJK evidence requires CI review; no Mac or macOS VM is available from the owner for Finder interaction/consent.
+- **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval, cross-volume fcopyfile/resource-fork verification and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 
 ### Safety
 
@@ -27,7 +27,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Scanning
 
 - **#33** (P3) Read the NTFS master file table directly (as WizTree does) when FileTree runs as administrator on a local NTFS volume: parse the `$MFT` (file records, attribute lists, `$FILE_NAME`, `$DATA` sizes and allocation, hard links, reparse points) in a new `je_file_tree/core/mft.py` and build the same `Node` tree, falling back to the normal scan on any other volume, without administrator rights, or on a parse error. Start after #36 has measured the normal scan on a full drive, and test against the normal scan of the same folders.
-- **#34** (P2) Follow changes: watch the scanned tree and rescan only the folders that changed, so the numbers stay true without a full rescan. `QFileSystemWatcher` watches each folder separately and does not scale to a whole drive; the USN change journal (Windows) or inotify/fanotify (Linux) do. Reuses the branch rescan (`FolderTreeModel.replace`).
+- **#34** (P2) Integrate read-only native change feeds into a default-off per-tab GUI controller: debounce bounded dirty folders, reuse branch rescan, preserve pending events during scans/source reviews, reconcile hard-link accounting with full rescans, rearm changed scopes and cancel/join on close. Verify native existing-USN and Linux inotify feeds, including external hard-link aliases; uncertain/lost events require full scans and unsupported scopes remain visible.
 - **#35** (P2) [BLOCKED] Validate real UNC and mapped-drive scans: compare worker counts on slow links, allocation units on share roots, access-denied branches and a share disconnecting midway. No UNC share or mapped-drive test environment is available from the owner. Preserve incomplete coverage and confirm failures never create empty-folder clean-up proposals.
 - **#75** (P1) Finish capacity-ledger validation on isolated APFS volumes against OS capacity/bin attribution, allocation estimates, shared extents and reserved capacity. Verify same-device mount boundaries on other POSIX systems. APFS requires a Mac. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Reconcile macOS bin attribution with OS queries; direct bin labels and emptying remain #21.
 

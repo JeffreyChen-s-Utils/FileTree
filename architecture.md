@@ -26,6 +26,17 @@ cocoa process. This tool exclusively creates disposable temporary sources, uses 
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all
 chart modes. Phase JSON/PNG survive later failures; host Trash and Finder automation are not invoked.
 Same-volume source proofs do not establish cross-volume behavior, Finder consent or APFS recovery.
+Reviewed macOS 15.7.9 arm64 / Qt 6.11.2 cocoa artifacts confirm these scoped same-volume
+copy/link/CJK/source-preservation checks, with complete owned-fixture cleanup.
+
+`core.change_watch` captures complete physical metadata scopes on a worker, capped at one million
+folders and 65,536 shared inodes. `windows_watch` reads only existing NTFS USN journals and uses
+one recursive overlapped directory handle when unavailable; partial shared-file roots refuse that
+fallback because external aliases are not covered. `linux_watch` uses one inotify descriptor with
+anchored folder and captured shared-inode watches, exposing kernel limit failures. Bounded events
+map to captured folder paths; overflow/gaps request full scans, malformed records fail visibly.
+Native cancellation joins outstanding Windows I/O before freeing storage. Notifications are
+observational rescan requests and never operation authority. GUI controller integration remains #34.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
@@ -499,8 +510,9 @@ and applies metadata after children. `core.copy_platform` wraps exclusive native
 with PROGRESS_STOP (keeps partial data), bounded ADS queries/comparison, and macOS descriptor fcopyfile
 with bounded resource-fork/attribute comparison. POSIX xattrs copy/compare strictly; native APIs have no
 unsafe fallback. Files retain platform-supported metadata; Windows directory security inherits its
-destination and POSIX setuid/setgid/sticky bits are omitted. Native macOS validation remains
-pending. Concurrency is observational, not transactional.
+destination and POSIX setuid/setgid/sticky bits are omitted. Native macOS same-volume copying is
+verified on owned CI fixtures; cross-volume and later Trash/redirect remain unverified.
+Concurrency is observational, not transactional.
 
 `gui.copy_dialog` reuses the owned namespace-preview lifecycle, refuses same-volume GUI pairs,
 shows filename progress and retains CopyResult before queued delivery. Frozen CopyApproval proofs
@@ -573,7 +585,8 @@ late partials and retained paths remain visible. MainWindow's operation_busy inc
 dialogs to serialize scan/Trash/Undo; only the same current root receives a complete post-attempt
 rescan, invalidating keeper/extra snapshots, capacity and duplicate decisions. Native Windows owned
 CJK/ADS GUI proof verified three aliases, independent original audit identities and full-root refresh;
-native Linux CI passed the same owned workflow, audits and complete-root refresh. Native macOS validation remains #4.
+native Linux CI passed the same owned workflow, audits and complete-root refresh. Native macOS CI
+verified ordinary core linking and full metadata; protected GUI approval remains #4.
 
 `core.virtual_disks` discovers recorded virtual-disk extension candidates and bounded current-user
 WSL/default Docker locations from `core.virtual_disk_sources`. Iterative per-folder pacing and a

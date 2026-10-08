@@ -261,7 +261,8 @@ remains unknown. Failure stops the batch and preserves every original; partial p
 comparisons. Proofs are observations, never deletion permission or future-stability guarantees: repeat
 verification immediately before the existing separately approved MainWindow.move_to_trash worker.
 The copy functions never Trash/delete/redirect originals. Concurrent mutation remains nontransactional;
-native macOS remains unverified. The GUI routes separate original Trash approval through MainWindow.
+native macOS same-volume copy metadata is verified on owned CI fixtures; cross-volume and later
+Trash/redirect remain unverified. The GUI routes separate original Trash approval through MainWindow.
 Native references: [Windows CopyFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexw),
 [Apple fcopyfile](https://github.com/apple-oss-distributions/copyfile/blob/main/copyfile.3).
 
@@ -367,7 +368,8 @@ accepted from length alone. LinkVerification exposes pair, digest and bytes_read
 Windows ADS). Unknown/unavailable/changed metadata, content mismatches and cancellation raise
 OSError/ValueError while leaving payloads untouched. This is read-only evidence, never authorization
 for later replacement/deletion/linking; a mutation executor must recheck at its operation boundary.
-Native macOS behavior remains unverified.
+Native macOS owned CI verified complete resource-fork/xattr hashes and ordinary core linking;
+protected GUI approval remains unverified.
 
 `duplicate_link_ops.execute_links(plan, *, cancel=None, progress=None, completed=None)` executes only an explicitly
 reviewed plan while the caller keeps its scan tree stable. It fully rechecks each original group and
@@ -641,3 +643,29 @@ complete main/resource-fork/xattr bytes and expected native identities. Length-o
 the proof. A separate GUI scan renders zh-TW/all chart modes and must leave the source proof unchanged.
 Phase JSON is written even after failure; only complete plus owned_fixture_cleanup=true confirms the
 scoped native proof. No Trash/Finder operations, cross-volume proof or APFS recovery is implied.
+
+Native macOS 15.7.9 arm64 / Qt 6.11.2 cocoa CI evidence confirms the production same-volume
+copy and duplicate-link APIs on owned fixtures, including complete resource-fork/xattr hashes,
+keeper identity, empty folders and unchanged GUI sources across zh-TW/all four chart modes.
+Cross-volume copies, Finder interaction/Trash and protected GUI link approval remain unverified.
+
+`change_watch.watch(root, on_change, cancel, *, ready=None)` is a blocking, joinable metadata feed
+for complete physical Windows/Linux scan roots. Run it on a worker; callbacks run there too.
+`ChangeBatch.folders` contains captured folder paths, never untrusted event targets; `full=True`
+requires a new full scan after overflow, cursor loss or uncertainty. `captured_scope` refuses
+virtual/incomplete roots and bounds scopes at one million folders and 65,536 shared inodes.
+Windows reads an existing NTFS USN journal without creating/deleting one; unavailable journals
+fall back to one recursive ReadDirectoryChangesW handle. Partial roots with captured shared files
+require readable USN, because recursive directory notifications cannot cover outside aliases.
+Linux uses one inotify descriptor, anchored folder watches and captured shared-inode watches;
+kernel resource limits are visible failures. Unsupported/corrupt records raise OSError/ValueError.
+Cancellation closes native resources; Windows cancels and joins outstanding kernel I/O before
+releasing its buffers. Setup/rearm races remain observational, and notifications confer no source
+operation authority. This core API is available independently; GUI following remains outstanding.
+
+`tools/validate_change_watch.py --output PATH` accepts only an evidence destination and creates
+fresh owned sources. It records the actual backend, native notification, cancellation/join and
+unchanged keeper identity/SHA-256. Linux additionally writes through an owned outside hard-link
+alias. Complete JSON plus owned_fixture_cleanup=true is required for success; failed native lifetime
+checks retain fixtures. Local Windows evidence used recursive directory notifications; readable
+existing-USN and Linux evidence still require review of CI artifacts. No journals are created.

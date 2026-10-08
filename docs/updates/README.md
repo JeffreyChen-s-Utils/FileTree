@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-39 | 2026-10-08 | Add bounded read-only native filesystem change feeds | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-38 | 2026-10-08 | Exercise the intended Linux alias refusal on every POSIX runner | #fix #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-37 | 2026-10-08 | Add native macOS source metadata and cocoa validation | #implementation #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-36 | 2026-10-08 | Own concurrent result tabs and serialize source operations | #done #implementation #validation | [2026-10-b](2026-10-b.md) |
