@@ -151,6 +151,9 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
     Experimental MFT stages a separate candidate and adopts success/cancelled partial results into
     the single published root. Raw/unsupported failures discard the candidate before ordinary
     fallback; progress may restart. Per-path native ACL metadata remains mandatory, without elevation.
+    Windows native directory entries use ordinary no-follow path stat even with a cached file ID,
+    so full snapshot attributes do not depend on the enumeration API. Audited adapters retain their
+    already verified metadata; other platforms keep cached stat with missing-identity fallback.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
     :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
@@ -427,8 +430,9 @@ def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
-        if not info.st_ino:
-            # Windows DirEntry.stat has no identity. Measured 10k lstat calls: 0.67 s (U-20261007-03).
+        if not info.st_ino or (os.name == "nt" and isinstance(entry, os.DirEntry)):
+            # Windows cached enumeration can omit native attributes even with a valid file ID.
+            # Audited adapters already supply checked no-follow metadata; retain that exact result.
             info = os.lstat(entry.path)
     except FileNotFoundError:
         return None  # removed while we were scanning

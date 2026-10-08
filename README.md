@@ -474,6 +474,8 @@ capacity separately, and the diagnostic records raw/native allocation observatio
 
 For ordinary directories independently confirmed by both native replies, the audit normalizes only NTFS's internal `0x10000000` directory attribute when comparing enumeration and no-follow path metadata. Full native attributes remain in snapshots; identity, dates, reparse/cloud flags and every other attribute still require agreement.
 
+Ordinary Windows scanning obtains no-follow path metadata for native directory entries even when enumeration supplies a cached file ID. Full snapshot attributes therefore match later path revalidation; denied paths remain incomplete. The experimental audit retains its already checked metadata instead of replacing it with a second query. Other platforms keep their cached-stat behavior.
+
 For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
 duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.
 

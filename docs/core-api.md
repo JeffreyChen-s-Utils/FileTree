@@ -56,6 +56,11 @@ is closed; consumers must anchor ancestors and consume/close the iterator on the
 Checks propagate before each batch/entry. This performs no raw access or privilege changes and
 does not itself enable the MFT backend. Directory allocation remains a separate native observation.
 
+Windows ordinary scanning re-queries native os.DirEntry metadata through os.lstat even when
+a cached ID is nonzero, retaining full native attributes for later path revalidation. Path failures
+remain incomplete. Already audited adapter metadata is not replaced after raw checks. POSIX cached
+stat and existing missing-identity fallback remain unchanged.
+
 The import paths, argument names and result attributes listed here are the supported public API.
 Call optional arguments by keyword and consume results by attribute; new fields may be added.
 Breaking changes must be documented in release notes. Leading-underscore helpers, worker classes,

@@ -1243,3 +1243,10 @@ CRC/size is retained in docs/updates/desktop-20261008-macos.json. The app was no
 Finder consent, signing/notarization and the POSIX release gate remain external requirements.
 Owned MFT tree parity failures report the first differing Node field or bounded coverage/count
 detail without weakening comparisons; native candidate success alone is not parity evidence.
+
+Ordinary Windows os.DirEntry metadata always passes through no-follow os.lstat even when a cached
+ID is valid, because enumeration can omit NTFS internal attributes. Full attributes remain in
+NodeSnapshot and align with later native path validation; denied paths retain ordinary errors.
+Non-DirEntry audited adapters retain their already checked metadata. POSIX caching/missing-ID
+fallback remain unchanged. Owned 10k-file/1k-folder one-worker measurements retain baseline and
+path-authority medians in docs/updates/scan-20261008-path-authority.json; no speed claim is made.
