@@ -1,6 +1,6 @@
 # Building FileTree with Nuitka
 
-[English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md)
+[English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
 [Nuitka](https://nuitka.net/) turns FileTree into a native program that runs on computers without
 Python. It translates the Python code to C and compiles it, so the program starts quickly; the price is a
@@ -147,7 +147,7 @@ consent. AppImage login registration uses its original executable outside the mo
 |---|---|
 | `--mode=standalone` / `--mode=onefile` / `--mode=app` | A folder, one file, or (on macOS) an app bundle |
 | `--enable-plugin=pyside6` | Copies the Qt libraries and plugins the window needs |
-| `--include-data-files=<Qt translations>/qtbase_zh_TW.qm=<same place in the build>` (and `qtbase_zh_CN.qm`) | Nuitka does not copy Qt's own translations; without them the Yes / No / Close buttons stay in English. The folder depends on the installation (`PySide6/translations` on Windows, `PySide6/Qt/translations` on Linux), which is why a script runs the build |
+| `--include-data-files=<Qt translations>/qtbase_zh_TW.qm=<same place in the build>` (and `qtbase_zh_CN.qm`, `qtbase_ja.qm`, `qtbase_ko.qm`) | Nuitka does not copy Qt's own translations; without them the Yes / No / Close buttons stay in English. The folder depends on the installation (`PySide6/translations` on Windows, `PySide6/Qt/translations` on Linux), which is why a script runs the build |
 | `--windows-console-mode=disable` | No black console window next to FileTree on Windows (ignored elsewhere) |
 | `--output-dir=build/standalone` (or `build/onefile`, `build/app`) | Everything Nuitka creates goes into `build/`, which Git ignores; each form has its own folder, so building one does not delete another |
 | `--output-filename=FileTree` | The program is called FileTree instead of start_file_tree |

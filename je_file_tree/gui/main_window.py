@@ -36,6 +36,7 @@ from je_file_tree.core.scanner import DEFAULT_WORKERS, ScanOptions
 from je_file_tree.core.system_files import system_file
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import elevation, file_actions, shell_integration
+from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
@@ -116,7 +117,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
-        self._operations = operations
+        self._operations, self._language_base_font = operations, self.font()
         self._close_all: Callable[[], object] | None = None
         self._background_settings: Callable[[], object] | None = None
         self._background_pause: Callable[[], object] | None = None
@@ -954,6 +955,7 @@ class MainWindow(QMainWindow):
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
+        self.setFont(language_font(current_language(), self._language_base_font))
         self.setWindowTitle(tr("app_title_admin") if elevation.is_elevated() else tr("app_title"))
         for key, action in self._actions.items():
             action.setText(tr(f"action_{key}"))

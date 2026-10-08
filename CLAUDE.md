@@ -17,14 +17,14 @@ Every change must pass, before it is committed:
 
 1. `py -3 -m pytest` — the whole suite, green (Qt tests run on the offscreen platform by themselves).
 2. `py -3 -m ruff check .` — clean. `pyproject.toml` is the rule set; change the config, not the prose.
-3. Any user-facing change (features, menus, shortcuts, install, settings) updates `README.md` **and both
-   translations** `README/README_zh-TW.md` and `README/README_zh-CN.md` in the same commit, with the same
+3. Any user-facing change (features, menus, shortcuts, install, settings) updates `README.md` **and all
+   translations** in `README/` (Traditional/Simplified Chinese, Japanese and Korean) in the same commit, with the same
    sections, tables and commands. `test/test_readme_parity.py` checks the structure; the content is a
    manual check.
 4. A change to what the window looks like reruns `py -3 tools/make_screenshots.py` so the README pictures
    stay current. Never edit the pictures by hand.
 5. A change to how FileTree is built into a stand-alone program (`tools/build_nuitka.py`, its options, a new
-   language catalogue) updates `nuitka.md`, `nuitka.zh-TW.md` and `nuitka.zh-CN.md` together; the parity test
+   language catalogue) updates `nuitka.md` and its `zh-TW`, `zh-CN`, `ja`, `ko` translations together; the parity test
    covers them like the READMEs. Nuitka compiles with every core by default: pass `--jobs=2` on this machine,
    or the Discord bot running here stalls (measured 2026-09-26: its gateway fell 13 s behind).
 6. A change to layers, entry points, main flows, extension points or cross-project boundaries updates
@@ -122,7 +122,7 @@ tool default.
   Isolated validation tools may remove only disposable fixtures they created in a fresh owned scratch
   directory or its private test-volume image. They must refuse existing volumes/bins and the host mount
   namespace; this never authorizes removing scanned user entries.
-- **Every text goes through `tr()`**; add a key to all three tables in `je_file_tree/gui/strings.py`
+- **Every text goes through `tr()`**; add a key to all five tables in `je_file_tree/gui/strings.py`
   (`test/test_i18n.py` checks keys and placeholders). Traditional Chinese uses Taiwanese wording
   (檔案、資料夾、設定、預設、資源回收筒); Simplified Chinese uses Mainland wording and characters.
 - Files are read and written with an explicit `encoding=`; exports are written to a temporary sibling and

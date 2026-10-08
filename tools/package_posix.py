@@ -29,7 +29,7 @@ _ASSETS = {
                 "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"),
 }
 _MAX_DOWNLOAD = 64 * 1024 * 1024
-_CATALOGUES = ("qtbase_zh_TW.qm", "qtbase_zh_CN.qm")
+_CATALOGUES = ("qtbase_zh_TW.qm", "qtbase_zh_CN.qm", "qtbase_ja.qm", "qtbase_ko.qm")
 
 
 def _hash(path: Path) -> str:

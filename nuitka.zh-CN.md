@@ -1,6 +1,6 @@
 # 用 Nuitka 编译 FileTree
 
-[English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md)
+[English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
 [Nuitka](https://nuitka.net/) 会把 FileTree 编译成原生程序，没有安装 Python 的电脑也能运行。它把 Python 代码转成 C 再编译，所以程序启动很快；代价是编译时间比较长。它编译的入口是仓库根目录的 `start_file_tree.py`。
 
@@ -107,7 +107,7 @@ Desktop builds CI 使用 Ubuntu 22.04 x86_64 与 macOS 15 arm64，保留开发�
 |---|---|
 | `--mode=standalone`／`--mode=onefile`／`--mode=app` | 程序文件夹、单个文件，或（macOS）应用程序包 |
 | `--enable-plugin=pyside6` | 复制窗口需要的 Qt 库与插件 |
-| `--include-data-files=<Qt 翻译文件夹>/qtbase_zh_TW.qm=<编译结果里的同一个位置>`（以及 `qtbase_zh_CN.qm`） | Nuitka 不会复制 Qt 自己的翻译文件；缺了它们，“是／否／关闭”按钮会停在英文。这个文件夹随安装方式而不同（Windows 是 `PySide6/translations`，Linux 是 `PySide6/Qt/translations`），这就是用脚本来编译的原因 |
+| `--include-data-files=<Qt 翻译文件夹>/qtbase_zh_TW.qm=<编译结果里的同一个位置>`（以及 `qtbase_zh_CN.qm`, `qtbase_ja.qm`, `qtbase_ko.qm`） | Nuitka 不会复制 Qt 自己的翻译文件；缺了它们，“是／否／关闭”按钮会停在英文。这个文件夹随安装方式而不同（Windows 是 `PySide6/translations`，Linux 是 `PySide6/Qt/translations`），这就是用脚本来编译的原因 |
 | `--windows-console-mode=disable` | Windows 上不会在 FileTree 旁边多开一个黑色控制台窗口（其他系统会忽略） |
 | `--output-dir=build/standalone`（或 `build/onefile`、`build/app`） | Nuitka 生成的东西都放在 `build/`，Git 会忽略这个文件夹；每种形式各有自己的文件夹，编其中一种不会删掉另一种 |
 | `--output-filename=FileTree` | 程序叫 FileTree，而不是 start_file_tree |

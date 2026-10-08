@@ -3974,4 +3974,3127 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 """),
 }
 
-STRINGS: dict[str, dict[str, str]] = {"en": EN, "zh-TW": ZH_TW, "zh-CN": ZH_CN}
+
+
+
+
+
+
+
+
+
+
+JA: dict[str, str] = {
+    'recurring_review': '再スキャンして現在の候補を確認…',
+    'recurring_validating': '日付の付いた提案を新しいスキャン全体と現在のソース メタデータと照合して検証しています…',
+    'recurring_refused': (
+        'プロポーザルを続行できません: {status}。新しいスケジュールされたスキャンを実行して、現在の観測を準備'
+        'します。'
+    ),
+    'recurring_tabs_full': (
+        '16 個のスキャン タブはすべて使用中です。スケジュールされたプロポーザルを確認する前にタブを閉じてくだ'
+        'さい。'
+    ),
+    'trash_skip_proposal_changed': (
+        '元のパス、候補レポートの設定または記録が変更されたか、確認できませんでした。元の項目を保持しました。'
+    ),
+    'trash_skip_proposal_expired': (
+        '移動前に定期スキャンの候補レポートが期限切れになりました。元の項目を保持しました。'
+    ),
+    'action_recurring': 'スケジュールされたスキャンの提案…',
+    'action_recurring_tip': '日付のスケジュールされた観測とその範囲を表示します。自動クリーンアップはありません。',
+    'recurring_rule': 'ルール',
+    'recurring_unknown': '不明',
+    'recurring_new': '前回のスキャン以降の新しいジャンク',
+    'recurring_current': '現在の候補',
+    'recurring_growth': '最大の新規成長',
+    'recurring_empty': (
+        'このセッションにはスケジュールされたレポートはありません。バックグラウンド監視を有効にし、スキャンフ'
+        'ォルダーを選択します。'
+    ),
+    'recurring_hint': (
+        '観察のみ。何も自動的に移動されません。リストごとに最大 100 行。増加は論理バイトであり、回復可能なス'
+        'ペースではありません。不明な比較は、新しいジャンクがないことを証明するものではありません。レポートは'
+        '、このセッションのスケジュールされたスキャンの後に表示されます。ベースラインはローカル履歴に保存され'
+        'ます。新しいタブで再スキャンを確認し、通常のキューと確認を使用します。'
+    ),
+    'recurring_summary': (
+        '準備済み: {prepared}\n前のベースライン: {previous}\n有効期限: {expires}\n表示された候補: {retained} '
+        '/ {total};カバレッジ: {coverage};比較: {comparison}\nステータス: {status}'
+    ),
+    'recurring_status_current': '観察されました。レビュー前に最新のソースの検証が必要',
+    'recurring_status_expired': '期限切れ (スケジュールの欠如またはクロックのロールバックを含む)',
+    'recurring_status_schedule_changed': 'スケジュールが変更または無効になった',
+    'recurring_status_stale_scan': 'スキャン操作記録が変更されているか、使用不可になっています',
+    'recurring_status_rule_changed': 'クリーンアップルールが変更されました',
+    'recurring_status_incomplete': '不完全な報道または不明な身元',
+    'recurring_status_paths_changed': 'ソースパスが変更されました',
+    'recurring_status_unavailable': '設定または受信を確認できませんでした',
+    'recurring_prepare_failed': '履歴が保存されました。スケジュールされたプロポーザルは利用できません: {detail}',
+    'workspace_new': '新しいスキャンタブ',
+    'workspace_new_tip': '独立したスキャン タブを開きます (Ctrl+T)。 Ctrl+W で現在のタブを閉じます。',
+    'workspace_close': 'スキャンタブを閉じる',
+    'workspace_empty': 'フォルダーを選択',
+    'trash_skip_recycle_unverified': (
+        'Windows リサイクル設定、完全なソース サイズ、またはネイティブ ビン メタデータを検証できませんでした'
+        '。元の項目を保持しました。'
+    ),
+    'trash_skip_recycle_disabled': 'Windows このスコープではリサイクルが無効になっています。元の項目を保持しました。',
+    'trash_skip_recycle_capacity': (
+        '選択した内容と現在のビンの内容が、観察されたヘッドルームのあるリサイクル制限を超えています。元の項目'
+        'を保持しました。'
+    ),
+    'action_check_updates': '毎日更新をチェックする',
+    'action_background_monitor': 'バックグラウンドモニター…',
+    'action_background_monitor_tip': (
+        'トレイ通知と穏やかなスケジュールされたフォルダー履歴スキャンをオプトインします。'
+    ),
+    'background_enable': 'バックグラウンド監視を有効にする',
+    'background_startup': 'サインイン時にこのモニターを開始します',
+    'background_startup_hint': (
+        'このユーザーのみに個別のオプトインを設定します。 FileTree が所有するログイン エントリを削除するには'
+        '、チェックを外します。今後のログインに適用されます。別のコピーを開始したり、このモニターを閉じたりす'
+        'ることはありません。'
+    ),
+    'background_startup_requires_monitor': 'ログインエントリを追加する前に、バックグラウンド監視を有効にします。',
+    'background_startup_error': 'ログインの起動を変更できませんでした: {detail}',
+    'background_hint': (
+        'デフォルトではオフです。閉じると、FileTree が使用可能なシステム トレイに保持されます。終了すると終了'
+        'します。 OSの利用可能な容量を1分ごとに確認し、選択したフォルダーのみを優しくスキャンします。スケジュ'
+        'ールされたスキャンには、ローカル履歴が有効になっている必要があります。自動クリーンアップやスタートア'
+        'ップ登録はありません。'
+    ),
+    'background_threshold': '利用可能なスペースを下回ると警告する',
+    'background_interval': 'スキャン間隔 (時間)',
+    'background_roots': 'スケジュールスキャンフォルダー',
+    'background_add': 'スキャンフォルダーを追加…',
+    'background_remove': '選択したフォルダーを削除します',
+    'background_limit': '最大 32 個のスケジュールされたフォルダーを選択します。',
+    'background_show': 'FileTree を表示',
+    'background_off': 'バックグラウンド監視がオフになっています',
+    'background_ready': 'バックグラウンド監視がオンになっています',
+    'background_no_tray': (
+        'システムトレイは使用できません。 FileTree は表示されたままになり、バックグラウンド監視は一時停止され'
+        'ます。'
+    ),
+    'background_error': 'バックグラウンド監視: {detail}',
+    'background_history_disabled': 'スケジュールされたスキャンを実行する前に、ローカル スキャン履歴を有効にします。',
+    'background_scanning': 'スケジュールされたスキャン: {detail}',
+    'background_saved': '保存されたスケジュールされた履歴: {detail}',
+    'background_saved_partial': '未読スコープで保存されたスケジュールされた履歴: {detail}',
+    'background_canceled': (
+        'スケジュールされたスキャンがキャンセルされました。部分的なソース カバレッジは保存されませんでした: {'
+        'detail}'
+    ),
+    'background_warning': '{detail}',
+    'background_low_space': '{root} の空き容量が少ない: {free} ({percent}%)',
+    'action_follow_changes': '変更を追跡する',
+    'action_follow_changes_tip': (
+        'デフォルトではオフです。 Windows/Linux で変更されたフォルダーを更新します。 5分ごとにルートを調整し'
+        'ます。'
+    ),
+    'follow_waiting': '変更の追跡: スキャンを待機しています',
+    'follow_starting': '変更を追跡: 開始中…',
+    'follow_active': '次の変更点 ({detail})',
+    'follow_failed': '変更の追跡が停止されました: {detail}',
+    'follow_incomplete': '変更を追跡するには完全な物理スキャンが必要です',
+    'follow_unsupported': '変更を追跡すると、Windows および Linux がサポートされます',
+    'follow_backend_usn': 'NTFS USN',
+    'follow_backend_directory_changes': 'ディレクトリ通知',
+    'follow_backend_inotify': '通知する',
+    'action_check_updates_tip': (
+        '多くても 1 日に 1 回、HTTPS 経由で PyPI に問い合わせます。通知のみで、インストールはありません。'
+    ),
+    'update_available': 'FileTree {version} は利用可能です',
+    'multi_roots': '複数のルート',
+    'action_multi_scan': '複数のフォルダーをスキャンします…',
+    'action_multi_scan_tip': '1 回の結合スキャンで明示的なフォルダーを確認します。',
+    'multi_choose': '複数のフォルダーをスキャンする',
+    'multi_add': 'フォルダを追加…',
+    'multi_remove': '選択したルートを削除します',
+    'scan_all_drives': 'すべてのドライブをスキャンする',
+    'multi_hint': (
+        '選択したルートを最大 256 個結合します。結果は読み取り専用です。ファイル操作のためにソースを個別にス'
+        'キャンします。 OS の容量はボリュームごとに維持されます。'
+    ),
+    'capacity_multiple_roots': '複数のルート: OS の容量はボリュームごとです。',
+    'vc_title': 'コンパクトな選択された VHD…',
+    'vc_apply': 'レビューしてコンパクトに…',
+    'vc_hint': (
+        '固定ローカル NTFS 上の切り離されたダイナミック VHD/VHDX のみが対象となります。読み取り専用の準備では'
+        '、ID、ヘッダー、保守的な WSL/Docker ランタイム状態がチェックされます。ゲストの使用状況と保証された回'
+        '復は不明のままです。 FileTree の既存の管理者が権限エラーのために再起動する前に、このレビューを閉じて'
+        'ください。新たなスキャンと承認が必要です。'
+    ),
+    'vc_preparing': 'キャプチャされたディスクと停止したランタイムを確認しています…',
+    'vc_ready': '正確なソースを確認し、そのマシンが停止したままであることを確認します。',
+    'vc_details': (
+        'ソース: {path}\n名前: {source}\nディスク UUID: {identifier}\n仮想容量: {capacity}\nプロバイダー バイ'
+        'ト: {physical}\n\nバックエンド: Windows CompactVirtualDisk、切り離されたゼロブロック圧縮。ゲストの接'
+        '続、起動またはシャットダウンはありません。ゲストが使用するバイトは不明です。'
+    ),
+    'vc_confirm': (
+        '次の正確な仮想ディスクファイルをコンパクト化しますか？\n\n{path}\n\n「はい」を選ぶと、このファイルを'
+        '使用するマシンが停止しており、処理中も停止したままであることを確認したものとみなします。実行状態と識'
+        '別情報を改めて確認します。OS のゼロブロック処理では容量が回復しない場合があり、後からエラーが発生し'
+        'てもメタデータがすでに変更されている可能性があります。自動的に元に戻す機能はありません。ゲストの使用'
+        '量と空き容量の回復量は不明です。停止または閉じる操作は、実行中の OS 呼び出しを待ち、実際の結果を報告'
+        'します。書き込み可能な状態で開く前に承認を記録します。'
+    ),
+    'vc_running': 'レビューしたディスクを再チェックして圧縮しています…',
+    'vc_waiting': '現在のネイティブ呼び出しを待機しています。実際の結果はまた報告します…',
+    'vc_done': (
+        '{status}\n観察されたバッキング割り当て: {before} → {after}。これは OS のフリーリカバリを保証するもの'
+        'ではありません。ゲストの使用状況は不明のままです。書き込みを試行するには、新たなスキャンが必要です。'
+    ),
+    'vc_failed': '圧縮: {reason}',
+    'vc_not_compacted': '圧縮されていない',
+    'vc_stale': (
+        '書き込み可能な操作が試行されました。記録された観察は古いものです。別のレビューを行う前に、このウィン'
+        'ドウを閉じて新たにスキャンしてください。'
+    ),
+    'vc_audit_refused': '承認を記録できませんでした。ネイティブ操作は開始されていません',
+    'vc_audit_detail': '以前のバッキング割り当て: {before};後: {after}。エラー: {error}',
+    'journal_status_compacted': 'ネイティブ圧縮が完了しました',
+    'journal_reason_compaction': '明示的な仮想ディスクの圧縮',
+    'vd_hint': (
+        '読み取り専用インベントリ。プロバイダー ラベルは場所のヒントです。バッキング割り当て、プロバイダーの'
+        'バイト、および仮想容量は別個です。ゲストの使用状況は不明のままです。ヘッダー クエリと圧縮レビューは'
+        '明示的です。サポートされていない形式は表示されたままになります。ゲストが自動的に起動、停止、マウント'
+        'することはありません。'
+    ),
+    'vd_name': 'ディスク名',
+    'vd_source': 'ソース',
+    'vd_issue_unverified': '未確認の身元',
+    'vd_issue_unavailable': 'リンクされているか、クラウドか、または利用できない',
+    'vd_issue_changed': 'ファイルが変更されました',
+    'vd_issue_duplicate_hard_links': '複数のハードリンク名',
+    'action_virtual_disks_tip': (
+        '記録された仮想ディスクを確認し、読み取り専用のネイティブ VHD 情報を明示的にクエリします'
+    ),
+    'action_virtual_disks': '仮想ディスク…',
+    'vd_kind': 'フォーマット',
+    'vd_length': 'バッキングファイルの長さ',
+    'vd_allocation': '記録された割り当て',
+    'vd_capacity': '仮想容量',
+    'vd_physical': 'プロバイダーの物理バイト',
+    'vd_guest': 'ゲストが利用した',
+    'vd_source_scan': '記録されたスキャン',
+    'vd_source_wsl': 'WSL登録',
+    'vd_source_docker': 'Docker のデフォルト (推定)',
+    'vd_unsupported': 'ネイティブ VHD ツールはサポートされていません',
+    'vd_not_queried': 'ネイティブヘッダーはクエリされません',
+    'vd_fixed': '修正済み',
+    'vd_dynamic': 'ダイナミック',
+    'vd_differencing': '差異化',
+    'vd_loaded': '装着中・使用中',
+    'vd_detached': '積まれていない（観察）',
+    'vd_inspect': '選択した VHD ヘッダーをクエリします',
+    'vd_select': '記録されたエントリを表示する',
+    'vd_reading': '仮想バッキング ファイルを検出しています…',
+    'vd_querying': 'ネイティブヘッダーを読み取り中: {path}',
+    'vd_summary': '{count}中{shown}を表示しています。 {issues} の問題/欠落。対象範囲: {coverage}。',
+    'vd_failed': '仮想ディスク情報: {reason}',
+    'vd_information_hint': (
+        'ネイティブの観察では、圧縮を許可したり、マシンが停止していることを証明したりすることはありません。プ'
+        'ロバイダーの物理バイトはゲストが使用するバイトではありません。ディスク UUID は行のツールチップにあり'
+        'ます。'
+    ),
+    'link_summary': '{total} 枚の追加コピー: {ready} 準備完了、{skipped} は拒否されました。',
+    'link_title': '追加のコピーをリンクします…',
+    'link_hint': (
+        '明示的に保存されたコピー (最大 1,000 個の追加ファイル) を使用して、完全に重複したファイルを確認しま'
+        'す。保護されたファイル、変更されたファイル、クラウド ファイル、リンクされたファイル、およびサポート'
+        'されていないファイルは拒否されます。保証される空き領域量はありません。'
+    ),
+    'link_copy': '置き換える追加のコピー',
+    'link_keeper': '保持されたファイル',
+    'link_apply': 'リンクは追加コピーをレビューしました…',
+    'link_confirm': (
+        '{count} 個の重複コピーをハードリンクに置き換えますか？ 処理できない {skipped} 行はスキップします。\n'
+        '\n元のデータはごみ箱に保存されません。リンクされたすべての名前は、以後の内容、メタデータおよびアクセ'
+        'ス権の変更を共有します。自動的に元に戻す機能はありません。失敗やキャンセル時には、作成済みリンクと元'
+        'のコピーのバックアップが表示されたパスに残る場合があります。停止または閉じる操作は、実行中の OS 呼び'
+        '出しの終了を待ちます。すべてのデータと名前付きストリームを再確認します。同時変更に対する確認は観察に'
+        '基づくものであり、トランザクションではありません。詳細で各ペアと拒否理由を確認してください。'
+    ),
+    'link_progress': '再チェック/リンク: {path}',
+    'link_done': (
+        'ハードリンク: {linked} が公開されていますが、{other} はリンクされていません。再スキャンして観察を更'
+        '新します。回復容量は不明。'
+    ),
+    'link_not_linked': 'リンクされていません',
+    'link_retained': '保持されるパス:\n{paths}',
+    'journal_status_linked': 'ハードリンクが公開されました',
+    'journal_reason_duplicate_links': '明示的な重複ハードリンクの置換',
+    'undo_button': '元に戻す ({count})',
+    'undo_running': 'キャプチャされたゴミ箱アイテムを復元しています…',
+    'undo_done': '元に戻す: {restored} は復元されましたが、{failed} は失敗しました',
+    'undo_title': 'ゴミ箱の修復',
+    'undo_result': '{status}\nオリジナル: {source}\nゴミ箱: {trashed}\n{reason}',
+    'undo_unavailable': '一部の項目では元に戻すことができません: {reason}',
+    'journal_status_restored': 'ゴミ箱から復元',
+    'journal_reason_undo': '明示的なゴミ箱の取り消し',
+    'menu_move_drive': '別のドライブに移動します…',
+    'copy_hint': (
+        '別のドライブにある既存のフォルダーを選択します。オリジナルは、別のゴミ箱確認が行われるまで保持されま'
+        'す。ファイル数、長さ、SHA-256 が 64 MiB 未満であることを確認します。より大きなペイロードは長さのみで'
+        'す。失敗/キャンセルでは部分的な宛先が保持されます。最大 1,000 個のフォルダーを選択できます。'
+    ),
+    'copy_apply': 'レビュー済みフォルダーをコピーして確認します…',
+    'copy_redirect': 'ゴミ箱に成功した後、元の各パスにジャンクション/シンボリック リンクを残します。',
+    'copy_finish': '確認済みのオリジナルをごみ箱に移動します…',
+    'copy_confirm': (
+        '確認済みの {count} 組のフォルダーをコピーして検証しますか？ ほかの {skipped} 組はスキップします。既'
+        '存の名前は上書きしません。元の項目は、ごみ箱への移動を別途承認するまで保持します。失敗やキャンセル時'
+        'には、途中までコピーされた項目がコピー先に残ります。'
+    ),
+    'copy_progress': 'このフォルダー内の {path}: {done} / {total} ファイルをコピー/検証しています',
+    'copy_done': (
+        '検証済みのコピー: {copied};スキップされました: {skipped};失敗しました: {failed}。原本は保管されてい'
+        'ます。'
+    ),
+    'copy_partial': '保持された部分的な宛先: {path}',
+    'copy_trash_confirm': (
+        '各項目をごみ箱へ移動する直前に、コピー先のフォルダーを再検証します。項目数と長さを比較します。64 MiB'
+        ' 未満の内容は SHA-256 で照合し、それ以上の内容は長さだけを比較します。確認に失敗すると残りの処理を停'
+        '止します。同時変更に対する確認はトランザクションではありません。'
+    ),
+    'copy_errors': (
+        'コピーの検証または元のパスのリダイレクトに失敗しました。 「詳細」で実際のパスを確認してください。'
+    ),
+    'copy_verify_failed': '保持されたオリジナル: {source}\nコピー: {destination}\n検証が拒否されました: {reason}',
+    'copy_redirect_failed': (
+        'オリジナルはゴミ箱に移動されました: {source}\n確認されたコピーは保持されました: {destination}\nリダ'
+        'イレクトに失敗しました (空のオリジナル パス ディレクトリが残る可能性があります): {reason}'
+    ),
+    'namespace_reason_same_volume': '同じボリューム。フォルダーに移動を使用する',
+    'namespace_source_name': 'ソース名',
+    'namespace_destination_name': '宛先名',
+    'namespace_closed_errors': (
+        '停止/クローズされた操作でエラーが報告されました。 「詳細」で送信元/宛先パスを検査します。'
+    ),
+    'namespace_refreshed': '{path}: {files} ファイルを更新しました。 {errors} スキャン エラー。',
+    'namespace_refresh_failed': '{path} で更新に失敗しました: {reason}',
+    'namespace_refreshing': '影響を受ける宛先を更新しています: {path}',
+    'menu_move_folder': 'フォルダに移動…',
+    'menu_rename': '名前を変更…',
+    'namespace_source': 'ソース',
+    'namespace_destination': '目的地',
+    'namespace_status': 'ステータス',
+    'namespace_pattern': 'ファイル名のパターン',
+    'namespace_rename_hint': (
+        'すべてのソースと宛先を確認します。リテラルトークン: {name}、{stem}、{ext}、{n}。同じボリュームのみ。'
+        '上書きはありません。選択されたエントリは最大 1,000 件です。'
+    ),
+    'namespace_move_hint': (
+        '既存の宛先フォルダーを選択し、すべてのペアを確認します。同じボリュームのみ。上書きはありません。保護'
+        'されている/リンク/利用できない/不完全なエントリは拒否されます。選択されたエントリは最大 1,000 件です'
+        '。'
+    ),
+    'namespace_collision_skip': '既存の名前: スキップ',
+    'namespace_collision_rename': '既存の名前: 番号付きサフィックスをプレビューする',
+    'namespace_preview': 'パスのプレビュー',
+    'namespace_apply': 'レビューしたパスを適用します…',
+    'namespace_reading': 'ソースと宛先のメタデータを確認しています…',
+    'namespace_preview_needed': 'オプションが変更されました。適用する前にパスを再度プレビューしてください。',
+    'namespace_summary': (
+        '{total} 最も外側のペア。 {ready} 準備完了。 {skipped} は拒否されました/変更されませんでした。'
+    ),
+    'namespace_confirm': (
+        'プレビューの処理可能な {count} 組の元のパス／移動先のペアを適用しますか？ ほかの {skipped} 組はスキ'
+        'ップします。詳細には処理可能な全ペアを表示します。既存の名前は上書きしません。停止または閉じる操作は'
+        '、実行中の名前変更の終了を待ち、完了した変更を保持します。'
+    ),
+    'namespace_progress': '{done} / {total} ペアを処理しました',
+    'namespace_done': (
+        '移動/名前変更: {moved};スキップされました: {skipped};失敗しました: {failed}。閉じてスキャンを更新し'
+        'ます。'
+    ),
+    'namespace_failed': '操作が失敗しました: {reason}',
+    'namespace_reason_ready': '準備完了',
+    'namespace_reason_unverified': '不明な身元',
+    'namespace_reason_link': 'リンクが拒否されました',
+    'namespace_reason_special': '特別入場は拒否されました',
+    'namespace_reason_unavailable': '利用不可/クラウドエントリー',
+    'namespace_reason_cancelled': '停止しました',
+    'namespace_reason_outside': '現在のスキャン/ルート以外',
+    'namespace_reason_missing': 'ソースがありません',
+    'namespace_reason_kind': 'エントリタイプが変更されました',
+    'namespace_reason_identity': 'ソースを交換しました',
+    'namespace_reason_changed': 'ソースが変更されました',
+    'namespace_reason_incomplete': '不完全な情報源の網羅',
+    'namespace_reason_unreadable': '読めないソース',
+    'namespace_reason_system_managed': 'システム管理のソース',
+    'namespace_reason_protected': '保護されたソース',
+    'namespace_reason_unchanged': '名前は変更されていません',
+    'namespace_reason_descendant': '選択したソース内の宛先',
+    'namespace_reason_protected_destination': '保護された宛先',
+    'namespace_reason_volume': 'ボリュームが異なります。確認済みのコピーが必要です',
+    'namespace_reason_collision': '名前はすでに存在します',
+    'photos_exact': '完全な重複',
+    'photos_find': '似た写真を探す',
+    'photos_similar': '類似の写真',
+    'photos_distance': 'ハッシュ距離 (0 ～ 16):',
+    'photos_hint': (
+        '視覚的な候補のみ: サムネイルとオリジナルを比較します。ハッシュの衝突が発生する可能性があります。自動'
+        '残すファイル、追加コピーの選択、または回復の見積もりはありません。最初のアニメーション フレーム。'
+    ),
+    'photos_group': '{count} 画像;最初の画像の {distance} ビット以内',
+    'photos_running': '画像の読み取り: {read};スキップ/失敗: {skipped}',
+    'photos_summary': (
+        '{groups} 類似画像グループ。 {read} 画像が読み取られました。 {skipped} はスキップ/失敗しました。'
+    ),
+    'photos_limited': '在庫または展示が限られている。最大 {count} 件の画像行/サムネイルが表示されます。',
+    'archive_loading': 'アーカイブ メタデータを読み取り中…',
+    'archive_virtual_name': '{name} [仮想]',
+    'archive_virtual_hint': (
+        'アーカイブ メンバー: 宣言された非圧縮サイズ、ディスク合計外。ファイル操作や抽出はありません。'
+    ),
+    'archive_failed': 'プレビューは利用できません: {reason}',
+    'archive_rejected': '{count} の安全でない、リンクされた、または競合するメンバーが省略されました',
+    'archive_empty': 'プレビュー可能なメンバーがいません',
+    'archive_stopped': 'アーカイブのプレビューが停止しました。在庫が不完全',
+    'archive_busy': '2 つのアーカイブ読み取りがすでに実行されています。再スキャンして再試行する',
+    'archive_stop': 'このアーカイブを読むのをやめる',
+    'action_count_hard_links': '観察されたハードリンクを 1 回カウントする',
+    'action_count_hard_links_tip': (
+        'デフォルトではオフです。今後のスキャンでは名前付きサイズが保持され、カウントされた合計が追加されます'
+        '。ブランチ/ゴミ箱の再スキャンにより、完全なルートが再構築されます。'
+    ),
+    'column_accounted_size': 'カウントサイズ',
+    'column_accounted_allocated': 'カウントされたディスクサイズ',
+    'hard_links_hint': (
+        'ハードリンク アカウンティングを有効にすると、最初に検出された語彙名がバイト数に寄与します。ここでは'
+        'エイリアスはゼロとカウントされます。名前付きサイズは実際のファイル長のままです。不明または矛盾した記'
+        '録は推定のままです。共有エクステントは不明です。'
+    ),
+    'hard_links_summary': (
+        'カウント: {size} (ディスク推定値 {allocated}); {aliases} 観察されたエイリアス。 {unknown} 不明なレコ'
+        'ードです。グラフではカウントされた合計が使用されます。ファイル/タイプ/経過時間リストは名前付きサイズ'
+        'を保持します。'
+    ),
+    'compression_mode_ntfs': 'NTFS 圧縮',
+    'compression_mode_xpress8k': 'XPRESS8K 圧縮 (ほとんど変更されないファイル)',
+    'compression_mode_uncompress': '解凍 (NTFS および実行可能モード)',
+    'compression_apply': 'リストされたファイルを処理します…',
+    'compression_restore_summary': (
+        '{count}/{total} 件の記録ファイルはレビューの対象となります。 {shown} を表示しています。圧縮状態が不'
+        '明な可能性があります。'
+    ),
+    'compression_confirm': (
+        '範囲: {path}\nモード: {mode}\n候補 {total} 件のうち、一覧の {count} ファイル（論理サイズ {size}）だ'
+        'けを処理します。\n\n現在の NTFS 範囲と、ファイルが変更されていないことを再確認します。リンク、クラウ'
+        'ド／オフライン、スパース、隠し／システム、ハードリンクおよび保護されたファイルは処理しません。フォル'
+        'ダーの既定設定と一覧にないファイルは変更しません。圧縮すると書き込みが遅くなる場合があります。XPRESS'
+        ' は変更の少ないデータ向けです。圧縮解除には空き容量が必要です。停止や失敗時には一部の変更が残る場合'
+        'があります。\n\nこの画面を閉じると実行中のコマンドをキャンセルし、その終了を待ってから、ファイルごと'
+        'の割り当てを確認してこのフォルダーを再スキャンします。続行しますか？'
+    ),
+    'compression_progress': '{done}/{total} リストされたファイルを処理しています…',
+    'compression_done': (
+        '{done}/{attempted} コマンドが完了しました。 {failures} 回失敗しました。既知の一致するファイル割り当'
+        'て: {before} → {after}; {unknown} 測定値は不明です。再スキャン間近です。合計は空き領域を保証するもの'
+        'ではありません。最初の 20 個のエラーが表示されます。'
+    ),
+    'compression_canceled': (
+        '止まった。以前のファイルまたは現在のファイルが変更されている可能性があります。再スキャン間近です。'
+    ),
+    'compression_failed': '操作が失敗しました: {reason}。部分的な変更は可能です。再スキャン間近です。',
+    'action_exact_allocation': 'ファイルごとの割り当て Windows を測定します',
+    'action_exact_allocation_tip': (
+        'デフォルトではオフです。追加のメタデータは、XPRESS/WOF ファイルなど、今後のスキャンを必要とします。'
+        '有効にして再スキャンします。既知のクラウド/オフライン ファイルは照会されません。失敗したクエリは推定'
+        '値のままです。'
+    ),
+    'menu_compression': 'NTFS 圧縮…',
+    'compression_reading': '記録された圧縮候補を確認しています…',
+    'compression_summary': (
+        '{count}/{total} ファイルはタイプの候補です。 {shown} を表示しています。論理 {logical}、名前付き割り'
+        '当て {allocated}。節約の可能性: 0–{allocated};固定の圧縮率は予測されません。 {unknown} ファイルには'
+        '不明なメタデータがあります。'
+    ),
+    'compression_volume': 'ファイルシステム: {filesystem};割り当て単位: {unit}',
+    'compression_unknown': '不明',
+    'compression_ntfs_only': 'NTFS は確認されませんでした。このスコープではネイティブ圧縮は使用できません。',
+    'compression_partial': '不完全なスキャン: 省略された/読み取り不可能なデータはこの推定値の範囲外です。',
+    'compression_hint': (
+        '読み取り専用タイプの推定: ログ、テキスト、コード、および場合によっては非圧縮画像形式。拡張子は圧縮可'
+        '能であることを証明しません。非表示/システム、圧縮/スパース、再解析/クラウド/オフライン、および不明な'
+        'レコードは省略されます。名前付き割り当てはハード リンクによって推定または共有される可能性があるため'
+        '、回復可能な領域が保証されているわけではありません。ペイロードは読み取られません。ダブルクリックする'
+        'と、記録されたファイルが選択されます。 Ctrl+C で行をコピーします。'
+    ),
+    'action_capture_owners': 'Windows ファイル所有者をキャプチャする',
+    'action_capture_owners_tip': (
+        'デフォルトではオフです。今後のスキャンに所有者のメタデータ クエリを追加します。有効にして再スキャン'
+        'する'
+    ),
+    'tab_users': 'ユーザー',
+    'column_owner': '所有者',
+    'column_owner_id': '所有者の身元',
+    'owner_unknown': '不明な所有者',
+    'owners_refresh': '記録された合計を更新する',
+    'owners_reading': '記録された所有者の合計を追加し、アカウント名を解決しています...',
+    'owners_unqueried': 'スキャン後に「ユーザー」を開き、記録された所有者の合計を照会します。',
+    'owners_partial': '不完全なスキャン: 省略された/読み取り不可能なバイトとその所有者は不明のままです。',
+    'owners_summary': (
+        '{count} 所有者グループ。 {shown} を表示しています。 {files} ファイル、{size}。不明な所有者: {unknown'
+        '_files} ファイル、{unknown_size}。'
+    ),
+    'owners_hint': (
+        '全体スキャン、ファイル所有者のみ。ディレクトリの所有権は子孫を割り当てません。 POSIX uid はスキャン'
+        'の統計から取得されます。 Windows で、[オプション] → [Windows ファイル所有者のキャプチャ] を有効にし'
+        'て再スキャンします。無効、失敗、変更されたクエリ、またはクラウド/オフライン クエリは不明のままです。'
+        '名前は uid/SID にフォールバックできます。名前付きの割り当ては推定されたままであり、名前ごとのハード '
+        'リンクの数は変わりません。所有権は、実際の使用または削除の許可を証明するものではありません。クリーン'
+        'アップアクションは用意されていません。'
+    ),
+    'bin_labels_refresh': 'ビンの合計を更新する',
+    'bin_labels_hint': (
+        '最大 256 個の準備完了ドライブの読み取り専用スナップショット。スキャンされたドライブが優先されます。 '
+        'POSIX の合計は論理ペイロード バイトです。利用できない合計や一部の合計がゼロになることはありません。'
+        'スコープは重複する可能性があります。合計しないでください。クエリを更新します。これはクリーンアップア'
+        'クションを準備するものではありません。'
+    ),
+    'bin_label_scope_unknown': 'このスキャンのドライブのごみ箱: スコープは照会されません',
+    'bin_label_unqueried': '{root} ごみ箱: クエリされませんでした',
+    'bin_label_total': '{root} ごみ箱: {size}、{count} アイテム',
+    'bin_label_partial': '{root} ごみ箱: 合計は不明です。既知の {size}、{count} アイテム',
+    'action_file_times': 'ファイル時間…',
+    'action_file_times_tip': 'このスキャンで記録されたアクセス日と作成日をフィルターします。',
+    'action_capture_file_times': 'ファイルのアクセス/作成時間をキャプチャする',
+    'action_capture_file_times_tip': (
+        'デフォルトではオフです。今後のスキャンでは、通常のファイルごとに 16 バイトが追加されます。有効にした'
+        '後に再スキャンする'
+    ),
+    'column_accessed': '記録されたアクセス',
+    'column_created': '作成されました',
+    'file_times_hint': (
+        '[オプション] → [ファイルのアクセス/作成時間をキャプチャ] を有効にしてから、再スキャンします。通常の'
+        'ファイルのみ。ディレクトリ/リンク、および利用できない作成日は不明のままです。アクセス日は、バックグ'
+        'ラウンド ツールによって無効化、遅延、または更新される可能性があります。実際の使用を証明することは決'
+        'してありません。 POSIX ctime は作成時間ではありません。このビューでは、クリーンアップ アクションは準'
+        '備されません。'
+    ),
+    'file_times_accessed': '…以降開かれていません (アクセス日の記録)',
+    'file_times_created': '少なくとも…前に作成されました',
+    'file_times_mode': '記録年齢モード',
+    'file_times_days': '日数',
+    'file_times_reading': '記録されたファイルの日付をフィルタリングしています…',
+    'file_times_summary': (
+        '{count} は一致、{size}; {shown} を表示しています。 {unknown}/{total} ファイルの日付は使用できないか'
+        '、将来の日付です。'
+    ),
+    'file_times_policy_disabled': (
+        'NTFS は、アクセス更新が無効になっていると報告します。アクセス年齢の一致は利用できません。作成フィル'
+        'タリングは引き続き利用可能です。レジストリ設定には再起動が必要な場合がありますが、すべてのファイルシ'
+        'ステムが記述されているわけではありません。'
+    ),
+    'file_times_policy_unknown': (
+        'NTFS アクセス更新構成が不明です。アクセス年齢の一致は利用できません。作成フィルタリングは引き続き利'
+        '用可能です。'
+    ),
+    'file_times_policy_enabled': (
+        'NTFS レジストリ レポートは更新へのアクセスが有効になっています。保留中の再起動、ファイルシステム/プ'
+        'ロバイダーの設定、および延期された更新が日付に影響を与える可能性があります。'
+    ),
+    'file_times_policy_platform': (
+        'ファイルシステム/プロバイダーの設定により、アクセスの更新が延期または抑制される場合があります。これ'
+        'らの日付を記録されたメタデータとして扱います。'
+    ),
+    'action_programs': 'インストールされているプログラム…',
+    'action_programs_tip': 'このスキャンでインストーラー/ゲームのメタデータとインストール フォルダーを比較します',
+    'program_name': 'プログラム・ゲーム',
+    'program_source': 'メタデータソース',
+    'program_version': 'バージョン/ビルド',
+    'program_publisher': '出版社',
+    'program_reported': '報告された推定値',
+    'program_scanned': 'スキャンされた論理バイト',
+    'program_allocated': 'スキャンされた名前付き割り当て',
+    'program_coverage': '録音フォルダーの範囲',
+    'program_location': 'インストールフォルダ',
+    'program_registry': 'Windows レジストリ',
+    'program_steam': 'Steam マニフェスト',
+    'program_epic': 'エピックマニフェスト',
+    'program_outside': '正確にスキャンされたフォルダーがありません',
+    'program_hint': (
+        'Windows 登録と認識された Steam/Epic マニフェストをアンインストールします。このスキャンで正確なフォル'
+        'ダーにのみ一致しました。 Epic の修正された ProgramData マニフェスト フォルダーも読み込まれます。報告'
+        'されるサイズは推定値です。欠落しているメタデータは不明のままです。共有/ネストされたフォルダーは重複'
+        'する可能性があります。行を合計したり、回復可能な領域として扱ったりしないでください。ポータブル/パッ'
+        'ケージ化されたアプリが存在しない場合があります。ダブルクリックすると、録音されたフォルダーが選択され'
+        'ます。 Ctrl+C で行をコピーします。アンインストールは、Windows またはランチャーを通じてのみ行ってくだ'
+        'さい。'
+    ),
+    'program_reading': 'インストールメタデータを読み取り中…',
+    'program_summary': (
+        '{count} 件中 {shown} 件のインストールを表示しています。 {issues} メタデータ項目が使用不可/不正な形式'
+        '/省略されています'
+    ),
+    'program_failed': 'インストールを読み取れません: {reason}',
+    'program_uninstall_page': 'Windows インストール済みアプリの設定を開きます',
+    'program_open_failed': 'Windows はインストール済みアプリの設定ページを開けませんでした',
+    'action_history': 'スキャン履歴…',
+    'action_history_tip': 'このルートのサイズを経時的に確認し、以前のスキャンと比較します',
+    'action_history_settings': 'スキャン履歴の設定…',
+    'action_history_settings_tip': 'ローカル スキャン メタデータを有効にし、そのグローバルな保存制限を設定します',
+    'history_enable': '完了したフルスキャンをローカルに保存する',
+    'history_settings_hint': (
+        '履歴にはフォルダー名、パス、合計、カバレッジが保存されますが、ファイルの内容は保存されません。デフォ'
+        'ルト: 有効、すべてのルートで合計 1 GiB。認識された履歴メタデータのみが古いものから順に削除されます。'
+        '無効にすると、既存の履歴が読み取れる状態が維持されます。変更は今後のフル スキャンに適用されます。下'
+        '限は次回の保存時に有効になります。'
+    ),
+    'history_limit': '合計履歴制限',
+    'history_time': 'スキャン時間',
+    'history_logical': '論理バイト',
+    'history_allocated': '割り当てられた名前付きバイト',
+    'history_coverage': '適用範囲',
+    'history_incomplete': '不完全;既知のデータのみ',
+    'history_complete': '完全な記録されたカバレッジ',
+    'history_chart': '論理フォルダーのサイズの経時変化',
+    'history_chart_range': '{first}: {before}; {last}: {after}',
+    'history_empty': 'このルートのスキャンは保持されていません',
+    'history_compare': '選択したスキャンと現在の結果を比較する',
+    'history_reading': 'ローカルスキャン履歴を読み取っています…',
+    'history_hint': (
+        'このルートに対して保持されている最新の 1,000 件のフル スキャン。停止したスキャンとブランチの再スキャ'
+        'ンは保存されません。不完全なスキャンでは、既知のデータのみが記述されます。フォルダーが見つからないか'
+        'らといって、削除されたことは証明されません。合計ではハードリンク名を個別にカウントします。違いはメタ'
+        'データであり、コンテンツの検証ではありません。'
+    ),
+    'history_summary': (
+        '{count} 件中 {shown} 件のスキャンを表示しています。 {invalid} メタデータ ファイルが無効または使用で'
+        'きません'
+    ),
+    'history_failed': '履歴を読み取れません: {reason}',
+    'history_save_failed': 'スキャンは完了しましたが、履歴を保存できませんでした: {reason}',
+    'action_scan_workers': 'スキャン作業者…',
+    'action_scan_workers_tip': '新しいスキャンの同時実行性を選択します。高いほど速いとは限りません',
+    'workers_prompt': (
+        '新しいスキャンのワーカー (1 ～ 32)。デフォルトは {default} です。ネットワーク共有が遅い場合は、ワー'
+        'カーを増やすことでメリットが得られる可能性があります。過剰な同時実行により、ディスク/サーバーに過負'
+        '荷がかかる可能性があります。スキャンを実行すると、既存のワーカーが保持されます。実際の UNC のパフォ'
+        'ーマンスはあなたのシェアに依存します。'
+    ),
+    'action_bins': 'ごみ箱…',
+    'action_bins_tip': 'ビンの合計と明示的なスコープ指定された OS の空の確認',
+    'bin_finder_empty': 'マウントされているすべてのボリュームの Finder ゴミ箱を空にします…',
+    'bin_finder_all': 'マウントされているすべてのボリューム (Finder 規模のゴミ箱)',
+    'bin_finder_scopes': '現在のユーザーのゴミ箱スコープ:\n{scopes}\n\nマウントされたボリューム:\n{roots}',
+    'bin_finder_first': (
+        '現在のユーザーの Finder マウントされているすべてのボリュームのゴミ箱を空にしますか?\n\n{root}\n\n論'
+        '理ペイロード: {size}\nアイテム: {count}'
+    ),
+    'bin_finder_irreversible': (
+        'マウントされているすべてのボリュームについて、現在のユーザーの Finder のごみ箱を完全に空にしますか？'
+        '\n\n{root}\n\n内容の論理サイズ: {size}\n項目数: {count}\n\nこの操作は元に戻せません。Finder の処理中'
+        'に新しく入った項目も削除される場合があります。選択した行にかかわらず、マウントされているすべてのごみ'
+        '箱に作用します。OS の処理はキャンセルできません。自動操作の許可やアクセス権の問題で一部だけ処理され'
+        'る場合があり、Finder の処理が続いている可能性もあります。'
+    ),
+    'bin_preparing': '{root} の正確なゴミ箱スコープを確認しています…',
+    'bin_no_approval': '完全に空ではないゴミ箱の承認はありません。リフレッシュしてもう一度見直してください。',
+    'bin_scope_first': (
+        'これらの現在のユーザーのゴミ箱ペイロード/受信スコープを空にしますか?\n\n{root}\n\n論理ペイロード: {s'
+        'ize}\nアイテム: {count}'
+    ),
+    'bin_scope_irreversible': (
+        '確認した次の範囲の内容を完全に削除しますか？\n\n{root}\n\n内容の論理サイズ: {size}\n項目数: {count}'
+        '\n\nこの操作は元に戻せません。リンク先をたどらず、リンク自体を削除します。変更された項目は処理しませ'
+        'ん。失敗時には一部だけ処理される場合があります。開始後はごみ箱を空にする操作をキャンセルできません。'
+    ),
+    'bin_partial': '{count} 件のレビュー済みアイテムを削除しました。残りの失敗: {reason}',
+    'bin_empty': '選択したドライブのごみ箱を空にする…',
+    'bin_first': '{root}?\n\n報告されたサイズ: {size}\nアイテム: {count} のごみ箱を空にします',
+    'bin_irreversible': (
+        '{root} のごみ箱に現在あるすべての項目を完全に削除しますか？\n\n報告されたサイズ: {size}\n項目数: {co'
+        'unt}\n\nこの操作は元に戻せません。OS の処理中に新しく入った項目も削除される場合があります。開始後は '
+        'OS の処理をキャンセルできません。'
+    ),
+    'bin_running': '{root} のごみ箱を空にしています。 OSの操作を待っています…',
+    'bin_failed': '空化が完了しませんでした: {reason}',
+    'bin_hint': (
+        'マウントされたボリュームを 1 つ選択します。 Windows は、現在のユーザーの OS ビンを空にします。 Linux'
+        ' インベントリはファイル/情報スコープを認識しました。 2 つの質問は、永久削除前の正確な範囲と合計を示'
+        'します。 「停止」はアンケートをキャンセルします。アクティブな空化が完了する必要があります。 macOS は'
+        '、グローバル レビュー後にマウントされた Finder ゴミ箱をすべて空にします (ネイティブ検証保留中)。容量'
+        '/ビンの値は後で更新されます。再スキャンしてメイン ツリーを更新します。'
+    ),
+    'action_volumes': 'ドライブの概要…',
+    'action_volumes_tip': 'マウントされたボリューム、容量、割り当て単位、およびごみ箱の合計を検査する',
+    'volume_root': 'マウントされたルート',
+    'volume_name': 'ボリューム名',
+    'volume_fs': 'ファイルシステム',
+    'volume_total': '合計',
+    'volume_used': '中古品',
+    'volume_free': 'ご利用いただけます',
+    'volume_cluster': '割り当て単位',
+    'volume_trash': 'ごみ箱のバイト数',
+    'volume_trash_count': 'アイテムをビンに入れる',
+    'volume_reading': 'マウントされたボリュームとごみ箱の合計を読み取り中…',
+    'volume_summary': (
+        '{count} のうち、マウントされた {shown} 個のボリュームを表示しています。ダブルクリックしてスキャンし'
+        'ます。'
+    ),
+    'volume_trash_partial': '合計は不明 ({known} は判明)',
+    'volume_hint': (
+        'OS 容量のスナップショット。利用可能なスペースには予約または割り当てが含まれない場合があります。マウ'
+        'ントを繰り返すと容量を共有できるため、行を合計しないでください。 Windows アロケーション ユニットはク'
+        'ラスターです。 POSIX ユニットはファイルシステムのフラグメントであり、最適な転送サイズではありません'
+        '。ゴミ箱には、再利用可能な領域ではなく、OS によって報告された Windows 合計または既知の POSIX 論理ペ'
+        'イロード バイトが表示されます。ディレクトリ/受信メタデータと共有割り当ては除外されます。エラーは不明'
+        'のままです。 Stop は現在の OS 呼び出しを待ちます。キャンセルされたアンケートは破棄されます。 Ctrl+C '
+        'で行をコピーします。ここでは空にするアクションは提供されません。'
+    ),
+    'action_export_report_html': 'スキャンレポート(HTML)…',
+    'action_export_report_html_tip': '3 つのチャート画像が埋め込まれた自己完結型レポートを保存する',
+    'action_export_report_xlsx': 'スキャンレポート（Excel）…',
+    'action_export_report_xlsx_tip': 'レポート リストを別の Excel ワークシートに保存する',
+    'html_filter': 'HTML レポート (*.html)',
+    'xlsx_filter': 'Excel ワークブック (*.xlsx)',
+    'report_title': 'FileTree スキャン レポート',
+    'report_note': (
+        '既知の記録された範囲のみ。配分は目安です。見出しのカウントは、表示/合計を示します。最上位のフォルダ'
+        'ーが重なっています。行を追加しないでください。最大のファイルとフォルダーは 1,000 に制限されます。フ'
+        'ァイルタイプは10,000まで。サイズはバイトです。年齢は、最終アクセスではなく、記録された変更時刻を使用'
+        'します。利用できない日付は、既存の最も古い年齢グループに属します。 HTML チャートには、スキャン ルー'
+        'ト全体が境界付きジオメトリで表示されます。 Excel テキストはエスケープされ、制御文字は 16 進数で表示'
+        'され、セルは 32,767 文字に制限され、16 桁以上の整数は正確なテキストとして保存されます。'
+    ),
+    'report_bytes': '論理バイト',
+    'report_allocated': '割り当てられたバイト数 (推定)',
+    'report_created': 'レポートが作成されました',
+    'report_reference': '年齢の目安',
+    'report_skipped': 'スキップされたフォルダー',
+    'report_denied': '読み取り不可能なフォルダー',
+    'report_pending': '保留中のフォルダー',
+    'report_summary': '概要',
+    'report_notes': '注意事項',
+    'report_field': 'フィールド',
+    'report_value': '値',
+    'report_top_folders': '最大のフォルダー (重複)',
+    'report_categories': 'カテゴリー',
+    'action_projects': 'プロジェクトと再構築可能なデータ…',
+    'action_projects_tip': '記録されたプロジェクト、Git、生成されたデータのサイズを検査する',
+    'project_path': '企画・運営店舗',
+    'project_kind': '検出された種類',
+    'project_other': 'ソース・その他',
+    'project_git': '.git',
+    'project_generated': '再構築可能なデータ',
+    'project_coverage': '適用範囲',
+    'project_partial': '不完全',
+    'project_recorded': '記録範囲',
+    'project_hint': (
+        '既知の論理バイトのみ。ネストされたプロジェクトは重複します。 Git ポインター ファイルでは、外部メタデ'
+        'ータが省略されます。生成されたデータにはカスタム ファイルが含まれる場合があります。移動する前に確認'
+        'してください。 Maven、グローバル Gradle、Docker ストアは個別に表示されます。内容物は使い捨てではない'
+        'と考えられます。'
+    ),
+    'project_reading': '記録されたプロジェクト データを検査しています…',
+    'project_summary': '検出された {count} のうち最大のプロジェクト/ストア {shown} を表示しています。',
+    'project_review': '適格な再構築可能なエントリを確認してください…',
+    'project_review_count': (
+        '現在の年齢、適用範囲、クリーンアップ ポリシーに基づいて対象となる {count} 件のうち、最大 {shown} 件'
+        'のエントリを確認します。停止したスキャンではエントリを提案できません。'
+    ),
+    'project_git_kind': 'Git',
+    'project_python': 'パイソン',
+    'project_node': 'Node.js',
+    'project_rust': 'さび',
+    'project_jvm': 'JVM',
+    'project_conda': 'コンダプロジェクト',
+    'project_python_environment': 'Python環境',
+    'project_conda_environment': 'Conda環境',
+    'project_maven_store': 'メイブンストア',
+    'project_gradle_store': 'グローバル Gradle ストア',
+    'project_docker_store': 'Dockerデータ',
+    'action_git_history': 'Gitの歴史…',
+    'action_git_history_tip': 'すべての Git 参照から到達可能な最大のオブジェクトを検査する',
+    'git_oid': 'オブジェクトID',
+    'git_kind': 'オブジェクトの種類',
+    'git_length': '非圧縮長さ',
+    'git_type_blob': 'ファイルの内容 (BLOB)',
+    'git_type_tree': 'ディレクトリリスト (ツリー)',
+    'git_type_commit': 'コミット',
+    'git_type_tag': '注釈付きタグ',
+    'git_hint': (
+        '読み取り専用の Git 配管はすべての参照を検査し、最大 1,000 個のオブジェクトを保持します。サイズは非圧'
+        '縮の長さであり、ディスク割り当てや回復可能な領域ではありません。 Git のオブジェクト名のヒントがあい'
+        'まいになる可能性があるため、名前は省略されています。 Ctrl+C はオブジェクト ID/行をコピーします。オプ'
+        'ションのロック、自動メンテナンス、遅延ネットワーク取得は無効になっています。 Git は --no-lazy-fetch '
+        'をサポートする必要があります。リポジトリ所有権エラーはバイパスされません。停止はキャンセルします。こ'
+        'こでは gc が実行されることはありません。'
+    ),
+    'git_reading': 'Git 履歴を検査しています…',
+    'git_summary': '{count} 件中 {shown} 件の到達可能なオブジェクトを表示しています。非圧縮合計 {size}。',
+    'git_gc_loose': (
+        'Git gc は {count} 個の孤立したオブジェクトを統合することがありますが、これらの最大のオブジェクトは参'
+        '照から到達可能なままであり、削除されません。実際の節約量やその他の到達不能/reflog データは不明です。'
+    ),
+    'git_gc_packed': (
+        '固定するためのばらばらの物体はありません。 Git gc は、refs がこれらのオブジェクトを保持している間、'
+        'これらのオブジェクトを削除しません。その他の到達不能/reflog データと実際の節約量は測定されませんでし'
+        'た。'
+    ),
+    'git_failed': 'Git インスペクションが失敗しました: {reason}',
+    'tree_filter_placeholder': '展開済みフォルダーを絞り込み…',
+    'tree_filter_hint': (
+        'すでに展開されているフォルダー内でのみ名前を照合します (大文字と小文字は区別されません)。祖先は目に'
+        '見えるままになります。折りたたまれたコンテンツは検索されません。フィルタをクリアしてツリーを復元しま'
+        'す。チャート/リストで非表示のエントリを選択すると、フィルターがクリアされます。スキャンの合計とエク'
+        'スポートは変更されません。'
+    ),
+    'action_live_compare': '2 つのフォルダーを比較してください…',
+    'action_live_compare_tip': '新しい相対パスを比較し、要求されたファイルのペアのみを検証します',
+    'compare_choose_left': '左側のフォルダーを選択してください',
+    'compare_choose_right': '適切なフォルダーを選択してください',
+    'compare_relative': '相対パス',
+    'compare_state': '比較',
+    'compare_left_size': '左のサイズ',
+    'compare_right_size': '適切なサイズ',
+    'compare_left_time': '左が変更されました',
+    'compare_right_time': '右修正',
+    'compare_roots': '左: {left}\n右: {right}',
+    'compare_hint': (
+        '読み取り専用: 正確な Unicode/大文字と小文字の名前が一致します。リンクはたどられません。サイズや時間'
+        'が等しいことは、内容が等しいことを証明するものではありません。ファイル ペアを選択し、Stop が利用可能'
+        'な状態で完全なハッシュを確認します。変更され、読み取り不能になり、既知のクラウド ファイルは利用でき'
+        'ないままになります。結果は、このスキャン/検証時間を指します。コピー、移動、同期は実行されません。 Ct'
+        'rl+C で行をコピーします。 CSV は、表示されている行のみ (最大 10,000 行) をエクスポートします。'
+    ),
+    'compare_reading': '両方のフォルダーをスキャンしています…',
+    'compare_error': '比較またはエクスポートに失敗しました: {reason}',
+    'compare_hashing': '選択したファイル ペアを確認しています…',
+    'compare_verify': '選択した内容を確認する',
+    'compare_summary': '{count} 件中 {shown} 件の相対パスを表示しています (制限 10,000)。',
+    'compare_incomplete': '補償内容は不完全です。読み取り不可能なスコープ内で欠落しているパスは不明のままです。',
+    'compare_unavailable': '利用できないか変更されました',
+    'compare_link': 'リンク;内容が読まれていない',
+    'compare_only_left': '左側のみ',
+    'compare_only_right': '右側のみ',
+    'compare_different_kind': 'さまざまなエントリータイプ',
+    'compare_folder': '両面にフォルダーあり',
+    'compare_different_size': 'さまざまなサイズ',
+    'compare_different_time': 'さまざまな時代。内容未チェック',
+    'compare_unchecked': '内容は未確認',
+    'compare_identical': '完全なハッシュの一致',
+    'compare_different_bytes': '異なる内容',
+    'problem_mount_boundary': 'マウント境界: コンテンツはスキャンされません',
+    'action_special_files': 'クラウドと特殊ファイル…',
+    'action_special_files_tip': '記録されたリコール、オフライン、圧縮およびスパース ファイルの状態を検査する',
+    'special_states': '記録状態',
+    'special_content_size': 'コンテンツ全体のサイズ',
+    'special_recall': 'アクセス時にリコールされる可能性があります',
+    'special_offline': 'オフライン',
+    'special_compressed': '圧縮された',
+    'special_sparse': 'まばらな',
+    'special_allocation_low': '割り当てが低くなります。原因不明',
+    'special_reading': '記録されたファイルのメタデータを読み取り中…',
+    'special_hint': (
+        'このリストはスキャン メタデータのみを使用します。ファイルを開いたりダウンロードしたりすることはあり'
+        'ません。リコール/オフライン フラグは、OneDrive、Dropbox、またはその他のプロバイダーを記述することが'
+        'できます。プロバイダーと、すでにローカルにどれだけあるのかを推測することはできません。コンテンツ全体'
+        'のサイズは、オンライン コンテンツを含む論理長です。ダウンロード後の割り当ては不明です。まばらなホー'
+        'ル、圧縮、および常駐データにより、割り当てが削減される可能性があります。リコール/オフライン エントリ'
+        'のディスク上のゼロは推定値であり、クラウド割り当ての測定値ではありません。ダブルクリックすると、スキ'
+        'ャンされたエントリが選択されます。 Ctrl+C は選択した行をコピーします。'
+    ),
+    'special_summary': (
+        '{count} 件中 {shown} 件の一致するファイルを表示しています。全コンテンツ {size};割り当て {allocated} '
+        'を記録しました。利用できないファイル メタデータ: {unknown}。最大の 1,000 が保持されます。'
+    ),
+    'special_partial': 'スキャン範囲は不完全です。表示されていないファイルは不明のままです。',
+    'action_shell_integration': 'エクスプローラーの統合…',
+    'action_shell_integration_tip': (
+        'エクスプローラーのフォルダー メニューで [FileTree でスキャン] を追加または削除します'
+    ),
+    'shell_enabled': 'エクスプローラーのフォルダー メニューに FileTree でスキャンを追加',
+    'shell_scan': 'FileTree でスキャン',
+    'shell_hint': (
+        '変更を保存するのは、アカウントのフォルダー メニューのみです。管理者権限は必要ありません。 Windows 11'
+        ' で、[その他のオプションを表示] を確認します。エントリを削除するには、ここでこれをオフにします。実行'
+        '可能ファイルまたはソース チェックアウトを移動した後、再度登録します。'
+    ),
+    'shell_failed': 'Explorer の統合を変更できませんでした。\n{reason}',
+    'menu_properties': 'プロパティ',
+    'properties_failed': 'Windows は次のプロパティを開けませんでした:\n{path}',
+    'menu_theme': 'テーマ',
+    'theme_system': 'システム',
+    'theme_light': 'ライト',
+    'theme_dark': '暗い',
+    'chart_access_keys': (
+        '矢印キーでレンダリングされたエントリを選択します。 Enter を押すとフォルダーが開きます。バックスペー'
+        'スが上がります。グループ化されたエントリまたは非表示のエントリにはフォルダ ツリーを使用します。'
+    ),
+    'chart_access_tree_keys': (
+        'Up/Down でカードを選択します。右/左でフォルダーを展開/折りたたみます。 Enter を押すとフォルダーが開'
+        'きます。バックスペースが上がります。'
+    ),
+    'chart_access_folder': '表示中のフォルダー: {path}',
+    'chart_access_selected': (
+        '選択済み: {path}。サイズ {size};ディスク {allocated} 上。 {files} ファイル、{folders} フォルダー。'
+    ),
+    'system_file_hibernate': (
+        '休止状態と高速スタートアップ状態。 Windows がこのファイルを管理します。管理者は、powercfg /hibernate'
+        ' off を使用して休止状態を無効にすることができます。これにより、休止状態も削除され、高速スタートアッ'
+        'プに影響を与える可能性があります。 FileTree は電源設定のみを開きます。'
+    ),
+    'system_file_pagefile': (
+        '仮想メモリのバッキング ファイル。 Windows はサイズを自動的に管理できます。 [詳細設定] タブの [パフォ'
+        'ーマンス設定] で [仮想メモリ] を確認します。これを減らすと、アプリケーションやクラッシュ ダンプに影'
+        '響を与える可能性があります。'
+    ),
+    'system_file_swapfile': (
+        'Windows スワップ バッキング ファイル (一時停止されたアプリ データを含む)。 Windows は仮想メモリと合'
+        'わせて管理します。システム メモリの設定を削除するのではなく、見直してください。'
+    ),
+    'system_file_old': (
+        '以前の Windows インストール。 「ディスク クリーンアップ」→「システム ファイルのクリーンアップ」で以'
+        '前の Windows インストールを確認します。これを削除すると、そのインストールに戻ることができなくなりま'
+        'す。'
+    ),
+    'system_file_recycle': (
+        '削除されたエントリは、ごみ箱が空になるまでディスク領域を占有します。ごみ箱またはストレージ センスを'
+        '確認します。空にすることは永続的です。'
+    ),
+    'system_file_restore': (
+        'システム メタデータ、復元ポイント、シャドウ コピー。 「システム保護」→「構成」を確認して、復元ポイン'
+        'トの制限を設定します。バックアップ所有のシャドウ コピーには、独自のバックアップ ツールが必要な場合が'
+        'あります。未読のバイトは不明のままです。'
+    ),
+    'system_file_winsxs': (
+        'Windows コンポーネント ストア。多くのエントリは Windows ファイルとハード リンクを共有しているため、'
+        '名前ごとの合計が個別のストレージを過大評価する可能性があります。 Windows [ディスク クリーンアップ] →'
+        ' [システム ファイルのクリーンアップ] で [アップデート クリーンアップ] を使用します。コンポーネントを'
+        '手動で削除しないでください。'
+    ),
+    'system_file_updates': (
+        'Windows ダウンロードデータを更新します。 Windows を確認してください。 [ディスク クリーンアップ] → ['
+        'システム ファイルのクリーンアップ] を使用して一時ファイルを更新します。アクティブなダウンロードの管'
+        '理は更新サービスに任せてください。'
+    ),
+    'system_file_delivery': (
+        'Windows アップデートとアプリの配信の最適化ダウンロード キャッシュ。ディスク クリーンアップで配信最適'
+        '化ファイルを確認します。 Windows はアクティブな転送を管理します。'
+    ),
+    'system_tool_power': '電源設定を開きます…',
+    'system_tool_memory': '詳細なシステム設定を開きます…',
+    'system_tool_cleanup': 'ディスククリーンアップを開きます…',
+    'system_tool_storage': 'ストレージセンスを開く…',
+    'system_tool_restore': 'オープンシステム保護…',
+    'system_tool_failed': 'Windows ツールを開けませんでした。',
+    'trash_skip_system_managed': (
+        'Windows はこのエントリを管理します。代わりに詳細でシステム ツールを使用してください'
+    ),
+    'type_locations_title': 'フォルダーを含む (最大 1,000)',
+    'type_location_size': '適合サイズ',
+    'type_locations_tip': (
+        '合計には、各フォルダー内の直接一致するファイルが含まれます。サブフォルダーは重複せずに別々に作成され'
+        'ます。'
+    ),
+    'action_export_list': '現在のリスト (CSV)…',
+    'action_export_list_tip': 'アクティブなリストのすべての行を、表示されているフィルターと並べ替え順に保存します。',
+    'list_changed': 'キャプチャ中にリストが変更されました。もう一度エクスポートまたはコピーしてみてください。',
+    'details_title': '詳細',
+    'details_empty': 'エントリを選択して詳細を表示します',
+    'details_live': 'スキャンが終了すると配信可能になります。',
+    'details_loading': 'タイプと年齢分布を計算しています…',
+    'details_recorded': (
+        '記録されたファイルの合計のみ。未読のエントリはこれらのディストリビューションの外にあります。フォルダ'
+        'ーの変更は最も新しい記録日です。'
+    ),
+    'details_bucket': '{label}: {size} · {count} ファイル',
+    'breadcrumbs_back': '戻る (Alt+左)',
+    'breadcrumbs_forward': '進む (Alt+右)',
+    'breadcrumbs_more': '…',
+    'breadcrumbs_more_tip': '以前の先祖を表示する',
+    'action_print_view': '現在のビューを印刷…',
+    'action_print_view_tip': 'システムの印刷ダイアログを使用して、表示された結果を 1 ページに印刷します',
+    'action_export_view_pdf': '現在のビュー (PDF)…',
+    'action_export_view_pdf_tip': '表示された結果を 1 つの適合 PDF ページに保存します',
+    'pdf_filter': 'PDFドキュメント(*.pdf)',
+    'view_pdf_exported': '保存された現在のビュー: {path}',
+    'print_failed': 'ビューを印刷できませんでした: {reason}',
+    'print_submitted': 'プリンターに送信されたビュー',
+    'action_export_chart_png': '画面上のグラフ (PNG)…',
+    'action_export_chart_png_tip': '現在のビューポートを含む表示されているグラフを保存します。',
+    'action_export_chart_svg': 'バーまたはサンバースト (SVG)…',
+    'action_export_chart_svg_tip': '完全に囲まれたバーまたはリングをベクトル図形およびテキストとして保存',
+    'png_filter': 'PNG画像(*.png)',
+    'svg_filter': 'SVG画像(*.svg)',
+    'graphic_exported': '保存されたチャート: {path}',
+    'treemap_colours_age': '修正された年齢による',
+    'age_colour_unknown': '日付不明',
+    'age_colour_tip': (
+        '変更されてからの経過時間。フォルダーの色には、記録された最新の変更が使用されます。灰色は使用可能な日'
+        '付がないことを意味します。グループ化されたタイルは灰色のままです。'
+    ),
+    'action_gentle': '穏やかなスキャン',
+    'action_gentle_tip': '新しいスキャンの CPU と I/O の優先順位が低くなります。もっと時間がかかるかもしれない',
+    'scan_priority_warning': '一部のスキャン優先度設定を適用できませんでした: {reason}',
+    'scan_pause': '一時停止',
+    'scan_resume': '再開',
+    'scan_pause_tip': (
+        '新しいフォルダーの読み取りを一時停止します。現在の読み取りが終了します。一時停止中に動作を停止します'
+        '。'
+    ),
+    'scan_paused': '一時停止 — {progress}',
+    'scan_analysing': 'フォルダーの読み取りが完了しました。結果を分析中…',
+    'column_drive_share': 'ドライブの%',
+    'columns_reset': '列をリセット',
+    'drive_share_tip': (
+        '論理バイトをボリュームの合計容量で割った値。ハードリンク名は個別にカウントされます。これは割り当てら'
+        'れたスペースでも回復可能なスペースでもありません。容量が利用できないか古い場合は不明です。'
+    ),
+    'action_recent_actions': '最近の行動…',
+    'action_recent_actions_tip': '保持されている操作メタデータを検査し、編集された監査レポートをエクスポートします',
+    'journal_time': '時間 (UTC)',
+    'journal_source': '元のパス',
+    'journal_identity': 'デバイス/ファイルのアイデンティティ',
+    'journal_result': '結果',
+    'journal_detail': '詳細',
+    'journal_destination': 'ゴミ箱の送り先',
+    'journal_reason_duplicates': '明示的な重複の決定',
+    'journal_status_approved': '結果が不明 (承認済みのみ)',
+    'journal_status_moved': 'ゴミ箱に移動しました',
+    'journal_status_skipped': 'スキップされました',
+    'journal_status_failed': 'プラットフォームの移動に失敗しました',
+    'journal_reading': '保持されたアクションを読み取り中…',
+    'journal_hint': (
+        '最新の 500 件のアクション。メタデータのみ、90 日間 / 50 MB 保持されます。承認のみのイベントの最終結'
+        '果は不明です。記録されたゴミ箱パスは復元を保証しません。'
+    ),
+    'journal_summary': (
+        '{count} アクションが表示されました。 {invalid} レコードが破損しており、{unavailable} セグメントが使'
+        '用できません。'
+    ),
+    'journal_read_failed': '操作ジャーナルを読み取れませんでした: {reason}',
+    'journal_write_failed': (
+        'ジャーナルの書き込みまたは保存に失敗しました。残りの動きは可能な限り停止されました。最近のアクション'
+        'が不完全である可能性があります。\n\n{reason}'
+    ),
+    'trash_skip_journal': '承認されたアクションを記録できませんでした。何も動かなかった',
+    'journal_export': '編集されたCSVをエクスポート…',
+    'journal_exported': 'ホーム ディレクトリのプレフィックスを編集して保存された監査レポート。',
+    'duplicate_folder_match': '{copy} = {original} ({size}、{files} ファイル; 一致する検索スナップショット)',
+    'duplicate_folder_tip': (
+        '一致する名前、サイズ、検証済みのハッシュ、および空のフォルダー構造。読み取り専用。クリーンアップの承'
+        '認ではありません。'
+    ),
+    'duplicates_keep_selected': '選択したコピーを保持する',
+    'duplicates_kept_name': '保持: {name}',
+    'duplicates_kept_path': 'コピーを保持: {path}。',
+    'duplicates_choose_keeper': 'エクストラを選択する前に、このグループで保持されているコピーを選択してください。',
+    'duplicates_group_blocked': 'グループはそのまま残されました。再スキャンが必要です: {reason}',
+    'trash_skip_duplicate_choose': '保存されたコピーを選択し、グループを再度確認します',
+    'trash_skip_duplicate_keep': '保存されたコピーが選択されました。グループはそのまま残されました。再スキャン',
+    'trash_skip_duplicate_unverified': 'このグループには検証済みのハッシュがありません。再スキャンして再度検索する',
+    'trash_skip_duplicate_hard_links': (
+        'コピーにはハードリンク エイリアスが含まれます。グループはそのまま残されました。再スキャン'
+    ),
+    'trash_skip_duplicate_content': (
+        'グループの内容が変更されたか、再ハッシュできませんでした。再スキャンして再度検索する'
+    ),
+    'menu_options': 'オプション',
+    'action_cleanup_policy': 'クリーンアップポリシー…',
+    'action_cleanup_policy_tip': 'ルールを有効にし、最低年齢を変更し、クリーンアップ提案からパスを除外します。',
+    'policy_enabled': '有効',
+    'policy_age': '最低経過日数（日数）',
+    'policy_age_for': '{rule} の最低年齢',
+    'policy_enabled_for': '{rule} を有効にする',
+    'policy_hint': (
+        'ポリシーの変更は提案のみに影響します。手動リスク ルールはチェックされないままになります。保存する前'
+        'にプレビューします。'
+    ),
+    'policy_exclusions': (
+        'これらのパスまたは名前は決して提案しないでください (1 行に 1 つ、パスは絶対パスである必要があります)'
+        '。スキャンは変更されません。'
+    ),
+    'policy_preview': '変更のプレビュー',
+    'policy_import': 'インポートポリシー JSON…',
+    'policy_preview_needed': '保存する前に現在の設定をプレビューします。',
+    'policy_preview_running': '候補数と論理サイズを比較しています…',
+    'policy_preview_result': (
+        '{added} 候補を追加します ({size})。 {removed} 候補 ({removed_size}) を削除します。何も動かなかった。'
+    ),
+    'policy_preview_partial': 'スキャンは不完全です。表示されていない候補とバイトは不明のままです。',
+    'policy_no_scan': 'スキャンが完了していません: 効果を測定できません。これらの設定は、今後の提案に適用されます。',
+    'policy_invalid': (
+        '無効なポリシーです。サポートされているルール キー、はい/いいえフラグ、年齢 0 ～ 36500、および絶対パ'
+        'スまたは名前パターンを使用します。'
+    ),
+    'policy_saved': 'クリーンアップ ポリシーが保存されました。提案が更新されています。',
+    'policy_saved_invalid': (
+        '保存されたクリーンアップ ポリシーが無効です。オプションでポリシーが確認されるまで、提案は無効になり'
+        'ます。'
+    ),
+    'cleanup_review_manual': '手動で確認する',
+    'cleanup_evidence': (
+        'カテゴリ: {category};最低有効期間: {days} 日。リスク: {risk}。証拠: {evidence} 再構築/結果: {rebuild'
+        '}'
+    ),
+    'cleanup_category_temporary': '一時ファイル',
+    'cleanup_category_cache': 'ダウンロード/生成されたキャッシュ',
+    'cleanup_category_application_state': 'アプリケーションの状態',
+    'cleanup_category_build': 'プロジェクトのビルド出力',
+    'cleanup_category_downloads': 'ユーザーのダウンロード',
+    'cleanup_risk_low': 'リスクが低い。移動前に確認する',
+    'cleanup_risk_manual': '手動レビュー。チェックなしで開始します',
+    'cleanup_rebuild_temp': (
+        '所有しているアプリケーションを閉じます。一時データは必ずしも再作成できるわけではありません。'
+    ),
+    'cleanup_rebuild_browser_cache': (
+        'ブラウザを閉じます。キャッシュされたページを再度ダウンロードします。プロフィールとブックマークは除外'
+        'されます。'
+    ),
+    'cleanup_rebuild_thumbnails': 'ファイルマネージャーを閉じます。必要に応じてプレビューが再度生成されます。',
+    'cleanup_rebuild_crash_dumps': (
+        '必要な衝突証拠を保管してください。過去のクラッシュ ダンプを再作成することはできません。'
+    ),
+    'cleanup_rebuild_package_caches': (
+        'パッケージ マネージャーを使用して再度ダウンロードします。ネットワークアクセスを確認します。パッケー'
+        'ジストアは対象外となります。'
+    ),
+    'cleanup_rebuild_build_output': (
+        'プロジェクトの内容と依存関係のロックを確認し、プロジェクトの文書化されたコマンドを使用して再構築しま'
+        'す。作成したファイルを保存します。'
+    ),
+    'cleanup_rebuild_old_installers': (
+        'オフラインまたは利用できないインストーラーを維持します。まだ利用可能な場合は、発行者からダウンロード'
+        'します。'
+    ),
+    'cleanup_rebuild_empty_folders': (
+        'アプリケーションは空のフォルダーを予期する場合があります。まずその目的を確認してください。'
+    ),
+    'trash_holder': '{name} (PID {pid})',
+    'trash_holders': (
+        '{path}: {programs} で開いていることが観察されました。関連するプログラムを自分で閉じて、再試行してく'
+        'ださい。'
+    ),
+    'trash_holders_limited': (
+        '{path}: プロセスの可視性は制限されています。他の所有者や原因は不明である可能性があります。'
+    ),
+    'duplicates_savings': (
+        '一意に割り当てられた推定値 {allocated};ゴミ箱 {recoverable} を空にした後に回復可能なファイル データ'
+        '。'
+    ),
+    'duplicates_estimating': '固有の割り当てと回復可能なファイル データを見積もっています…',
+    'duplicates_estimate_unavailable': (
+        '割り当ての見積もりは利用できません。エクストラを選択する前に、もう一度検索を実行してください。'
+    ),
+    'duplicates_estimate_assumption': (
+        '推定では、明示的に保持されたコピーの選択が使用されます。未決定のグループは不明です。各グループは、移'
+        '動前にチェックされ、完全に再ハッシュされます。ハードリンクのエイリアスは決定を妨げます。共有エクステ'
+        'ントとディレクトリのメタデータは不明のままです。ゴミ箱に移動してもスペースは空きません。'
+    ),
+    'capacity_details': '容量の詳細',
+    'capacity_summary': 'OS 使用量 {used}、空き容量 {free}、重複を除いた占有量の推定 {unique}。{status}',
+    'capacity_estimated': 'ボリューム全体の推定です。内訳が不明な領域は詳細に表示します。',
+    'capacity_folder_only': 'フォルダーのみのスキャンです。ボリューム全体の容量と照合できません。',
+    'capacity_incomplete': 'スキャンが不完全です。ボリューム全体の容量と照合できません。',
+    'capacity_identity_unknown': 'ファイル ID が不明です。ボリューム全体の容量と照合できません。',
+    'capacity_capacity_unavailable': 'OS の容量を取得できません。ボリューム全体の容量と照合できません。',
+    'capacity_root_changed': 'スキャン対象のルートが変更されています。容量の照合前に再スキャンしてください。',
+    'capacity_allocation_exceeds_used': '占有量の推定が OS の使用量を超えているため、容量を照合できません。',
+    'capacity_coverage': '{skipped} をスキップしました。 {inaccessible} を読み取れません。保留中 {pending}',
+    'capacity_bin_partial': 'ごみ箱の識別または読み取りが不完全です。表示値には確認できたデータだけを含みます。',
+    'capacity_explanation': (
+        '既知のファイル割り当てには、表示されるごみ箱データが含まれます。ハードリンク名は 1 回カウントされま'
+        'す。他のマウントされたボリュームは除外されます。省略されたデータとファイルシステムのメタデータは不明'
+        'であり、ゼロではありません。説明されていないデータには、アクセスできないデータ、メタデータ、スナップ'
+        'ショット、共有エクステント、および割り当て推定が含まれる場合があります。 OS の容量とファイルはさまざ'
+        'まな時点で測定されます。ファイルシステムはスキャン中に変更される可能性があります。利用できない空き容'
+        '量は、測定されたメタデータの合計ではなく、報告された合計、使用済みおよび利用可能な空き容量の差です。'
+        'これらは、NTFS、ext4、APFS のボリューム検証が保留中の推定値です。'
+    ),
+    'capacity_row_total': 'OS合計',
+    'capacity_row_used': 'OS 使用量',
+    'capacity_row_free': 'OS 利用可能な空き容量',
+    'capacity_row_unavailable_free': '利用できない空き領域',
+    'capacity_row_named_allocated': '名前ごとの占有量の推定',
+    'capacity_row_unique_allocated': '重複を除いた占有量の推定',
+    'capacity_row_hard_link_overcount': '除外したハードリンクの重複集計',
+    'capacity_row_recycle_bin_seen': 'ごみ箱の割り当てが確認されました (含まれています)',
+    'capacity_row_foreign_allocated_seen': '他のボリュームのファイル割り当てが確認されました (除外)',
+    'capacity_row_unaccounted': '内訳不明の使用量',
+    'capacity_row_metadata_bytes': 'ファイルシステムメタデータ / 予約済み',
+    'capacity_row_omitted_bytes': '省略されたデータ',
+    'capacity_row_other_volumes_bytes': 'その他のマウントされたボリューム',
+    'capacity_row_mounts': '別デバイスへのマウント境界',
+    'capacity_row_coverage': '検査範囲',
+    'review_title': 'クリーンアップ提案を検討する',
+    'review_details': '{path}\nルール: {rule};保護: {protection}。 {consequence}',
+    'review_hint': (
+        'あらゆる道筋と結果を見直してください。エントリを保持するにはチェックを外します。 [続行] をクリックす'
+        'ると確認が開きます。'
+    ),
+    'review_select': '移動',
+    'review_rule': 'ルール',
+    'review_reason': '理由',
+    'review_protection': '保護',
+    'review_consequence': '結果',
+    'review_manual': '手動選択',
+    'review_manual_reason': (
+        'ユーザーが選択したエントリ。これを削除すると、それに依存するファイルやプログラムに影響が出る可能性が'
+        'あります。'
+    ),
+    'review_not_protected': '保護されたパスが一致しない',
+    'review_open_folder': '含まれているフォルダーを開く',
+    'review_continue': '確認に進む',
+    'review_estimating': '{count} エントリが選択されました。割り当てを見積もっています…',
+    'review_summary': (
+        '{count} エントリ;論理 {logical};割り当てられた見積もり {allocated};ごみ箱を空にした後に回復可能なフ'
+        'ァイル データ: {recoverable};今なら無料 {free}。共有エクステントとディレクトリのメタデータは不明のま'
+        'まです。ゴミ箱に移動してもスペースは空きません。'
+    ),
+    'size_unknown': '不明',
+    'trash_running': (
+        '承認されたエントリの再検証と移動… [停止] をクリックすると、残りのエントリがキャンセルされます。'
+    ),
+    'trash_batch_done': (
+        '{moved} を移動、{skipped} をスキップ、{failed} に失敗しました。 {size} はごみ箱に移動されました。'
+    ),
+    'trash_skipped': (
+        'これらのエントリはスキップされました。再試行する前にフォルダーを再スキャンしてください:\n{names}'
+    ),
+    'trash_skip_outside': '現在のスキャンの外側',
+    'trash_skip_unverified': '検証されたスキャン ID がありません',
+    'trash_skip_incomplete': '不完全なスキャン範囲',
+    'trash_skip_missing': 'エントリまたは親がありません',
+    'trash_skip_unreadable': 'エントリを読み取ることができません',
+    'trash_skip_link': 'エントリまたは親がリンクになりました',
+    'trash_skip_kind': 'エントリの種類が変更されました',
+    'trash_skip_identity': 'エントリが置き換えられました',
+    'trash_skip_changed': 'サイズ、タイムスタンプ、またはフォルダーの内容が変更されました',
+    'trash_skip_protected': '解決されたパスには異なる保護があります',
+    'trash_skip_cancelled': '操作がキャンセルされました',
+    'coverage_complete': (
+        'カバレッジ: {size} は {known} フォルダー内で認識されます。 {skipped} はスキップされました、{denied} '
+        'はアクセス不能、保留中 {pending} です。'
+    ),
+    'coverage_partial': (
+        '不完全なカバレッジ: {known} フォルダー内で {size} が認識されています。 {skipped} はスキップされまし'
+        'た、{denied} はアクセス不能、保留中 {pending} です。省略されたバイトは不明です。クリーンアップの前に'
+        '不完全なブランチを再スキャンします。 「すべて選択」は無効になっています。'
+    ),
+    'problem_hidden_omitted': '非表示のエントリは省略されました。それらの大きさは不明です。',
+    'problem_partial_folder': '一部のエントリを読み取れませんでした。このフォルダは不完全です。',
+    'app_title': 'FileTree',
+    'about_text': (
+        '<h3>FileTree {version}</h3><p>ディスク容量がどこにあるかを確認してください。</p><p>MIT ライセンス · '
+        '© 2026 JE-Chen</p>'
+    ),
+    'menu_file': '&ファイル',
+    'menu_export': '&エクスポート',
+    'menu_view': '&表示',
+    'menu_unit': 'サイズ&単位',
+    'menu_language': '&言語',
+    'menu_help': '&ヘルプ',
+    'action_open': 'フォルダを選択してください…',
+    'action_open_tip': 'スキャンするフォルダーまたはドライブを選択します',
+    'action_rescan': '再スキャン',
+    'action_rescan_tip': '同じフォルダを再度スキャンして変更を取得します',
+    'action_stop': '停止',
+    'action_stop_tip': '実行中のスキャンを停止します',
+    'action_export_folders': 'フォルダーリスト (CSV)…',
+    'action_export_folders_tip': (
+        'Excel またはその他のスプレッドシート用に、すべてのフォルダーをそのサイズで保存します'
+    ),
+    'action_export_largest': '最大のファイル (CSV)…',
+    'action_export_largest_tip': '最大のファイルのリストを保存する',
+    'action_export_json': 'フォルダー ツリー (JSON)…',
+    'action_export_json_tip': 'スクリプトやその他のプログラムのフォルダー ツリーを保存します。',
+    'action_trash': 'ごみ箱に移動',
+    'action_trash_tip': '選択したファイルとフォルダーをごみ箱に移動します (最初に尋ねられます)。',
+    'action_find': '見つけてください…',
+    'action_find_tip': 'スキャン内の任意の場所でファイルとフォルダーを名前で検索します',
+    'action_quit': '終了',
+    'action_quit_tip': '閉じる FileTree',
+    'action_hidden': '隠しファイルを含める',
+    'action_exclusions': 'スキャン中にスキップ…',
+    'action_exclusions_tip': 'スキャンで除外されるフォルダーとフォルダー名 (node_modules など)',
+    'exclusions_title': 'スキャン中にスキップする',
+    'exclusions_hint': (
+        'スキャンではこれらのフォルダーは除外されます。これらのフォルダーはリストされ、グレー表示され、サイズ'
+        'は 0 になります。node_modules や *.cache などの名前は、その名前のすべてのフォルダーをスキップします'
+        '。フォルダー パスはその 1 つのフォルダーをスキップします。リストは次回のスキャンから適用されます。'
+    ),
+    'exclusions_add_name': '名前を追加…',
+    'exclusions_add_folder': 'フォルダーを追加…',
+    'exclusions_remove': '削除',
+    'exclusions_name_prompt': 'フォルダー名、*、?許可される:',
+    'exclusions_saved': '{count} 件の除外が保存されました。次のスキャンから適用されます。',
+    'tooltip_excluded': '{path}\nスキップ: 表示中です → スキャン中はスキップします',
+    'action_hidden_tip': '隠しファイルと隠しフォルダーを数える (次回のスキャンに適用)',
+    'action_help': '使用方法',
+    'action_help_tip': 'FileTree への短いガイド',
+    'action_about': 'FileTree について',
+    'action_about_tip': 'バージョンとライセンス',
+    'app_title_admin': 'FileTree (管理者)',
+    'action_elevate': '管理者として再起動する',
+    'action_elevate_tip': 'すべてのフォルダーを読み取ることができるように、管理者権限で FileTree を再度起動します。',
+    'action_ask_admin': '開始時に管理者権限を要求する',
+    'action_ask_admin_tip': (
+        'Windows は FileTree の起動時に許可を求めるため、保護されたフォルダーも読み取ることができます'
+    ),
+    'problems_hint': (
+        '一部のフォルダーには管理者権限が必要です。これらも読み取るには、管理者として FileTree を再起動します'
+        '。'
+    ),
+    'elevate_declined': 'FileTree は管理者権限なしでまだ実行されています。',
+    'unit_auto': '自動',
+    'path_placeholder': 'フォルダーのパスを入力または貼り付けて Enter キーを押します',
+    'choose_folder_title': 'スキャンするフォルダーを選択してください',
+    'welcome_title': 'ディスク容量がどこに行くのかを確認する',
+    'welcome_subtitle': (
+        'フォルダーまたはドライブ全体を選択します。 FileTree は、その中のすべてのファイルを合計し、最大のフォ'
+        'ルダーとファイルを最初に表示します。'
+    ),
+    'welcome_choose': 'フォルダーを選択してください…',
+    'welcome_drives': 'ドライブ',
+    'welcome_drive_tip': '{path} をスキャンします',
+    'welcome_drive_free': '{free} から {total} まで無料',
+    'welcome_recent': '最近スキャンした',
+    'welcome_tip': (
+        'ヒント: ファイル マネージャーからフォルダーをこのウィンドウにドラッグすることもできます。絶対 UNC 共'
+        '有パスを Windows (\\\\server\\share) に貼り付けます。アクセスには現在のアカウントが使用されます。ス'
+        'キャン ワーカーはオプションで調整できます。拒否/切断されたブランチは空ではなく、不完全なままになりま'
+        'す。'
+    ),
+    'scan_starting': '開始中…',
+    'scan_progress': 'スキャン中… {folders} フォルダー内の {files} ファイル · {size} · {time}',
+    'scan_stop': '停止',
+    'scan_stopping': '停止中…',
+    'scan_cancelled': 'スキャンが停止されました。',
+    'scan_stopped_partial': 'スキャンが停止しました: 結果には、これまでに読み取られた内容が表示されます。',
+    'scan_failed_title': 'スキャンできません',
+    'scan_mount_changed': (
+        'マウント境界が変更されたか、検証できませんでした。これらの結果を使用する前に、再度スキャンしてくださ'
+        'い。'
+    ),
+    'scan_failed': 'FileTree は {path} を読み取れませんでした。\n\n理由: {reason}',
+    'not_a_folder': '{path} は存在するフォルダーではありません。',
+    'duration_seconds': '{value} 秒',
+    'duration_minutes': '{minutes} 分 {seconds} 秒',
+    'summary': (
+        '<b>{path}</b> — {files} ファイルおよび {folders} フォルダー ({time} でスキャン) 内の {size} (ディス'
+        'ク上の {allocated})'
+    ),
+    'summary_live': (
+        '<b>{path}</b> — これまでの {files} ファイルと {folders} フォルダー内の {size} (ディスク上の {allocat'
+        'ed})'
+    ),
+    'summary_partial': (
+        '<b>{path}</b> — {files} ファイルおよび {folders} フォルダー内の {size} (ディスク上の {allocated}) · '
+        '<b>incomplete</b>: スキャンは次の時間に停止されました。 {time}'
+    ),
+    'tab_chart': 'チャート',
+    'chart_treemap': 'ツリーマップ',
+    'treemap_levels': 'レベル',
+    'treemap_levels_all': 'すべて',
+    'treemap_colours': '色',
+    'treemap_colours_type': 'ファイルの種類別',
+    'treemap_colours_folder': 'フォルダごと',
+    'chart_treemap_tip': 'すべてのファイルは、必要なスペースに応じたサイズの長方形として表示されます',
+    'chart_bars': '棒グラフ',
+    'chart_sunburst': 'サンバースト',
+    'chart_tree': 'ツリー',
+    'chart_tree_tip': 'フォルダー階層: ブランチを展開、Ctrl+ホイールでズーム、ダブルクリックでフォーカス',
+    'tree_orientation': '方向',
+    'tree_orientation_horizontal': '左から右へ',
+    'tree_orientation_vertical': '上から下へ',
+    'tree_more': '{count} 個のフォルダー · {size}',
+    'tree_unavailable': 'スキャンされていません',
+    'chart_sunburst_tip': (
+        '中央にフォルダーがあり、それぞれの深いレベルがリングになります。中央をクリックすると上に移動します'
+    ),
+    'chart_bars_tip': 'フォルダーのエントリごとに 1 つのバー (最大のものから順)、そのサイズとシェア',
+    'bars_empty_folder': 'このフォルダーは空です。',
+    'bars_more': '{count} 詳細: {size}',
+    'tab_largest': '最大のファイル',
+    'scope_folder': '選択したフォルダーのみ',
+    'scope_folder_named': '{name} のみ',
+    'scope_folder_tip': (
+        'スキャン全体ではなく、ツリーで選択したフォルダーの最大のファイル、タイプ、経過時間を表示します'
+    ),
+    'tab_search': '検索',
+    'tab_changes': '変更点',
+    'action_compare': '保存したスキャンと比較してください…',
+    'action_compare_tip': (
+        '[エクスポート] → [フォルダー ツリー (JSON)] で保存したスキャンを開き、その後の成長を確認します。'
+    ),
+    'compare_title': '保存したスキャンと比較する',
+    'compare_failed': 'このファイルは、FileTree:\n{reason} によって保存されたスキャンではありません。',
+    'column_before': '以前',
+    'column_now': '今',
+    'column_change': '変更',
+    'changes_new': '新しい',
+    'changes_gone': '消えた',
+    'changes_whole_scan': '(スキャンしたフォルダー)',
+    'changes_stop': '比較するのをやめる',
+    'changes_running': '比較中…',
+    'changes_waiting': 'スキャンが完了すると、比較が行われます。',
+    'changes_unknown_time': '未知の時間に',
+    'changes_summary': (
+        '{path} と比較すると、{when} が保存されました。その後、{before}、現在は {now} ({change})。 {count} フ'
+        'ォルダーが変更されました。'
+    ),
+    'tab_duplicates': '重複',
+    'tab_cleanup': 'クリーンアップ',
+    'cleanup_suggestions': '提案',
+    'cleanup_select_all': 'すべて選択',
+    'cleanup_select_group': 'このグループを選択してください',
+    'cleanup_running': '掃除するものを探しています…',
+    'cleanup_hint': '通常、コンテンツが移動できる場所は、スキャン後にここに表示されます。',
+    'cleanup_none': 'このスキャンでは何も示唆されません。',
+    'cleanup_summary': (
+        '{groups} グループ内の {size} 論理サイズ。エントリを選択して、ごみ箱に移動する前にパスと割り当てを確'
+        '認します。移動してもすぐにスペースが解放されるわけではありません。'
+    ),
+    'cleanup_group': '{title} — {size} ({count})',
+    'cleanup_temp': '一時ファイル',
+    'cleanup_temp_tip': 'しばらく残されたファイルプログラム。まだ実行中のプログラムには必要な場合があります。',
+    'cleanup_browser_cache': 'ブラウザのキャッシュ',
+    'cleanup_browser_cache_tip': 'ウェブページと写真のコピー。ブラウザは必要に応じてそれらを再度ダウンロードします。',
+    'cleanup_thumbnails': 'サムネイルキャッシュ',
+    'cleanup_thumbnails_tip': '写真の小さなプレビュー。フォルダを開いたときに再度作成されます。',
+    'cleanup_crash_dumps': 'クラッシュダンプ',
+    'cleanup_crash_dumps_tip': (
+        'プログラムがクラッシュしたときに保存されたメモリ。クラッシュを報告する場合にのみ役立ちます。'
+    ),
+    'cleanup_package_caches': 'パッケージのダウンロード キャッシュ (pip、npm…)',
+    'cleanup_package_caches_tip': (
+        'ダウンロードしたパッケージは次回のインストールのために保存されます。必要に応じて再度ダウンロードされ'
+        'ます。'
+    ),
+    'cleanup_build_output': 'ビルド出力 (再ビルド可能)',
+    'cleanup_build_output_tip': (
+        'インストールされた依存関係とプロジェクトのコンパイルされたファイル。プロジェクトを再度ビルドすると、'
+        'それらが再作成されます。'
+    ),
+    'cleanup_old_installers': 'ダウンロードのインストーラー',
+    'cleanup_old_installers_tip': (
+        'かなり前に実行された可能性が高いセットアップ ファイル。再度インストールしたものは保管しておいてくだ'
+        'さい。'
+    ),
+    'cleanup_empty_folders': '空のフォルダー',
+    'cleanup_empty_folders_tip': '何も入っていないフォルダー、または他の空のフォルダーのみ。',
+    'duplicates_min_size': 'からのファイルを比較',
+    'duplicates_any_size': '任意のサイズ',
+    'duplicates_find': '重複の検索',
+    'duplicates_stop': '停止',
+    'duplicates_select_extra': '追加のコピーを選択してください',
+    'duplicates_select_extra_tip': (
+        '選択した残すファイルと成功したチェックでグループ内のエキストラを選択します。次に「削除」を押します'
+    ),
+    'duplicates_hint': (
+        'スキャン内の任意の場所で同じ内容のファイルを検索します。同じサイズのファイルのみが読み取られますが、'
+        '読み取りに時間がかかるため、より小さいサイズを選択しない限り、小さなファイルは無視されます。'
+    ),
+    'duplicates_starting': '同じサイズのファイルを探しています…',
+    'duplicates_running': '{total} ファイルの {files} ({bytes} の {read}) を読み取ります…',
+    'duplicates_stopped': '捜索は中止された。',
+    'duplicates_none': '重複したファイルは見つかりませんでした。',
+    'duplicates_summary': '{groups} の重複グループ: 追加コピーの {extra} 論理サイズ。',
+    'duplicates_limited': '最も多くの追加スペースを持つ {shown} グループがリストされます。',
+    'duplicates_skipped': '{count} ファイルを読み取れませんでした。',
+    'duplicates_group': '{count} コピー × {size}: {extra} の論理追加コピー サイズ。',
+    'search_placeholder': '名前の一部またはパターン:backup、*.mp4、*.iso;*.zip',
+    'search_hint': (
+        '* と ? を使用して名前の一部またはパターンを入力し、条件またはその両方を選択して、スキャン内の任意の'
+        '場所にあるファイルとフォルダーを検索します。'
+    ),
+    'search_running': '検索中…',
+    'search_larger': 'より大きい',
+    'search_smaller': 'より小さい',
+    'search_no_limit': '制限なし',
+    'search_changed': '変更されました',
+    'search_changed_any': 'いつでも',
+    'search_changed_week': '先週に',
+    'search_changed_month': '先月に',
+    'search_changed_year': '昨年に',
+    'search_changed_stale_year': '1年ではない',
+    'search_changed_stale_2y': '2年間ではない',
+    'search_changed_stale_5y': '5年間ではない',
+    'search_type': '種類',
+    'search_type_any': '任意のタイプ',
+    'search_show': '表示する',
+    'search_kind_any': 'ファイルとフォルダー',
+    'search_kind_files': 'ファイルのみ',
+    'search_kind_folders': 'フォルダのみ',
+    'search_saved': '保存された検索条件',
+    'search_saved_none': '(なし)',
+    'search_save': '保存…',
+    'search_delete': '削除',
+    'search_save_title': 'この検索を保存します',
+    'search_save_prompt': '名前:',
+    'search_none': '何も一致しません。',
+    'search_summary': '{count} 件一致、合計 {size} 件。',
+    'search_limited': '最大の {shown} がリストされます。',
+    'tab_types': 'ファイルの種類',
+    'tab_age': '更新時期',
+    'column_age': '最後に変更されました',
+    'age_month': '1ヶ月以内',
+    'age_half_year': '1～6 か月前',
+    'age_year': '6 ～ 12 か月前',
+    'age_two_years': '1 ～ 2 年前',
+    'age_older': '2年以上前',
+    'largest_focus': '表示のみ: {what}',
+    'largest_show_all': 'すべて表示',
+    'list_files_tip': '行をダブルクリックすると、その最大のファイルが一覧表示されます',
+    'tab_problems': '問題点',
+    'tab_problems_count': '問題 ({count})',
+    'column_name': '名前',
+    'column_size': 'サイズ',
+    'column_allocated': 'ディスク上',
+    'column_share': '親の%',
+    'column_share_total': '全体の %',
+    'column_files': 'ファイル',
+    'column_folders': 'フォルダー',
+    'column_modified': '修正済み',
+    'column_folder': 'フォルダー',
+    'column_extension': '延長',
+    'column_type': '種類',
+    'column_path': 'パス',
+    'column_problem': '問題',
+    'problem_access_denied': 'アクセスが拒否されました',
+    'problem_not_found': 'もうそこにはいない',
+    'problem_path_too_long': 'パスが長すぎます',
+    'problem_not_scanned': '未スキャン: スキャンが最初に停止されました',
+    'no_extension': '(延長なし)',
+    'tooltip_unreadable': '{path}\n読み取れませんでした: {reason}',
+    'tooltip_link': '{path}\nリンク: 表示されていますが、フォローされていません',
+    'tooltip_not_scanned': '{path}\nスキャンされませんでした: スキャンが最初に停止されました',
+    'treemap_empty': '何も見せられない',
+    'treemap_up': '↑上へ',
+    'treemap_up_tip': '上のフォルダーを表示',
+    'treemap_tooltip': '<b>{name}</b><br>{size} (このビューの{share})<br>{path}',
+    'treemap_more': '{count} 詳細',
+    'treemap_more_tooltip': (
+        '<b>{count} より小さいエントリ</b>/{name}、それぞれ小さすぎて描画できません<br>{size} (このビューの {'
+        'share})'
+    ),
+    'treemap_more_open': 'ダブルクリックすると、このフォルダーが単独で表示されます',
+    'largest_filter': '名前またはフォルダーでフィルター…',
+    'types_all': '全種類',
+    'category_images': '写真',
+    'category_video': '動画',
+    'category_audio': '音楽とオーディオ',
+    'category_documents': '書類',
+    'category_archives': 'アーカイブとディスクイメージ',
+    'category_code': 'コードとデータ',
+    'category_programs': 'プログラム',
+    'category_other': 'その他',
+    'status_selected': '{name}: {size} (そのフォルダーの {share})',
+    'status_selected_root': '{name}: {size}',
+    'menu_open_item': '開く',
+    'menu_reveal': 'ファイルマネージャーで表示',
+    'menu_copy_path': 'パスをコピーする',
+    'menu_show_chart': 'チャートで表示',
+    'menu_scan_here': 'このフォルダーをスキャンします',
+    'menu_rescan_here': 'このフォルダーを再スキャンします',
+    'rescan_done': '再スキャン {name}: {before} → {after}',
+    'trash_confirm_title': 'ごみ箱に移動',
+    'protected_title': 'システムまたはプログラムフォルダー',
+    'protected_question': (
+        'エントリのうち {count} はシステム フォルダーまたはプログラム フォルダーです。これらを移動すると、シ'
+        'ステムまたはプログラムが動作しなくなる可能性があります:\n\n{names}\n\nそれでも移動しますか?'
+    ),
+    'protected_system': 'オペレーティングシステムの一部',
+    'protected_programs': 'インストールされているプログラム',
+    'protected_settings': 'プログラムの設定とデータ',
+    'protected_profile': 'ユーザーのプロファイルフォルダー',
+    'trash_confirm': '「{name}」({size}) をごみ箱に移動しますか?\n\nそこから復元できます。',
+    'trash_failed': '「{name}」をごみ箱に移動できませんでした。使用中または読み取り専用である可能性があります。',
+    'trash_done': '「{name}」をごみ箱に移動しました: {size} は解放されました。',
+    'action_trash_many': '{count} アイテムをごみ箱に移動します',
+    'trash_confirm_many': (
+        'これらの {count} アイテム (合計 {size}) をごみ箱に移動しますか?\n\n{names}\n\nそこから復元できます。'
+    ),
+    'trash_more': '…その他 {count}',
+    'trash_failed_many': (
+        '{count} 個のアイテムをごみ箱に移動できませんでした。これらは使用中または読み取り専用である可能性があ'
+        'ります:\n\n{names}'
+    ),
+    'trash_done_many': '{count} 個のアイテムをごみ箱に移動しました: {size} が解放されました。',
+    'status_selected_many': '{count} 個のアイテムが選択されました: {size}',
+    'export_title': 'エクスポート',
+    'export_running': '{path} に保存中…',
+    'csv_filter': 'CSV ファイル (*.csv)',
+    'json_filter': 'JSON ファイル (*.json)',
+    'export_done': '{count} 行を {path} に保存しました',
+    'export_failed': 'ファイルを保存できませんでした。\n\n理由: {reason}',
+    'help_title': 'FileTreeの使用方法',
+    'help_html': (
+        '\n<h2>FileTree 3 つのステップ</h2>\n<ol>\n<li><b>スキャン対象を選択してください。</b> をクリックしま'
+        'す<i> フォルダーを選択してください…</i> またはドライブの 1 つを選択し、フォルダーをドラッグします\n'
+        'ウィンドウにパスを入力するか、上部のボックスにパスを入力して Enter キーを押します。</li>\n<li><b>入'
+        '力を見てください。</b> ツリーがすぐに表示され、最大のフォルダーが一番上に移動します\n一方、FileTree '
+        'はすべてのファイルを合計します。スキャンが終了すると、最大のファイルとファイルの種類が続きます。 \n '
+        'を押してください<i></i> をいつでも停止 (または Esc) できます。これまでに読み取られた内容は画面上に残'
+        'り、不完全としてマークされます。</li>\n<li><b>スペースを占有しているものを見つけます。</b> 最大のフ'
+        'ォルダーがツリーの最上部にあります。矢印をクリック\nフォルダの横にあるをクリックして中を確認します。'
+        '</li>\n</ol>\n<h2>結果の読み取り</h2>\n<ul>\n<li><b>フォルダー ツリー</b> (左): 各フォルダーまたはフ'
+        'ァイルのサイズ、ディスク上の<i></i> (全体\n)クラスターなので、通常はもう少し多くなります。圧縮ファイ'
+        'ルの場合は少なく、オンラインのみに保存されているファイルの場合は何もありません)、a\n親</i> バーの<i>'
+        '% (\n の量)その上のフォルダー (このエントリが必要とする)、保持するファイルとフォルダーの数、その中に'
+        '何かがあるとき\n最後に変更されました。列タイトルをクリックして並べ替えます。</li>\n<li><b>Chart</b>:'
+        ' タブの隅にある同じフォルダーの 4 つのビュー (ツリーマップ\n) を切り替えます。が最初に表示され、File'
+        'Tree は選択したものを記憶します)。 \n<i>Treemap</i> は、すべてのファイルを長方形として描画します。フ'
+        'ァイルが大きくなるほど、長方形も大きくなります。各フォルダー\n名前とサイズが記載されたストリップがあ'
+        'り、フォルダーのファイルが小さすぎて見えない共有 1 つがあり、灰色のハッチングが施されています\nタイ'
+        'ル (<i>12 more</i>): ダブルクリックすると、そのフォルダーが単独で表示されます。 <i>Levels</i> はレベ'
+        'ル数を設定します\n<i>Colors</i> ファイル タイプ (凡例はその下にあります) または最上位フォルダーごと'
+        'に色が描画されます。\n<i>Bars</i> では、フォルダーの各エントリに 1 つのバーが与えられ、最初に最大の'
+        'バーが表示され、そのサイズとシェアが最も簡単です\n正確に読むこと。 <i>Sunburst</i> は、フォルダーを'
+        '中央に配置し、\n の周囲のリングのさらに深いレベルに配置します。それ;中央をクリックすると上に移動しま'
+        'す。 <i>Tree</i> には、展開可能なフォルダー カードが表示されます。 + または「その他のフォルダー」を'
+        'クリックします\nカードをさらに表示するには、方向を選択し、Ctrl+ホイールでズームし、スクロールしてパ'
+        'ンします。クリックして\nのエントリを見つけますフォルダー ツリーで、フォルダーをダブルクリックしてそ'
+        'のフォルダーに移動します。\n<i>Up</i> を押して戻ります。</li>\n<li><b>最大のファイル</b>: スキャン内'
+        'の任意の場所にある最大の 1,000 ファイル。フィルターボックスに「\n」と入力します。リストを絞り込みま'
+        'す。行をダブルクリックしてツリー内でファイルを見つけます。</li>\n<li><b>Search</b> (Ctrl+F): スキャ'
+        'ン内の任意の場所にある、入力した内容が名前に含まれるファイルとフォルダー。\n<code>*.mp4</code> のよ'
+        'うなパターンは、名前全体と一致する必要があります。 <code>;</code>\n で複数を区切ります。(<code>*.iso'
+        ';*.zip</code>)。ボックスの下の条件 (サイズ、最終変更日、ファイルタイプ、ファイルまたは\n)フォルダー)'
+        ' で検索を絞り込むか、独自に検索を作成します。<i>Save...</i> は検索を名前で保持します。 \n最大の一致'
+        'が 1,000 個、すべての数と合計サイズとともにリストされます。</li>\n<li><b>クリーンアップ → 提案</b>: '
+        '各スキャン後、コンテンツが通常移動できる場所、\n ごとに 1 つのグループ種類 (一時ファイル、キャッシュ'
+        '、クラッシュ ダンプ、再ビルド可能なビルド出力、ダウンロード内の古いインストーラー、\n)空のフォルダー'
+        ');グループの上にマウスを移動して、削除の内容を確認してから、<i>このグループを選択</i> または\n<i>す'
+        'べて</i>を選択し、[削除]を押します。</li>\n<li><b>クリーンアップ→重複</b>: <i>重複を検索</i>を押して'
+        '、同じ内容のファイルをグループ化します。 \n のファイルのみ同じサイズが読み取られます。 1 MB 未満のフ'
+        'ァイルは、読み取りに\n かかるため、より小さいサイズを選択しない限り除外されます。時間。各グループは'
+        '、そのコピーを最も古いものから順にリストします。 <i>追加のコピーを選択</i>は最も古いコピーを除くすべ'
+        'てを選択し、\n削除すると、それらはごみ箱に移動します。</li>\n<li><b>ファイル タイプ</b>: 各種類のフ'
+        'ァイルが拡張子ごとに使用するスペース。リストからタイプを選択してください\nテーブルの上にあるとその種'
+        '類だけが表示されます。行をダブルクリックすると、その種類の最大のファイルが一覧表示されます。</li>\n<'
+        'li><b>Age</b>: 1 か月以内、1 ～ 6 か月前などに最後に変更されたスペースの量\n何年も前。多くの場合、古'
+        'いデータはアーカイブまたは削除できるものです。行をダブルクリックすると、最大の\nがリストされます。フ'
+        'ァイル。</li>\n<li><b>問題</b>: フォルダー FileTree は読み取りを許可されませんでした。中に何が入って'
+        'いるかはカウントされません。</li>\n</ul>\n<h2>スペースを解放</h2>\n<p>任意のエントリを右クリックして'
+        '<i>開く</i>、<i>ファイルマネージャーに表示</i>、<i>パスをコピー</i>、\n<i>ツリーマップに表示</i>、<i'
+        '>このフォルダーを再スキャン</i> (FileTree の外側で行われた変更後、残りの部分は\n)結果は残ります)、<i'
+        '>このフォルダーを単独でスキャン</i>、または<i>ごみ箱に移動</i>.\n複数のエントリを一度に移動するには'
+        '、フォルダ ツリー (\n) で Ctrl キーを押しながらクリックするか、Shift キーを押しながらクリックしてエ'
+        'ントリを選択します。<i>最大ファイル</i> リストまたは <i>Search</i> 結果: FileTree は 1 回質問し、合'
+        '計サイズをリストします。\nFileTree は永久に何も削除しません。常に最初に要求し、移動したものはすべて'
+        '復元できます\nごみ箱 (macOS および Linux のゴミ箱) から。番号は再スキャンせずにすぐに更新されます。'
+        '\nシステム フォルダーとプログラム フォルダーについては、理由とともに 2 回ほど尋ねられます。一時フォ'
+        'ルダーとキャッシュは対象外です。</p>\n<h2>成長したものを見る</h2>\n<p><i>ファイル → エクスポート → '
+        'フォルダー ツリー (JSON)</i> を使用してスキャンを保存します。後で新しいスキャンを行った後、\n を選択'
+        'します。<i>ファイル → 保存されたスキャンと比較…</i> し、そのファイルを開きます。 <b>Changes</b> タブ'
+        'には、\n が含まれるすべてのフォルダーがリストされます。当時と現在のサイズを比較すると、最初に最大の'
+        '増加が見られます (<i>new</i> および <i>gone</i> は、\n というフォルダーをマークします)現れたり消えた'
+        'り）。 <i>比較を停止</i>.</p>\nを押すまで、再スキャンのたびに比較が継続されます。<h2>キーボード ショ'
+        'ートカット</h2>\n<table cellpadding="3">\n<tr><td><b>Ctrl+O</b></td><td>フォルダーを選択</td></tr>\n'
+        '<tr><td><b>F5</b></td><td>再スキャン</td></tr>\n<tr><td><b>Esc</b></td><td>スキャンを停止</td></tr>'
+        '\n<tr><td><b>Ctrl+F</b></td><td>名前で検索</td></tr>\n<tr><td><b>削除</b></td><td>選択したエントリを'
+        'ごみ箱に移動</td></tr>\n<tr><td><b>F1</b></td><td>このガイド</td></tr>\n<tr><td><b>Ctrl+Q</b></td><t'
+        'd>終了</td></tr>\n</table>\n<p>macOS では、Ctrl の代わりに ⌘ を使用します (再スキャンするには ⌘R)。<'
+        '/p>\n<h2>知っておきたい</h2>\n<ul>\n<li>サイズはバイナリ単位の実際のファイル サイズ (1 KB = 1,024 バ'
+        'イト) であり、Windows Explorer と同じです。\n<i>View → サイズ単位</i>.</li>\n で固定単位を選択します'
+        '。<li>ショートカットとリンク (シンボリック リンク、ジャンクション) はリストされていますが、たどられ'
+        'ることはないため、何もありません\n2 回カウントされました。</li>\n<li>Windows では、FileTree は起動時'
+        'に TreeSize などの管理者権限を要求するため、\n を読み取ることができます。保護されたフォルダーも。 「'
+        'いいえ」と言えば、正常に実行されます。読み取れなかったフォルダーは\n の下にリストされます。<i>問題</'
+        'i>、<i>管理者として再起動</i> ボタン。 \n の下の質問をオフにしてください<i>表示 → 開始時に管理者権限'
+        'を要求</i>.</li>\n<li><i>最大のファイル</i>、<i>ファイル タイプ</i>、<i>Age</i> はスキャン全体をカバ'
+        'ーします。 <i>選択したフォルダーのみ</i>、\nこれらのタブの右上にあるをクリックすると、ツリーで選択し'
+        'たフォルダーをたどります。</li>\n<li>隠しファイルもカウントされます。 <i>View をオフにする → 隠しフ'
+        'ァイル</i> を含めて、\n から除外します。次のスキャン。</li>\n<li>すべてのスキャンからフォルダーを除'
+        '外するには、<i>表示→スキャン中にスキップ</i>:\n などの名前を付けます。<code>node_modules</code> はそ'
+        'の名前のすべてのフォルダーをスキップし、パスは 1 つのフォルダーをスキップします。スキップされたフォ'
+        'ルダーは\nですサイズは 0.</li>\n でグレー表示されます。<li><i>File → Export</i> で結果を保存します。'
+        'CSV は Excel で開き、JSON はスクリプト用です。</li>\n</ul>\n'
+    ),
+}
+
+
+KO: dict[str, str] = {
+    'recurring_review': '다시 스캔하고 현재 후보 항목 검토…',
+    'recurring_validating': '전체 신규 스캔 및 현재 소스 메타데이터에 대해 날짜가 지정된 제안을 검증하는 중…',
+    'recurring_refused': '제안을 계속할 수 없습니다: {status}. 현재 관찰을 준비하려면 새로운 예약 검사를 실행하세요.',
+    'recurring_tabs_full': '16개의 스캔 탭이 모두 사용 중입니다. 예정된 제안을 검토하기 전에 탭을 닫으세요.',
+    'trash_skip_proposal_changed': (
+        '원본 경로 또는 후보 보고서 설정·기록이 변경되었거나 확인할 수 없습니다. 원본을 유지했습니다.'
+    ),
+    'trash_skip_proposal_expired': '이동 전에 예약 스캔의 후보 보고서가 만료되었습니다. 원본을 유지했습니다.',
+    'action_recurring': '예약된 스캔 제안…',
+    'action_recurring_tip': '날짜가 지정된 예정된 관찰 및 해당 범위를 봅니다. 자동 정리가 되지 않습니다.',
+    'recurring_rule': '규칙',
+    'recurring_unknown': '알 수 없음',
+    'recurring_new': '마지막 스캔 이후 새로운 정크',
+    'recurring_current': '현재 후보 항목',
+    'recurring_growth': '최대 신규 성장',
+    'recurring_empty': (
+        '이 세션에는 예약된 보고서가 없습니다. 백그라운드 모니터링을 활성화하고 스캔 폴더를 선택합니다.'
+    ),
+    'recurring_hint': (
+        '관찰만; 아무것도 자동으로 이동되지 않습니다. 목록당 최대 100개 행. 증가는 복구 가능한 공간이 아닌 논'
+        '리적 바이트입니다. 알려지지 않은 비교는 새로운 쓰레기가 없음을 증명하지 않습니다. 보고서는 이 세션에'
+        '서 예약된 검사 후에 나타납니다. 기준선은 로컬 기록에 보관됩니다. 새 탭에서 재검색을 검토하고 일반 대'
+        '기열과 확인을 사용합니다.'
+    ),
+    'recurring_summary': (
+        '준비됨: {prepared}\n이전 기준: {previous}\n만료: {expires}\n표시된 후보: {retained} / {total}; 적용 '
+        '범위: {coverage}; 비교: {comparison}\n상태: {status}'
+    ),
+    'recurring_status_current': '관찰됨; 검토 전 새로운 소스 검증 필요',
+    'recurring_status_expired': '만료됨(일정 누락 또는 시계 롤백 포함)',
+    'recurring_status_schedule_changed': '일정이 변경되거나 비활성화되었습니다.',
+    'recurring_status_stale_scan': '스캔 작업 기록이 변경되었거나 사용할 수 없음',
+    'recurring_status_rule_changed': '청소 규칙이 변경되었습니다.',
+    'recurring_status_incomplete': '불완전한 적용 범위 또는 알 수 없는 신원',
+    'recurring_status_paths_changed': '소스 경로가 변경됨',
+    'recurring_status_unavailable': '설정 또는 작업 기록을 확인할 수 없습니다.',
+    'recurring_prepare_failed': '기록이 저장되었습니다. 예약된 제안을 사용할 수 없음: {detail}',
+    'workspace_new': '새 스캔 탭',
+    'workspace_new_tip': '독립적인 스캔 탭을 엽니다(Ctrl+T). Ctrl+W로 현재 탭을 닫습니다.',
+    'workspace_close': '스캔 탭 닫기',
+    'workspace_empty': '폴더 선택',
+    'trash_skip_recycle_unverified': (
+        'Windows 재활용 설정, 전체 소스 크기 또는 기본 저장소 메타데이터를 확인할 수 없습니다. 소스가 유지됩'
+        '니다.'
+    ),
+    'trash_skip_recycle_disabled': 'Windows 이 범위에서는 재활용이 비활성화됩니다. 소스가 유지됩니다.',
+    'trash_skip_recycle_capacity': (
+        '선택 항목 및 현재 쓰레기통 내용물이 여유 공간이 있는 관찰된 재활용 한도를 초과합니다. 소스가 유지됩'
+        '니다.'
+    ),
+    'action_check_updates': '매일 업데이트를 확인하세요',
+    'action_background_monitor': '백그라운드 모니터…',
+    'action_background_monitor_tip': '트레이 알림 및 일정에 따른 폴더 기록 검색을 선택하세요.',
+    'background_enable': '백그라운드 모니터링 활성화',
+    'background_startup': '로그인할 때 이 모니터 시작',
+    'background_startup_hint': (
+        '이 사용자에 대해서만 별도의 선택이 가능합니다. FileTree 소유의 로그인 항목을 제거하려면 선택을 취소'
+        '하세요. 향후 로그인에 적용됩니다. 다른 복사를 시작하거나 이 모니터를 닫지 않습니다.'
+    ),
+    'background_startup_requires_monitor': '로그인 항목을 추가하기 전에 백그라운드 모니터링을 활성화하십시오.',
+    'background_startup_error': '로그인 시작을 변경할 수 없습니다: {detail}',
+    'background_hint': (
+        '기본적으로 꺼져 있습니다. 닫으면 사용 가능한 시스템 트레이에 FileTree이 유지됩니다. 그만둬 끝내세요.'
+        ' 매분마다 OS의 사용 가능한 용량을 확인하고 선택한 폴더만 부드럽게 검사합니다. 예약된 검색에는 활성화'
+        '된 로컬 기록이 필요합니다. 자동 정리 또는 시작 등록이 없습니다.'
+    ),
+    'background_threshold': '사용 가능한 공간 아래에 경고',
+    'background_interval': '검사 간격(시간)',
+    'background_roots': '예약된 검사 폴더',
+    'background_add': '스캔 폴더 추가…',
+    'background_remove': '선택한 폴더 제거',
+    'background_limit': '최대 32개의 예약 폴더를 선택하세요.',
+    'background_show': 'FileTree 표시',
+    'background_off': '백그라운드 모니터링이 꺼져 있습니다',
+    'background_ready': '백그라운드 모니터링이 켜져 있습니다.',
+    'background_no_tray': (
+        '시스템 트레이를 사용할 수 없습니다. FileTree은 계속 표시되고 배경 모니터링은 일시 중지됩니다.'
+    ),
+    'background_error': '백그라운드 모니터링: {detail}',
+    'background_history_disabled': '예약된 검사를 실행하기 전에 로컬 검사 기록을 활성화하십시오.',
+    'background_scanning': '예약된 검사: {detail}',
+    'background_saved': '저장된 예약 내역: {detail}',
+    'background_saved_partial': '읽지 않은 범위와 함께 저장된 예약 내역: {detail}',
+    'background_canceled': '예약된 검사가 취소되었습니다. 부분 소스 범위가 저장되지 않았습니다: {detail}',
+    'background_warning': '{detail}',
+    'background_low_space': '{root}의 사용 가능한 공간 부족: {free} ({percent}%)',
+    'action_follow_changes': '변경 사항 따르기',
+    'action_follow_changes_tip': (
+        '기본적으로 꺼져 있습니다. Windows/Linux에서 변경된 폴더를 새로 고칩니다. 5분마다 루트를 조정합니다.'
+    ),
+    'follow_waiting': '변경 사항 따르기: 스캔 대기 중',
+    'follow_starting': '변경사항 따르기: 시작 중…',
+    'follow_active': '다음 변경 사항({detail})',
+    'follow_failed': '변경사항 팔로우가 중지되었습니다: {detail}',
+    'follow_incomplete': '변경 사항을 따르려면 완전한 물리적 스캔이 필요합니다.',
+    'follow_unsupported': '변경 사항에 따라 Windows 및 Linux을 지원합니다.',
+    'follow_backend_usn': 'NTFS USN',
+    'follow_backend_directory_changes': '디렉터리 알림',
+    'follow_backend_inotify': 'inotify',
+    'action_check_updates_tip': '최대 하루에 한 번 HTTPS를 통해 PyPI에 문의하세요. 설치 없이 참고만 가능합니다.',
+    'update_available': 'FileTree {version} 사용 가능',
+    'multi_roots': '여러 뿌리',
+    'action_multi_scan': '여러 폴더를 스캔합니다…',
+    'action_multi_scan_tip': '한 번의 결합 스캔으로 명시적 폴더를 검토합니다.',
+    'multi_choose': '여러 폴더 스캔',
+    'multi_add': '폴더 추가…',
+    'multi_remove': '선택한 루트 제거',
+    'scan_all_drives': '모든 드라이브 검사',
+    'multi_hint': (
+        '최대 256개의 선택된 뿌리를 결합합니다. 결과는 읽기 전용입니다. 파일 작업을 위해 소스를 별도로 스캔합'
+        '니다. OS 용량은 볼륨별로 유지됩니다.'
+    ),
+    'capacity_multiple_roots': '다중 루트: OS 용량은 볼륨당입니다.',
+    'vc_title': '컴팩트한 VHD 선택…',
+    'vc_apply': '검토하고 컴팩트하게…',
+    'vc_hint': (
+        '고정 로컬 NTFS의 분리된 동적 VHD/VHDX만 적합합니다. 읽기 전용 준비는 ID, 헤더 및 보수적인 WSL/Docker'
+        ' 런타임 상태를 확인합니다. 게스트 사용량 및 보장된 복구는 알 수 없습니다. 권한 오류로 인해 FileTree'
+        '의 기존 관리자 재시작을 사용하기 전에 이 검토를 닫으십시오. 새로운 스캔과 승인이 필요합니다.'
+    ),
+    'vc_preparing': '캡처된 디스크 및 중지된 런타임을 확인하는 중…',
+    'vc_ready': '정확한 소스를 검토하고 해당 기계가 계속 중지되어 있는지 확인하세요.',
+    'vc_details': (
+        '소스: {path}\n이름: {source}\n디스크 UUID: {identifier}\n가상 용량: {capacity}\n공급자 바이트: {phys'
+        'ical}\n\n백엔드: Windows CompactVirtualDisk, 분리형 제로 블록 압축. 게스트 연결, 실행 또는 종료가 없'
+        '습니다. 게스트가 사용하는 바이트는 알 수 없습니다.'
+    ),
+    'vc_confirm': (
+        '다음 정확한 가상 디스크 파일을 압축 정리하시겠습니까?\n\n{path}\n\n예를 선택하면 이 파일을 사용하는 '
+        '머신이 중지되었으며 작업 내내 중지 상태를 유지한다는 것을 확인한 것으로 간주합니다. 실행 상태와 식별'
+        ' 정보를 새로 확인합니다. 운영체제의 제로 블록 작업으로 공간이 회복되지 않을 수 있으며, 나중에 오류가'
+        ' 발생하더라도 메타데이터가 이미 변경되었을 수 있습니다. 자동으로 되돌리는 기능은 없습니다. 게스트의 '
+        '사용량 및 여유 공간 회복량은 알 수 없습니다. 중지 또는 닫기는 진행 중인 운영체제 호출이 끝날 때까지 '
+        '기다리고 실제 결과를 보고합니다. 쓰기 가능한 상태로 열기 전에 승인을 기록합니다.'
+    ),
+    'vc_running': '검토된 디스크를 다시 확인하고 압축하는 중…',
+    'vc_waiting': '현재 운영체제 호출을 기다리는 중입니다. 실제 결과가 보고될 예정입니다…',
+    'vc_done': (
+        '{status}\n관찰된 지원 할당: {before} → {after}. 이는 OS 무료 복구를 보장하지 않습니다. 게스트 사용량'
+        '은 아직 알려지지 않았습니다. 쓰기를 시도하려면 새로 검사해야 합니다.'
+    ),
+    'vc_failed': '압축: {reason}',
+    'vc_not_compacted': '압축되지 않음',
+    'vc_stale': (
+        '쓰기 가능한 작업이 시도되었습니다. 기록된 관찰 내용은 오래되었습니다. 다른 검토 전에 새로 스캔하려면'
+        ' 이 창을 닫으세요.'
+    ),
+    'vc_audit_refused': '승인을 기록할 수 없습니다. 운영체제 작업이 시작되지 않았습니다.',
+    'vc_audit_detail': '이전 백업 할당: {before}; 이후: {after}. 오류: {error}',
+    'journal_status_compacted': '네이티브 압축 완료',
+    'journal_reason_compaction': '명시적 가상 디스크 압축',
+    'vd_hint': (
+        '읽기 전용 인벤토리 공급자 라벨은 위치 힌트입니다. 지원 할당, 공급자 바이트 및 가상 용량은 별개입니다'
+        '. 게스트 사용량은 알 수 없습니다. 헤더 쿼리와 압축 검토는 명시적입니다. 지원되지 않는 형식은 계속 표'
+        '시됩니다. 게스트가 자동으로 시작, 중지 또는 마운트되지 않습니다.'
+    ),
+    'vd_name': '디스크 이름',
+    'vd_source': '소스',
+    'vd_issue_unverified': '확인되지 않은 신원',
+    'vd_issue_unavailable': '연결됨, 클라우드 또는 사용할 수 없음',
+    'vd_issue_changed': '파일이 변경됨',
+    'vd_issue_duplicate_hard_links': '여러 하드 링크 이름',
+    'action_virtual_disks_tip': '기록된 가상 디스크를 검토하고 읽기 전용 기본 VHD 정보를 명시적으로 쿼리합니다.',
+    'action_virtual_disks': '가상 디스크…',
+    'vd_kind': '형식',
+    'vd_length': '백업 파일 길이',
+    'vd_allocation': '기록된 할당',
+    'vd_capacity': '가상 용량',
+    'vd_physical': '공급자 물리적 바이트',
+    'vd_guest': '사용된 게스트',
+    'vd_source_scan': '기록된 스캔',
+    'vd_source_wsl': 'WSL 등록',
+    'vd_source_docker': 'Docker 기본값(추론)',
+    'vd_unsupported': '기본 VHD 도구는 지원되지 않습니다.',
+    'vd_not_queried': '쿼리되지 않은 기본 헤더',
+    'vd_fixed': '고정',
+    'vd_dynamic': '동적',
+    'vd_differencing': '차별화',
+    'vd_loaded': '탑재/사용 중',
+    'vd_detached': '로드되지 않음(관찰)',
+    'vd_inspect': '선택한 VHD 헤더 쿼리',
+    'vd_select': '기록된 항목 표시',
+    'vd_reading': '가상 백업 파일 검색 중…',
+    'vd_querying': '기본 헤더 읽기: {path}',
+    'vd_summary': '{count} 중 {shown} 표시 중; {issues} 문제/누락. 적용 범위: {coverage}.',
+    'vd_failed': '가상 디스크 정보: {reason}',
+    'vd_information_hint': (
+        '기본 관찰은 압축을 승인하거나 기계가 정지되었음을 증명하지 않습니다. 공급자 실제 바이트는 게스트 사'
+        '용 바이트가 아닙니다. 디스크 UUID는 행 도구 설명에 있습니다.'
+    ),
+    'link_summary': '{total} 추가 사본: {ready} 준비됨, {skipped} 거부됨.',
+    'link_title': '추가 사본을 연결하십시오…',
+    'link_hint': (
+        '명시적으로 보관된 복사본(최대 1,000개 추가)을 사용하여 정확한 중복 파일을 검토합니다. 보호된 파일, '
+        '변경된 파일, 클라우드 파일, 링크된 파일, 지원되지 않는 파일은 거부됩니다. 여유 공간이 보장되지 않습'
+        '니다.'
+    ),
+    'link_copy': '교체할 추가 사본',
+    'link_keeper': '보관된 파일',
+    'link_apply': '링크가 추가 사본을 검토했습니다…',
+    'link_confirm': (
+        '중복 복사본 {count}개를 하드 링크로 바꾸시겠습니까? 처리할 수 없는 {skipped}개 행은 건너뜁니다.\n\n'
+        '기존 데이터는 휴지통에 보관하지 않습니다. 연결된 모든 이름은 이후의 내용, 메타데이터 및 접근 권한 변'
+        '경을 공유합니다. 자동으로 되돌리는 기능은 없습니다. 실패하거나 취소하면 생성한 링크와 기존 복사본의 '
+        '백업이 표시된 경로에 남을 수 있습니다. 중지 또는 닫기는 진행 중인 운영체제 호출이 끝날 때까지 기다립'
+        '니다. 전체 데이터와 모든 명명된 스트림을 다시 확인합니다. 동시 변경에 대한 확인은 관찰에 기반하며 트'
+        '랜잭션이 아닙니다. 상세 내용에서 모든 쌍과 거부 이유를 확인하세요.'
+    ),
+    'link_progress': '재확인/링크: {path}',
+    'link_done': (
+        '하드 링크: {linked} 게시됨, {other} 연결되지 않음. 관찰 내용을 새로 고치려면 다시 스캔하세요. 복구된'
+        ' 용량은 알 수 없습니다.'
+    ),
+    'link_not_linked': '연결되지 않음',
+    'link_retained': '유지된 경로:\n{paths}',
+    'journal_status_linked': '하드 링크 게시됨',
+    'journal_reason_duplicate_links': '명시적 중복 하드링크 교체',
+    'undo_button': '실행 취소({count})',
+    'undo_running': '캡처된 휴지통 항목을 복원하는 중…',
+    'undo_done': '실행 취소: {restored} 복원, {failed} 실패',
+    'undo_title': '쓰레기 복원',
+    'undo_result': '{status}\n원본: {source}\n휴지통: {trashed}\n{reason}',
+    'undo_unavailable': '일부 항목은 실행취소할 수 없습니다: {reason}',
+    'journal_status_restored': '휴지통에서 복원됨',
+    'journal_reason_undo': '명시적 휴지통 실행 취소',
+    'menu_move_drive': '다른 드라이브로 이동…',
+    'copy_hint': (
+        '다른 드라이브에 있는 기존 폴더를 선택합니다. 원본은 별도의 휴지통 확인 전까지 보관됩니다. 64MiB 미만'
+        '의 파일 수, 길이 및 SHA-256을 확인하세요. 더 큰 페이로드는 길이만 제한됩니다. 실패/취소 시 부분 대상'
+        '이 유지됩니다. 최대 1,000개의 폴더를 선택할 수 있습니다.'
+    ),
+    'copy_apply': '검토된 폴더 복사 및 확인…',
+    'copy_redirect': '휴지통을 성공적으로 삭제한 후 각 원래 경로에 교차점/기호 링크를 남겨두세요.',
+    'copy_finish': '검증된 원본을 휴지통으로 이동…',
+    'copy_confirm': (
+        '검토한 폴더 {count}쌍을 복사하고 검증하시겠습니까? 나머지 {skipped}쌍은 건너뜁니다. 기존 이름을 덮어'
+        '쓰지 않습니다. 원본은 휴지통 이동을 별도로 승인할 때까지 유지합니다. 실패하거나 취소하면 일부만 복사'
+        '된 항목이 대상에 남습니다.'
+    ),
+    'copy_progress': '이 폴더에 {path}: {done} / {total} 파일 복사/확인 중',
+    'copy_done': '확인된 사본: {copied}; 건너뛰었습니다: {skipped}; 실패: {failed}. 원본은 그대로 유지됩니다.',
+    'copy_partial': '유지된 부분 대상: {path}',
+    'copy_trash_confirm': (
+        '각 원본을 휴지통으로 이동하기 직전에 복사된 폴더를 다시 검증합니다. 항목 수와 길이를 비교합니다. 64 '
+        'MiB 미만의 내용은 SHA-256으로 대조하고, 그 이상의 내용은 길이만 비교합니다. 검증에 실패하면 나머지 '
+        '작업을 중지합니다. 동시 변경에 대한 확인은 트랜잭션이 아닙니다.'
+    ),
+    'copy_errors': '복사 확인 또는 원본 경로 리디렉션에 실패했습니다. 세부정보에서 실제 경로를 검토하세요.',
+    'copy_verify_failed': '보관된 원본: {source}\n복사본: {destination}\n확인 거부됨: {reason}',
+    'copy_redirect_failed': (
+        '원본이 휴지통으로 이동됨: {source}\n확인된 사본 보관됨: {destination}\n리디렉션 실패(빈 원본 경로 디'
+        '렉터리가 남아 있을 수 있음): {reason}'
+    ),
+    'namespace_reason_same_volume': '동일한 볼륨; 폴더로 이동 사용',
+    'namespace_source_name': '소스 이름',
+    'namespace_destination_name': '목적지 이름',
+    'namespace_closed_errors': (
+        '중지/폐쇄된 작업에서 오류가 보고되었습니다. 세부정보에서 소스/대상 경로를 검사합니다.'
+    ),
+    'namespace_refreshed': '{path}: {files} 파일을 새로 고쳤습니다. {errors} 스캔 오류.',
+    'namespace_refresh_failed': '{path}에서 새로 고침 실패: {reason}',
+    'namespace_refreshing': '영향을 받은 대상 새로 고침: {path}',
+    'menu_move_folder': '폴더로 이동…',
+    'menu_rename': '이름 바꾸기…',
+    'namespace_source': '소스',
+    'namespace_destination': '목적지',
+    'namespace_status': '상태',
+    'namespace_pattern': '파일 이름 패턴',
+    'namespace_rename_hint': (
+        '모든 소스와 대상을 검토하세요. 리터럴 토큰: {name}, {stem}, {ext}, {n}. 동일한 볼륨만; 덮어쓰기 없음'
+        '. 최대 1,000개의 항목을 선택할 수 있습니다.'
+    ),
+    'namespace_move_hint': (
+        '기존 대상 폴더를 선택하고 모든 쌍을 검토하십시오. 동일한 볼륨만; 덮어쓰기 없음. 보호된/링크/사용할 '
+        '수 없는/불완전한 항목은 거부됩니다. 최대 1,000개의 항목을 선택할 수 있습니다.'
+    ),
+    'namespace_collision_skip': '기존 이름: 건너뛰기',
+    'namespace_collision_rename': '기존 이름: 번호가 매겨진 접미사 미리보기',
+    'namespace_preview': '미리보기 경로',
+    'namespace_apply': '검토된 경로 적용…',
+    'namespace_reading': '소스 및 대상 메타데이터 확인 중…',
+    'namespace_preview_needed': '옵션이 변경되었습니다. 적용하기 전에 경로를 다시 미리 봅니다.',
+    'namespace_summary': '{total} 가장 바깥쪽 쌍; {ready} 준비; {skipped} 거부됨/변경되지 않음.',
+    'namespace_confirm': (
+        '미리보기의 처리 가능한 원본·대상 {count}쌍을 적용하시겠습니까? 나머지 {skipped}쌍은 건너뜁니다. 상세'
+        ' 내용에는 처리 가능한 모든 쌍을 표시합니다. 기존 이름을 덮어쓰지 않습니다. 중지 또는 닫기는 진행 중'
+        '인 이름 변경이 끝날 때까지 기다리며, 완료된 변경은 유지합니다.'
+    ),
+    'namespace_progress': '{done} / {total} 쌍 처리됨',
+    'namespace_done': (
+        '이동/이름 변경: {moved}; 건너뛰었습니다: {skipped}; 실패: {failed}. 스캔을 새로 고치려면 닫으세요.'
+    ),
+    'namespace_failed': '작업 실패: {reason}',
+    'namespace_reason_ready': '준비',
+    'namespace_reason_unverified': '알 수 없는 신원',
+    'namespace_reason_link': '링크가 거부되었습니다.',
+    'namespace_reason_special': '특별입국 거부',
+    'namespace_reason_unavailable': '사용할 수 없음/클라우드 항목',
+    'namespace_reason_cancelled': '중지됨',
+    'namespace_reason_outside': '외부 현재 스캔/루트',
+    'namespace_reason_missing': '소스 누락',
+    'namespace_reason_kind': '항목 유형이 변경됨',
+    'namespace_reason_identity': '소스가 교체됨',
+    'namespace_reason_changed': '소스가 변경됨',
+    'namespace_reason_incomplete': '불완전한 소스 범위',
+    'namespace_reason_unreadable': '읽을 수 없는 소스',
+    'namespace_reason_system_managed': '시스템 관리 소스',
+    'namespace_reason_protected': '보호된 소스',
+    'namespace_reason_unchanged': '이름은 변경되지 않음',
+    'namespace_reason_descendant': '선택한 소스 내의 대상',
+    'namespace_reason_protected_destination': '보호된 목적지',
+    'namespace_reason_volume': '다른 볼륨; 검증된 사본이 필요합니다',
+    'namespace_reason_collision': '이름이 이미 존재합니다.',
+    'photos_exact': '정확한 중복',
+    'photos_find': '비슷한 사진 찾기',
+    'photos_similar': '비슷한 사진',
+    'photos_distance': '해시 거리(0~16):',
+    'photos_hint': (
+        '시각적 후보만 해당: 썸네일과 원본을 비교하세요. 해시 충돌이 가능합니다. 자동 유지할 파일, 추가 사본 '
+        '선택 또는 복구 추정이 없습니다. 첫 번째 애니메이션 프레임.'
+    ),
+    'photos_group': '{count} 이미지; 첫 번째 이미지의 {distance} 비트 내',
+    'photos_running': '이미지 읽기: {read}; 건너뛰기/실패: {skipped}',
+    'photos_summary': '{groups} 유사 이미지 그룹; {read} 이미지 읽기; {skipped} 건너뛰거나 실패했습니다.',
+    'photos_limited': '제한된 재고 또는 디스플레이 최대 {count}개의 이미지 행/썸네일이 표시됩니다.',
+    'archive_loading': '아카이브 메타데이터를 읽는 중…',
+    'archive_virtual_name': '{name} [가상]',
+    'archive_virtual_hint': '아카이브 멤버: 선언된 비압축 크기, 디스크 총계 외부. 파일 작업이나 추출이 없습니다.',
+    'archive_failed': '미리보기를 사용할 수 없음: {reason}',
+    'archive_rejected': '{count} 안전하지 않거나 연결되었거나 충돌하는 구성원이 생략되었습니다.',
+    'archive_empty': '미리보기 가능한 회원 없음',
+    'archive_stopped': '아카이브 미리보기가 중지되었습니다. 재고가 불완전하다',
+    'archive_busy': '두 개의 아카이브 읽기가 이미 실행 중입니다. 다시 스캔하여 다시 시도',
+    'archive_stop': '이 아카이브 읽기를 중지하세요',
+    'action_count_hard_links': '관찰된 하드 링크를 한 번 계산합니다.',
+    'action_count_hard_links_tip': (
+        '기본적으로 꺼져 있습니다. 향후 스캔에서는 이름이 지정된 크기를 유지하고 계산된 총계를 추가합니다. Br'
+        'anch/Trash는 전체 루트를 재구축합니다.'
+    ),
+    'column_accounted_size': '계산된 크기',
+    'column_accounted_allocated': '계산된 디스크 크기',
+    'hard_links_hint': (
+        '하드 링크 계정을 활성화하면 처음으로 관찰된 어휘 이름이 바이트에 기여합니다. 여기서 별칭은 0으로 계'
+        '산됩니다. 명명된 크기는 실제 파일 길이로 유지됩니다. 알 수 없거나 일관성이 없는 기록은 추정 상태로 '
+        '유지됩니다. 공유 범위를 알 수 없습니다.'
+    ),
+    'hard_links_summary': (
+        '계산됨: {size}(디스크 추정치 {allocated}); {aliases} 관찰된 별칭; {unknown} 알 수 없는 레코드입니다.'
+        ' 차트에서는 계산된 합계를 사용합니다. 파일/유형/연령 목록은 이름이 지정된 크기를 유지합니다.'
+    ),
+    'compression_mode_ntfs': 'NTFS 압축',
+    'compression_mode_xpress8k': 'XPRESS8K 압축(거의 수정되지 않은 파일)',
+    'compression_mode_uncompress': '압축 해제(NTFS 및 실행 모드)',
+    'compression_apply': '나열된 파일 처리 중…',
+    'compression_restore_summary': (
+        '{count}/{total} 녹음된 파일이 검토 대상입니다. {shown}을 표시합니다. 압축 상태를 알 수 없습니다.'
+    ),
+    'compression_confirm': (
+        '범위: {path}\n모드: {mode}\n후보 {total}개 중 목록에 있는 파일 {count}개(논리 크기 {size})만 처리합'
+        '니다.\n\n현재 NTFS 범위와 파일이 변경되지 않았는지 다시 확인합니다. 링크, 클라우드·오프라인, 스파스,'
+        ' 숨김·시스템, 하드 링크 및 보호된 파일은 처리하지 않습니다. 폴더의 기본 설정과 목록에 없는 파일은 변'
+        '경하지 않습니다. 압축하면 쓰기 속도가 느려질 수 있습니다. XPRESS는 변경이 적은 데이터에 적합합니다. '
+        '압축 해제에는 여유 공간이 필요합니다. 중지하거나 실패하면 일부 변경이 남을 수 있습니다.\n\n이 창을 '
+        '닫으면 진행 중인 명령을 취소하고 종료를 기다린 뒤, 파일별 할당을 확인하여 이 폴더를 다시 스캔합니다.'
+        ' 계속하시겠습니까?'
+    ),
+    'compression_progress': '{done}/{total} 나열된 파일을 처리 중입니다…',
+    'compression_done': (
+        '{done}/{attempted} 명령이 완료되었습니다. {failures} 실패. 알려진 일치 파일 할당: {before} → {after}'
+        '; {unknown} 측정값을 알 수 없습니다. 다시 검색할 예정입니다. 총계는 여유 공간을 보장하지 않습니다. '
+        '처음 20개의 오류가 표시됩니다.'
+    ),
+    'compression_canceled': '중지됨; 이전 또는 현재 파일이 변경되었을 수 있습니다. 재검색이 종료되었습니다.',
+    'compression_failed': '작업 실패: {reason}. 부분적인 변경이 가능합니다. 재검사에 가깝습니다.',
+    'action_exact_allocation': 'Windows 파일별 할당 측정',
+    'action_exact_allocation_tip': (
+        '기본적으로 꺼져 있습니다. XPRESS/WOF 파일을 포함하여 향후 스캔을 위한 추가 메타데이터 호출. 활성화하'
+        '고 다시 검색합니다. 알려진 클라우드/오프라인 파일은 쿼리되지 않은 상태로 유지됩니다. 실패한 쿼리는 '
+        '추정치로 유지됩니다.'
+    ),
+    'menu_compression': 'NTFS 압축…',
+    'compression_reading': '기록된 압축 후보 검토 중…',
+    'compression_summary': (
+        '{count}/{total} 파일은 유형 후보입니다. {shown} 표시; 논리적 {logical}, 명명된 할당 {allocated}. 잠'
+        '재적 절약: 0–{allocated}; 고정된 압축률은 예측되지 않습니다. {unknown} 파일에 알 수 없는 메타데이터'
+        '가 있습니다.'
+    ),
+    'compression_volume': '파일 시스템: {filesystem}; 할당 단위: {unit}',
+    'compression_unknown': '알 수 없음',
+    'compression_ntfs_only': 'NTFS이 확인되지 않았습니다. 이 범위에서는 기본 압축을 사용할 수 없습니다.',
+    'compression_partial': '불완전한 스캔: 생략되었거나 읽을 수 없는 데이터가 이 추정치를 벗어났습니다.',
+    'compression_hint': (
+        '읽기 전용 유형 추정: 로그, 텍스트, 코드 및 압축되지 않은 이미지 형식일 수 있습니다. 확장자는 압축성'
+        '을 증명하지 않습니다. 숨김/시스템, 압축/희소, 재분석/클라우드/오프라인 및 알 수 없는 레코드는 생략됩'
+        '니다. 명명된 할당은 하드 링크에 의해 추정되거나 공유될 수 있으므로 복구 가능한 공간이 보장되지 않습'
+        '니다. 페이로드를 읽지 않았습니다. 두 번 클릭하면 녹음된 파일이 선택됩니다. Ctrl+C는 행을 복사합니다.'
+    ),
+    'action_capture_owners': 'Windows 파일 소유자 캡처',
+    'action_capture_owners_tip': (
+        '기본적으로 꺼져 있습니다. 향후 스캔에 소유자 메타데이터 쿼리를 추가합니다. 활성화 및 다시 검색'
+    ),
+    'tab_users': '사용자',
+    'column_owner': '소유자',
+    'column_owner_id': '소유자 신원',
+    'owner_unknown': '알 수 없는 소유자',
+    'owners_refresh': '기록된 총계 새로 고침',
+    'owners_reading': '기록된 소유자 합계 추가 및 계정 이름 확인 중...',
+    'owners_unqueried': '기록된 소유자 합계를 쿼리하려면 스캔 후 사용자를 엽니다.',
+    'owners_partial': (
+        '불완전한 스캔: 생략되거나 읽을 수 없는 바이트와 해당 소유자를 알 수 없는 상태로 남아 있습니다.'
+    ),
+    'owners_summary': (
+        '{count} 소유자 그룹; {shown} 표시; {files} 파일, {size}. 알 수 없는 소유자: {unknown_files} 파일, {u'
+        'nknown_size}.'
+    ),
+    'owners_hint': (
+        '전체 스캔, 파일 소유자만 해당; 디렉터리 소유권은 하위 항목을 할당하지 않습니다. POSIX uid는 스캔 통'
+        '계에서 나옵니다. Windows에서 옵션을 활성화하고 → Windows 파일 소유자를 캡처하고 다시 검색합니다. 비'
+        '활성화, 실패, 변경 또는 클라우드/오프라인 쿼리는 알 수 없는 상태로 유지됩니다. 이름은 uid/SID로 대체'
+        '될 수 있습니다. 명명된 할당은 추정된 상태로 유지되며 하드 링크는 이름별로 계산됩니다. 소유권은 실제 '
+        '사용 또는 제거 권한을 증명하지 않습니다. 정리 작업이 준비되지 않았습니다.'
+    ),
+    'bin_labels_refresh': '빈 합계 새로 고침',
+    'bin_labels_hint': (
+        '최대 256개의 준비된 드라이브에 대한 읽기 전용 스냅샷으로, 검사된 드라이브의 우선 순위를 지정합니다. '
+        'POSIX 총계는 논리적 페이로드 바이트입니다. 사용할 수 없거나 부분 합계는 0을 의미하지 않습니다. 범위'
+        '는 겹칠 수 있습니다. 합산하지 마십시오. 쿼리하려면 새로고침하세요. 이는 정리 작업을 준비하지 않습니'
+        '다.'
+    ),
+    'bin_label_scope_unknown': '이 스캔 드라이브의 휴지통: 범위가 쿼리되지 않았습니다.',
+    'bin_label_unqueried': '{root} 휴지통: 쿼리되지 않음',
+    'bin_label_total': '{root} 휴지통: {size}, {count} 항목',
+    'bin_label_partial': '{root} 휴지통: 총 알 수 없음; 알려진 {size}, {count} 항목',
+    'action_file_times': '파일 시간…',
+    'action_file_times_tip': '이 스캔에서 기록된 액세스 및 생성 날짜를 필터링합니다.',
+    'action_capture_file_times': '파일 액세스/생성 시간 캡처',
+    'action_capture_file_times_tip': (
+        '기본적으로 꺼져 있습니다. 향후 스캔에 일반 파일당 16바이트를 추가합니다. 활성화 후 다시 검색'
+    ),
+    'column_accessed': '기록된 접근',
+    'column_created': '생성됨',
+    'file_times_hint': (
+        '옵션 활성화 → 파일 액세스/생성 시간을 캡처한 다음 다시 검색합니다. 일반 파일만 해당; 디렉토리/링크 '
+        '및 사용할 수 없는 생성 날짜는 아직 알 수 없습니다. 액세스 날짜는 백그라운드 도구를 통해 비활성화, 지'
+        '연 또는 업데이트될 수 있습니다. 실제 사용을 증명하지 않습니다. POSIX ctime은 생성 시간이 아닙니다. '
+        '이 보기는 정리 작업을 준비하지 않습니다.'
+    ),
+    'file_times_accessed': '다음 이후로 열리지 않았습니다... (접속 날짜 기록)',
+    'file_times_created': '적어도… 전에 생성됨',
+    'file_times_mode': '기록된 연령 모드',
+    'file_times_days': '일',
+    'file_times_reading': '녹화된 파일 날짜 필터링 중…',
+    'file_times_summary': (
+        '{count} 일치, {size}; {shown}을 표시합니다. {unknown}/{total} 파일에는 사용할 수 없거나 미래 날짜가 '
+        '있습니다.'
+    ),
+    'file_times_policy_disabled': (
+        'NTFS은 액세스 업데이트가 비활성화되었다고 보고합니다. 접속 연령 매칭이 불가능합니다. 생성 필터링은 '
+        '계속 사용할 수 있습니다. 레지스트리 설정은 다시 시작해야 할 수 있으며 모든 파일 시스템을 설명하지는 '
+        '않습니다.'
+    ),
+    'file_times_policy_unknown': (
+        'NTFS 액세스 업데이트 구성을 알 수 없습니다. 접속 연령 매칭이 불가능합니다. 생성 필터링은 계속 사용할'
+        ' 수 있습니다.'
+    ),
+    'file_times_policy_enabled': (
+        'NTFS 레지스트리 보고서 액세스 업데이트가 활성화되었습니다. 재시작 보류, 파일 시스템/공급자 설정 및 '
+        '지연된 업데이트가 여전히 날짜에 영향을 미칠 수 있습니다.'
+    ),
+    'file_times_policy_platform': (
+        '파일 시스템/공급자 설정으로 인해 액세스 업데이트가 지연되거나 억제될 수 있습니다. 이러한 날짜를 기록'
+        '된 메타데이터로 취급하십시오.'
+    ),
+    'action_programs': '설치된 프로그램…',
+    'action_programs_tip': '이 스캔에서는 설치 프로그램/게임 메타데이터를 설치 폴더와 비교합니다.',
+    'program_name': '프로그램/게임',
+    'program_source': '메타데이터 소스',
+    'program_version': '버전/빌드',
+    'program_publisher': '출판사',
+    'program_reported': '보고된 추정치',
+    'program_scanned': '스캔된 논리 바이트',
+    'program_allocated': '스캔된 명명된 할당',
+    'program_coverage': '녹음된 폴더 범위',
+    'program_location': '설치 폴더',
+    'program_registry': 'Windows 레지스트리',
+    'program_steam': '스팀 매니페스트',
+    'program_epic': '에픽 매니페스트',
+    'program_outside': '정확한 스캔 폴더가 없습니다.',
+    'program_hint': (
+        'Windows 등록 및 인식된 Steam/Epic 매니페스트를 제거하고 이 스캔에서 정확한 폴더에만 일치합니다. Epic'
+        '의 고정 ProgramData 매니페스트 폴더도 읽습니다. 보고된 크기는 추정치입니다. 누락된 메타데이터는 알 '
+        '수 없는 상태로 유지됩니다. 공유/중첩 폴더는 겹칠 수 있습니다. 행을 합산하거나 복구 가능한 공간으로 '
+        '취급하지 마십시오. 휴대용/패키지 앱이 없을 수 있습니다. 두 번 클릭하면 녹음된 폴더가 선택됩니다. Ctr'
+        'l+C는 행을 복사합니다. Windows 또는 실행 프로그램을 통해서만 제거하세요.'
+    ),
+    'program_reading': '설치 메타데이터를 읽는 중…',
+    'program_summary': (
+        '{count} 설치 중 {shown} 표시 중; {issues} 사용할 수 없거나 형식이 잘못되었거나 생략된 메타데이터 항'
+        '목'
+    ),
+    'program_failed': '설치를 읽을 수 없습니다: {reason}',
+    'program_uninstall_page': 'Windows 설치된 앱 설정 열기',
+    'program_open_failed': 'Windows 설치된 앱 설정 페이지를 열 수 없습니다.',
+    'action_history': '스캔 기록…',
+    'action_history_tip': '시간이 지남에 따라 이 루트의 크기를 검토하고 이전 스캔과 비교합니다.',
+    'action_history_settings': '스캔 기록 설정…',
+    'action_history_settings_tip': '로컬 스캔 메타데이터를 활성화하고 전역 보존 제한을 설정합니다.',
+    'history_enable': '완료된 전체 검사를 로컬에 보관',
+    'history_settings_hint': (
+        '기록에는 폴더 이름, 경로, 합계 및 적용 범위가 저장되며 파일 내용은 저장되지 않습니다. 기본값: 활성화'
+        '됨, 모든 루트에서 총 1GiB. 인식된 기록 메타데이터만 제거됩니다. 가장 오래된 것부터 제거됩니다. 비활'
+        '성화하면 기존 기록을 계속 읽을 수 있습니다. 변경 사항은 향후 전체 검색에 적용됩니다. 하한은 다음 저'
+        '장 시 적용됩니다.'
+    ),
+    'history_limit': '총 내역 한도',
+    'history_time': '스캔 시간',
+    'history_logical': '논리 바이트',
+    'history_allocated': '할당된 명명된 바이트',
+    'history_coverage': '적용 범위',
+    'history_incomplete': '미완성; 알려진 데이터만',
+    'history_complete': '녹음된 범위를 완료하세요.',
+    'history_chart': '시간 경과에 따른 논리적 폴더 크기',
+    'history_chart_range': '{first}: {before}; {last}: {after}',
+    'history_empty': '이 루트에 대해 보관된 스캔이 없습니다.',
+    'history_compare': '선택한 스캔을 현재 결과와 비교',
+    'history_reading': '로컬 검사 기록을 읽는 중…',
+    'history_hint': (
+        '이 루트에 대한 최근 1,000개의 전체 검색이 보관되었습니다. 중지된 검사와 분기 재검사는 저장되지 않습'
+        '니다. 불완전한 스캔은 알려진 데이터만 설명합니다. 누락된 폴더는 삭제된 것으로 입증되지 않습니다. 총'
+        '계는 하드링크 이름을 별도로 계산합니다. 차이점은 콘텐츠 확인이 아니라 메타데이터입니다.'
+    ),
+    'history_summary': '{count} 스캔 중 {shown} 표시 중; {invalid} 유효하지 않거나 사용할 수 없는 메타데이터 파일',
+    'history_failed': '기록을 읽을 수 없습니다: {reason}',
+    'history_save_failed': '스캔이 완료되었지만 기록을 저장할 수 없습니다: {reason}',
+    'action_scan_workers': '작업자 스캔…',
+    'action_scan_workers_tip': '새로운 스캔에 대한 동시성을 선택하십시오. 높을수록 항상 빠른 것은 아닙니다',
+    'workers_prompt': (
+        '새 스캔을 위한 작업자(1–32). 기본값은 {default}입니다. 느린 네트워크 공유는 더 많은 작업자로부터 이'
+        '익을 얻을 수 있습니다. 과도한 동시성은 디스크/서버에 과부하를 줄 수 있습니다. 스캔을 실행하면 기존 '
+        '작업자가 유지됩니다. 실제 UNC 성능은 귀하의 공유에 따라 달라집니다.'
+    ),
+    'action_bins': '재활용 쓰레기통…',
+    'action_bins_tip': '빈 합계 및 명시적인 범위 OS 비우기 검토',
+    'bin_finder_empty': '마운트된 모든 볼륨의 Finder 휴지통을 비우세요…',
+    'bin_finder_all': '마운트된 모든 볼륨(Finder 전체 휴지통)',
+    'bin_finder_scopes': '현재 사용자 휴지통 범위:\n{scopes}\n\n마운트된 볼륨:\n{roots}',
+    'bin_finder_first': (
+        '마운트된 모든 볼륨에서 현재 사용자의 Finder 휴지통을 비우시겠습니까?\n\n{root}\n\n논리 페이로드: {si'
+        'ze}\n항목: {count}'
+    ),
+    'bin_finder_irreversible': (
+        '마운트된 모든 볼륨에서 현재 사용자의 Finder 휴지통을 영구적으로 비우시겠습니까?\n\n{root}\n\n내용의 '
+        '논리 크기: {size}\n항목 수: {count}\n\n이 작업은 되돌릴 수 없습니다. Finder 작업 중 새로 들어온 항목'
+        '도 삭제될 수 있습니다. 선택한 행과 관계없이 마운트된 모든 휴지통에 적용됩니다. 운영체제 작업은 취소'
+        '할 수 없습니다. 자동화 허용 또는 접근 권한 문제로 일부만 처리될 수 있으며, Finder 작업이 계속 진행 '
+        '중일 수도 있습니다.'
+    ),
+    'bin_preparing': '{root}에서 정확한 휴지통 범위를 검토하는 중…',
+    'bin_no_approval': '비어 있지 않은 완전한 휴지통 승인이 없습니다. 새로고침하고 다시 검토하세요.',
+    'bin_scope_first': (
+        '현재 사용자 휴지통 페이로드/작업 기록 범위를 비우시겠습니까?\n\n{root}\n\n논리 페이로드: {size}\n항'
+        '목: {count}'
+    ),
+    'bin_scope_irreversible': (
+        '다음 정확한 범위에서 검토한 내용을 영구 삭제하시겠습니까?\n\n{root}\n\n내용의 논리 크기: {size}\n항'
+        '목 수: {count}\n\n이 작업은 되돌릴 수 없습니다. 링크의 대상을 따라가지 않고 링크 자체를 삭제합니다. '
+        '변경된 항목은 처리하지 않습니다. 실패하면 일부만 처리된 결과가 남을 수 있습니다. 비우기를 시작한 뒤'
+        '에는 취소할 수 없습니다.'
+    ),
+    'bin_partial': '{count} 검토 항목이 삭제되었습니다. 남은 실패: {reason}',
+    'bin_empty': '선택한 드라이브의 휴지통 비우기…',
+    'bin_first': '{root}의 휴지통을 비우세요?\n\n보고된 크기: {size}\n항목: {count}',
+    'bin_irreversible': (
+        '{root}의 휴지통에 현재 있는 모든 항목을 영구 삭제하시겠습니까?\n\n보고된 크기: {size}\n항목 수: {cou'
+        'nt}\n\n이 작업은 되돌릴 수 없습니다. 운영체제 작업 중 새로 들어온 항목도 삭제될 수 있습니다. 시작한 '
+        '뒤에는 운영체제 작업을 취소할 수 없습니다.'
+    ),
+    'bin_running': '{root}에서 휴지통 비우기; OS 작업을 기다리는 중…',
+    'bin_failed': '비우기가 완료되지 않았습니다: {reason}',
+    'bin_hint': (
+        '마운트된 볼륨 하나를 선택합니다. Windows은 현재 사용자 OS 저장소를 비웁니다. Linux 인벤토리는 파일/'
+        '정보 범위를 인식합니다. 두 가지 질문은 영구 제거 전의 정확한 범위와 합계를 보여줍니다. 중지는 설문조'
+        '사를 취소합니다. 활성 비우기가 완료되어야 합니다. macOS는 전체 검토 후 마운트된 모든 Finder 휴지통을'
+        ' 비웁니다(기본 유효성 검사 보류 중). 용량/bin 값은 나중에 새로 고쳐집니다. 메인 트리를 업데이트하려'
+        '면 다시 스캔하세요.'
+    ),
+    'action_volumes': '드라이브 개요…',
+    'action_volumes_tip': '마운트된 볼륨, 용량, 할당 단위 및 휴지통 총계를 검사합니다.',
+    'volume_root': '마운트된 루트',
+    'volume_name': '볼륨 이름',
+    'volume_fs': '파일 시스템',
+    'volume_total': '합계',
+    'volume_used': '중고',
+    'volume_free': '당신이 사용할 수',
+    'volume_cluster': '할당단위',
+    'volume_trash': '휴지통 바이트',
+    'volume_trash_count': '빈 항목',
+    'volume_reading': '마운트된 볼륨 및 휴지통 합계를 읽는 중…',
+    'volume_summary': '{count} 중 {shown} 마운트된 볼륨을 표시합니다. 스캔하려면 두 번 클릭하세요.',
+    'volume_trash_partial': '알 수 없는 합계({known} 알려짐)',
+    'volume_hint': (
+        'OS 용량 스냅샷 사용 가능한 공간에는 예약이나 할당량이 제외될 수 있습니다. 반복 마운트는 용량을 공유'
+        '할 수 있습니다. 행을 합산하지 마세요. Windows 할당 단위는 클러스터입니다. POSIX 단위는 최적의 전송 '
+        '크기가 아닌 파일 시스템 조각입니다. 휴지통에는 회수 가능한 공간이 아닌 OS에서 보고한 Windows 총계 또'
+        '는 알려진 POSIX 논리적 페이로드 바이트가 표시됩니다. 디렉터리/작업 기록 메타데이터 및 공유 할당은 제'
+        '외됩니다. 오류는 아직 알려지지 않았습니다. 중지는 현재 OS 호출을 기다립니다. 취소된 설문조사는 폐기'
+        '됩니다. Ctrl+C는 행을 복사합니다. 여기서는 비우기 작업이 제공되지 않습니다.'
+    ),
+    'action_export_report_html': '스캔 보고서(HTML)…',
+    'action_export_report_html_tip': '3개의 차트 이미지가 포함된 독립형 보고서 저장',
+    'action_export_report_xlsx': '보고서 스캔(Excel)…',
+    'action_export_report_xlsx_tip': '보고서 목록을 별도의 Excel 워크시트에 저장',
+    'html_filter': 'HTML 보고서(*.html)',
+    'xlsx_filter': 'Excel 통합 문서(*.xlsx)',
+    'report_title': 'FileTree 스캔 보고서',
+    'report_note': (
+        '알려진 기록 범위만 해당. 할당은 추정치입니다. 제목의 개수는 표시/총계로 표시됩니다. 상위 폴더가 겹칩'
+        '니다. 해당 행을 추가하지 마세요. 가장 큰 파일과 폴더는 1,000개로 제한됩니다. 파일 형식을 10,000으로 '
+        '늘립니다. 크기는 바이트입니다. 연령은 마지막 액세스가 아닌 기록된 수정 시간을 사용합니다. 이용할 수 '
+        '없는 날짜는 기존의 가장 오래된 연령 그룹에 속합니다. HTML 차트는 제한된 형상으로 전체 스캔 루트를 표'
+        '시합니다. Excel 텍스트는 이스케이프되고 제어 문자는 16진수로 표시되며 셀은 32,767자로 제한되고 16자'
+        '리 이상의 정수는 정확한 텍스트로 저장됩니다.'
+    ),
+    'report_bytes': '논리 바이트',
+    'report_allocated': '할당된 바이트(예상)',
+    'report_created': '보고서가 생성되었습니다.',
+    'report_reference': '연령 참고',
+    'report_skipped': '건너뛴 폴더',
+    'report_denied': '읽을 수 없는 폴더',
+    'report_pending': '보류 중인 폴더',
+    'report_summary': '요약',
+    'report_notes': '메모',
+    'report_field': '필드',
+    'report_value': '가치',
+    'report_top_folders': '가장 큰 폴더(겹침)',
+    'report_categories': '카테고리',
+    'action_projects': '프로젝트 및 재구성 가능한 데이터…',
+    'action_projects_tip': '기록된 프로젝트, Git 및 생성된 데이터 크기 검사',
+    'project_path': '프로젝트/관리 매장',
+    'project_kind': '감지된 종류',
+    'project_other': '출처/기타',
+    'project_git': '.git',
+    'project_generated': '재구성 가능한 데이터',
+    'project_coverage': '적용 범위',
+    'project_partial': '미완성',
+    'project_recorded': '기록된 범위',
+    'project_hint': (
+        '알려진 논리 바이트만. 중첩된 프로젝트가 겹칩니다. Git 포인터 파일에는 외부 메타데이터가 생략되어 있'
+        '습니다. 생성된 데이터에는 사용자 정의 파일이 포함될 수 있습니다. 이동하기 전에 검토하세요. Maven, 글'
+        '로벌 Gradle 및 Docker 스토어는 별도로 표시됩니다. 그 내용물은 일회용이 아닌 것으로 추정됩니다.'
+    ),
+    'project_reading': '기록된 프로젝트 데이터를 검사하는 중…',
+    'project_summary': '감지된 {count} 중에서 가장 큰 프로젝트/매장 {shown}개를 표시합니다.',
+    'project_review': '재구축 가능한 적격 항목을 검토하세요…',
+    'project_review_count': (
+        '현재 연령, 적용 범위 및 청소 정책에 따라 적격한 {count} 항목 중 최대 {shown} 항목을 검토하세요. 중지'
+        '된 스캔은 항목을 제안할 수 없습니다.'
+    ),
+    'project_git_kind': '힘내',
+    'project_python': '파이썬',
+    'project_node': 'Node.js',
+    'project_rust': '녹',
+    'project_jvm': 'JVM',
+    'project_conda': '콘다 프로젝트',
+    'project_python_environment': 'Python 환경',
+    'project_conda_environment': '콘다 환경',
+    'project_maven_store': '메이븐 스토어',
+    'project_gradle_store': '글로벌 Gradle 스토어',
+    'project_docker_store': '도커 데이터',
+    'action_git_history': '힘내 역사…',
+    'action_git_history_tip': '모든 Git 참조에서 연결할 수 있는 가장 큰 개체를 검사합니다.',
+    'git_oid': '개체 ID',
+    'git_kind': '객체 유형',
+    'git_length': '비압축 길이',
+    'git_type_blob': '파일 콘텐츠(BLOB)',
+    'git_type_tree': '디렉토리 목록(트리)',
+    'git_type_commit': '커밋',
+    'git_type_tag': '주석이 달린 태그',
+    'git_hint': (
+        '읽기 전용 Git 배관은 모든 참조를 검사하여 최대 1,000개의 개체를 유지합니다. 크기는 디스크 할당이나 '
+        '복구 가능한 공간이 아닌 압축되지 않은 길이입니다. Git의 객체 이름 힌트가 모호할 수 있으므로 이름은 '
+        '생략됩니다. Ctrl+C는 개체 ID/행을 복사합니다. 선택적 잠금, 자동 유지 관리 및 지연 네트워크 가져오기'
+        '가 비활성화됩니다. Git은 --no-lazy-fetch를 지원해야 합니다. 저장소 소유권 오류는 우회되지 않습니다. '
+        '중지는 취소됩니다. 여기서는 gc가 실행되지 않습니다.'
+    ),
+    'git_reading': 'Git 기록을 조사하는 중…',
+    'git_summary': '{count} 연결 가능한 객체 중 {shown} 표시 중; 압축되지 않은 총계 {size}.',
+    'git_gc_loose': (
+        'Git gc는 {count} 느슨한 개체를 통합할 수 있지만 이러한 가장 큰 개체는 참조에서 계속 연결할 수 있으며'
+        ' 제거되지 않습니다. 실제 절감액 및 기타 접근할 수 없는/재로그 데이터는 알 수 없습니다.'
+    ),
+    'git_gc_packed': (
+        '통합할 느슨한 개체가 없습니다. Git gc는 참조가 유지하는 동안 이러한 객체를 제거하지 않습니다. 기타 '
+        '연결할 수 없는/재로그 데이터 및 실제 절감액은 측정되지 않았습니다.'
+    ),
+    'git_failed': 'Git 검사 실패: {reason}',
+    'tree_filter_placeholder': '펼친 폴더 필터…',
+    'tree_filter_hint': (
+        '이미 확장된 폴더 내에서만 이름을 일치시킵니다(대소문자 구분 안 함). 조상은 계속 보입니다. 접힌 내용'
+        '은 검색되지 않습니다. 트리를 복원하려면 필터를 지우세요. 차트/목록에서 숨겨진 항목을 선택하면 필터가'
+        ' 지워집니다. 스캔 합계 및 내보내기는 변경되지 않습니다.'
+    ),
+    'action_live_compare': '두 폴더를 비교합니다…',
+    'action_live_compare_tip': '새로운 상대 경로를 비교하고 요청된 파일 쌍만 확인합니다.',
+    'compare_choose_left': '왼쪽 폴더를 선택하세요',
+    'compare_choose_right': '올바른 폴더를 선택하세요',
+    'compare_relative': '상대 경로',
+    'compare_state': '비교',
+    'compare_left_size': '왼쪽 사이즈',
+    'compare_right_size': '적당한 크기',
+    'compare_left_time': '왼쪽 수정됨',
+    'compare_right_time': '오른쪽 수정됨',
+    'compare_roots': '왼쪽: {left}\n오른쪽: {right}',
+    'compare_hint': (
+        '읽기 전용: 정확한 유니코드/대소문자 이름이 일치합니다. 링크는 따라가지 않습니다. 동일한 크기/시간은 '
+        '동일한 내용을 증명하지 않습니다. 파일 쌍을 선택하고 중지 기능을 사용하여 전체 해시를 확인하세요. 변'
+        '경되어 읽을 수 없으며 알려진 클라우드 파일은 계속 사용할 수 없습니다. 결과는 이 스캔/검증 시간을 나'
+        '타냅니다. 복사, 이동 또는 동기화가 수행되지 않습니다. Ctrl+C는 행을 복사합니다. CSV은 표시된 행만 최'
+        '대 10,000개까지 내보냅니다.'
+    ),
+    'compare_reading': '두 폴더를 모두 검사하는 중…',
+    'compare_error': '비교 또는 내보내기 실패: {reason}',
+    'compare_hashing': '선택한 파일 쌍을 확인하는 중…',
+    'compare_verify': '선택한 내용을 확인하세요',
+    'compare_summary': '{count} 상대 경로 중 {shown} 표시 중(10,000개 제한)',
+    'compare_incomplete': '보장이 불완전합니다. 읽을 수 없는 범위의 누락된 경로는 알 수 없는 상태로 남아 있습니다.',
+    'compare_unavailable': '사용할 수 없거나 변경됨',
+    'compare_link': '링크; 읽지 않은 내용',
+    'compare_only_left': '왼쪽에만',
+    'compare_only_right': '오른쪽에만',
+    'compare_different_kind': '다양한 항목 유형',
+    'compare_folder': '양쪽에 폴더',
+    'compare_different_size': '다양한 크기',
+    'compare_different_time': '다른 시간; 체크되지 않은 내용',
+    'compare_unchecked': '확인되지 않은 내용',
+    'compare_identical': '전체 해시 일치',
+    'compare_different_bytes': '다양한 콘텐츠',
+    'problem_mount_boundary': '마운트 경계: 콘텐츠가 스캔되지 않음',
+    'action_special_files': '클라우드와 특수 파일…',
+    'action_special_files_tip': '기록된 리콜, 오프라인, 압축 및 스파스 파일 상태 검사',
+    'special_states': '기록된 상태',
+    'special_content_size': '전체 콘텐츠 크기',
+    'special_recall': '액세스 시 기억할 수 있음',
+    'special_offline': '오프라인',
+    'special_compressed': '압축',
+    'special_sparse': '스파스',
+    'special_allocation_low': '더 낮은 할당; 원인불명',
+    'special_reading': '녹음된 파일 메타데이터를 읽는 중…',
+    'special_hint': (
+        '이 목록은 검색 메타데이터만 사용하며 파일이 열리거나 다운로드되지 않습니다. 리콜/오프라인 플래그는 O'
+        'neDrive, Dropbox 또는 기타 제공자를 설명할 수 있습니다. 공급자와 이미 현지에 얼마가 있는지 추론할 수'
+        ' 없습니다. 전체 콘텐츠 크기는 온라인 콘텐츠를 포함한 논리적 길이입니다. 다운로드 후 할당을 알 수 없'
+        '습니다. 희박한 구멍, 압축 및 상주 데이터로 인해 할당이 줄어들 수 있습니다. 리콜/오프라인 항목에 대한'
+        ' 디스크 0은 측정된 클라우드 할당이 아니라 추정치입니다. 두 번 클릭하면 스캔한 항목이 선택됩니다. Ctr'
+        'l+C는 선택한 행을 복사합니다.'
+    ),
+    'special_summary': (
+        '{count} 일치하는 파일 중 {shown}을 표시합니다. 전체 콘텐츠 {size}; 기록된 할당 {allocated}. 사용할 '
+        '수 없는 파일 메타데이터: {unknown}. 최대 1,000개가 유지됩니다.'
+    ),
+    'special_partial': '스캔 범위가 불완전합니다. 보이지 않는 파일은 알 수 없는 상태로 남아 있습니다.',
+    'action_shell_integration': '탐색기 통합…',
+    'action_shell_integration_tip': '탐색기 폴더 메뉴에서 FileTree를 사용하여 스캔을 추가하거나 제거합니다.',
+    'shell_enabled': '탐색기의 폴더 메뉴에 FileTree를 사용하여 스캔 추가',
+    'shell_scan': 'FileTree로 스캔',
+    'shell_hint': (
+        '변경 사항은 계정의 폴더 메뉴에만 저장하세요. 관리자 권한이 필요하지 않습니다. Windows 11에서 추가 옵'
+        '션 표시 아래를 살펴보세요. 항목을 제거하려면 여기에서 이 기능을 끄세요. 실행 파일 이동 또는 소스 체'
+        '크아웃 후 다시 등록하세요.'
+    ),
+    'shell_failed': 'Explorer 통합을 변경할 수 없습니다.\n{reason}',
+    'menu_properties': '속성',
+    'properties_failed': 'Windows은(는) 다음에 대한 속성을 열 수 없습니다:\n{path}',
+    'menu_theme': '테마',
+    'theme_system': '시스템',
+    'theme_light': '빛',
+    'theme_dark': '어둠',
+    'chart_access_keys': (
+        '화살표 키는 렌더링된 항목을 선택합니다. Enter를 누르면 폴더가 열립니다. 백스페이스가 올라갑니다. 그'
+        '룹화된 항목이나 숨겨진 항목에는 폴더 트리를 사용하세요.'
+    ),
+    'chart_access_tree_keys': (
+        '위/아래는 카드를 선택합니다. 오른쪽/왼쪽은 폴더를 확장/축소합니다. Enter를 누르면 폴더가 열립니다. '
+        '백스페이스가 올라갑니다.'
+    ),
+    'chart_access_folder': '표시 폴더: {path}',
+    'chart_access_selected': '선택됨: {path}. 크기 {size}; 디스크 {allocated}; {files} 파일, {folders} 폴더.',
+    'system_file_hibernate': (
+        '최대 절전 모드 및 빠른 시작 상태. Windows이 이 파일을 관리합니다. 관리자는 powercfg /hibernate off를'
+        ' 사용하여 최대 절전 모드를 비활성화할 수 있습니다. 이렇게 하면 최대 절전 모드도 제거되고 빠른 시작에'
+        ' 영향을 미칠 수 있습니다. FileTree은 전원 설정만 엽니다.'
+    ),
+    'system_file_pagefile': (
+        '가상 메모리 백업 파일. Windows은 크기를 자동으로 관리할 수 있습니다. 고급 탭의 성능 설정에서 가상 메'
+        '모리를 검토하세요. 이를 줄이면 애플리케이션과 크래시 덤프에 영향을 미칠 수 있습니다.'
+    ),
+    'system_file_swapfile': (
+        'Windows 정지된 앱 데이터를 포함한 스왑 백업 파일. Windows은 가상 메모리와 함께 관리합니다. 시스템 메'
+        '모리 설정을 제거하는 대신 검토하십시오.'
+    ),
+    'system_file_old': (
+        '이전 Windows 설치. 디스크 정리 → 시스템 파일 정리에서 이전 Windows 설치를 검토합니다. 이를 제거하면 '
+        '해당 설치로 돌아갈 수 없습니다.'
+    ),
+    'system_file_recycle': (
+        '삭제된 항목은 휴지통이 비워질 때까지 여전히 디스크 공간을 차지합니다. 휴지통이나 스토리지 센스를 검'
+        '토하세요. 비우는 것은 영구적입니다.'
+    ),
+    'system_file_restore': (
+        '시스템 메타데이터, 복원 지점 및 섀도 복사본. 시스템 보호 → 구성을 검토하여 복원 지점 제한을 설정합니'
+        '다. 백업 소유의 섀도 복사본에는 자체 백업 도구가 필요할 수 있습니다. 읽지 않은 바이트는 알 수 없는 '
+        '상태로 남아 있습니다.'
+    ),
+    'system_file_winsxs': (
+        'Windows 구성요소 저장소. 많은 항목이 Windows 파일과 하드 링크를 공유하므로 이름별 총계가 개별 저장소'
+        '를 과장할 수 있습니다. 디스크 정리에서 Windows 업데이트 정리 사용 → 시스템 파일 정리; 구성 요소를 수'
+        '동으로 제거하지 마십시오.'
+    ),
+    'system_file_updates': (
+        'Windows 다운로드 데이터를 업데이트합니다. 디스크 정리 → 시스템 파일 정리를 사용하여 Windows 업데이트'
+        ' 및 임시 파일을 검토합니다. 활성 다운로드를 관리하려면 업데이트 서비스를 종료하세요.'
+    ),
+    'system_file_delivery': (
+        'Windows 업데이트 및 앱에 대한 배달 최적화 다운로드 캐시입니다. 디스크 정리에서 배달 최적화 파일을 검'
+        '토합니다. Windows은 활성 전송을 관리합니다.'
+    ),
+    'system_tool_power': '전원 설정 열기…',
+    'system_tool_memory': '고급 시스템 설정 열기…',
+    'system_tool_cleanup': '디스크 정리 열기…',
+    'system_tool_storage': '오픈 스토리지 센스…',
+    'system_tool_restore': '개방형 시스템 보호…',
+    'system_tool_failed': 'Windows 도구를 열 수 없습니다.',
+    'trash_skip_system_managed': 'Windows이 이 항목을 관리합니다. 대신 세부정보의 시스템 도구를 사용하세요.',
+    'type_locations_title': '폴더 포함(최대 1,000개)',
+    'type_location_size': '어울리는 사이즈',
+    'type_locations_tip': (
+        '총계에는 각 폴더에 직접 일치하는 파일이 포함됩니다. 하위 폴더는 겹치지 않고 분리되어 있습니다.'
+    ),
+    'action_export_list': '현재 목록(CSV)…',
+    'action_export_list_tip': '표시된 필터 및 정렬 순서에 따라 활성 목록의 모든 행을 저장합니다.',
+    'list_changed': '캡처 중에 목록이 변경되었습니다. 다시 내보내거나 복사해 보세요.',
+    'details_title': '세부정보',
+    'details_empty': '세부정보를 보려면 항목을 선택하세요.',
+    'details_live': '스캔이 완료되면 배포가 가능합니다.',
+    'details_loading': '유형 및 연령 분포를 계산하는 중…',
+    'details_recorded': (
+        '녹음된 파일 합계만; 읽지 않은 항목은 이러한 배포판 외부에 있습니다. 폴더 수정은 가장 최근에 녹음된 '
+        '날짜입니다.'
+    ),
+    'details_bucket': '{label}: {size} · {count} 파일',
+    'breadcrumbs_back': '뒤로(Alt+왼쪽)',
+    'breadcrumbs_forward': '앞으로(Alt+오른쪽)',
+    'breadcrumbs_more': '…',
+    'breadcrumbs_more_tip': '이전 조상 표시',
+    'action_print_view': '현재 보기 인쇄…',
+    'action_print_view_tip': '시스템 인쇄 대화 상자를 통해 한 페이지에 보이는 결과를 인쇄합니다.',
+    'action_export_view_pdf': '현재 보기(PDF)…',
+    'action_export_view_pdf_tip': '하나의 적합한 PDF 페이지에 눈에 보이는 결과를 저장하세요.',
+    'pdf_filter': 'PDF 문서(*.pdf)',
+    'view_pdf_exported': '저장된 현재 보기: {path}',
+    'print_failed': '뷰를 인쇄할 수 없습니다: {reason}',
+    'print_submitted': '프린터에 제출된 보기',
+    'action_export_chart_png': '화면 위의 차트(PNG)…',
+    'action_export_chart_png_tip': '현재 뷰포트를 포함하여 보이는 차트를 저장합니다.',
+    'action_export_chart_svg': '막대 또는 햇살(SVG)…',
+    'action_export_chart_svg_tip': '전체 경계 막대 또는 링을 벡터 모양 및 텍스트로 저장',
+    'png_filter': 'PNG 이미지(*.png)',
+    'svg_filter': 'SVG 이미지(*.svg)',
+    'graphic_exported': '저장된 차트: {path}',
+    'treemap_colours_age': '수정된 연령별',
+    'age_colour_unknown': '날짜를 알 수 없음',
+    'age_colour_tip': (
+        '수정 이후 시간입니다. 폴더 색상은 가장 최근에 기록된 수정 사항을 사용합니다. 회색은 사용 가능한 날짜'
+        '가 없음을 의미합니다. 그룹화된 타일은 회색으로 유지됩니다.'
+    ),
+    'action_gentle': '부드러운 스캐닝',
+    'action_gentle_tip': '새로운 스캔에 대해서는 CPU 및 I/O 우선순위를 낮춥니다. 더 오래 걸릴 수 있습니다',
+    'scan_priority_warning': '일부 스캔 우선순위 설정을 적용할 수 없습니다: {reason}',
+    'scan_pause': '일시중지',
+    'scan_resume': '이력서',
+    'scan_pause_tip': (
+        '새 폴더 읽기를 일시 중지합니다. 현재 읽기가 완료되었습니다. 중지는 일시 정지된 동안 작동합니다.'
+    ),
+    'scan_paused': '일시중지됨 — {progress}',
+    'scan_analysing': '폴더 읽기가 완료되었습니다. 결과 분석 중…',
+    'column_drive_share': '드라이브 %',
+    'columns_reset': '열 재설정',
+    'drive_share_tip': (
+        '논리 바이트를 총 볼륨 용량으로 나눈 값입니다. 하드 링크 이름은 별도로 계산됩니다. 이는 할당되거나 복'
+        '구 가능한 공간이 아닙니다. 용량을 사용할 수 없거나 오래된 동안에는 알 수 없습니다.'
+    ),
+    'action_recent_actions': '최근 활동…',
+    'action_recent_actions_tip': '보관된 작업 메타데이터를 검사하고 수정된 감사 보고서를 내보냅니다.',
+    'journal_time': '시간(UTC)',
+    'journal_source': '원래 경로',
+    'journal_identity': '장치/파일 ID',
+    'journal_result': '결과',
+    'journal_detail': '세부정보',
+    'journal_destination': '휴지통 목적지',
+    'journal_reason_duplicates': '명시적 중복 결정',
+    'journal_status_approved': '알 수 없는 결과(승인된 경우에만)',
+    'journal_status_moved': '휴지통으로 이동됨',
+    'journal_status_skipped': '건너뛰었습니다.',
+    'journal_status_failed': '플랫폼 이동 실패',
+    'journal_reading': '보관된 작업을 읽는 중…',
+    'journal_hint': (
+        '최근 500개 작업; 메타데이터만, 90일/50MB 동안 보관됩니다. 승인 전용 이벤트에는 알 수 없는 최종 결과'
+        '가 있습니다. 기록된 휴지통 경로는 복원을 보장하지 않습니다.'
+    ),
+    'journal_summary': '{count} 작업이 표시됩니다. {invalid} 손상된 레코드 및 {unavailable} 사용할 수 없는 세그먼트.',
+    'journal_read_failed': '작업 일지를 읽을 수 없습니다: {reason}',
+    'journal_write_failed': (
+        '저널 작성 또는 보관에 실패했습니다. 가능한 경우 나머지 동작은 중지되었습니다. 최근 작업이 완료되지 '
+        '않았을 수 있습니다.\n\n{reason}'
+    ),
+    'trash_skip_journal': '승인된 조치를 기록할 수 없습니다. 아무것도 움직이지 않았어',
+    'journal_export': '수정된 CSV 내보내기…',
+    'journal_exported': '홈 디렉토리 접두사가 수정되어 저장된 감사 보고서입니다.',
+    'duplicate_folder_match': '{copy} = {original} ({size}, {files} 파일; 일치하는 검색 스냅샷)',
+    'duplicate_folder_tip': '이름, 크기, 검증된 해시 및 빈 폴더 구조가 일치합니다. 읽기 전용; 청소 승인이 아닙니다.',
+    'duplicates_keep_selected': '선택한 사본 유지',
+    'duplicates_kept_name': '보관됨: {name}',
+    'duplicates_kept_path': '보관된 사본: {path}.',
+    'duplicates_choose_keeper': '추가 항목을 선택하기 전에 이 그룹에 보관된 사본을 선택하세요.',
+    'duplicates_group_blocked': '그룹은 그대로 유지됩니다. 재검색 필요: {reason}',
+    'trash_skip_duplicate_choose': '보관된 사본을 선택한 다음 그룹을 다시 검토하세요.',
+    'trash_skip_duplicate_keep': '보관된 사본이 선택되었습니다. 그룹은 그대로 유지되었습니다. 다시 스캔',
+    'trash_skip_duplicate_unverified': '이 그룹에 대해 확인된 해시가 없습니다. 다시 스캔하고 다시 검색해 보세요.',
+    'trash_skip_duplicate_hard_links': '복사본에는 하드링크 별칭이 있습니다. 그룹은 그대로 유지되었습니다. 다시 스캔',
+    'trash_skip_duplicate_content': (
+        '그룹 콘텐츠가 변경되었거나 다시 해시될 수 없습니다. 다시 스캔하고 다시 검색해 보세요.'
+    ),
+    'menu_options': '옵션',
+    'action_cleanup_policy': '청소정책…',
+    'action_cleanup_policy_tip': '규칙을 활성화하고, 최소 기간을 변경하고, 정리 제안에서 경로를 제외하세요.',
+    'policy_enabled': '활성화됨',
+    'policy_age': '최소 연령(일)',
+    'policy_age_for': '{rule}의 최소 연령',
+    'policy_enabled_for': '{rule} 활성화',
+    'policy_hint': (
+        '정책 변경사항은 제안에만 영향을 미칩니다. 수동 위험 규칙은 선택되지 않은 상태로 유지됩니다. 저장하기'
+        ' 전에 미리 보세요.'
+    ),
+    'policy_exclusions': (
+        '이러한 경로나 이름을 제안하지 마십시오(한 줄에 하나씩, 경로는 절대 경로여야 함). 스캔은 변경되지 않'
+        '습니다.'
+    ),
+    'policy_preview': '변경사항 미리보기',
+    'policy_import': '가져오기 정책 JSON…',
+    'policy_preview_needed': '저장하기 전에 현재 설정을 미리 봅니다.',
+    'policy_preview_running': '후보 수와 논리적 크기 비교…',
+    'policy_preview_result': (
+        '{added} 후보({size})를 추가합니다. {removed} 후보({removed_size})를 제거합니다. 아무것도 움직이지 않'
+        '았습니다.'
+    ),
+    'policy_preview_partial': '스캔이 불완전합니다. 보이지 않는 후보와 바이트는 알 수 없는 상태로 남아 있습니다.',
+    'policy_no_scan': '스캔이 완료되지 않음: 효과를 측정할 수 없습니다. 이 설정은 향후 제안에 적용됩니다.',
+    'policy_invalid': (
+        '정책이 잘못되었습니다. 지원되는 규칙 키, 예/아니요 플래그, 연령 0~36500 및 절대 경로 또는 이름 패턴'
+        '을 사용하세요.'
+    ),
+    'policy_saved': '정리 정책이 저장되었습니다. 제안사항을 새로고침하는 중입니다.',
+    'policy_saved_invalid': '저장된 정리 정책이 잘못되었습니다. 옵션에서 정책을 검토할 때까지 제안이 비활성화됩니다.',
+    'cleanup_review_manual': '직접 검토',
+    'cleanup_evidence': (
+        '카테고리: {category}; 최소 연령: {days}일; 위험: {risk}. 증거: {evidence} 재구축/결과: {rebuild}'
+    ),
+    'cleanup_category_temporary': '임시 파일',
+    'cleanup_category_cache': '다운로드/생성된 캐시',
+    'cleanup_category_application_state': '애플리케이션 상태',
+    'cleanup_category_build': '프로젝트 빌드 출력',
+    'cleanup_category_downloads': '사용자 다운로드',
+    'cleanup_risk_low': '위험 감소; 이사하기 전에 확인하세요',
+    'cleanup_risk_manual': '수동 검토; 선택하지 않은 채 시작됩니다',
+    'cleanup_rebuild_temp': '소유 애플리케이션을 닫습니다. 임시 데이터는 반드시 다시 생성될 수 없습니다.',
+    'cleanup_rebuild_browser_cache': (
+        '브라우저를 닫습니다. 캐시된 페이지를 다시 다운로드합니다. 프로필과 북마크는 제외됩니다.'
+    ),
+    'cleanup_rebuild_thumbnails': '파일 관리자를 닫습니다. 필요할 때 미리보기가 다시 생성됩니다.',
+    'cleanup_rebuild_crash_dumps': '필요한 충돌 증거를 보관하십시오. 과거 크래시 덤프를 다시 생성할 수 없습니다.',
+    'cleanup_rebuild_package_caches': (
+        '다시 다운로드하려면 패키지 관리자를 사용하세요. 네트워크 액세스를 확인하세요. 패키지 매장은 제외됩니'
+        '다.'
+    ),
+    'cleanup_rebuild_build_output': (
+        '프로젝트 내용과 종속성 잠금을 확인한 다음 문서화된 프로젝트 명령을 사용하여 다시 빌드하세요. 작성된 '
+        '파일을 보관하세요.'
+    ),
+    'cleanup_rebuild_old_installers': (
+        '설치 프로그램을 오프라인으로 유지하거나 사용할 수 없게 합니다. 아직 사용 가능한 경우 게시자로부터 다'
+        '운로드하세요.'
+    ),
+    'cleanup_rebuild_empty_folders': (
+        '응용프로그램에서는 여전히 빈 폴더가 나타날 것으로 예상할 수 있습니다. 먼저 목적을 확인하십시오.'
+    ),
+    'trash_holder': '{name} (PID {pid})',
+    'trash_holders': (
+        '{path}: {programs}에서 열려 있는 것으로 관찰되었습니다. 해당 프로그램을 직접 종료하고 다시 시도해 보'
+        '세요.'
+    ),
+    'trash_holders_limited': (
+        '{path}: 프로세스 가시성이 제한됩니다. 다른 보유자 또는 원인이 알려지지 않았을 수 있습니다.'
+    ),
+    'duplicates_savings': '고유 할당 추정치 {allocated}; 휴지통 {recoverable}을 비운 후 복구 가능한 파일 데이터.',
+    'duplicates_estimating': '고유 할당 및 복구 가능한 파일 데이터 추정 중…',
+    'duplicates_estimate_unavailable': (
+        '예상 할당량을 확인할 수 없습니다. 추가 항목을 선택하기 전에 검색을 다시 실행하세요.'
+    ),
+    'duplicates_estimate_assumption': (
+        '견적은 명시적인 보관 사본 선택을 사용합니다. 미정 그룹은 알 수 없습니다. 이동하기 전에 각 그룹을 확'
+        '인하고 완전히 다시 해시합니다. 하드 링크 별칭은 결정을 차단합니다. 공유 범위와 디렉터리 메타데이터는'
+        ' 아직 알려지지 않았습니다. 휴지통으로 이동해도 공간이 확보되지 않습니다.'
+    ),
+    'capacity_details': '용량 세부정보',
+    'capacity_summary': 'OS 사용량 {used}; 여유 공간 {free}; 중복 제외 할당량 추정 {unique}. {status}',
+    'capacity_estimated': '전체 볼륨의 추정치입니다. 설명되지 않은 공간은 세부 정보에 표시합니다.',
+    'capacity_folder_only': '폴더만 스캔했습니다. 전체 볼륨 용량과 대조할 수 없습니다.',
+    'capacity_incomplete': '스캔이 불완전합니다. 전체 볼륨 용량과 대조할 수 없습니다.',
+    'capacity_identity_unknown': '파일 ID가 없습니다. 전체 볼륨 용량과 대조할 수 없습니다.',
+    'capacity_capacity_unavailable': 'OS 용량을 확인할 수 없습니다. 전체 볼륨 용량과 대조할 수 없습니다.',
+    'capacity_root_changed': '스캔한 루트가 변경되었습니다. 용량을 대조하기 전에 다시 스캔하세요.',
+    'capacity_allocation_exceeds_used': '할당량 추정치가 OS 사용량을 초과하여 용량을 대조할 수 없습니다.',
+    'capacity_coverage': '건너뛴 {skipped}; 읽을 수 없음 {inaccessible}; {pending} 보류 중',
+    'capacity_bin_partial': '휴지통을 완전히 식별하거나 읽지 못했습니다. 표시된 용량은 확인된 데이터만 포함합니다.',
+    'capacity_explanation': (
+        '알려진 파일 할당에는 표시된 휴지통 데이터가 포함됩니다. 하드링크 이름은 한 번만 계산됩니다. 다른 마'
+        '운트된 볼륨은 제외됩니다. 생략된 데이터와 파일 시스템 메타데이터는 알 수 없으며 0이 아닙니다. 설명되'
+        '지 않은 항목에는 액세스할 수 없는 데이터, 메타데이터, 스냅샷, 공유 범위 및 할당 추정치가 포함될 수 '
+        '있습니다. OS 용량과 파일은 다양한 순간에 측정됩니다. 파일 시스템은 스캔 중에 변경될 수 있습니다. 사'
+        '용할 수 없는 여유 공간은 측정된 메타데이터 총계가 아니라 보고된 총계, 사용된 공간 및 사용 가능한 여'
+        '유 공간 간의 차이입니다. 이는 NTFS, ext4 및 APFS 볼륨 검증이 보류 중인 추정치입니다.'
+    ),
+    'capacity_row_total': 'OS 전체',
+    'capacity_row_used': 'OS 사용량',
+    'capacity_row_free': 'OS 사용 가능한 여유 공간',
+    'capacity_row_unavailable_free': '사용할 수 없는 여유 공간',
+    'capacity_row_named_allocated': '이름별 할당량 추정',
+    'capacity_row_unique_allocated': '중복 제외 할당량 추정',
+    'capacity_row_hard_link_overcount': '제외된 하드 링크 중복 집계',
+    'capacity_row_recycle_bin_seen': '휴지통 할당 확인(포함)',
+    'capacity_row_foreign_allocated_seen': '기타 볼륨 파일 할당 확인(제외)',
+    'capacity_row_unaccounted': '설명되지 않음',
+    'capacity_row_metadata_bytes': '파일 시스템 메타데이터 / 예약됨',
+    'capacity_row_omitted_bytes': '생략된 데이터',
+    'capacity_row_other_volumes_bytes': '기타 마운트된 볼륨',
+    'capacity_row_mounts': '다른 장치의 마운트 경계',
+    'capacity_row_coverage': '적용 범위',
+    'review_title': '청소 제안 검토',
+    'review_details': '{path}\n규칙: {rule}; 보호: {protection}. {consequence}',
+    'review_hint': '모든 경로와 결과를 검토하십시오. 항목을 유지하려면 선택을 취소하세요. 계속 확인이 열립니다.',
+    'review_select': '이동',
+    'review_rule': '규칙',
+    'review_reason': '이유',
+    'review_protection': '보호',
+    'review_consequence': '결과',
+    'review_manual': '수동 선택',
+    'review_manual_reason': (
+        '사용자가 선택한 항목 이를 제거하면 이에 의존하는 파일이나 프로그램에 영향을 미칠 수 있습니다.'
+    ),
+    'review_not_protected': '보호된 경로 일치 없음',
+    'review_open_folder': '포함된 폴더 열기',
+    'review_continue': '계속해서 확인하세요',
+    'review_estimating': '{count} 항목이 선택되었습니다. 할당 추정 중…',
+    'review_summary': (
+        '{count} 항목; 논리적 {logical}; 할당된 추정치 {allocated}; 휴지통을 비운 후 복구 가능한 파일 데이터:'
+        ' {recoverable}; 지금 무료입니다 {free}. 공유 범위와 디렉터리 메타데이터는 아직 알려지지 않았습니다. '
+        '휴지통으로 이동해도 공간이 확보되지 않습니다.'
+    ),
+    'size_unknown': '알 수 없음',
+    'trash_running': '승인된 항목을 재검증하고 이동하는 중... 중지를 누르면 나머지 항목이 취소됩니다.',
+    'trash_batch_done': '{moved} 이동, {skipped} 건너뛰기, {failed} 실패; {size}이(가) 휴지통으로 이동되었습니다.',
+    'trash_skipped': '이 항목은 건너뛰었습니다. 다시 시도하기 전에 폴더를 다시 검사하세요.\n{names}',
+    'trash_skip_outside': '현재 스캔 외부',
+    'trash_skip_unverified': '확인된 스캔 ID 없음',
+    'trash_skip_incomplete': '불완전한 스캔 범위',
+    'trash_skip_missing': '항목 또는 상위 항목이 누락되었습니다.',
+    'trash_skip_unreadable': '항목을 읽을 수 없습니다',
+    'trash_skip_link': '항목 또는 상위가 링크가 되었습니다.',
+    'trash_skip_kind': '항목 종류가 변경됨',
+    'trash_skip_identity': '항목이 교체되었습니다',
+    'trash_skip_changed': '크기, 타임스탬프 또는 폴더 내용이 변경됨',
+    'trash_skip_protected': '확인된 경로에는 다른 보호 기능이 있습니다.',
+    'trash_skip_cancelled': '작업이 취소되었습니다',
+    'coverage_complete': (
+        '적용 범위: {size}은 {known} 폴더에 알려져 있습니다. {skipped}을 건너뛰고, {denied}에 액세스할 수 없'
+        '으며, {pending} 보류 중입니다.'
+    ),
+    'coverage_partial': (
+        '불완전한 적용 범위: {size}은 {known} 폴더에 알려져 있습니다. {skipped}을 건너뛰고, {denied}에 액세스'
+        '할 수 없으며, {pending} 보류 중입니다. 생략된 바이트를 알 수 없습니다. 정리하기 전에 불완전한 가지를'
+        ' 다시 검사하십시오. 모두 선택이 비활성화됩니다.'
+    ),
+    'problem_hidden_omitted': '숨겨진 항목은 생략되었습니다. 그들의 크기는 알려져 있지 않습니다.',
+    'problem_partial_folder': '일부 항목을 읽을 수 없습니다. 이 폴더는 불완전합니다.',
+    'app_title': 'FileTree',
+    'about_text': (
+        '<h3>FileTree {version}</h3><p>디스크 공간이 어디로 가는지 확인하세요.</p><p>MIT 라이센스 · © 2026 JE'
+        '-Chen</p>'
+    ),
+    'menu_file': '&파일',
+    'menu_export': '&내보내기',
+    'menu_view': '&보기',
+    'menu_unit': '크기 &단위',
+    'menu_language': '&언어',
+    'menu_help': '&도움말',
+    'action_open': '폴더 선택…',
+    'action_open_tip': '스캔할 폴더나 드라이브를 선택하세요.',
+    'action_rescan': '다시 스캔',
+    'action_rescan_tip': '변경 사항을 적용하려면 동일한 폴더를 다시 스캔하세요.',
+    'action_stop': '중지',
+    'action_stop_tip': '실행 중인 검사를 중지합니다.',
+    'action_export_folders': '폴더 목록(CSV)…',
+    'action_export_folders_tip': 'Excel 또는 기타 스프레드시트용으로 모든 폴더를 크기와 함께 저장하세요.',
+    'action_export_largest': '가장 큰 파일(CSV)…',
+    'action_export_largest_tip': '가장 큰 파일 목록 저장',
+    'action_export_json': '폴더 트리(JSON)…',
+    'action_export_json_tip': '스크립트 및 기타 프로그램을 위한 폴더 트리 저장',
+    'action_trash': '휴지통으로 이동',
+    'action_trash_tip': '선택한 파일 및 폴더를 휴지통으로 이동합니다(먼저 묻는 메시지가 표시됨).',
+    'action_find': '찾기…',
+    'action_find_tip': '스캔 내 어디에서나 이름으로 파일 및 폴더 찾기',
+    'action_quit': '종료',
+    'action_quit_tip': 'FileTree 닫기',
+    'action_hidden': '숨겨진 파일 포함',
+    'action_exclusions': '스캔하는 동안 건너뛰기…',
+    'action_exclusions_tip': 'node_modules와 같이 검사하는 폴더 및 폴더 이름은 생략합니다.',
+    'exclusions_title': '스캔하는 동안 건너뛰기',
+    'exclusions_hint': (
+        '스캔 시 이러한 폴더는 제외됩니다. 해당 폴더는 회색으로 표시되며 크기는 0입니다. node_modules 또는 *.'
+        'cache와 같은 이름은 해당 이름의 모든 폴더를 건너뜁니다. 폴더 경로는 해당 폴더 하나를 건너뜁니다. 목'
+        '록은 다음 스캔부터 적용됩니다.'
+    ),
+    'exclusions_add_name': '이름을 추가하세요…',
+    'exclusions_add_folder': '폴더 추가…',
+    'exclusions_remove': '제거',
+    'exclusions_name_prompt': '폴더 이름, * 및 ? 허용됨:',
+    'exclusions_saved': '{count} 제외 항목이 저장되었습니다. 다음 스캔부터 적용됩니다.',
+    'tooltip_excluded': '{path}\n건너뛰기: 보기 → 스캔 중 건너뛰기 상태입니다.',
+    'action_hidden_tip': '숨겨진 파일 및 폴더 수 계산(다음 검사에 적용)',
+    'action_help': '사용방법',
+    'action_help_tip': 'FileTree에 대한 간략한 가이드',
+    'action_about': 'FileTree 정보',
+    'action_about_tip': '버전 및 라이센스',
+    'app_title_admin': 'FileTree(관리자)',
+    'action_elevate': '관리자로 다시 시작',
+    'action_elevate_tip': '관리자 권한으로 FileTree를 다시 시작하면 모든 폴더를 읽을 수 있습니다.',
+    'action_ask_admin': '시작 시 관리자 권한 요청',
+    'action_ask_admin_tip': 'Windows은 FileTree이 시작될 때 권한을 요청하므로 보호된 폴더도 읽을 수 있습니다.',
+    'problems_hint': (
+        '일부 폴더에는 관리자 권한이 필요합니다. 해당 내용을 읽으려면 FileTree를 관리자로 다시 시작하세요.'
+    ),
+    'elevate_declined': 'FileTree가 여전히 관리자 권한 없이 실행 중입니다.',
+    'unit_auto': '자동',
+    'path_placeholder': '폴더 경로를 입력하거나 붙여넣고 Enter를 누르세요.',
+    'choose_folder_title': '스캔할 폴더를 선택하세요',
+    'welcome_title': '디스크 공간이 어디로 가는지 확인하세요',
+    'welcome_subtitle': (
+        '폴더 또는 전체 드라이브를 선택하십시오. FileTree은 그 안에 있는 모든 파일을 합산하고 가장 큰 폴더와 '
+        '파일을 먼저 표시합니다.'
+    ),
+    'welcome_choose': '폴더를 선택하세요…',
+    'welcome_drives': '드라이브',
+    'welcome_drive_tip': '{path} 스캔',
+    'welcome_drive_free': '{free}은 {total}에서 무료입니다.',
+    'welcome_recent': '최근에 스캔됨',
+    'welcome_tip': (
+        '팁: 파일 관리자에서 폴더를 이 창으로 끌어서 놓을 수도 있습니다. Windows(\\\\server\\share)에 절대 UN'
+        'C 공유 경로를 붙여넣습니다. 액세스는 현재 계정을 사용합니다. 스캔 작업자는 옵션에서 조정할 수 있습니'
+        '다. 거부되거나 연결이 끊긴 분기는 비어 있지 않고 불완전한 상태로 유지됩니다.'
+    ),
+    'scan_starting': '시작 중…',
+    'scan_progress': '검색 중… {files} 파일 {folders} 폴더 · {size} · {time}',
+    'scan_stop': '중지',
+    'scan_stopping': '중지 중…',
+    'scan_cancelled': '스캔이 중지되었습니다.',
+    'scan_stopped_partial': '스캔 중지됨: 결과에는 지금까지 읽은 내용이 표시됩니다.',
+    'scan_failed_title': '스캔할 수 없습니다',
+    'scan_mount_changed': '마운트 경계가 변경되었거나 확인할 수 없습니다. 이 결과를 사용하기 전에 다시 스캔하세요.',
+    'scan_failed': 'FileTree는 {path}을(를) 읽을 수 없습니다.\n\n이유: {reason}',
+    'not_a_folder': '{path}은(는) 존재하는 폴더가 아닙니다.',
+    'duration_seconds': '{value}초',
+    'duration_minutes': '{minutes} 분 {seconds} 초',
+    'summary': '<b>{path}</b> — {files} 파일 및 {folders} 폴더의 {size}(디스크의 {allocated})({time}에서 스캔됨)',
+    'summary_live': '<b>{path}</b> — 지금까지 {files} 파일 및 {folders} 폴더의 {size}(디스크의 {allocated})',
+    'summary_partial': (
+        '<b>{path}</b> — {files} 파일 및 {folders} 폴더의 {size}(디스크의 {allocated}) · <b>불완전</b>: {time'
+        '} 이후 검사가 중지되었습니다.'
+    ),
+    'tab_chart': '차트',
+    'chart_treemap': '트리맵',
+    'treemap_levels': '레벨',
+    'treemap_levels_all': '모두',
+    'treemap_colours': '색상',
+    'treemap_colours_type': '파일 유형별',
+    'treemap_colours_folder': '폴더별',
+    'chart_treemap_tip': '모든 파일은 차지하는 공간에 따라 크기가 결정되는 직사각형입니다.',
+    'chart_bars': '막대 그래프',
+    'chart_sunburst': '선버스트',
+    'chart_tree': '트리',
+    'chart_tree_tip': '폴더 계층 구조: 분기 확장, 확대/축소하려면 Ctrl+휠, 초점을 맞추려면 두 번 클릭',
+    'tree_orientation': '방향',
+    'tree_orientation_horizontal': '왼쪽에서 오른쪽으로',
+    'tree_orientation_vertical': '위에서 아래로',
+    'tree_more': '{count} 추가 폴더 · {size}',
+    'tree_unavailable': '스캔되지 않음',
+    'chart_sunburst_tip': (
+        '중앙에 있는 폴더는 더 깊은 레벨마다 링으로 구성되어 있습니다. 중앙을 클릭하면 위로 올라갑니다'
+    ),
+    'chart_bars_tip': '폴더 항목당 하나의 막대(크기 및 공유 포함)(가장 큰 것부터)',
+    'bars_empty_folder': '이 폴더는 비어 있습니다.',
+    'bars_more': '{count} 더보기: {size}',
+    'tab_largest': '가장 큰 파일',
+    'scope_folder': '선택한 폴더만',
+    'scope_folder_named': '{name}에서만',
+    'scope_folder_tip': '전체 스캔 대신 트리에서 선택한 폴더의 가장 큰 파일, 유형 및 기간을 표시합니다.',
+    'tab_search': '검색',
+    'tab_changes': '변경 사항',
+    'action_compare': '저장된 스캔과 비교…',
+    'action_compare_tip': '내보내기 → 폴더 트리(JSON)로 저장된 스캔을 열고 이후 성장한 내용을 확인하세요.',
+    'compare_title': '저장된 스캔과 비교',
+    'compare_failed': '이 파일은 FileTree:\n{reason}에 의해 저장된 스캔이 아닙니다.',
+    'column_before': '이전',
+    'column_now': '지금',
+    'column_change': '변경',
+    'changes_new': '새로운',
+    'changes_gone': '사라졌다',
+    'changes_whole_scan': '(스캔한 폴더)',
+    'changes_stop': '비교를 중지하세요',
+    'changes_running': '비교 중…',
+    'changes_waiting': '스캔이 완료되면 비교가 이루어집니다.',
+    'changes_unknown_time': '알 수 없는 시간에',
+    'changes_summary': (
+        '{path}과 비교하여 {when}을 저장했습니다: {before}, 현재 {now}({change}); {count} 폴더가 변경되었습니'
+        '다.'
+    ),
+    'tab_duplicates': '중복',
+    'tab_cleanup': '정리',
+    'cleanup_suggestions': '제안',
+    'cleanup_select_all': '모두 선택',
+    'cleanup_select_group': '이 그룹을 선택하세요',
+    'cleanup_running': '청소할 물건을 찾고 있습니다…',
+    'cleanup_hint': '스캔 후 콘텐츠가 일반적으로 갈 수 있는 장소가 여기에 나타납니다.',
+    'cleanup_none': '이 스캔에는 제안할 내용이 없습니다.',
+    'cleanup_summary': (
+        '{size} {groups} 그룹의 논리적 크기. 휴지통으로 이동하기 전에 경로 및 할당을 검토할 항목을 선택하십시'
+        '오. 이동해도 즉시 공간이 확보되지는 않습니다.'
+    ),
+    'cleanup_group': '{title} — {size} ({count})',
+    'cleanup_temp': '임시 파일',
+    'cleanup_temp_tip': '한동안 남겨진 파일 프로그램; 아직 실행 중인 프로그램에는 일부가 필요할 수 있습니다.',
+    'cleanup_browser_cache': '브라우저 캐시',
+    'cleanup_browser_cache_tip': '웹페이지 및 사진 사본 브라우저는 필요에 따라 다시 다운로드합니다.',
+    'cleanup_thumbnails': '썸네일 캐시',
+    'cleanup_thumbnails_tip': '사진의 작은 미리보기; 폴더를 열 때 다시 만들어집니다.',
+    'cleanup_crash_dumps': '크래시 덤프',
+    'cleanup_crash_dumps_tip': '프로그램이 충돌할 때 저장된 메모리는 충돌을 보고하는 데에만 유용합니다.',
+    'cleanup_package_caches': '패키지 다운로드 캐시(pip, npm…)',
+    'cleanup_package_caches_tip': '다운로드한 패키지는 다음 설치를 위해 보관됩니다. 필요할 때 다시 다운로드됩니다.',
+    'cleanup_build_output': '빌드 출력(재구축 가능)',
+    'cleanup_build_output_tip': '설치된 종속성 및 프로젝트의 컴파일된 파일 프로젝트를 다시 빌드하면 다시 생성됩니다.',
+    'cleanup_old_installers': '다운로드의 설치 프로그램',
+    'cleanup_old_installers_tip': '오래 전에 실행되었을 가능성이 가장 높은 설정 파일. 다시 설치한 것을 유지하세요.',
+    'cleanup_empty_folders': '빈 폴더',
+    'cleanup_empty_folders_tip': '아무것도 없는 폴더 또는 다른 빈 폴더만 있습니다.',
+    'duplicates_min_size': '다음의 파일 비교',
+    'duplicates_any_size': '어떤 크기',
+    'duplicates_find': '중복 찾기',
+    'duplicates_stop': '중지',
+    'duplicates_select_extra': '추가 사본 선택',
+    'duplicates_select_extra_tip': (
+        '선택한 유지할 파일와 성공적인 확인을 통해 그룹에서 추가 항목을 선택합니다. 그런 다음 삭제를 누르세요'
+    ),
+    'duplicates_hint': (
+        '스캔의 어느 위치에서나 동일한 내용이 포함된 파일을 찾습니다. 같은 크기의 파일만 읽어오는데 읽는 데 '
+        '시간이 걸리기 때문에 더 작은 크기를 선택하지 않으면 작은 파일은 제외됩니다.'
+    ),
+    'duplicates_starting': '같은 크기의 파일을 찾는 중…',
+    'duplicates_running': '{total} 파일 중 {files}({bytes} 중 {read}) 읽기…',
+    'duplicates_stopped': '검색이 중지되었습니다.',
+    'duplicates_none': '중복된 파일이 없습니다.',
+    'duplicates_summary': '{groups} 중복 그룹: {extra} 추가 복사본의 논리적 크기.',
+    'duplicates_limited': '추가 공간이 가장 많은 {shown} 그룹이 나열됩니다.',
+    'duplicates_skipped': '{count} 파일을 읽을 수 없습니다.',
+    'duplicates_group': '{count} 복사본 × {size}: {extra} 논리적 추가 복사본 크기.',
+    'search_placeholder': '이름 또는 패턴의 일부: 백업, *.mp4, *.iso;*.zip',
+    'search_hint': (
+        '* 및 ?를 사용하여 이름이나 패턴의 일부를 입력하고 조건을 선택하거나 둘 다를 선택하여 스캔의 어느 위'
+        '치에서나 파일과 폴더를 찾습니다.'
+    ),
+    'search_running': '검색 중…',
+    'search_larger': '다음보다 큼',
+    'search_smaller': '보다 작음',
+    'search_no_limit': '제한 없음',
+    'search_changed': '변경됨',
+    'search_changed_any': '언제든지',
+    'search_changed_week': '지난주에',
+    'search_changed_month': '지난달에',
+    'search_changed_year': '작년에',
+    'search_changed_stale_year': '1년이 아니라',
+    'search_changed_stale_2y': '아니 2년동안',
+    'search_changed_stale_5y': '아니 5년동안',
+    'search_type': '유형',
+    'search_type_any': '모든 유형',
+    'search_show': '쇼',
+    'search_kind_any': '파일 및 폴더',
+    'search_kind_files': '파일만',
+    'search_kind_folders': '폴더만',
+    'search_saved': '저장된 검색',
+    'search_saved_none': '(없음)',
+    'search_save': '저장…',
+    'search_delete': '삭제',
+    'search_save_title': '이 검색 저장',
+    'search_save_prompt': '이름:',
+    'search_none': '일치하는 항목이 없습니다.',
+    'search_summary': '{count}개 일치, 총 {size}개.',
+    'search_limited': '가장 큰 {shown}이 나열됩니다.',
+    'tab_types': '파일 형식',
+    'tab_age': '경과 기간',
+    'column_age': '마지막으로 변경됨',
+    'age_month': '한 달 이내',
+    'age_half_year': '1~6개월 전',
+    'age_year': '6~12개월 전',
+    'age_two_years': '1~2년 전',
+    'age_older': '2년 이상 전',
+    'largest_focus': '표시 항목: {what}',
+    'largest_show_all': '모두 표시',
+    'list_files_tip': '가장 큰 파일을 나열하려면 행을 두 번 클릭하세요.',
+    'tab_problems': '문제',
+    'tab_problems_count': '문제({count})',
+    'column_name': '이름',
+    'column_size': '크기',
+    'column_allocated': '디스크에',
+    'column_share': '상위 %',
+    'column_share_total': '전체의 %',
+    'column_files': '파일',
+    'column_folders': '폴더',
+    'column_modified': '수정됨',
+    'column_folder': '폴더',
+    'column_extension': '확장',
+    'column_type': '유형',
+    'column_path': '경로',
+    'column_problem': '문제',
+    'problem_access_denied': '액세스가 거부되었습니다.',
+    'problem_not_found': '더 이상 거기엔 없어',
+    'problem_path_too_long': '경로가 너무 깁니다.',
+    'problem_not_scanned': '검사되지 않음: 검사가 먼저 중지되었습니다.',
+    'no_extension': '(확장자 없음)',
+    'tooltip_unreadable': '{path}\n읽을 수 없습니다: {reason}',
+    'tooltip_link': '{path}\n링크: 표시되었지만 팔로우되지 않음',
+    'tooltip_not_scanned': '{path}\n스캔되지 않음: 스캔이 먼저 중지되었습니다.',
+    'treemap_empty': '표시할 내용 없음',
+    'treemap_up': '↑ 위로',
+    'treemap_up_tip': '위 폴더를 보여주세요',
+    'treemap_tooltip': '<b>{name}</b><br>{size} (이 보기의 {share})<br>{path}',
+    'treemap_more': '{count} 더 보기',
+    'treemap_more_tooltip': (
+        '<b>{count} 더 작은 항목</b> of {name}, 각각 너무 작아서 그릴 수 없음<br>{size}(이 보기의 {share})'
+    ),
+    'treemap_more_open': '이 폴더를 자체적으로 표시하려면 두 번 클릭하세요.',
+    'largest_filter': '이름이나 폴더로 필터링…',
+    'types_all': '모든 유형',
+    'category_images': '사진',
+    'category_video': '비디오',
+    'category_audio': '음악 및 오디오',
+    'category_documents': '문서',
+    'category_archives': '아카이브 및 디스크 이미지',
+    'category_code': '코드와 데이터',
+    'category_programs': '프로그램',
+    'category_other': '기타',
+    'status_selected': '{name}: {size}(해당 폴더의 {share})',
+    'status_selected_root': '{name}: {size}',
+    'menu_open_item': '열기',
+    'menu_reveal': '파일 관리자에 표시',
+    'menu_copy_path': '경로 복사',
+    'menu_show_chart': '차트에 표시',
+    'menu_scan_here': '이 폴더를 스캔하세요',
+    'menu_rescan_here': '이 폴더를 다시 검사하세요.',
+    'rescan_done': '다시 스캔됨 {name}: {before} → {after}',
+    'trash_confirm_title': '휴지통으로 이동',
+    'protected_title': '시스템 또는 프로그램 폴더',
+    'protected_question': (
+        '항목 중 {count}은 시스템 또는 프로그램 폴더입니다. 이동하면 시스템이나 프로그램의 작동이 중지될 수 '
+        '있습니다.\n\n{names}\n\n그래도 이동하시겠습니까?'
+    ),
+    'protected_system': '운영 체제의 일부',
+    'protected_programs': '설치된 프로그램',
+    'protected_settings': '프로그램 설정 및 데이터',
+    'protected_profile': '사용자의 프로필 폴더',
+    'trash_confirm': '“{name}”({size})을 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원할 수 있습니다.',
+    'trash_failed': '"{name}"을(를) 휴지통으로 이동할 수 없습니다. 사용 중이거나 읽기 전용일 수 있습니다.',
+    'trash_done': '“{name}”을 휴지통으로 이동했습니다: {size}이 해제되었습니다.',
+    'action_trash_many': '{count} 항목을 휴지통으로 이동',
+    'trash_confirm_many': (
+        '이 {count} 항목(총 {size})을 휴지통으로 이동하시겠습니까?\n\n{names}\n\n여기에서 복원할 수 있습니다.'
+    ),
+    'trash_more': '...그리고 {count} 더보기',
+    'trash_failed_many': (
+        '{count} 항목을 휴지통으로 이동할 수 없습니다. 사용 중이거나 읽기 전용일 수 있습니다. \n\n{names}'
+    ),
+    'trash_done_many': '{count} 항목을 휴지통으로 이동했습니다: {size}이 해제되었습니다.',
+    'status_selected_many': '{count} 선택한 항목: {size}',
+    'export_title': '수출',
+    'export_running': '{path}에 저장 중…',
+    'csv_filter': 'CSV 파일(*.csv)',
+    'json_filter': 'JSON 파일(*.json)',
+    'export_done': '{count} 행을 {path}에 저장했습니다.',
+    'export_failed': '파일을 저장할 수 없습니다.\n\n이유: {reason}',
+    'help_title': 'FileTree 사용 방법',
+    'help_html': (
+        '\n<h2>FileTree 세 단계로</h2>\n<ol>\n<li><b>검사 대상을 선택하세요.</b> <i>폴더를 선택하세요…</i> 또'
+        '는 드라이브 중 하나를 선택하고 폴더를 드래그하세요\n창으로 이동하거나 상단 상자에 경로를 입력하고 En'
+        'ter 키를 누릅니다.</li>\n<li><b>채워지는 모습을 지켜보세요.</b> 트리가 바로 나타나고 가장 큰 폴더가 '
+        '맨 위로 이동합니다\nFileTree은 모든 파일을 추가합니다. 스캔이 끝나면 가장 큰 파일과 파일 형식이 따릅'
+        '니다.  누르기\n언제든지 <i>Stop</i>(또는 Esc): 지금까지 읽은 내용이 화면에 유지되고 불완전한 것으로 '
+        '표시됩니다.</li>\n<li><b>공간을 차지하는 것이 무엇인지 찾아보세요.</b> 가장 큰 폴더는 트리 상단에 있'
+        '습니다. 화살표를 클릭하세요.\n폴더 옆에 있는 내부를 살펴보세요.</li>\n</ol>\n<h2>결과 읽기</h2>\n<ul'
+        '>\n<li><b>폴더 트리</b>(왼쪽): 각 폴더 또는 파일의 크기, 디스크에서 차지하는 공간<i></i>(전체\n클러'
+        '스터이므로 일반적으로 조금 더 많습니다. 압축 파일의 경우 더 적고 온라인에만 보관된 파일의 경우 아무'
+        '것도 없음), a\n상위 </i> 막대의 <i>%(의 양\n이 항목이 차지하는 위의 폴더), 얼마나 많은 파일과 폴더가'
+        ' 있는지, 그 안에 무엇인가가 있는 경우\n마지막으로 변경되었습니다. 항목별로 정렬하려면 열 제목을 클릭'
+        '하세요.</li>\n<li><b>Chart</b>: 탭 모서리에 있는 동일한 폴더의 4개 보기 간에 전환합니다(트리맵\n먼저'
+        ' 오고 FileTree는 선택한 것을 기억합니다. \n<i>Treemap</i>은 모든 파일을 직사각형으로 그립니다. 파일'
+        '이 클수록 직사각형도 커집니다. 각 폴더\n이름과 크기가 있는 스트립이 있고 폴더의 파일이 너무 작아서 '
+        '볼 수 없는 회색으로 표시된 을 공유합니다.\n타일(<i>12 more</i>): 해당 폴더를 자체적으로 표시하려면 '
+        '타일을 두 번 클릭하세요. <i>레벨</i>은 레벨 수를 설정합니다\n파일 형식(범례는 그 아래에 있음) 또는 '
+        '최상위 폴더별로 <i>Colours</i> 색상으로 그려집니다.\n<i>Bars</i>은 폴더의 각 항목에 하나의 막대를 가'
+        '장 큰 것부터 제공하고 크기와 공유는 가장 쉬운 입니다.\n정확하게 읽으려면. <i>Sunburst</i>은 폴더를 '
+        '중앙에 배치하고 각 더 깊은 수준은  주위의 링에 배치합니다.\n그것; 중앙을 클릭하면 위로 올라갑니다. <'
+        'i>Tree</i>은 확장 가능한 폴더 카드를 표시합니다. + 또는 "다른 폴더"를 클릭하세요.\n카드를 더 많이 보'
+        '려면 방향을 선택하고, Ctrl+휠을 누르면 확대/축소하고 스크롤하여 이동할 수 있습니다. 에서 항목을 찾으'
+        '려면 클릭하세요.\n폴더 트리에서 폴더를 두 번 클릭하여 해당 폴더로 이동하세요.\n돌아가려면 <i>Up</i>'
+        '을 누르세요.</li>\n<li><b>가장 큰 파일</b>: 스캔 위치에 관계없이 가장 큰 1,000개의 파일입니다. 필터 '
+        '상자에 을 입력하세요.\n목록을 좁히십시오. 트리에서 파일을 찾으려면 행을 두 번 클릭하세요.</li>\n<li>'
+        '<b>검색</b>(Ctrl+F): 스캔의 모든 위치에서 입력한 내용이 이름에 포함된 파일 및 폴더.\n<code>*.mp4</co'
+        'de>과 같은 패턴은 전체 이름과 일치해야 합니다. <code>;</code>로 여러 개를 분리하세요.\n(<code>*.iso;'
+        '*.zip</code>). 상자 아래의 조건(크기, 마지막 변경 시기, 파일 형식, 파일 또는)\n폴더) 검색 범위를 좁'
+        '히거나 자체적으로 검색을 만들고 <i>Save…</i>은 이름으로 검색을 유지합니다. \n1,000개의 가장 큰 일치 '
+        '항목이 모두 개수 및 총 크기와 함께 나열됩니다.</li>\n<li><b>정리 → 제안</b>: 스캔할 때마다 콘텐츠가 '
+        '일반적으로 이동할 수 있는 장소,당 한 그룹씩\n종류(임시 파일, 캐시, 크래시 덤프, 다시 빌드할 수 있는 '
+        '빌드 출력, 다운로드의 이전 설치 프로그램,\n빈 폴더); 그룹 위로 마우스를 가져가 삭제 작업을 확인한 다'
+        '음 <i>이 그룹을 선택</i> 또는\n<i>모두 선택</i>하고 삭제를 누르세요.</li>\n<li><b>정리 → 중복</b>: <'
+        'i>중복 항목 찾기</i>을 눌러 동일한 콘텐츠가 포함된 파일을 그룹화합니다. 의 파일만\n동일한 크기를 읽'
+        '습니다. 1MB 미만의 파일은 읽는 데 이 걸리므로 더 작은 크기를 선택하지 않는 한 제외됩니다.\n시간. 각 '
+        '그룹은 가장 오래된 사본부터 나열합니다. <i>추가 복사본 선택</i>은 가장 오래된 복사본을 제외한 모든 '
+        '복사본을 선택하고 \n삭제하면 휴지통으로 이동됩니다.</li>\n<li><b>파일 유형</b>: 확장자당 각 종류의 '
+        '파일이 차지하는 공간입니다. 목록에서 유형을 선택하세요\n테이블 위에는 그 종류만 볼 수 있습니다. 해당'
+        ' 유형의 가장 큰 파일을 나열하려면 행을 두 번 클릭하십시오.</li>\n<li><b>Age</b>: 한 달 동안, 1~6개월'
+        ' 전에 마지막으로 변경된 공간의 양 등 최대 2개까지\n몇 년 전. 오래된 데이터는 보관되거나 삭제될 수 있'
+        '는 경우가 많습니다. 가장 큰 행을 나열하려면 행을 두 번 클릭하세요.\n파일.</li>\n<li><b>문제</b>: Fil'
+        'eTree 폴더를 읽을 수 없습니다. 그 안에 무엇이 들어 있는지는 계산되지 않습니다.</li>\n</ul>\n<h2>여유'
+        ' 공간</h2>\n<p>항목을 마우스 오른쪽 버튼으로 클릭하여 <i>열기</i>, <i>파일 관리자에 표시</i>, <i>경'
+        '로 복사</i>,\n<i>트리맵에 표시</i>, <i>이 폴더를 다시 검색</i>(FileTree 외부에서 변경한 후, 나머지\n'
+        '결과 유지), <i>이 폴더</i>를 자체적으로 검사하거나 <i>휴지통으로 이동</i>.\n한 번에 여러 항목을 이동'
+        '하려면 폴더 트리에서 Ctrl+클릭 또는 Shift+클릭으로 항목을 선택합니다.\n<i>가장 큰 파일</i> 목록 또는'
+        ' <i>검색</i> 결과: FileTree이 한 번 묻고 전체 크기와 함께 나열됩니다.\nFileTree은 어떤 것도 영원히 '
+        '삭제하지 않습니다. 항상 먼저 묻고 이동한 모든 내용을 복원할 수 있습니다.\n휴지통(macOS 및 Linux의 휴'
+        '지통)에서. 다시 스캔하지 않고도 숫자가 즉시 업데이트됩니다.\n시스템 및 프로그램 폴더는 두 번 정도 묻'
+        '는 이유가 있습니다. 임시 폴더와 캐시는 그렇지 않습니다.</p>\n<h2>무엇이 성장했는지 살펴보기</h2>\n<p'
+        '><i>파일 → 내보내기 → 폴더 트리(JSON)</i>을 사용하여 스캔을 저장합니다. 나중에 새로 스캔한 후 다음을'
+        ' 선택하세요.\n<i>파일 → 저장된 스캔과 비교…</i>하고 해당 파일을 엽니다. <b>Changes</b> 탭에는 스캔된'
+        ' 모든 폴더가 나열됩니다.\n그 당시와 지금은 크기가 가장 크게 증가했습니다(<i>new</i> 및 <i>gone</i>은'
+        ' 폴더를 표시함).\n나타나거나 사라졌습니다). <i>비교 중지</i>.</p>을 누를 때까지 각 재검색 후에 계속 '
+        '비교합니다.\n<h2>키보드 단축키</h2>\n<table cellpadding="3">\n<tr><td><b>Ctrl+O</b></td><td>폴더 선'
+        '택</td></tr>\n<tr><td><b>F5</b></td><td>재검색</td></tr>\n<tr><td><b>Esc</b></td><td>스캔 중지</td><'
+        '/tr>\n<tr><td><b>Ctrl+F</b></td><td>이름으로 검색</td></tr>\n<tr><td><b>삭제</b></td><td>선택한 항목'
+        '을 휴지통으로 이동</td></tr>\n<tr><td><b>F1</b></td><td>이 가이드</td></tr>\n<tr><td><b>Ctrl+Q</b></'
+        'td><td>종료</td></tr>\n</table>\n<p>On macOS에서는 Ctrl 대신 ⌘를 사용합니다(다시 스캔하려면 ⌘R).</p>'
+        '\n<h2>알아두면 좋은 정보</h2>\n<ul>\n<li>Sizes는 Windows Explorer와 동일하게 바이너리 단위(1KB = 1,0'
+        '24바이트)의 실제 파일 크기입니다.\n<i>보기 → 크기 단위</i>.</li>에서 고정 단위를 선택합니다.\n<li>바'
+        '로가기 및 링크(기호 링크, 교차점)가 나열되지만 따라갈 수 없으므로 아무것도 없습니다.\n두 번 계산되었'
+        '습니다.</li>\n<li>On Windows, FileTree는 시작할 때 TreeSize와 같이 읽을 수 있도록 관리자 권한을 요청'
+        '합니다.\n보호된 폴더도 마찬가지입니다. 아니오라고 말하면 정상적으로 실행됩니다. 읽을 수 없는 폴더는 '
+        '아래에 나열됩니다.\n<i>문제</i>, <i>관리자로 다시 시작</i> 버튼이 있습니다. 아래의 질문을 끄세요.\n<'
+        'i>보기 → 시작 시 관리자 권한 요청</i>.</li>\n<li><i>가장 큰 파일</i>, <i>파일 유형</i> 및 <i>Age</i>'
+        '은 전체 스캔을 포괄합니다. <i>선택한 폴더만</i>,\n해당 탭의 오른쪽 상단에 있는 트리에서 선택한 폴더'
+        '를 따르도록 합니다.</li>\n<li>숨겨진 파일도 계산됩니다. <i>보기를 끄고 → 숨김 파일 포함</i>을(를) 제'
+        '외하세요.\n다음 스캔.</li>\n<li>모든 스캔에서 폴더를 제외하려면 <i>보기 → 스캔 중 건너뛰기</i>에 나'
+        '열하십시오.\n<code>node_modules</code>은 해당 이름의 모든 폴더를 건너뛰고 경로는 하나의 폴더를 건너'
+        '뜁니다. 건너뛴 폴더는\n회색으로 표시되고 크기는 0.</li>입니다.\n<li>결과를 <i>파일 → 내보내기로 저장'
+        '합니다</i>: CSV은 Excel에서 열리고 JSON은 스크립트용입니다.</li>\n</ul>\n'
+    ),
+}
+
+STRINGS: dict[str, dict[str, str]] = {"en": EN, "zh-TW": ZH_TW, "zh-CN": ZH_CN, "ja": JA, "ko": KO}

@@ -126,7 +126,7 @@ list with bounded icon rows, disables exact keeper/extra selection and recovery 
 photo results on tree edits. Mode changes/new scans invalidate worker identities, all workers join
 at close, and manual file actions retain MainWindow's confirmation/protection/snapshot flow. Hash
 collisions remain possible; group members need not match each other, only their representative.
-Runtime requirements and all three build guides include Pillow; executable releases install a verified
+Runtime requirements and all five build guides include Pillow; executable releases install a verified
 pinned Windows 3.12 wheel from .github/requirements/photos.txt, outside the publishing job.
 
 `core.archives` reads guarded ZIP directory metadata and builds an iterative virtual inventory,
@@ -383,7 +383,7 @@ their ancestors unsafe to remove as a whole. Unseen bytes remain unknown.
 The newest descendant disqualifies active folders. Exact cache namespaces and project/generated-file
 evidence replace bare-name guesses; package stores are excluded. Manual-risk groups start unchecked
 in `CleanupReview` and are excluded from bulk selection; `cleanup_text` translates metadata in all
-three languages. `CleanupGroup` carries the effective details through to the review.
+five languages. `CleanupGroup` carries the effective details through to the review.
 CleanupReview recomputes the wrapped recovery summary's minimum height on estimate/width changes
 and activates layout before enabling Continue. Native review evidence refuses clipped summary geometry.
 
@@ -923,13 +923,20 @@ the scanned folder as its argument. A built program restarts itself; from Python
 **Language.** `i18n.set_language` + `qt_translation.apply_qt_translation` (Qt's own buttons and dialogs),
 then every widget's `retranslate()`. The choice is stored in `QSettings` with the unit, window layout and
 recent folders.
+English, Traditional/Simplified Chinese, Japanese and Korean have the same complete key/placeholder
+contract. ja/ko system locales select their language on first use. Native Qt ja/ko catalogues provide
+standard buttons/dialogs and all four non-English catalogues are required in runtime/package checks.
+README/Nuitka parity and generated screenshots cover all five languages; OS fonts provide glyphs.
+locale_font chooses installed Japanese/Korean UI families on each retranslation while preserving
+the captured system size/style, restoring that base for other languages. It neither bundles nor
+installs fonts; missing families retain normal system fallback across workspace and result tabs.
 
 ## 5. Extension points
 
 - **A language**: a table in `je_file_tree/gui/strings.py`, an entry in `i18n.LANGUAGES`, a Qt catalogue in
   `qt_translation.CATALOGUES`, a README translation and a screenshot (`tools/make_screenshots.py`).
 - **A file-type group**: `analysis.CATEGORY_EXTENSIONS`, a colour in `treemap_widget.CATEGORY_COLOURS`
-  and a `category_<name>` text in every language (tests check all three).
+  and a `category_<name>` text in every language (tests check all five).
 - **An export format**: a function in `core/export.py` (atomic write) and an action in `main_window.py`.
 - **A result tab**: a widget added in `ResultsView._assemble`, fed from `ScanOutcome`.
 - **A chart view**: a widget with the treemap's interface, added to `charts.MODES` and `ChartStack`, with

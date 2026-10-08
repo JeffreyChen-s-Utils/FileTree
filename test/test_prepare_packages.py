@@ -20,7 +20,8 @@ def _assets(tmp_path, monkeypatch):
     archive = tmp_path / "FileTree-1.2.3-windows-standalone.zip"
     with zipfile.ZipFile(archive, "w") as payload:
         for name in ("FileTree.exe", "PySide6/Qt6Core.dll", "PySide6/plugins/platforms/qwindows.dll",
-                     "PySide6/translations/qtbase_zh_TW.qm", "PySide6/translations/qtbase_zh_CN.qm"):
+                     "PySide6/translations/qtbase_zh_TW.qm", "PySide6/translations/qtbase_zh_CN.qm",
+                     "PySide6/translations/qtbase_ja.qm", "PySide6/translations/qtbase_ko.qm"):
             payload.writestr("FileTree-1.2.3-windows-standalone/" + name, b"owned runtime fixture")
     monkeypatch.setattr(packager, "read_properties", lambda _path: dict(_PROPERTIES))
     return msi, archive

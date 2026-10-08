@@ -21,7 +21,7 @@ function New-FixturePayload {
     # A native PE and small runtime fixtures prove installer behavior, not a compiled FileTree launch.
     Copy-Item -LiteralPath (Join-Path $env:SystemRoot 'System32/where.exe') -Destination (Join-Path $payload 'FileTree.exe')
     [IO.File]::WriteAllBytes((Join-Path $payload 'Qt6Core.dll'), [Text.Encoding]::UTF8.GetBytes('owned library fixture'))
-    foreach ($name in @('qtbase_zh_TW.qm', 'qtbase_zh_CN.qm')) {
+    foreach ($name in @('qtbase_zh_TW.qm', 'qtbase_zh_CN.qm', 'qtbase_ja.qm', 'qtbase_ko.qm')) {
         [IO.File]::WriteAllBytes((Join-Path $payload ('PySide6/translations/' + $name)),
                                [Text.Encoding]::UTF8.GetBytes('owned catalogue fixture'))
     }
@@ -79,7 +79,7 @@ function Copy-CompiledPayload {
     Confirm-Inventory $payload $originalInventory
     Confirm-Inventory $compiledRoot $originalInventory
     if (-not $originalInventory.ContainsKey('FileTree.exe')) { throw 'Compiled FileTree.exe missing.' }
-    foreach ($required in @('Qt6Core.dll', 'qwindows.dll', 'qtbase_zh_TW.qm', 'qtbase_zh_CN.qm')) {
+    foreach ($required in @('Qt6Core.dll', 'qwindows.dll', 'qtbase_zh_TW.qm', 'qtbase_zh_CN.qm', 'qtbase_ja.qm', 'qtbase_ko.qm')) {
         $matches = @($originalInventory.Keys | Where-Object { [IO.Path]::GetFileName($_) -eq $required })
         if ($matches.Count -ne 1) { throw "Compiled runtime incomplete or ambiguous: $required" }
     }

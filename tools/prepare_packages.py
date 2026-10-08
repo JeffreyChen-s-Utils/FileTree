@@ -52,7 +52,8 @@ def _zip_payload(path: Path, version: str) -> None:
                     or mode not in (0, stat.S_IFREG, stat.S_IFDIR) or entry.filename.casefold() in names):
                 raise ValueError("Standalone ZIP contains unsafe, linked, encrypted or duplicate entries")
             names.add(entry.filename.casefold())
-    required = ("FileTree.exe", "Qt6Core.dll", "qwindows.dll", "qtbase_zh_TW.qm", "qtbase_zh_CN.qm")
+    required = ("FileTree.exe", "Qt6Core.dll", "qwindows.dll", "qtbase_zh_TW.qm", "qtbase_zh_CN.qm",
+                "qtbase_ja.qm", "qtbase_ko.qm")
     leaves = [PurePosixPath(name).name for name in names if not name.endswith("/")]
     if (f"{prefix}/FileTree.exe".casefold() not in names
             or any(leaves.count(name.casefold()) != 1 for name in required)):

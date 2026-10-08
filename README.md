@@ -17,9 +17,11 @@ The independent Python API `recurring.capture` / `prepare` combines captured sca
 
 File → Scheduled scan proposals shows reports prepared by gentle scheduled workers: new junk since the previous bound scan, current candidates and largest logical folder growth. Each list holds at most 100 rows and supports full-path tooltips and Ctrl+C. Dates, expiry, total/retained candidates, coverage and unknown comparisons remain visible; rule/schedule/receipt changes update the status. Reports appear after a scheduled scan in the current session; baselines persist under local-history retention. Invalid proposal metadata keeps the ordinary saved history and a visible error. No source is moved automatically. Rescan and review current candidates opens an ordinary foreground scan in a new tab, validates the entire captured/native tree on a worker, then uses the existing editable clean-up queue and protected-folder/Trash confirmations. Changed/partial/expired proposals cannot continue. Canceling the rescan or closing its tab discards the review intent. The move worker rechecks the whole native tree before the batch and date/rules/schedule/receipt before each item; ordinary native per-source validation still applies. These checks are observational, not a filesystem transaction.
 
-[English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md)
+[English](README.md) | [繁體中文](README/README_zh-TW.md) | [简体中文](README/README_zh-CN.md) | [日本語](README/README_ja.md) | [한국어](README/README_ko.md)
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
+
+Japanese and Korean use an installed language-appropriate font while preserving the system font size and style; fonts are neither downloaded nor bundled. Missing fonts fall back to the system font.
 
 From the tree, Search or Largest files, select real entries and right-click → **Move to folder…** or **Rename…**. The modal preview lists every outermost source/destination and refusal reason, up to 1,000 selected entries. Choose an existing folder, or a filename pattern with literal `{name}`, `{stem}`, `{ext}`, `{n}` tokens. Existing names default to **skip**; an explicit numbered-suffix choice previews the exact alternative names. Changing options invalidates approval; choose **Preview paths** again. **Apply reviewed paths…** asks a default-No plain-text question with every eligible pair in Details; refused/unchanged rows stay visible and are skipped. Execution freezes options, rechecks complete source coverage and captured parent identities, and uses native same-volume exclusive rename without copying or overwriting. Protected, linked, special, known unavailable, changed and cross-volume entries are refused. Stop/close waits through the current rename and preserves completed changes. Per-item failures and actual paths remain visible; an unexpected post-rename receipt attempts exclusive rollback, with retained destinations reported if rollback fails. Concurrent filesystem mutation is not transactional. Outside destination parents are rescanned on the owned worker with counts/errors shown; closing rebuilds the current root to refresh all affected parents within it and invalidates old capacity metadata. A canceled refresh stays visible. The Python API provides `namespace_moves.prepare_namespace` / `execute_namespace` with moved/skipped/failed outcomes and both parent paths. Native macOS remains unverified; use the separate **Move to another drive…** workflow for verified copies.
 
@@ -141,7 +143,7 @@ On Windows, **Options → Explorer integration…** adds or removes **Scan with 
 - **Free space safely**: *Move to Recycle Bin* always asks first and never deletes permanently; entries
   are revalidated on a worker before moving and affected folders are rescanned.
 - **Export** the folder list or the largest files to CSV (opens in Excel), or the folder tree to JSON.
-- **English, 繁體中文 and 简体中文**, switchable at any time; a built-in *How to use* guide.
+- **English, 繁體中文, 简体中文, 日本語 and 한국어**, switchable at any time; a built-in *How to use* guide.
 - Links and junctions are listed but never followed, so nothing is counted twice and a link loop cannot
   trap a scan. Folders that cannot be read are listed under *Problems* instead of stopping the scan.
 
