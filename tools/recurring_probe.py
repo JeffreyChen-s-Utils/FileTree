@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 import hashlib
 from pathlib import Path
 
@@ -18,6 +19,18 @@ from je_file_tree.gui.workspace import ScanWorkspace
 def _proof(source: Path) -> dict:
     return {path.name: (path.stat().st_dev, path.stat().st_ino, hashlib.sha256(path.read_bytes()).hexdigest())
             for path in source.glob("*.dmp")}
+
+
+@contextmanager
+def _qt_dialogs(app: QApplication) -> Iterator[None]:
+    """Keep owned confirmation controls in Qt's native-rendered widgets and restore the process setting."""
+    attribute = Qt.ApplicationAttribute.AA_DontUseNativeDialogs
+    original = app.testAttribute(attribute)
+    app.setAttribute(attribute, True)
+    try:
+        yield
+    finally:
+        app.setAttribute(attribute, original)
 
 
 class _ReviewProbe(QObject):
@@ -109,21 +122,23 @@ class _ReviewProbe(QObject):
 
 def validate_review(app: QApplication, workspace: ScanWorkspace, source: Path, evidence: Path,
                     pump: Callable[[QApplication, Callable[[], bool]], None]) -> dict:
-    """Click only this workspace's owned dialogs; actual Qt review/No never approves a native Trash move."""
+    """Exercise actual Qt review/No on the native platform; OS-native alert interaction stays unverified."""
     before = _proof(source)
-    probe = _ReviewProbe(app, workspace, len(before), evidence)
-    try:
-        probe.request.start(20)
-        probe.response.start(20)
-        probe.watchdog.start(30000)
-        workspace.background.show_proposals()
-        state = probe.state
-        pump(app, lambda: bool(state["error"]) or state["confirmation_canceled"] and not workspace.operations.busy)
-        if (state["error"] or not state["queue"] or _proof(source) != before
-                or workspace.current._trash_worker is not None):
-            raise RuntimeError(state["error"] or "Native review altered source or dispatched a move")
-        return {"fresh_foreground_scan": True, "native_review_queue": True, "manual_selection_required": True,
-                "confirmation_canceled": True, "source_preserved": True, "native_trash_move": False,
-                "wrapped_summary_visible": True}
-    finally:
-        probe.shutdown()
+    with _qt_dialogs(app):
+        probe = _ReviewProbe(app, workspace, len(before), evidence)
+        try:
+            probe.request.start(20)
+            probe.response.start(20)
+            probe.watchdog.start(30000)
+            workspace.background.show_proposals()
+            state = probe.state
+            pump(app, lambda: bool(state["error"]) or state["confirmation_canceled"] and not workspace.operations.busy)
+            if (state["error"] or not state["queue"] or _proof(source) != before
+                    or workspace.current._trash_worker is not None):
+                raise RuntimeError(state["error"] or "Native review altered source or dispatched a move")
+            return {"fresh_foreground_scan": True, "native_review_queue": True, "manual_selection_required": True,
+                    "confirmation_canceled": True, "source_preserved": True, "native_trash_move": False,
+                    "wrapped_summary_visible": True, "confirmation_backend": "qt_widget",
+                    "os_native_alert_verified": False}
+        finally:
+            probe.shutdown()

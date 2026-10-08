@@ -1330,8 +1330,15 @@ its always-run artifact upload retains partial evidence rather than declaring a 
 The macOS step repeats four fresh native processes with separate `background/attempt-N` phase,
 capture and `probe.log` artifacts. Bash pipefail preserves each Python failure through tee; the
 five-minute step bound includes all attempts, and a blocked attempt cannot be counted as a pass.
-Notification opt-in and source/permission/lifetime checks remain unchanged. This diagnoses observed
-intermittent Cocoa hangs and does not prove their cause or real login/notification permission.
+Retained Cocoa stacks at `7ca3a2c` locate blocked recurring review in `MainWindow.move_to_trash`'s
+`QMessageBox.question`: three attempts completed, the fourth did not return. The owned review probe
+sets AA_DontUseNativeDialogs before creating its dialogs so its Qt controls are available to the
+button driver, then restores the previous process attribute even on failure. It still exercises the
+actual production question and real No click, source-policy guards, queue ownership and source hashes.
+Evidence explicitly names `confirmation_backend=qt_widget` and `os_native_alert_verified=false`;
+OS-native alert interaction needs owner desktop validation. Production dialog defaults remain intact.
+Notification opt-in and source/permission/lifetime checks stay intact; registration/dispatch never
+prove real login or display permission. The dialog backend's native repeated execution is required.
 
 Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
 check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays

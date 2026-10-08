@@ -1,0 +1,78 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "7ca3a2cbc3ab5496075d336f2672e371df4375c1",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37822822359",
+  "job_id": 113467954073,
+  "job_conclusion": "failure",
+  "artifact": {
+    "id": 11569439922,
+    "name": "macos-native-sources",
+    "size_in_bytes": 1429846,
+    "blocked_log_sha256": "2137355dd84f84adbb2db5446dbae60dc9c8e45f2e516e61a785e3e04825edb9"
+  },
+  "scope": "Four fresh owned recurring/background Cocoa processes; production Trash question ends at No",
+  "attempts": [
+    {
+      "attempt": 1,
+      "phase": "complete",
+      "last_native_phase": "joining",
+      "platform": "cocoa",
+      "qt": "6.12.0",
+      "review_no_completed": true,
+      "source_preserved_after_session": true,
+      "quit_joined": true,
+      "owned_fixture_cleanup": true
+    },
+    {
+      "attempt": 2,
+      "phase": "complete",
+      "last_native_phase": "joining",
+      "platform": "cocoa",
+      "qt": "6.12.0",
+      "review_no_completed": true,
+      "source_preserved_after_session": true,
+      "quit_joined": true,
+      "owned_fixture_cleanup": true
+    },
+    {
+      "attempt": 3,
+      "phase": "complete",
+      "last_native_phase": "joining",
+      "platform": "cocoa",
+      "qt": "6.12.0",
+      "review_no_completed": true,
+      "source_preserved_after_session": true,
+      "quit_joined": true,
+      "owned_fixture_cleanup": true
+    },
+    {
+      "attempt": 4,
+      "phase": "recurring_review",
+      "last_native_phase": "recurring_review",
+      "platform": "cocoa",
+      "qt": "6.12.0",
+      "review_no_completed": null,
+      "source_preserved_after_session": null,
+      "quit_joined": null,
+      "owned_fixture_cleanup": null
+    }
+  ],
+  "blocking_trace": [
+    "Thread 0x00000001f512a2c0 (most recent call first):",
+    "  File \"/Users/runner/work/FileTree/FileTree/je_file_tree/gui/main_window.py\", line 610 in move_to_trash",
+    "  File \"/Users/runner/work/FileTree/FileTree/je_file_tree/gui/recurring_review.py\", line 195 in _validate",
+    "  File \"/Users/runner/work/FileTree/FileTree/je_file_tree/gui/recurring_review.py\", line 168 in _succeeded",
+    "  File \"/Users/runner/work/FileTree/FileTree/tools/validate_background.py\", line 47 in pump",
+    "  File \"/Users/runner/work/FileTree/FileTree/tools/recurring_probe.py\", line 121 in validate_review",
+    "  File \"/Users/runner/work/FileTree/FileTree/tools/validate_background.py\", line 194 in _session",
+    "  File \"/Users/runner/work/FileTree/FileTree/tools/validate_background.py\", line 251 in main",
+    "  File \"/Users/runner/work/FileTree/FileTree/tools/validate_background.py\", line 265 in <module>"
+  ],
+  "blocking_site": "MainWindow.move_to_trash -> QMessageBox.question at main_window.py:610",
+  "assessment": "The probe widget driver did not complete the native confirmation. Selecting scoped Qt widget dialogs makes their controls available; OS-native alert interaction remains unverified.",
+  "limitations": [
+    "A blocked attempt has no final No/source-preservation/cleanup result.",
+    "Native dialog-backend change requires new hosted execution.",
+    "Actual OS-native alert interaction, login and notification policy need owner desktop validation."
+  ]
+}

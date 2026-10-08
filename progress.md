@@ -22,7 +22,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Over time
 
-- **#38** (P3) [UNVERIFIED] Diagnose intermittent native macOS background/tray probe blocking from retained phases and stacks, then verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
+- **#38** (P3) [UNVERIFIED] Verify repeated native macOS recurring-review completion with the probe's scoped Qt confirmation backend after the retained QMessageBox.question block, then verify OS-native alert interaction, actual user-login startup and Windows/macOS notification display permission. Native widget/registration fixtures do not prove OS-native interaction or a real login; dispatch does not prove display permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
 
 ### Distribution
 
