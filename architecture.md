@@ -1079,6 +1079,10 @@ Native volume-list UUID/name/device and configured byte values must match before
 Its statvfs/ledger samples retain raw shared-container effects and null independent reservation bytes;
 capacity rows are never summed. The image holder recognizes only its registered fresh mountpoints
 and normally detaches the complete owned image. This additional peer's native evidence remains pending.
+Native diskutil rejected the initial custom mountpoint because it requires root. The peer is now
+created with -nomount: its configured reserve/quota are cross-checked through the owned container's
+UUID/device list, while peer statvfs/ledger remain null. Only the existing primary's actual capacity
+and ledger are sampled; no privilege helper or default host mountpoint is used.
 
 `core/darwin_mounts.py` implements the modern 2168-byte Darwin INODE64 statfs ABI from Apple's XNU
 mount header. A private getfsstat array is bounded to 4096 entries and checked against a subsequent
