@@ -667,8 +667,8 @@ operation authority. This core API remains independent of the GUI.
 fresh owned sources. It records the actual backend, native notification, cancellation/join and
 unchanged keeper identity/SHA-256. Linux/readable-USN additionally write through an owned outside hard-link
 alias. Complete JSON plus owned_fixture_cleanup=true is required for success; failed native lifetime
-checks retain fixtures. Reviewed CI JSON confirms existing-USN Windows and ordinary/external-alias
-Linux inotify events with source preservation and joined cancellation. Local Windows evidence used
+checks retain fixtures. Reviewed CI JSON confirms ordinary/external-alias events on both Windows
+existing USN and Linux inotify, with source preservation and joined cancellation. Local Windows evidence used
 recursive directory notifications. No journals are created.
 
 GUI Options → Follow changes is default off and persisted with `follow_changes`. Each tab owns a
@@ -682,3 +682,18 @@ rearming does not postpone that deadline. Ordinary notifications continue during
 then cancel/join before tree replacement/rearming. New roots discard old events; opt-out/tab close
 cancel and join through wait_for. Unsupported/incomplete scopes and native errors stay visible in
 plain-text status, with no automatic error retry loop. Notifications never grant mutation approval.
+
+`background.MonitorConfig(enabled=False, threshold=10, interval_hours=24, roots=())` validates
+up to 32 explicitly chosen absolute roots, a 1–50% threshold and 1–720-hour schedule. `dumps` /
+`load_config` use strict bounded versioned JSON; duplicate/unknown keys, paths and invalid options
+fail closed. `schedule_id` fingerprints roots/interval independently of the warning threshold.
+`claim_scan(config, root, now)` prepares a ScanAttempt before dispatch; callers must persist and
+serialize it first. Key the attempts map by each `ScanAttempt.key` canonical metadata path.
+`due_roots(config, attempts, now)` returns each due selected root once, including after missed periods,
+without replaying a backlog. Claimed/failed/canceled attempts suppress repeated
+same-period work; clock rollback postpones dispatch, and changed schedules invalidate old receipts.
+`SpaceWarnings.observe(rows, threshold=10)` consumes at most 256 validated CapacityObservation rows
+and returns informational below-threshold crossings. Unknown capacity never means zero or resets a
+low-space latch; actual recovery permits a new crossing warning. Invalid batches leave latches intact.
+These core APIs perform no scans, notification dispatch, startup installation or source mutation;
+tray integration, gentle scheduled history scans and opt-in removable autostart remain #38.

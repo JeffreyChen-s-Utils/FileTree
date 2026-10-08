@@ -36,8 +36,8 @@ fallback because external aliases are not covered. `linux_watch` uses one inotif
 anchored folder and captured shared-inode watches, exposing kernel limit failures. Bounded events
 map to captured folder paths; overflow/gaps request full scans, malformed records fail visibly.
 Native cancellation joins outstanding Windows I/O before freeing storage. Notifications are
-observational rescan requests and never operation authority. Reviewed native CI confirms Windows USN
-and Linux inotify/external-alias events with source preservation and joined cancellation.
+observational rescan requests and never operation authority. Reviewed native CI confirms ordinary
+and outside-alias events on both Windows USN and Linux inotify, with source preservation/joined cancellation.
 
 `gui.change_watch.FollowChanges` owns one default-off monitor per result tab. Its worker builds maps
 and coalesces native events under a lock to avoid unbounded Qt signal queues. The one-second GUI
@@ -48,6 +48,14 @@ hard-link totals, operation gaps and five-minute periodic reconciliation force f
 rearming preserves the periodic deadline and unrelated pending paths; new roots discard old data.
 Shared OperationGroup exclusion quiesces peer monitors before source mutation/tree changes. Native
 failures remain visible without retry loops; opt-out/tab close cancel/join through wait_for.
+
+`core.background` separates strict default-off monitor configuration, selected-root schedule claims
+and bounded capacity warning transitions from GUI services. Versioned configuration stores no
+commands or action permissions. Claim receipts bind root, timestamp and schedule fingerprint;
+failed/canceled claims suppress same-period redispatch, missed periods coalesce once and clock
+rollback postpones work. OS available capacity is distinct from scan allocation; unknown values do
+not reset low-space latches. These metadata APIs never scan or mutate sources; the tray, persisted
+claim serialization, gentle history scans and removable per-user startup integration remain #38.
 
 `gui.app.main` creates a `ScanWorkspace` containing up to sixteen independently owned `MainWindow`
 result tabs. Each tab retains its own `ResultsView`, scan/analyser/search/export lifetimes and captured
