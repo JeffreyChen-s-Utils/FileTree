@@ -74,6 +74,7 @@ from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
 from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
+from je_file_tree.gui.folder_validation import FolderDrops
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
 from je_file_tree.gui.operation_group import OperationGroup
@@ -173,6 +174,7 @@ class MainWindow(QMainWindow):
         self._worker: ScanWorker | None = None
         self._scan_workers: set[ScanWorker] = set()
         self._pending_scan: ScanWorker | None = None
+        self._folder_drops = FolderDrops(self)
 
     def _restore_cleanup_policy(self) -> None:
         self._cleanup_policy = CleanupPolicy()
@@ -251,13 +253,22 @@ class MainWindow(QMainWindow):
         if self.operation_busy or self._closing:
             return
         dialog = MultiScanDialog(self)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
+        roots = ()
         try:
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                self.start_scan_roots(dialog.roots)
+                roots = dialog.roots
         finally:
+            dialog.shutdown()
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
             dialog.deleteLater()
+        if roots:
+            self.start_scan_roots(roots)
 
     def _begin_scan(self, path: str | tuple[str, ...], *, exact_allocation: bool = False) -> None:
+        self._folder_drops.cancel()
         background = self._background_pause(wait=False) if self._background_pause is not None else ()
         following = self._follow.stop(clear=True, wait=False)
         self._undo.expire()
@@ -1065,6 +1076,7 @@ class MainWindow(QMainWindow):
         """Qt: stop the scan and remember the window layout."""
         self._trash_rescans.clear()
         self._closing = True
+        self._folder_drops.shutdown()
         self.welcome.shutdown()
         self._follow.shutdown()
         self._updates.shutdown()
@@ -1105,7 +1117,7 @@ class MainWindow(QMainWindow):
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         """Qt: accept a folder reference as Copy so the source must keep its files."""
-        if event.possibleActions() & Qt.DropAction.CopyAction and _dropped_folder(event.mimeData().urls()) is not None:
+        if event.possibleActions() & Qt.DropAction.CopyAction and _drop_paths(event.mimeData().urls()):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
         else:
@@ -1113,11 +1125,11 @@ class MainWindow(QMainWindow):
 
     def dropEvent(self, event: QDropEvent) -> None:
         """Qt: scan a copied folder reference, never acknowledge a source-removing Move."""
-        folder = _dropped_folder(event.mimeData().urls())
-        if folder is not None and event.possibleActions() & Qt.DropAction.CopyAction:
+        paths = _drop_paths(event.mimeData().urls())
+        if paths and event.possibleActions() & Qt.DropAction.CopyAction:
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
-            self.start_scan(folder)
+            self._folder_drops.request(paths)
         else:
             event.ignore()
 
@@ -1656,11 +1668,8 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, tr("action_about"), tr("about_text", version=__version__))
 
 
-def _dropped_folder(urls: list) -> str | None:
-    for url in urls:
-        if url.isLocalFile() and os.path.isdir(url.toLocalFile()):
-            return os.path.normpath(url.toLocalFile())
-    return None
+def _drop_paths(urls: list) -> tuple[str, ...]:
+    return tuple(os.path.normpath(url.toLocalFile()) for url in urls if url.isLocalFile() and url.toLocalFile())
 
 
 def _write_json(root: Node, target: str) -> int:

@@ -3,10 +3,10 @@
 from PySide6.QtCore import QMimeData, QPoint, QPointF, Qt, QUrl
 from PySide6.QtGui import QDragEnterEvent, QDropEvent
 
-from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
+from test_gui import _wait, window as window  # noqa: PLC0414 - explicit pytest fixture re-export
 
 
-def test_shift_move_is_negotiated_as_copy_without_changing_the_source(window, tmp_path, monkeypatch):
+def test_shift_move_is_negotiated_as_copy_without_changing_the_source(window, qapp, tmp_path, monkeypatch):
     source = tmp_path / "資料夾 with space"
     source.mkdir()
     payload = source / "kept.txt"
@@ -24,6 +24,7 @@ def test_shift_move_is_negotiated_as_copy_without_changing_the_source(window, tm
     window.dropEvent(dropped)
     assert entered.isAccepted() and dropped.isAccepted()
     assert entered.dropAction() == dropped.dropAction() == Qt.DropAction.CopyAction
+    _wait(qapp, lambda: bool(scans))
     assert scans == [str(source)]
     assert payload.read_bytes() == b"keep the original"
 

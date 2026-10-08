@@ -25,6 +25,7 @@ def test_accepted_folder_list_is_bounded_literal_and_frozen(qapp, sources):
         assert not dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
         for path in [sources[0], sources[0], sources[1]]:
             dialog.add_root(str(path))
+        _wait(qapp, lambda: not dialog._pending)
         assert dialog.list.count() == 2
         dialog.accept()
         assert dialog.result() == QDialog.DialogCode.Accepted and dialog.roots == tuple(map(str, sources))
@@ -33,6 +34,24 @@ def test_accepted_folder_list_is_bounded_literal_and_frozen(qapp, sources):
     finally:
         dialog.deleteLater()
         qapp.processEvents()
+
+
+def test_owned_folder_review_releases_guard_before_dispatching_combined_scan(window, qapp, sources, monkeypatch):
+    paths = tuple(map(str, sources))
+
+    def approve(dialog):
+        assert window.operation_busy
+        for path in paths:
+            dialog.add_root(path)
+        _wait(qapp, lambda: not dialog._pending)
+        dialog.accept()
+        return dialog.result()
+
+    monkeypatch.setattr(MultiScanDialog, "exec", approve)
+    window.choose_roots()
+    _wait(qapp, lambda: window._worker is None)
+    assert not window.operation_busy and not window._path_dialogs
+    assert window._last_roots == paths and window.results.outcome.result.root.size == 3
 
 
 def test_combined_window_renders_all_charts_and_rescans_captured_roots(window, qapp, sources, monkeypatch):

@@ -183,7 +183,7 @@ class BackgroundMonitor(QObject):
             return
         if self.capacity is None:
             worker = CapacityWorker(self)
-            worker.finished.connect(lambda: self._capacity_finished(worker))
+            worker.finished.connect(lambda: after_threads((worker,), lambda: self._capacity_finished(worker), self))
             self.capacity = worker
             worker.start()
         if (self.scan is not None or self._retiring or self.workspace.operations.busy
@@ -212,7 +212,7 @@ class BackgroundMonitor(QObject):
             return
         worker = ScheduledWorker(attempt.root, self.workspace.current._scan_options(), history, self,
                                  proposal_context=(attempt, config.interval_hours), policy=policy)
-        worker.finished.connect(lambda: self._scan_finished(worker, attempt))
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._scan_finished(worker, attempt), self))
         self.attempt, self.scan = attempt, worker
         self._set_status("background_scanning", attempt.root)
         worker.start()
@@ -319,7 +319,6 @@ class BackgroundMonitor(QObject):
     def _capacity_finished(self, worker: CapacityWorker) -> None:
         if worker is not self.capacity:
             return
-        wait_for(worker)
         self.capacity = None
         if not self.closing and not worker.cancel.is_set():
             if worker.error:
@@ -339,7 +338,6 @@ class BackgroundMonitor(QObject):
     def _scan_finished(self, worker: ScheduledWorker, attempt: ScanAttempt) -> None:
         if worker is not self.scan:
             return
-        wait_for(worker)
         self.scan, self.attempt = None, None
         try:
             self._finish_attempt(replace(attempt, state=worker.state))

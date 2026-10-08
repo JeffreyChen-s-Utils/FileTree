@@ -1407,3 +1407,12 @@ checks the current reader and cancellation state after old readers join. Explici
 stop(wait=True). History and comparison ready/failure callbacks are identity-guarded join continuations;
 they enable comparisons and publish captured saved scans only after termination. Recurring foreground
 scan delivery/review validation and virtual-disk query completion use the same nonblocking join gate.
+
+Folder-entry contract: drag/drop negotiation copies only local path strings and acknowledges Copy;
+FolderDrops/FolderWorker select the first existing folder off the GUI thread. Requests coalesce,
+new foreground scans cancel pending drops, and late validation cannot replace a newer scan. The owned
+multi-folder WorkerDialog reserves pending slots under MAX_ROOTS, deduplicates normalized paths and
+inserts successful checks in original selection order. Acceptance freezes only validated rows; its modal
+operation guard is released before dispatching the combined scan. All query threads remain owned until
+full join, including canceled queries. Background capacity/scheduled-scan completion uses the same
+after_threads continuation before reporting or publishing attempt receipts.

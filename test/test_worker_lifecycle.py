@@ -13,7 +13,8 @@ from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture
 from je_file_tree.core.operation_journal import OperationJournal
 from je_file_tree.core.operations import MoveReceipt
 from je_file_tree.core.scanner import scan
-from je_file_tree.gui import change_watch, file_actions, scan_worker, welcome
+from je_file_tree.gui import change_watch, file_actions, folder_validation, scan_worker, welcome
+from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.worker_lifecycle import after_threads
 
 
@@ -32,6 +33,90 @@ class HeldWorker(QThread):
 
     def run(self):
         self.release.wait(5)
+
+
+def _held_folder(path, monkeypatch):
+    release, entered = threading.Event(), threading.Event()
+    original = folder_validation.os.path.isdir
+    threads = []
+
+    def checking(candidate):
+        if candidate == str(path):
+            threads.append(QThread.currentThread())
+            entered.set()
+            release.wait(5)
+        return original(candidate)
+
+    monkeypatch.setattr(folder_validation.os.path, "isdir", checking)
+    return release, entered, threads
+
+
+def test_slow_drop_is_replaced_without_gui_queries_or_stale_scan(window, qapp, tmp_path, monkeypatch):
+    folders = tuple(tmp_path / name for name in ("old", "middle", "latest"))
+    for folder in folders:
+        folder.mkdir()
+        (folder / "kept").write_bytes(b"kept")
+    release, entered, threads = _held_folder(folders[0], monkeypatch)
+    scans = []
+    monkeypatch.setattr(window, "start_scan", scans.append)
+    try:
+        window._folder_drops.request((str(folders[0]),))
+        _pump(qapp, entered.is_set)
+        assert threads[0] is not qapp.thread()
+        window._folder_drops.request((str(folders[1]),))
+        window._folder_drops.request((str(folders[2]),))
+        assert not scans
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: bool(scans))
+        assert release.is_set() and scans == [str(folders[2])]
+        assert all((folder / "kept").read_bytes() == b"kept" for folder in folders)
+    finally:
+        release.set()
+
+
+def test_new_scan_invalidates_slow_drop_without_waiting(window, qapp, tmp_path, monkeypatch):
+    old, latest = tmp_path / "old", tmp_path / "latest"
+    for folder in (old, latest):
+        folder.mkdir()
+    (old / "kept").write_bytes(b"kept")
+    release, entered, _ = _held_folder(old, monkeypatch)
+    try:
+        window._folder_drops.request((str(old),))
+        _pump(qapp, entered.is_set)
+        window.start_scan(str(latest))
+        assert window._folder_drops.current is None
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: window._worker is None and not window._folder_drops.workers)
+        assert release.is_set() and window.results.outcome.result.root.path == str(latest)
+        assert (old / "kept").read_bytes() == b"kept"
+    finally:
+        release.set()
+
+
+def test_multifolder_cancel_keeps_gui_live_until_native_validation_joins(window, qapp, tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept"
+    kept.write_bytes(b"kept")
+    release, entered, threads = _held_folder(source, monkeypatch)
+    dialog = MultiScanDialog(window)
+    try:
+        dialog.add_root(str(source))
+        dialog.add_root(str(source))
+        _pump(qapp, entered.is_set)
+        assert threads[0] is not qapp.thread() and len(dialog._pending) == 1
+        assert dialog.list.count() == 0
+        dialog.reject()
+        assert dialog._finish_waiting
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: not dialog._finish_waiting)
+        assert release.is_set() and dialog.roots == () and dialog.list.count() == 0
+        assert kept.read_bytes() == b"kept"
+    finally:
+        release.set()
+        dialog.reject()
+        _pump(qapp, lambda: not dialog._finish_waiting)
+        dialog.deleteLater()
 
 
 def test_async_join_keeps_gui_timers_live_and_calls_back_once(qapp):

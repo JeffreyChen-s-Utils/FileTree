@@ -42,7 +42,7 @@ from je_file_tree.gui import main_window as main_window_module
 from je_file_tree.gui.app import create_window
 from je_file_tree.gui.elided_label import ElidedLabel
 from je_file_tree.gui.help_dialog import HelpDialog
-from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _dropped_folder
+from je_file_tree.gui.main_window import RESULTS_PAGE, WELCOME_PAGE, MainWindow, _drop_paths
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.results_view import (
     CHANGES_TAB,
@@ -1155,10 +1155,15 @@ def test_long_paths_are_shortened_not_widening_the_window(window: MainWindow, qa
     assert results.summary.toolTip() == str(deep)
 
 
-def test_dropped_urls_and_the_help_dialog(window: MainWindow, sample_tree: Path) -> None:
+def test_dropped_urls_and_the_help_dialog(window: MainWindow, qapp: QApplication, sample_tree: Path,
+                                         monkeypatch: pytest.MonkeyPatch) -> None:
     urls = [QUrl.fromLocalFile(str(sample_tree / "big.bin")), QUrl.fromLocalFile(str(sample_tree / "code"))]
-    assert _dropped_folder(urls) == str(sample_tree / "code")
-    assert _dropped_folder([QUrl("https://example.com/")]) is None
+    scans = []
+    monkeypatch.setattr(window, "start_scan", scans.append)
+    window._folder_drops.request(_drop_paths(urls))
+    _wait(qapp, lambda: bool(scans))
+    assert scans == [str(sample_tree / "code")]
+    assert _drop_paths([QUrl("https://example.com/"), QUrl("file:"), QUrl("file://")]) == ()
     dialog = HelpDialog(window)
     assert "FileTree" in dialog.browser.toPlainText()
     dialog.deleteLater()

@@ -6,6 +6,8 @@ Source operations and branch rescans also wait asynchronously for canceled backg
 
 Switching change monitoring retires old readers asynchronously and starts only the latest requested reader after they join. History/comparison results, recurring-review handoff and virtual-disk query completion also wait asynchronously for worker termination before enabling the next action.
 
+Drag/drop negotiation uses copied local path references without filesystem queries. Owned workers validate the first actual dropped folder and explicit multi-folder selections; repeated drops coalesce and a newer scan invalidates pending drops. Multi-folder checks reserve bounded slots, preserve selection order and defer dismissal until canceled checks join. Background capacity/scan completion also uses asynchronous join continuations.
+
 Folder validation and welcome-drive discovery run on owned workers; rendering and action updates use copied drive values. Replacing a scan requests cancellation and waits asynchronously for the old scan, native watcher and gentle scan to join before dispatching the latest request. Repeated replacements coalesce; Stop discards a pending replacement. Slow native calls remain owned until they finish, while the GUI event loop continues handling events. These changes do not establish a throughput improvement.
 
 **See where your disk space goes.** FileTree scans a folder or a whole drive, adds up every file inside

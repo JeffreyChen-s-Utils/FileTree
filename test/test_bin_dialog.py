@@ -171,11 +171,13 @@ def test_linux_stop_or_close_joins_survey_without_late_approval(qapp, monkeypatc
     dialog.empty_selected()
     _wait(qapp, entered.is_set)
     dialog.reject() if close else dialog.stop()
-    qapp.processEvents()
+    _wait(qapp, finished.is_set)
+    _wait(qapp, lambda: not dialog._finish_waiting)
     assert finished.is_set() and not questions
     if not close:
         assert dialog._approval_worker is None and dialog.view.isEnabled()
         dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
     dialog.deleteLater()
 
 
