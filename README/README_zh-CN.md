@@ -134,6 +134,8 @@ FileTree 可在 Windows、macOS 与 Linux 上运行。
 
 从下一次发布起，同一页也会提供 `FileTree-<版本>-windows-standalone.zip`。解压**整个文件夹**后运行其中的 `FileTree.exe`，启动较快；DLL、插件及翻译文件都要保留在旁边。单文件 EXE 较方便携带，但每次启动都会先解压内含文件。两种形式都不需要 Python。
 
+下一次发布流程也会从完整独立程序文件夹构建 `FileTree-<版本>-windows-x64.msi`。它需要管理员批准，为所有用户安装至 Program Files，添加开始菜单快捷方式，并支持通过 Windows 升级／卸载。安装包 CI 使用全新可丢弃测试数据；已发布编译程序的实际安装仍待验证。签名及 winget／Scoop／Chocolatey 发布仍需要所有者的证书／账号。
+
 **有 Python 3.10 或更新版本**，从 PyPI 安装：
 
 ```bash

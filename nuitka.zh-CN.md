@@ -59,6 +59,15 @@ python tools/package_standalone.py --version 0.1.0
 
 这会在仓库根目录生成 `FileTree-0.1.0-windows-standalone.zip`，内含带版本号的文件夹及 EXE、所有程序库、插件与翻译文件。`build/standalone` 下必须恰有一个包含 `FileTree.exe` 的完整 `.dist` 文件夹；工具拒绝链接／联接点，以原子方式写入压缩包。发布流程会从同一个标签构建两种形式，同时附上完整文件夹 ZIP 与单文件 EXE。
 
+在具有 .NET 8 SDK 的 Windows 上，可从同一份完整独立程序输出构建 x64 MSI：
+
+```bash
+dotnet tool install wix --global --version 6.0.2
+python tools/build_msi.py --version 0.1.0
+```
+
+这会生成 `FileTree-0.1.0-windows-x64.msi`。工具会核对编译器版本；程序内容有链接、不支持的 MSI 版本、运行时文件清单变化或构建失败时，都拒绝发布。WiX 验证保持启用。为所有用户安装的包包含全部运行时文件与开始菜单快捷方式，支持主要版本升级，不使用自定义操作／启动注册。安装需要管理员批准；构建工具只编译。发布流程会附上同一个标签的 MSI。原生 CI 安装使用可丢弃测试数据，不能证明编译程序已实际启动。
+
 ### 2.2 单个文件
 
 ```bash

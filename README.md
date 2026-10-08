@@ -157,6 +157,12 @@ Starting with the next release, the same page will also offer
 faster startup. Keep the DLLs, plugins and translations beside it. The single EXE is easier to carry,
 but unpacks its bundled files on every start. Both forms work without Python.
 
+The next release workflow also builds `FileTree-<version>-windows-x64.msi` from the complete
+standalone folder. It installs for all users under Program Files, requires administrator approval,
+adds a Start-menu shortcut and supports upgrades/uninstall through Windows. Installer CI checks
+fresh disposable fixtures; published compiled-app installation remains to be verified. Signing and
+winget/Scoop/Chocolatey publication still require the owner's certificate/accounts.
+
 **With Python 3.10 or newer**, from PyPI:
 
 ```bash

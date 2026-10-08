@@ -69,6 +69,20 @@ completed `.dist` folder with `FileTree.exe` under `build/standalone`, rejects l
 writes the archive atomically. The release workflow builds both forms from the same tag and attaches
 both the standalone ZIP and the single EXE.
 
+On Windows with the .NET 8 SDK, build an x64 MSI from the same complete standalone output:
+
+```bash
+dotnet tool install wix --global --version 6.0.2
+python tools/build_msi.py --version 0.1.0
+```
+
+This writes `FileTree-0.1.0-windows-x64.msi`. The compiler version is checked; payload links,
+unsupported MSI versions, changed runtime inventories and failed builds refuse publication. WiX
+validation remains enabled. The per-machine package includes all runtime files and a Start-menu
+shortcut, supports major upgrades, and uses no custom actions/startup registration. Its installer
+requires administrator approval; the builder only compiles. The release workflow attaches it from
+the same tag. Native CI installation uses disposable fixtures and does not prove a compiled-app launch.
+
 ### 2.2 A single file
 
 ```bash

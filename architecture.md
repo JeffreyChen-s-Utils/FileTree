@@ -937,6 +937,17 @@ recent folders.
 
 ## 6. Cross-project boundaries
 
+`tools/build_msi.py` compiles one complete Windows standalone `.dist` inventory with pinned WiX
+6.0.2 into an atomic versioned x64 MSI. `tools/installer/FileTree.wxs` fixes the upgrade identity,
+machine-wide Program Files destination and advertised Start-menu shortcut, harvests every runtime
+file and defines no custom actions/startup registration. MSI version limits and no-follow payload
+identities/hashes are rechecked before publication; Windows Installer validation is not suppressed.
+The existing release tag's standalone build supplies the MSI; the release uploads/downloads it
+beside the EXE/ZIP. `tools/validate_msi.ps1` installs only fresh disposable hosted-runner fixtures,
+refuses existing directories/shortcuts/related products, checks hashes and uninstalls its exact
+hash-checked MSI. It never executes the fixture PE or proves compiled-app launch; native phase/log
+evidence is retained. Store publishing and signing require external accounts/credentials.
+
 `core/mft.py` is the stdlib-only NTFS 3.1 raw metadata foundation: immutable FILE segments,
 sequence-qualified names/attribute-list entries, resident sizes (never DATA payloads), nonresident
 VCN runs/allocation and distinct FILETIME dates. Record sizes, USA arrays, forms, lengths, name

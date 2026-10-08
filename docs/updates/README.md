@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-61 | 2026-10-08 | Build a complete Windows MSI and validate owned installer fixtures in CI | #snapshot #distribution #msi #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-60 | 2026-10-08 | Retain owned fixture allocation values when native MFT parity refuses | #incident #mft #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-59 | 2026-10-08 | Add bounded read-only native NTFS metadata access and private-image evidence | #snapshot #mft #mounts #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-58 | 2026-10-08 | Preserve UTF-8 native phase evidence and bounded gentle-scan waits | #incident #validation #background | [2026-10-b](2026-10-b.md) |
