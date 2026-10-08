@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-03 | 2026-10-09 | Review completed native NTFS, APFS and FreeBSD evidence | #snapshot #ntfs #mounts #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-02 | 2026-10-09 | Freeze exact native fixture symlink target and identity | #ntfs #validation #links | [2026-10-c](2026-10-c.md) |
 | U-20261009-01 | 2026-10-09 | Validate strict whole-drive fallback and retain completed native phases | #ntfs #validation #fallback | [2026-10-c](2026-10-c.md) |
 | U-20261008-93 | 2026-10-08 | Preserve native fixture DACL inheritance during exact restoration | #ntfs #validation #permissions | [2026-10-c](2026-10-c.md) |

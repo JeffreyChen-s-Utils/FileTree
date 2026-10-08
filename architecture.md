@@ -1027,7 +1027,7 @@ and mount observations reverify before completion. Success/cancellation adopts a
 into the single on_root object; unsupported/raw failures discard it and restart ordinary traversal
 after checking root identity, so progress can restart. User callback errors propagate without fallback.
 ScanResult.backend identifies ordinary or the explicit mft audit; raw I/O stays serial despite workers.
-Native ACL/options/full-drive parity and performance baselines are required before default enabling.
+Large-real-drive MFT parity and throughput remain required before considering default enabling.
 Candidate refusal logs a bounded metadata-only reason at DEBUG; default logging remains quiet. Native
 private-image validation enables those diagnostics, including directory/stat ID/attribute/time values,
 so an ordinary fallback never supplies parity evidence without the actual refusal being inspected.
@@ -1068,7 +1068,19 @@ It rejects unsafe/corrupt chains, reparse/cloud directory scopes and changed ide
 worker checks, and closes only its own handle. Callers must anchor ancestors. It makes no raw-volume
 or privilege calls; private-image validation compares native names/IDs/sizes/attributes/birth/modified
 dates across a reply larger than one buffer. Directory allocation is retained separately. Node/options
-and full-drive fallback/parity validation are still required before default enabling the MFT audit.
+validation passed on owned native fixtures; large-real-drive MFT parity/throughput remain
+required before considering default enablement.
+Reviewed evidence in docs/updates/mft-20261009-native.json comes from successful native run
+37808218838/job 113417986654 at 85490ec (Windows administrator, Python 3.12, fresh 512 MiB NTFS image).
+It proves 238 raw/native observations, five actual MFT options comparisons, actual denied-listing
+incomplete coverage with exact DACL restoration, counted single-root MFT cancellation, original
+source/ADS/payload and exact symlink snapshot/target preservation, and completed image cleanup.
+Three whole-private-drive comparisons proved ordinary fallback parity after System Volume Information
+listing/path modification times disagreed. Ordinary/requested-audit medians were 0.0067914/0.0114338 s;
+all three actual backends were ordinary, so successful whole-drive MFT samples were zero and the MFT
+median is null. Those timings do not prove MFT throughput or extrapolate to large real drives. Default
+enablement remains false. This native evidence does not substitute for owner desktop/cloud/UNC/signing
+or same-device macOS/POSIX mount validation.
 Raw resident DATA allocation is zero separate clusters. Its logical byte length and bounded
 ValueOffset..RecordLength capacity (including padding) are distinct. FILE_STANDARD_INFO may report
 the resident space, not logical length. Diagnostics preserve these fields separately and require
@@ -1215,7 +1227,9 @@ checks installed diskutil options and adds one fresh private peer with 16 MiB re
 Native volume-list UUID/name/device and configured byte values must match before accepting evidence.
 Its statvfs/ledger samples retain raw shared-container effects and null independent reservation bytes;
 capacity rows are never summed. The image holder recognizes only its registered fresh mountpoints
-and normally detaches the complete owned image. This additional peer's native evidence remains pending.
+and normally detaches the complete owned image. Reviewed apfs-20261009-native.json confirms
+the native 16 MiB reserve/64 MiB quota and complete detach/cleanup at 85490ec. The peer remains
+unmounted with null capacity/ledger; shared extents and independent reserved bytes remain unknown.
 Native diskutil rejected the initial custom mountpoint because it requires root. The peer is now
 created with -nomount: its configured reserve/quota are cross-checked through the owned container's
 UUID/device list, while peer statvfs/ledger remain null. Only the existing primary's actual capacity
@@ -1239,7 +1253,8 @@ The disposable FreeBSD 14.3 CI guest runs `tools/validate_freebsd_mounts.py`, ac
 CI/guest flags and fresh private source/target directories. Native nullfs source/target/type/FSID
 are checked before normal unmount; uncertain mounts retain scratch. Static scans use one/four
 workers; live mounts before opening refuse traversal, after opening retain the original descriptor
-and refuse completion. Native phase evidence must confirm source preservation and cleanup.
+and refuse completion. Reviewed mounts-20261009-freebsd.json confirms all three cases,
+source/underlying preservation and completed unmount/cleanup in native run 37808218838.
 FreeBSD's null_stat rewrites st_dev to its own mount FSID: the diagnostic records actual IDs and
 does not claim same-device evidence. This extends §6's mount contract without changing public
 scan signatures or importing GUI/Qt.

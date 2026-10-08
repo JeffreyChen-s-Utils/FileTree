@@ -1,0 +1,178 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "85490ec05e41dd21d6cb351200f816ae2bec9bad",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37808218838",
+  "job_id": 113417986561,
+  "job_conclusion": "success",
+  "artifact": {
+    "id": 11564230971,
+    "name": "macos-native-sources",
+    "size_in_bytes": 486349,
+    "apfs_json_sha256": "8e5e91b239b88eeecf34aae127f3fd5e44cf36c50fdd5ec1d7dea2c34d0357bb"
+  },
+  "scope": "Fresh private 1 GiB APFS image and owned scratch, unelevated macOS arm64 runner",
+  "phase": "complete",
+  "cleanup_verified": true,
+  "host_bins_modified": false,
+  "finder_automation": false,
+  "reservation": {
+    "configured_reserve": 16777216,
+    "configured_quota": 67108864,
+    "primary_before": {
+      "total": 1073700864,
+      "used": 3506176,
+      "free": 1070194688,
+      "unavailable_free": 0
+    },
+    "primary_after": {
+      "total": 1056923648,
+      "used": 3510272,
+      "free": 1053413376,
+      "unavailable_free": 0
+    },
+    "primary_ledger": {
+      "total": 1056923648,
+      "used": 3510272,
+      "free": 1053413376,
+      "unavailable_free": 0,
+      "named_allocated": 131072,
+      "unique_allocated": 131072,
+      "hard_link_overcount": 0,
+      "recycle_bin_seen": 65536,
+      "recycle_bin_complete": true,
+      "mounted_folders": 0,
+      "foreign_allocated_seen": 0,
+      "status": "estimated",
+      "unaccounted": 3379200,
+      "measured_at": 1791476724.379173,
+      "metadata_bytes": null,
+      "omitted_bytes": null,
+      "other_volumes_bytes": null,
+      "coverage": {
+        "known_bytes": 116736,
+        "known_folders": 7,
+        "skipped_folders": 0,
+        "inaccessible_folders": 0,
+        "pending_folders": 0,
+        "unsafe_folders": 0
+      }
+    },
+    "peer_capacity": null,
+    "peer_ledger": null,
+    "peer_mounted": false,
+    "independent_reserved_bytes": null,
+    "independent_shared_extent_bytes": null,
+    "capacity_rows_are_not_additive": true,
+    "host_containers_modified": false
+  },
+  "native_peer": {
+    "APFSVolumeUUID": "3AD3CFEF-8725-4EE2-8B7F-267512920359",
+    "DeviceIdentifier": "disk6s2",
+    "CapacityInUse": 16777216,
+    "CapacityQuota": 67108864,
+    "CapacityReserve": 16777216
+  },
+  "cross_volume": {
+    "copy": "native_fcopyfile_verified",
+    "copy_scope": "cross-volume",
+    "source_preserved_after_copy": true,
+    "empty_folder_preserved": true,
+    "duplicate_link": "native_verified",
+    "before": {
+      "額外複本.bin": {
+        "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+        "identity": [
+          16777229,
+          3518705
+        ],
+        "links": 1,
+        "bytes": 25600,
+        "mode": 33184,
+        "modified_ns": 1791476722294583804,
+        "attributes": {
+          "com.apple.ResourceFork": {
+            "bytes": 2432,
+            "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+          },
+          "com.filetree.validation": {
+            "bytes": 448,
+            "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+          }
+        }
+      },
+      "保留.bin": {
+        "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+        "identity": [
+          16777229,
+          3518703
+        ],
+        "links": 1,
+        "bytes": 25600,
+        "mode": 33184,
+        "modified_ns": 1791476722294171431,
+        "attributes": {
+          "com.apple.ResourceFork": {
+            "bytes": 2432,
+            "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+          },
+          "com.filetree.validation": {
+            "bytes": 448,
+            "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+          }
+        }
+      }
+    },
+    "after": {
+      "額外複本.bin": {
+        "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+        "identity": [
+          16777229,
+          3518703
+        ],
+        "links": 2,
+        "bytes": 25600,
+        "mode": 33184,
+        "modified_ns": 1791476722294171431,
+        "attributes": {
+          "com.apple.ResourceFork": {
+            "bytes": 2432,
+            "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+          },
+          "com.filetree.validation": {
+            "bytes": 448,
+            "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+          }
+        }
+      },
+      "保留.bin": {
+        "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+        "identity": [
+          16777229,
+          3518703
+        ],
+        "links": 2,
+        "bytes": 25600,
+        "mode": 33184,
+        "modified_ns": 1791476722294171431,
+        "attributes": {
+          "com.apple.ResourceFork": {
+            "bytes": 2432,
+            "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+          },
+          "com.filetree.validation": {
+            "bytes": 448,
+            "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+          }
+        }
+      }
+    },
+    "source_device": 16777229,
+    "target_device": 16777239,
+    "finder_automation": false,
+    "trash_invoked": false
+  },
+  "limitations": [
+    "Unmounted peer capacity/ledger remain unknown; rows cannot be summed.",
+    "No Finder consent/Trash/redirect or same-device macOS mount proof."
+  ]
+}

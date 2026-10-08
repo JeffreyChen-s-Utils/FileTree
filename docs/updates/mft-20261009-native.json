@@ -1,0 +1,285 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "85490ec05e41dd21d6cb351200f816ae2bec9bad",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37808218838",
+  "job_id": 113417986654,
+  "job_conclusion": "success",
+  "artifact": {
+    "id": 11563837103,
+    "name": "windows-mft",
+    "size_in_bytes": 6037,
+    "json_sha256": "65c99c9205ffb75b26375018c21da946401bc6c7db9b462dbffbd5bd2f1bd193"
+  },
+  "scope": "Fresh owned 512 MiB private NTFS image; Windows administrator runner, Python 3.12",
+  "phase": "complete",
+  "platform": "win32",
+  "cleanup_verified": true,
+  "raw_file_observations": 238,
+  "native_directory_entries": 238,
+  "source_preserved": true,
+  "stream_preserved": true,
+  "raw_stream_complete": true,
+  "tree": {
+    "tree_comparisons": [
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 1,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.006856900000002497,
+        "mft_seconds": 0.4343586999999616,
+        "requested_mft_seconds": 0.4343586999999616,
+        "nodes": 244,
+        "errors": 0,
+        "files": 240,
+        "logical_bytes": 99979468,
+        "allocated_bytes": 18456576,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.008482700000001842,
+        "mft_seconds": 0.4422521000000188,
+        "requested_mft_seconds": 0.4422521000000188,
+        "nodes": 244,
+        "errors": 0,
+        "files": 240,
+        "logical_bytes": 99979468,
+        "allocated_bytes": 18456576,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": false,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.0069274999999606734,
+        "mft_seconds": 0.4864820000000236,
+        "requested_mft_seconds": 0.4864820000000236,
+        "nodes": 243,
+        "errors": 1,
+        "files": 239,
+        "logical_bytes": 99979450,
+        "allocated_bytes": 18452480,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [
+            "tree-branch"
+          ],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.009195999999974447,
+        "mft_seconds": 0.49706879999996545,
+        "requested_mft_seconds": 0.49706879999996545,
+        "nodes": 242,
+        "errors": 0,
+        "files": 239,
+        "logical_bytes": 99979452,
+        "allocated_bytes": 18452480,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": true,
+          "windows_owners": true,
+          "exact_windows_allocation": true,
+          "count_hard_links": true,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.0574816000000169,
+        "mft_seconds": 0.42305939999999964,
+        "requested_mft_seconds": 0.42305939999999964,
+        "nodes": 244,
+        "errors": 0,
+        "files": 240,
+        "logical_bytes": 99979468,
+        "allocated_bytes": 18419976,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      }
+    ],
+    "denied_branch": {
+      "equal": true,
+      "incomplete": true,
+      "descriptor_restored": true,
+      "comparison": {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.006659399999989546,
+        "mft_seconds": 0.3084114000000113,
+        "requested_mft_seconds": 0.3084114000000113,
+        "nodes": 245,
+        "errors": 1,
+        "files": 240,
+        "logical_bytes": 99979468,
+        "allocated_bytes": 18456576,
+        "backend": "mft",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      }
+    },
+    "cancellation": {
+      "backend": "mft",
+      "partial": true,
+      "single_root": true,
+      "counted": true
+    },
+    "full_private_drive": [
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.0073866000000180065,
+        "mft_seconds": null,
+        "requested_mft_seconds": 0.021565599999973983,
+        "nodes": 248,
+        "errors": 1,
+        "files": 241,
+        "logical_bytes": 99979492,
+        "allocated_bytes": 18460672,
+        "backend": "ordinary",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.0067283000000202264,
+        "mft_seconds": null,
+        "requested_mft_seconds": 0.011418300000002546,
+        "nodes": 248,
+        "errors": 1,
+        "files": 241,
+        "logical_bytes": 99979492,
+        "allocated_bytes": 18460672,
+        "backend": "ordinary",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      },
+      {
+        "options": {
+          "include_hidden": true,
+          "workers": 4,
+          "exclude": [],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": false,
+          "experimental_mft": false
+        },
+        "ordinary_seconds": 0.0067913999999973385,
+        "mft_seconds": null,
+        "requested_mft_seconds": 0.011433800000020256,
+        "nodes": 248,
+        "errors": 1,
+        "files": 241,
+        "logical_bytes": 99979492,
+        "allocated_bytes": 18460672,
+        "backend": "ordinary",
+        "equal": true,
+        "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"
+      }
+    ],
+    "full_private_drive_medians": {
+      "ordinary_seconds": 0.0067913999999973385,
+      "requested_mft_seconds": 0.011433800000020256,
+      "mft_seconds": null
+    },
+    "full_private_drive_mft_samples": 0,
+    "full_private_drive_fallback_samples": 3,
+    "tree_link": {
+      "original_target": "\\\\?\\E:\\owned-fixtures\\tree-branch",
+      "current_target": "\\\\?\\E:\\owned-fixtures\\tree-branch",
+      "snapshot_preserved": true,
+      "target_preserved": true
+    },
+    "default_enabled": false,
+    "large_real_drive_validated": false,
+    "tree_payloads_preserved": true,
+    "original_sources_preserved": true
+  },
+  "full_drive_refusal": {
+    "entry": "System Volume Information",
+    "reason": "Listing modification time differs from authoritative no-follow path metadata",
+    "listing_modified_ns": 1791476598470092000,
+    "path_modified_ns": 1791476598475894100,
+    "observed_refusals": 3
+  },
+  "limitations": [
+    "No successful whole-drive MFT sample; fallback timings are not MFT throughput.",
+    "No large real drive validation, speed claim or default enablement."
+  ]
+}
