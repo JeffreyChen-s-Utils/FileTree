@@ -942,8 +942,14 @@ sequence-qualified names/attribute-list entries, resident sizes (never DATA payl
 VCN runs/allocation and distinct FILETIME dates. Record sizes, USA arrays, forms, lengths, name
 offsets, instances, mapping widths, signs, extents and list counts are bounded and fail closed.
 Sparse holes do not alter previous LCNs; extension sizes remain unknown outside LowestVcn zero.
-The module performs no volume I/O and is not yet a scan backend. Native reading, extension
-ownership/cycle checks, ordinary Node construction/fallback and native parity are separate steps.
+The parser performs no volume I/O. `core/mft_reader.py` owns an exclusively read-only raw volume
+handle with bounded aligned reads, checked NTFS 3.1 geometry/physical mapping, streaming batches and
+an LRU record cache. It checks extension sequences/base ownership and refuses nested/split lists.
+No elevation/privilege changes, volume mutations or public DATA payload access are provided. This
+metadata reader remains separate from `scan`: ACL-aware Node construction/options/fallback and native
+parity must pass before enabling the backend. `tools/validate_mft.py` accepts only a new owned private
+NTFS image, compares native identities/names/sizes/allocation/dates and preserves main/ADS payloads;
+CI retains phase evidence. Synthetic tests are not proof of native metadata parity.
 
 The GUI entry point accepts `--background` for an explicitly enabled monitor. It skips elevation
 and hides the workspace only when the saved opt-in configuration and native system tray are usable.

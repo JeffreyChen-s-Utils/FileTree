@@ -419,7 +419,10 @@ automatic clean-up is available from the console.
 The stdlib-only `core/mft.py` foundation parses bounded NTFS 3.1 raw FILE records, names, attribute
 lists, nonresident extents and size/allocation metadata. It rejects torn/unsupported records, retains
 reuse sequences and never retains resident main/named file contents. It is not yet selected by the
-scanner; native read-only volume integration and parity against ordinary scans remain pending.
+scanner. `core/mft_reader.py` adds bounded read-only access for an existing administrator token on
+fixed local NTFS volumes, checked geometry and sequence/owner-checked extensions, without requesting
+elevation or modifying privileges. A CI diagnostic uses a new private image for native metadata
+comparisons; native evidence and ACL-aware tree/options/fallback parity remain prerequisites to enable it.
 
 For Python integrations, see the [core API guide](docs/core-api.md): supported imports, scan/search/
 duplicate/compare examples, cancellation, atomic exports and allocation limits. The core imports no Qt.

@@ -13,8 +13,16 @@ interactive application.
 corrupt/unsupported input. Raw FILE records require complete sector update-sequence validation;
 already repaired native replies are not raw input. File and parent references retain reuse sequences,
 continuation sizes remain unknown, and resident main/named DATA never retains payload contents.
-This foundation performs no volume I/O and is not yet selected by `scan`; native reading/tree
-construction and ordinary-scan fallback must be validated separately before enabling it.
+This parser performs no volume I/O. `core.mft_reader.NTFSReader(path)` is a context-managed read-only
+metadata reader for an ordinary directory on fixed local NTFS 3.1 with an existing administrator
+token. It never elevates, changes privileges, locks/dismounts a volume or exposes a DATA payload API.
+`record(ordinal)`, `attributes(base)`, `records(check=None, directories_only=False)` and `verify()`
+bound reads/caches, reject torn records, stale/foreign/nested extensions, sparse/off-volume metadata,
+unsupported geometry and changed root/volume/MFT mappings. `records` propagates the caller's check
+exception before each batch; `close()` closes only its owned handle. Observations are not transactional.
+Split attribute-list streams and unsupported bootstrap mappings refuse. Raw access does not establish
+directory ACL coverage. `scan` still uses its ordinary backend; native reading/tree/options/fallback
+parity must be validated before enabling MFT scanning.
 
 The import paths, argument names and result attributes listed here are the supported public API.
 Call optional arguments by keyword and consume results by attribute; new fields may be added.
