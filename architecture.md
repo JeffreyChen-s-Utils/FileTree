@@ -594,7 +594,17 @@ shutdown, guest launch, arbitrary command or fallback. Attempted/success/allocat
 separate; active calls join, post-success failure cannot hide completion, zero saving is valid and
 every attempted outcome requires rescan. Native owned blank VHDX proved zero-saving success and
 preserved exact UUID/capacity/file identity/sibling arrivals, with unrelated host runtimes isolated.
-GUI default-No review/durable audit and populated privileged proof remain #59.
+`gui.virtual_disk_compaction` owns the selected frozen source's read-only preview, literal full-path/
+UUID/capacity/backend review and default-No stopped-machine confirmation. Durable approved events
+precede the native executor; actual outcomes persist before queued delivery and compacted audit
+status survives later observation/audit failure. Preview/native close joins, canceled reviews grant
+no authority and unobserved actual outcomes are reported before dismissal. The outer inventory owns
+the child lifetime; attempted writes clear observations/disable stale review and trigger a complete
+captured-root rescan after close. MainWindow serializes operations and expires prior Trash Undo on
+execution request. Permission errors reuse manual administrator restart with fresh scan/approval;
+no plan crosses that boundary. Seven GUI cases and native blank CJK VHDX execution/audit/UUID/capacity
+proof passed, with the known unassigned fixture's unrelated host runtime isolated. Populated
+privileged guest-data preservation remains #59.
 Unsupported formats need their own backend rather than passing them
 to VHD-only Windows tools.
 

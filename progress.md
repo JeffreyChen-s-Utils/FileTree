@@ -23,7 +23,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Windows space explained
 
-- **#59** (P2) Integrate `core.virtual_disk_compaction` with explicit default-No GUI review, durable approval/outcome audit, existing administrator restart, joined lifetime and fresh rescan after every attempted writable operation. Explain the literal path, fixed native zero-block backend, stopped-machine requirement and partial/unknown/zero savings; guest-used bytes stay unknown. Unsupported VMDK/VDI/QCOW2 need a suitable fixed backend before execution. Verify populated owned private disks and guest-data preservation on an administrator Windows CI runner without touching existing user disks.
+- **#59** (P2) Verify populated owned private VHD/VHDX compaction and guest-data preservation on an administrator Windows CI runner using the reviewed fixed native zero-block backend, without touching existing user disks. Preserve actual partial/unknown/zero savings and exact disk/guest identities; guest-used bytes stay unknown. VMDK/VDI/QCOW2 remain explicitly unsupported until a suitable fixed backend is available.
 
 ### Scanning
 

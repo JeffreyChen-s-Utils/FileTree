@@ -31,7 +31,7 @@ _SEGMENT_BYTES = 4 * 1024 * 1024
 _EVENT_BYTES = 256 * 1024
 _LOCK_SECONDS = 2
 _SEGMENT = re.compile(r"actions-(\d{8})-([0-9a-f]{32})\.jsonl\Z")
-_STATUSES = frozenset({"approved", "moved", "restored", "linked", "skipped", "failed"})
+_STATUSES = frozenset({"approved", "moved", "restored", "linked", "compacted", "skipped", "failed"})
 _IDENTITY_PARTS = 2
 
 

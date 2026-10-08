@@ -1160,12 +1160,14 @@ class MainWindow(QMainWindow):
     # --- dialogs ----------------------------------------------------------
 
     def show_virtual_disks(self) -> None:
-        """Own a bounded read-only inventory/header dialog for the unchanged completed scan."""
+        """Own virtual-disk reviews and rebuild the full captured root after attempted compaction."""
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
         outcome = self.results.outcome
-        dialog = VirtualDisksDialog(outcome.result.root, self._unit, self, partial=outcome.partial)
+        dialog = VirtualDisksDialog(outcome.result.root, self._unit, self, partial=outcome.partial,
+                                    journal=self._journal)
         dialog.selected.connect(self.results.select_node)
+        dialog.execution_requested.connect(self._undo.expire)
         self._path_dialogs.add(dialog)
         self._update_actions()
         try:
@@ -1175,7 +1177,12 @@ class MainWindow(QMainWindow):
             self._path_dialogs.discard(dialog)
             dialog.deleteLater()
             self._update_actions()
-        if self._trash_rescans:
+        if not self._closing and dialog.changed and self.results.outcome is outcome:
+            self._analyser = None
+            self.results.clear_capacity()
+            self._bin_labels.refresh()
+            self.rescan_folder(outcome.result.root)
+        elif self._trash_rescans:
             self._process_trash_rescans()
 
     def show_programs(self) -> None:

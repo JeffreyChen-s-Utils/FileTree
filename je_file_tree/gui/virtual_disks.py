@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHB
 
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.core.operation_journal import OperationJournal
 from je_file_tree.core.virtual_disks import VirtualDisk, VirtualDisks, find_virtual_disks
 from je_file_tree.core.virtual_disk_info import VirtualDiskInfo, inspect_virtual_disk
 from je_file_tree.gui.i18n import tr
@@ -20,6 +21,7 @@ from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.reasons import problem_text
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
+from je_file_tree.gui.virtual_disk_compaction import VirtualDiskCompactionDialog
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,13 +123,17 @@ class VirtualDiskInfoWorker(QThread):
 
 
 class VirtualDisksDialog(QDialog):
-    """Read-only backing-file review; no VM launch/stop/attach/compaction or filesystem mutation."""
+    """Backing-file inventory and an explicit owned compaction review; discovery remains read-only."""
 
     selected = Signal(object)
+    execution_requested = Signal()
 
-    def __init__(self, root: Node, unit: str, parent: QWidget, *, partial: bool = False) -> None:
+    def __init__(self, root: Node, unit: str, parent: QWidget, *, partial: bool = False,
+                 journal: OperationJournal | None = None) -> None:
         super().__init__(parent)
         self._closed = False
+        self.journal, self.changed = journal, False
+        self.compaction: VirtualDiskCompactionDialog | None = None
         self.info_worker: VirtualDiskInfoWorker | None = None
         self.setWindowTitle(tr("action_virtual_disks"))
         self.resize(1400, 640)
@@ -167,12 +173,16 @@ class VirtualDisksDialog(QDialog):
         self.info_button.clicked.connect(self.inspect_selected)
         self.select_button = QPushButton(tr("vd_select"))
         self.select_button.clicked.connect(self.select_recorded)
+        self.compact_button = QPushButton(tr("vc_title"))
+        self.compact_button.setVisible(sys.platform == "win32")
+        self.compact_button.clicked.connect(self.compact_selected)
         self.stop_button = QPushButton(tr("action_stop"))
         self.stop_button.clicked.connect(self.stop)
-        for button in (self.info_button, self.select_button, self.stop_button):
+        for button in (self.info_button, self.compact_button, self.select_button, self.stop_button):
             buttons.addWidget(button)
         self.info_button.setEnabled(False)
         self.select_button.setEnabled(False)
+        self.compact_button.setEnabled(False)
         layout.addLayout(buttons)
         close = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         close.rejected.connect(self.reject)
@@ -184,9 +194,12 @@ class VirtualDisksDialog(QDialog):
 
     def _buttons(self) -> None:
         row = self._current()
-        idle = not self._closed and not self.worker.isRunning() and self.info_worker is None
+        idle = (not self._closed and not self.worker.isRunning() and self.info_worker is None
+                and self.compaction is None)
         self.info_button.setEnabled(bool(idle and sys.platform == "win32" and row and not row.disk.issue
-                                         and row.disk.snapshot and row.disk.kind in ("vhd", "vhdx")))
+                                         and not self.changed and row.disk.snapshot
+                                         and row.disk.kind in ("vhd", "vhdx")))
+        self.compact_button.setEnabled(self.info_button.isEnabled() and self.journal is not None)
         self.select_button.setEnabled(bool(idle and row and row.disk.node is not None))
 
     def _show(self, result: VirtualDisks) -> None:
@@ -244,6 +257,29 @@ class VirtualDisksDialog(QDialog):
             self.accept()
             self.selected.emit(row.disk.node)
 
+    def compact_selected(self) -> None:
+        """Own the selected frozen disk's review, durable audit and joined lifetime before rescan."""
+        self._buttons()
+        row = self._current()
+        if not self.compact_button.isEnabled() or row is None or self.journal is None:
+            return
+        dialog = VirtualDiskCompactionDialog(row.disk, self.journal, self.model.unit, self)
+        self.compaction = dialog
+        dialog.execution_requested.connect(self.execution_requested)
+        self._buttons()
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self.changed |= dialog.changed
+            self.compaction = None
+            dialog.deleteLater()
+            self._buttons()
+        if self.changed and not self._closed:
+            self.status.setText(tr("vc_stale"))
+            self.model.set_rows([replace(item, info=None, error=tr("vc_stale"))
+                                 if item.disk is row.disk else item for item in self.model.rows()])
+
     def stop(self) -> None:
         """Cancel inventory/native replies; active synchronous native calls are joined on close."""
         self.worker.cancel.set()
@@ -255,6 +291,9 @@ class VirtualDisksDialog(QDialog):
     def shutdown(self) -> None:
         """Ignore late replies and join all owned work before destruction."""
         self._closed = True
+        if self.compaction is not None:
+            self.compaction.reject()
+            self.compaction.shutdown()
         self.worker.cancel.set()
         if self.info_worker is not None:
             self.info_worker.cancel.set()

@@ -66,6 +66,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-25 | 2026-10-08 | Reviewed virtual disk compaction with durable outcomes | #implementation #virtual-disks #gui #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-24 | 2026-10-08 | Captured native virtual-disk compaction and private NTFS evidence | #implementation #virtual-disks #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-23 | 2026-10-08 | Read-only virtual disk review and explicit native information | #implementation #virtual-disks #gui #validation | [2026-10-b](2026-10-b.md) |
 | U-20261008-22 | 2026-10-08 | Preserve partial NTFS evidence and compatible Qt receipts | #incident #ntfs #validation | [2026-10-b](2026-10-b.md) |

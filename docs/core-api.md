@@ -485,7 +485,25 @@ Zero-block compaction may reclaim nothing. Allocation observations do not measur
 guarantee free-space recovery. Native fresh blank VHDX execution proved zero-saving success, exact
 UUID/dynamic capacity/detachment and unchanged identity; unrelated sibling arrivals were preserved.
 The owned fixture's runtime was isolated from unrelated host guests; this does not prove privileged
-populated-disk compaction or replace runtime refusal tests. GUI review/audit integration remains #59.
+populated-disk compaction or replace runtime refusal tests.
+View → Virtual disks → Compact selected VHD owns a separate read-only preview and explicit
+default-No stopped-machine approval showing the complete literal path, UUID/capacity and native
+zero-block backend. Its operation worker durably records original frozen path/identity approval
+before invoking the core executor, then stores actual completion/allocation/error before queued
+delivery. Approval write failure blocks execution; later audit failure cannot hide native success.
+The journal supports compacted outcomes and an explicit virtual_disk_compaction reason; Recent
+actions translates both, retaining unknown crash outcomes. Stop/close joins preparation/execution,
+suppresses stale reviews and reports unobserved actual results before dismissal. The inventory owns
+the child dialog, so MainWindow close joins it too. Every attempted writable operation clears stale
+native information and disables another header/compaction review until a full captured-root rescan
+after closing. Source mutations remain serialized; prior Trash Undo expires on execution request.
+Permission errors use the existing explicit administrator restart only after closing; plans are not
+transferred and require a new scan/review. Seven GUI cases cover approval/audit barriers,
+late success/unknown observations, joined preview/native closure, stale authority and full-root
+refresh. Native CJK GUI proof used a fresh known unassigned blank VHDX, isolated unrelated host
+runtimes only for that owned fixture, and verified default-No review, zero-saving completion, durable
+compacted audit, exact UUID/capacity and detachment without attachment/elevation. Populated owned
+privileged guest-data preservation remains #59.
 The fixed native backend follows [CompactVirtualDisk requirements](https://learn.microsoft.com/en-us/windows/win32/api/virtdisk/nf-virtdisk-compactvirtualdisk).
 DiskPart and Optimize-VHD apply to supported VHD formats,
 not VMDK/VDI/QCOW2:

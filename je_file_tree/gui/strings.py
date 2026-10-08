@@ -9,6 +9,79 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    'vc_title': (
+        'Compact selected VHD…'
+    ),
+    'vc_apply': (
+        'Review and compact…'
+    ),
+    'vc_hint': (
+        'Only a detached dynamic VHD/VHDX on fixed local NTFS is eligible. Read-only pr'
+        'eparation checks identity, headers and conservative WSL/Docker runtime state. '
+        'Guest usage and guaranteed recovery stay unknown. Close this review before usi'
+        'ng FileTree’s existing administrator restart for a permission error; a new sca'
+        'n and approval are required.'
+    ),
+    'vc_preparing': (
+        'Checking the captured disk and stopped runtime…'
+    ),
+    'vc_ready': (
+        'Review the exact source and confirm its machine stays stopped.'
+    ),
+    'vc_details': (
+        'Source: {path}\nName: {source}\nDisk UUID: {identifier}\nVirtual capacity: {capac'
+        'ity}\nProvider bytes: {physical}\n\nBackend: Windows CompactVirtualDisk, detached'
+        ' zero-block compaction. No guest attachment, launch or shutdown; guest-used by'
+        'tes are unknown.'
+    ),
+    'vc_confirm': (
+        'Compact this exact backing file?\n\n{path}\n\nChoosing Yes confirms that its ownin'
+        'g machine is stopped and will stay stopped throughout the operation. Fresh run'
+        'time and identity checks still apply. Native zero-block compaction may recover'
+        ' nothing or change metadata before a later error. There is no automatic Undo. '
+        'Guest usage/free-space recovery are unknown. Stop/close waits for an active na'
+        'tive call and reports its actual outcome. Approval is recorded before any writ'
+        'able open.'
+    ),
+    'vc_running': (
+        'Rechecking and compacting the reviewed disk…'
+    ),
+    'vc_waiting': (
+        'Waiting for the current native call; its actual result will be reported…'
+    ),
+    'vc_done': (
+        '{status}\nObserved backing allocation: {before} → {after}. This is not guarante'
+        'ed OS free recovery. Guest usage remains unknown; attempted writes require a f'
+        'resh scan.'
+    ),
+    'vc_failed': (
+        'Compaction: {reason}'
+    ),
+    'vc_not_compacted': (
+        'Not compacted'
+    ),
+    'vc_stale': (
+        'A writable operation was attempted. Recorded observations are stale; close thi'
+        's window for a fresh scan before another review.'
+    ),
+    'vc_audit_refused': (
+        'Approval could not be recorded; no native operation was started'
+    ),
+    'vc_audit_detail': (
+        'Backing allocation before: {before}; after: {after}. Error: {error}'
+    ),
+    'journal_status_compacted': (
+        'Native compaction completed'
+    ),
+    'journal_reason_compaction': (
+        'Explicit virtual-disk compaction'
+    ),
+    'vd_hint': (
+        'Read-only inventory; provider labels are location hints. Backing allocation, p'
+        'rovider bytes and virtual capacity are separate; guest usage stays unknown. He'
+        'ader queries and compaction reviews are explicit. Unsupported formats remain v'
+        'isible; no guest starts, stops or mounts automatically.'
+    ),
     "vd_name": 'Disk name',
     "vd_source": 'Source',
     'vd_issue_unverified': 'Unverified identity',
@@ -39,12 +112,6 @@ EN: dict[str, str] = {
     'vd_querying': 'Reading native header: {path}',
     'vd_summary': 'Showing {shown} of {count}; {issues} issues/omissions. Coverage: {coverage}.',
     'vd_failed': 'Virtual-disk information: {reason}',
-    'vd_hint': (
-        'Read-only inventory; provider labels are location hints. Backing-file allocation, provider '
-         'bytes and virtual capacity are separate; guest usage stays unknown. Headers are queried '
-         'only on request. No VM starts, stops, mounts or compaction. Unsupported formats remain '
-         'visible.'
-    ),
     'vd_information_hint': (
         'Native observations do not authorize compaction or prove a stopped machine. Provider '
          'physical bytes are not guest-used bytes. Disk UUID is in the row tooltip.'
@@ -1252,6 +1319,71 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    'vc_title': (
+        '壓縮所選 VHD…'
+    ),
+    'vc_apply': (
+        '檢視並壓縮…'
+    ),
+    'vc_hint': (
+        '只接受固定本機 NTFS 上未載入的動態 VHD/VHDX。唯讀準備會核對身分、標頭'
+        '及保守的 WSL／Docker 執行狀態。客體用量與保證回收量仍未知。權限錯誤時，先'
+        '關閉此檢視，再使用 FileTree 既有的管理員重新啟動功能；必須重新掃描及核准。'
+    ),
+    'vc_preparing': (
+        '正在核對記錄磁碟與停機狀態…'
+    ),
+    'vc_ready': (
+        '請檢視確切來源，並確認所屬機器全程保持停機。'
+    ),
+    'vc_details': (
+        '來源：{path}\n名稱：{source}\n磁碟識別碼：{identifier}\n虛'
+        '擬容量：{capacity}\n提供者位元組：{physical}\n\n執行方式：Win'
+        'dows CompactVirtualDisk，在未載入狀態壓縮全零區塊。不掛載、啟'
+        '動或停止客體；客體已用量未知。'
+    ),
+    'vc_confirm': (
+        '壓縮這個確切的磁碟檔案？\n\n{path}\n\n選擇「是」表示確認其所屬機器已停機，且操'
+        '作期間全程保持停機。仍會重新核對執行狀態與身分。原生全零區塊壓縮可能不回收空間，也可'
+        '能在後續錯誤前已變更中繼資料。沒有自動復原。客體用量／可用空間回收量未知。停止／關閉'
+        '會等待目前原生呼叫，並回報實際結果。任何可寫入開啟前，會先持久記錄核准。'
+    ),
+    'vc_running': (
+        '正在重新核對並壓縮核准的磁碟…'
+    ),
+    'vc_waiting': (
+        '正在等待目前的原生呼叫，完成後會回報實際結果…'
+    ),
+    'vc_done': (
+        '{status}\n觀察到的磁碟檔案配置：{before} → {after}。這不保'
+        '證 OS 可用空間回收量。客體用量仍未知；嘗試寫入後必須重新掃描。'
+    ),
+    'vc_failed': (
+        '壓縮：{reason}'
+    ),
+    'vc_not_compacted': (
+        '未壓縮'
+    ),
+    'vc_stale': (
+        '已嘗試可寫入操作。掃描觀察已過期；請關閉此視窗重新掃描，再次檢視核准。'
+    ),
+    'vc_audit_refused': (
+        '無法記錄核准；未開始原生操作'
+    ),
+    'vc_audit_detail': (
+        '磁碟檔案配置，操作前：{before}；操作後：{after}。錯誤：{error}'
+    ),
+    'journal_status_compacted': (
+        '原生壓縮已完成'
+    ),
+    'journal_reason_compaction': (
+        '明確核准的虛擬磁碟壓縮'
+    ),
+    'vd_hint': (
+        '唯讀清單；來源標籤只是位置提示。磁碟檔案配置、提供者位元組與虛擬容量各自獨立，客體用'
+        '量仍未知。標頭查詢與壓縮檢視須明確操作。不支援的格式仍會顯示；不自動啟動、停止或掛載'
+        '客體。'
+    ),
     "vd_name": '磁碟名稱',
     "vd_source": '來源',
     'vd_issue_unverified': '身分尚未核對',
@@ -1282,10 +1414,6 @@ ZH_TW: dict[str, str] = {
     'vd_querying': '正在讀取原生標頭：{path}',
     'vd_summary': '顯示 {count} 筆中的 {shown} 筆；{issues} 個問題／略過項目。涵蓋範圍：{coverage}。',
     'vd_failed': '虛擬磁碟資訊：{reason}',
-    'vd_hint': (
-        '唯讀清單；來源標籤只是位置提示。磁碟檔案配置量、提供者位元組與虛擬容量分別列出；客體用量保持未知。只有要求時才查詢標頭。不啟動、停止、掛載或壓縮虛擬機'
-        '器。不支援的格式仍會列出。'
-    ),
     'vd_information_hint': (
         '原生觀察不授予壓縮權限，也不證明機器已停機。提供者實體位元組不代表客體已用量。磁碟識別碼列於該列的工具提示。'
     ),
@@ -2374,6 +2502,72 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    'vc_title': (
+        '压缩所选 VHD…'
+    ),
+    'vc_apply': (
+        '检查并压缩…'
+    ),
+    'vc_hint': (
+        '只接受固定本机 NTFS 上未加载的动态 VHD/VHDX。只读准备会核对身份、头部'
+        '及保守的 WSL／Docker 运行状态。客户机用量与保证回收量仍未知。权限错误时，'
+        '先关闭此检查，再使用 FileTree 现有的管理员重新启动功能；必须重新扫描及批准'
+        '。'
+    ),
+    'vc_preparing': (
+        '正在核对记录磁盘与停机状态…'
+    ),
+    'vc_ready': (
+        '请检查确切来源，并确认所属机器全程保持停机。'
+    ),
+    'vc_details': (
+        '来源：{path}\n名称：{source}\n磁盘标识符：{identifier}\n虚'
+        '拟容量：{capacity}\n提供程序字节：{physical}\n\n执行方式：Win'
+        'dows CompactVirtualDisk，在未加载状态压缩全零块。不挂载、启动'
+        '或停止客户机；客户机已用量未知。'
+    ),
+    'vc_confirm': (
+        '压缩这个确切的磁盘文件？\n\n{path}\n\n选择“是”表示确认其所属机器已停机，且操'
+        '作期间全程保持停机。仍会重新核对运行状态与身份。原生全零块压缩可能不回收空间，也可能'
+        '在后续错误前已更改元数据。没有自动撤销。客户机用量／可用空间回收量未知。停止／关闭会'
+        '等待当前原生调用，并报告实际结果。任何可写入打开前，会先持久记录批准。'
+    ),
+    'vc_running': (
+        '正在重新核对并压缩批准的磁盘…'
+    ),
+    'vc_waiting': (
+        '正在等待当前的原生调用，完成后会报告实际结果…'
+    ),
+    'vc_done': (
+        '{status}\n观察到的磁盘文件分配：{before} → {after}。这不保'
+        '证 OS 可用空间回收量。客户机用量仍未知；尝试写入后必须重新扫描。'
+    ),
+    'vc_failed': (
+        '压缩：{reason}'
+    ),
+    'vc_not_compacted': (
+        '未压缩'
+    ),
+    'vc_stale': (
+        '已尝试可写入操作。扫描观察已过期；请关闭此窗口重新扫描，再次检查批准。'
+    ),
+    'vc_audit_refused': (
+        '无法记录批准；未开始原生操作'
+    ),
+    'vc_audit_detail': (
+        '磁盘文件分配，操作前：{before}；操作后：{after}。错误：{error}'
+    ),
+    'journal_status_compacted': (
+        '原生压缩已完成'
+    ),
+    'journal_reason_compaction': (
+        '明确批准的虚拟磁盘压缩'
+    ),
+    'vd_hint': (
+        '只读列表；来源标签只是位置提示。磁盘文件分配、提供程序字节与虚拟容量各自独立，客户机'
+        '用量仍未知。头部查询与压缩检查须明确操作。不支持的格式仍会显示；不自动启动、停止或挂'
+        '载客户机。'
+    ),
     "vd_name": '磁盘名称',
     "vd_source": '来源',
     'vd_issue_unverified': '身份尚未核对',
@@ -2404,10 +2598,6 @@ ZH_CN: dict[str, str] = {
     'vd_querying': '正在读取原生头部：{path}',
     'vd_summary': '显示 {count} 行中的 {shown} 行；{issues} 个问题／跳过项目。覆盖范围：{coverage}。',
     'vd_failed': '虚拟磁盘信息：{reason}',
-    'vd_hint': (
-        '只读列表；来源标签只是位置提示。磁盘文件分配量、提供程序字节与虚拟容量分别列出；客户机用量保持未知。只有请求时才查询头部。不启动、停止、挂载或压缩虚拟'
-        '机。不支持的格式仍会列出。'
-    ),
     'vd_information_hint': (
         '原生观察不授予压缩权限，也不证明机器已关机。提供程序物理字节不代表客户机已用量。磁盘标识符显示在该行的工具提示中。'
     ),
