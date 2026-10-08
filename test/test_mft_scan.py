@@ -53,7 +53,7 @@ def _model(tmp_path, monkeypatch):
         return lambda _entry, info: info.st_size
     monkeypatch.setattr(mft_scan, "allocation_for", allocation)
     monkeypatch.setattr(scanner, "allocation_for", allocation)
-    def listing(path, expected, check):
+    def listing(path, expected, *, check):
         assert expected.inode == real(path).st_ino
         for file in Path(path).iterdir():
             check()
@@ -101,10 +101,10 @@ def test_corrupt_candidate_is_discarded_before_ordinary_fallback_without_second_
 def test_permission_denied_folder_remains_incomplete_and_never_raw_visible(tmp_path, monkeypatch):
     root, closed = _model(tmp_path, monkeypatch)
     listing = mft_scan.directory_entries
-    def denied(path, *args):
+    def denied(path, *args, **kwargs):
         if Path(path).name == "branch":
             raise PermissionError("owned denied branch")
-        return listing(path, *args)
+        return listing(path, *args, **kwargs)
     monkeypatch.setattr(mft_scan, "directory_entries", denied)
     result = scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True))
     branch = next(node for node in result.root.children if node.name == "branch")
@@ -162,10 +162,10 @@ def test_denied_native_path_never_becomes_a_raw_node_and_partial_coverage_is_vis
         return metadata(path, *args, **kwargs)
     listing = mft_scan.directory_entries
     # Freeze only the ordinary visible directory reply before a later per-path ACL failure.
-    entries = list(listing(str(root), unpack_snapshot(scanner.stat_snapshot(str(root))), lambda: None))
+    entries = list(listing(str(root), unpack_snapshot(scanner.stat_snapshot(str(root))), check=lambda: None))
     monkeypatch.setattr(mft_scan.os, "lstat", denied)
-    monkeypatch.setattr(mft_scan, "directory_entries", lambda path, *args: iter(entries)
-                        if Path(path) == root else listing(path, *args))
+    monkeypatch.setattr(mft_scan, "directory_entries", lambda path, *args, **kwargs: iter(entries)
+                        if Path(path) == root else listing(path, *args, **kwargs))
     result = scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True))
     assert result.backend == "mft" and closed == [True]
     assert result.root.file_count == 2 and result.root.error == scanner.PARTIAL_FOLDER

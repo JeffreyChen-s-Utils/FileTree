@@ -145,7 +145,7 @@ def _read(folder: Node, path: str, native: NTFSReader, tree: _Tree,
     try:
         with anchored_directory(directory_stamps(path)):
             listing = [_Entry(path, item, native, expected.inode, tree.check)
-                       for item in directory_entries(path, expected, tree.check)]
+                       for item in directory_entries(path, expected, check=tree.check)]
             _record_entries(folder, listing, options,
                             allocation_for(path, exact_windows=options.exact_windows_allocation),
                             exclusion_test(options.exclude), boundaries, read)
