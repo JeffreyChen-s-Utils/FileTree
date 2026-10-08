@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable
 from dataclasses import replace
+import faulthandler
 import hashlib
 import json
 from pathlib import Path
@@ -25,6 +26,7 @@ from je_file_tree.gui.app import create_workspace  # noqa: E402
 from je_file_tree.gui.autostart import Registration  # noqa: E402
 from je_file_tree.gui.background_dialog import BackgroundDialog  # noqa: E402
 from je_file_tree.gui.recurring_dialog import RecurringDialog  # noqa: E402
+from je_file_tree.gui.workspace import ScanWorkspace  # noqa: E402
 from tools.recurring_probe import validate_review  # noqa: E402
 
 _EXPECTED_SCHEDULES = 2
@@ -127,27 +129,54 @@ def _proposal(app: QApplication, workspace, source: Path, config: MonitorConfig,
             "binding_current": True, "source_preserved": True, "native_trash_move": False}
 
 
-def _session(app: QApplication, owned: Path, args) -> dict:
-    source, kept, captured = _source(owned)
+def _settings(owned: Path) -> QSettings:
     settings = QSettings(str(owned / "settings.ini"), QSettings.Format.IniFormat)
     settings.setValue("language", "zh-TW")
     settings.setValue("check_updates", False)
     settings.setValue("history_enabled", True)
     settings.setValue("cleanup_policy", CleanupPolicy((RuleSetting("crash_dumps", True, 0),)).dumps())
-    original = history.history_folder
-    history.history_folder = lambda: owned / "private-history"
+    return settings
+
+
+def _workspace(settings: QSettings, retain: Callable[[str, dict], None], proof: dict) -> ScanWorkspace:
+    retain("creating_workspace", proof)
     workspace = create_workspace(settings)
     workspace.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
     workspace.resize(1180, 780)
     workspace.show()
-    proof = {"tray_available": QSystemTrayIcon.isSystemTrayAvailable(), "autostart_registration": False}
+    retain("checking_tray", proof)
+    proof["tray_available"] = QSystemTrayIcon.isSystemTrayAvailable()
+    return workspace
+
+
+def _join(workspace: ScanWorkspace | None, original: Callable[[], Path],
+          retain: Callable[[str, dict], None], proof: dict) -> None:
     try:
+        retain("joining", proof)
+    finally:
+        try:
+            if workspace is not None:
+                workspace.quit_application()
+        finally:
+            history.history_folder = original
+
+
+def _session(app: QApplication, owned: Path, args, retain: Callable[[str, dict], None]) -> dict:
+    source, kept, captured = _source(owned)
+    settings = _settings(owned)
+    original = history.history_folder
+    history.history_folder = lambda: owned / "private-history"
+    proof, workspace = {"autostart_registration": False}, None
+    try:
+        workspace = _workspace(settings, retain, proof)
         require(not (args.require_tray or args.require_notification) or proof["tray_available"],
                 "A native tray is required for this proof")
         config = MonitorConfig(True, threshold=1, roots=(str(source),))
+        retain("starting_services", proof)
         workspace.background.configure(config)
         workspace.start_services()
         if proof["tray_available"]:
+            retain("scheduled_scan", proof)
             workspace.background.tick()
             capacity = workspace.background.capacity
             pump(app, lambda: settings.contains("background_attempts") and workspace.background.scan is None
@@ -159,10 +188,14 @@ def _session(app: QApplication, owned: Path, args) -> dict:
             require(workspace.current.results.outcome is None, "Scheduled history replaced a foreground tab")
             proof.update(scheduled_history_complete=True, native_capacity_rows=len(capacity.rows),
                          foreground_unchanged=True)
+            retain("recurring_proposal", proof)
             proof["recurring"] = _proposal(app, workspace, source, config, args.evidence)
+            retain("recurring_review", proof)
             proof["recurring_review"] = validate_review(app, workspace, source, args.evidence, pump)
             if args.notification or args.require_notification:
+                retain("notification", proof)
                 proof["notification"] = _notification(app, workspace, args.evidence, required=args.require_notification)
+            retain("close_to_tray", proof)
             workspace.close()
             require(workspace.isHidden() and not workspace._closing and workspace.background.can_hide,
                     "Native close-to-tray lifetime failed")
@@ -176,14 +209,21 @@ def _session(app: QApplication, owned: Path, args) -> dict:
         require(captured == (kept.stat().st_dev, kept.stat().st_ino, hashlib.sha256(kept.read_bytes()).hexdigest()),
                 "Native background work changed source identity or content")
         proof["source_preserved"] = True
+        retain("capturing_dialog", proof)
         _capture_dialog(app, workspace.background.config, workspace, args.evidence)
+        retain("quitting", proof)
         workspace.quit_application()
         require(workspace.background.scan is None and workspace.background.capacity is None, "Quit did not join work")
         proof["quit_joined"] = True
         return proof
     finally:
-        workspace.quit_application()
-        history.history_folder = original
+        _join(workspace, original, retain, proof)
+
+
+def _save(evidence: Path, proof: dict) -> None:
+    with _atomic_file(evidence / "background.json", encoding="utf-8") as stream:
+        json.dump(proof, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
 
 
 def main() -> None:
@@ -198,15 +238,27 @@ def main() -> None:
     require(app.platformName() in ("windows", "cocoa", "xcb", "wayland"), "Native desktop rendering is required")
     args.evidence.mkdir(parents=True, exist_ok=True)
     proof = {"phase": "started", "platform": app.platformName(), "qt": qVersion(), "real_login_launch_verified": False}
+
+    def retain(phase: str, session: dict) -> None:
+        """Persist the last native call before entering it, without inferring completion."""
+        proof.update(phase=phase, last_native_phase=phase, session=dict(session))
+        _save(args.evidence, proof)
+
+    _save(args.evidence, proof)
+    faulthandler.dump_traceback_later(60, repeat=True)
     try:
         with tempfile.TemporaryDirectory(prefix="filetree-background-owned-") as scratch:
-            proof["session"] = _session(app, Path(scratch).resolve(strict=True), args)
+            proof["session"] = _session(app, Path(scratch).resolve(strict=True), args, retain)
+            proof["phase"] = "owned_fixture_cleanup"
+            _save(args.evidence, proof)
         proof["owned_fixture_cleanup"] = True
         proof["phase"] = "complete"
+    except (OSError, RuntimeError) as error:
+        proof.update(phase="failed", error=str(error))
+        raise
     finally:
-        with _atomic_file(args.evidence / "background.json", encoding="utf-8") as stream:
-            json.dump(proof, stream, ensure_ascii=False, indent=2)
-            stream.write("\n")
+        faulthandler.cancel_dump_traceback_later()
+        _save(args.evidence, proof)
 
 
 if __name__ == "__main__":

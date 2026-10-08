@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-06 | 2026-10-09 | Retain native background phases and diagnose blocked Qt calls | #incident #validation #background | [2026-10-c](2026-10-c.md) |
 | U-20261009-05 | 2026-10-09 | Record lower SonarCloud analysis size and remaining organization quota | #snapshot #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-04 | 2026-10-09 | Classify SonarCloud test sources without excluding analyzed code | #docs #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-03 | 2026-10-09 | Review completed native NTFS, APFS and FreeBSD evidence | #snapshot #ntfs #mounts #validation | [2026-10-c](2026-10-c.md) |

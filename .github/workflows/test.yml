@@ -90,6 +90,7 @@ jobs:
     - name: Validate owned native startup metadata without a login entry
       run: python tools/validate_autostart.py --output macos-evidence/autostart.json
     - name: Validate owned native background history and cocoa tray lifetime
+      timeout-minutes: 5
       run: python tools/validate_background.py --evidence macos-evidence/background --notification
     - name: Validate fresh owned APFS capacity, recovery and cross-volume metadata
       run: python tools/validate_macos_volume.py --evidence macos-evidence/apfs

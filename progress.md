@@ -22,7 +22,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ### Over time
 
-- **#38** (P3) [UNVERIFIED] Verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
+- **#38** (P3) [UNVERIFIED] Diagnose intermittent native macOS background/tray probe blocking from retained phases and stacks, then verify actual user-login startup and Windows/macOS notification display permission. Native registration fixtures do not prove a real login launch; notification dispatch does not prove OS permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
 
 ### Distribution
 

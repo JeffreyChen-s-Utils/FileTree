@@ -1287,6 +1287,15 @@ context was unavailable and analysis never completed. Retained sonar-20261009-cl
 distinguishes this observation from a successful fresh gate. Quota resolution remains an owner/admin
 decision; source scope and quality gates stay intact.
 
+Native background validation atomically persists each phase before workspace/tray/service creation,
+scheduled work, recurring review, optional notification, capture and quit/join calls. A failure retains
+the last phase and completed fields; complete/owned cleanup are published only after session and
+scratch cleanup finish. A repeating 60-second faulthandler traceback identifies synchronous Qt/native
+blocking that an event-pump deadline cannot interrupt. The macOS CI step is bounded to five minutes;
+its always-run artifact upload retains partial evidence rather than declaring a native pass.
+Notification opt-in and source/permission/lifetime checks remain unchanged. This diagnoses observed
+intermittent Cocoa hangs and does not prove their cause or real login/notification permission.
+
 Release signing: build-exe alone has OIDC id-token permission under the windows-signing environment.
 check_signing validates explicit azure-artifact configuration without echoing IDs; absent mode stays
 unsigned, invalid enabled configuration fails. The pinned local signing composite checks exact
