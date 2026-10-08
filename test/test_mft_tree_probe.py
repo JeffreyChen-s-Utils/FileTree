@@ -14,16 +14,18 @@ from je_file_tree.core.snapshot import pack_snapshot
 from tools import mft_tree_probe as probe
 
 
-@pytest.mark.parametrize("failed", ["deny", "compare", None])
+@pytest.mark.parametrize("failed", ["deny", "compare", "restore", None])
 def test_exact_acl_restoration_runs_after_every_probe_outcome(tmp_path, monkeypatch, failed):
     root = tmp_path / "owned-fixtures"
     root.mkdir()
-    actions = []
+    actions, phases = [], []
     def acl(_volume, path, action, descriptor=""):
         assert path.parent == root
         actions.append((action, descriptor))
         if failed == "deny" and action == "Deny":
             raise OSError("owned native ACL dispatch failed")
+        if failed == "restore" and action == "Restore":
+            return "different restored descriptor"
         return "captured original descriptor"
     def scan(_root, **_kwargs):
         path = next(root.iterdir())
@@ -39,11 +41,18 @@ def test_exact_acl_restoration_runs_after_every_probe_outcome(tmp_path, monkeypa
     monkeypatch.setattr(probe, "_compare", compare)
     if failed:
         with pytest.raises((OSError, RuntimeError), match="owned"):
-            probe._denied(SimpleNamespace(root=tmp_path), root, lambda _phase: None)
+            probe._denied(SimpleNamespace(root=tmp_path), root, phases.append)
     else:
-        result = probe._denied(SimpleNamespace(root=tmp_path), root, lambda _phase: None)
+        result = probe._denied(SimpleNamespace(root=tmp_path), root, phases.append)
         assert result["descriptor_restored"] and result["incomplete"]
     assert actions == [("Read", ""), ("Deny", ""), ("Restore", "captured original descriptor")]
+    assert phases[0]["acl_restoration"] == {"original_descriptor": "captured original descriptor"}
+    assert phases[-1]["acl_restoration"] == {
+        "original_descriptor": "captured original descriptor",
+        "restored_descriptor": ("different restored descriptor" if failed == "restore"
+                                else "captured original descriptor"),
+        "equal": failed != "restore",
+    }
     assert next(root.iterdir()).joinpath("keep-secret.bin").read_bytes() == b"owned permission fixture"
 
 

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261008-92 | 2026-10-08 | Retain exact owned ACL restoration evidence on failures | #ntfs #validation #permissions | [2026-10-c](2026-10-c.md) |
 | U-20261008-91 | 2026-10-08 | Isolate native ACL modules and measure precise probe timings | #ntfs #validation #windows | [2026-10-c](2026-10-c.md) |
 | U-20261008-90 | 2026-10-08 | Allow explicit full-suite native validation dispatch | #ci #validation #ntfs | [2026-10-c](2026-10-c.md) |
 | U-20261008-89 | 2026-10-08 | Clarify signing gates and prior PyPI publication | #docs #signing #distribution | [2026-10-c](2026-10-c.md) |

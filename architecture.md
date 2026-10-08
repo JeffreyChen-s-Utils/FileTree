@@ -1042,6 +1042,8 @@ the coarse Windows clock used by older runtimes. The ACL child receives only the
 PowerShell system Modules directory in PSModulePath; parent environment and host settings remain
 intact, and incompatible inherited PowerShell 7 modules cannot override the native ACL cmdlets.
 An owned denied-listing branch freezes its original DACL and restores it in finally, including failed probes;
+phase evidence retains the exact original/restored descriptors before enforcing equality, so failed
+native restoration cannot be mistaken for completed validation or lose its permission metadata.
 fixed mft_fixture_acl.ps1 additionally requires the exact fresh path pattern, volume GUID, unique
 fixture label and nonreparse directory before ACL access. It denies only LIST_DIRECTORY on that owned
 folder. Phase evidence retains comparisons/refusal and original payload/ADS identities/hashes; no host

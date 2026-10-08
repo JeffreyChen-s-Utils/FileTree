@@ -147,6 +147,7 @@ def _denied(volume: OwnedVolume, root: Path, save: Callable[[dict], None]) -> di
     payload = path / "keep-secret.bin"
     payload.write_bytes(b"owned permission fixture")
     identity, original = (path.stat().st_dev, path.stat().st_ino), _acl(volume, path, "Read")
+    save({"acl_restoration": {"original_descriptor": original}})
     try:
         _acl(volume, path, "Deny")
         result = scan(root, options=ScanOptions(experimental_mft=True))
@@ -161,6 +162,8 @@ def _denied(volume: OwnedVolume, root: Path, save: Callable[[dict], None]) -> di
         require((current.st_dev, current.st_ino) == identity and not getattr(current, "st_file_attributes", 0) & 0x400,
                 "Denied fixture changed before exact ACL restoration")
         restored = _acl(volume, path, "Restore", original)
+        save({"acl_restoration": {"original_descriptor": original, "restored_descriptor": restored,
+                                  "equal": restored == original}})
         require(restored == original, "Original owned DACL was not restored exactly")
     require(payload.read_bytes() == b"owned permission fixture", "Denied payload changed")
     return {"equal": True, "incomplete": True, "descriptor_restored": True, "comparison": compared}
