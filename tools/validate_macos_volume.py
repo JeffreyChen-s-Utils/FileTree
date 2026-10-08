@@ -252,6 +252,11 @@ def main() -> int:
             proof["cleanup_verified"] = True
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
             proof.update(cleanup_error=str(error), retained_owned_fixture=str(image.owned))
+            if isinstance(error, subprocess.CalledProcessError):
+                proof["cleanup_native_command_error"] = {
+                    "returncode": error.returncode,
+                    "stdout": (error.stdout or b"")[:65536].decode("utf-8", errors="replace"),
+                    "stderr": (error.stderr or b"")[:65536].decode("utf-8", errors="replace")}
         save(args.evidence, proof)
     require(proof["cleanup_verified"], "Owned APFS fixture retained; inspect phase evidence")
     proof["phase"] = "complete"

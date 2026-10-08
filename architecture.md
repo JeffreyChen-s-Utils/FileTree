@@ -977,6 +977,12 @@ and zero empty-folder proposals; exact DACL restoration and final source identit
 `docs/updates/share-20261009-native.json` retains provenance and observed timings, with no slow
 remote-link or concurrency speed claim. Both push/PR Tests runs at that head passed all 14 jobs.
 
+The owned macOS image tool retries hdiutil detach exit 16 at most three times, rechecking the exact
+private image/device/mountpoint before each call. Other native failures and ownership changes refuse
+immediately; no force option or host unmount is used. Native image absence and unmounted fixture root
+must still be verified before cleanup. Failed APFS cleanup retains bounded native stdout/stderr and
+the disposable scratch path; retained fixtures never become a successful cleanup claim.
+
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
 build_nuitka passes that file directly on macOS, avoiding optional external PNG conversion.

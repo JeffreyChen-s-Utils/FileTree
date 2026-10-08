@@ -11,10 +11,13 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 
 _PLIST_LIMIT = 8 * 1024 * 1024
 _DEVICE = re.compile(r"/dev/disk[0-9]+\Z")
+_DETACH_ATTEMPTS = 3
+_DEVICE_BUSY = 16
 
 
 def entities(value: dict) -> list[dict]:
@@ -142,9 +145,17 @@ class OwnedImage:
         return info
 
     def detach(self) -> None:
-        """Recheck and detach only the exact owned image device; never force-unmount other sources."""
-        self.check()
-        command(["/usr/bin/hdiutil", "detach", self.device])
+        """Bound busy retries to the rechecked owned image; uncertain detach retains it without force."""
+        for attempt in range(_DETACH_ATTEMPTS):
+            self.check()
+            try:
+                command(["/usr/bin/hdiutil", "detach", self.device])
+            except subprocess.CalledProcessError as error:
+                if error.returncode != _DEVICE_BUSY or attempt == _DETACH_ATTEMPTS - 1:
+                    raise
+                time.sleep(.5 * (attempt + 1))
+            else:
+                break
         info = plist(["/usr/bin/hdiutil", "info", "-plist"])
         require(not any(entry.get("image-path") == str(self.image) for entry in info.get("images", []))
                 and not os.path.ismount(self.root), "Owned image detach was not verified")

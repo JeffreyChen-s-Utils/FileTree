@@ -3,6 +3,8 @@
 from pathlib import Path
 import hashlib
 import os
+import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -95,6 +97,72 @@ def test_detach_error_retains_attached_state_and_never_runs_cleanup(tmp_path, mo
     with pytest.raises(RuntimeError, match="Uncertain"):
         image.cleanup()
     assert image.attached and tmp_path.exists()
+
+
+def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(tmp_path, monkeypatch):
+    image = object.__new__(owned.OwnedImage)
+    image.image, image.root = tmp_path / "owned.sparseimage", tmp_path / "volume"
+    image.device, image.attached = "/dev/disk9", True
+    calls = []
+    monkeypatch.setattr(image, "check", lambda: calls.append("check"))
+    monkeypatch.setattr(owned, "time", SimpleNamespace(sleep=lambda delay: calls.append(("sleep", delay))),
+                        raising=False)
+
+    def detach(args):
+        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        calls.append("detach")
+        if calls.count("detach") == 1:
+            raise subprocess.CalledProcessError(16, args, stderr=b"hdiutil: detach failed - Resource busy")
+
+    monkeypatch.setattr(owned, "command", detach)
+    monkeypatch.setattr(owned, "plist", lambda _args: {"images": []})
+    monkeypatch.setattr(owned.os.path, "ismount", lambda _path: False)
+    image.detach()
+    assert not image.attached and calls[:2] == ["check", "detach"]
+    assert calls[-2:] == ["check", "detach"] and calls.count("detach") == 2
+
+
+@pytest.mark.parametrize("code", [16, 5])
+def test_failed_owned_detach_is_bounded_and_never_forced(tmp_path, monkeypatch, code):
+    image = object.__new__(owned.OwnedImage)
+    image.device, image.attached = "/dev/disk9", True
+    calls = []
+    monkeypatch.setattr(image, "check", lambda: calls.append("check"))
+    monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
+
+    def detach(args):
+        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        calls.append("detach")
+        raise subprocess.CalledProcessError(code, args, stderr=b"owned detach refusal")
+
+    monkeypatch.setattr(owned, "command", detach)
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        image.detach()
+    assert error.value.stderr == b"owned detach refusal" and image.attached
+    assert calls.count("detach") == (3 if code == 16 else 1)
+    assert calls == ["check", "detach"] * calls.count("detach")
+
+
+def test_owned_detach_retries_refuse_changed_device_before_another_native_call(tmp_path, monkeypatch):
+    image = object.__new__(owned.OwnedImage)
+    image.device, image.attached = "/dev/disk9", True
+    calls = []
+
+    def check():
+        calls.append("check")
+        if calls.count("check") > 1:
+            raise RuntimeError("Owned image device changed")
+
+    def detach(args):
+        calls.append("detach")
+        raise subprocess.CalledProcessError(16, args)
+
+    monkeypatch.setattr(image, "check", check)
+    monkeypatch.setattr(owned, "command", detach)
+    monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
+    with pytest.raises(RuntimeError, match="device changed"):
+        image.detach()
+    assert calls == ["check", "detach", "check"] and image.attached
 
 
 def _portable_record(path):
