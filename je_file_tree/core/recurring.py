@@ -234,7 +234,7 @@ def _candidates(root: Node, policy: CleanupPolicy, now: float, cancel) -> tuple[
 
 
 def capture(root: Node, policy: CleanupPolicy, now: float, *, cancel: threading.Event | None = None) -> Baseline:
-    """Capture bounded review observations on a worker; no virtual root or source operation is accepted."""
+    """Capture bounded observations, reserving the history date; unrepresentable headers fail visibly."""
     if root.path is None or not root.is_dir or root.is_link:
         raise ValueError("Recurring observations require an ordinary individual physical root")
     version = policy_version(policy)
@@ -247,7 +247,10 @@ def capture(root: Node, policy: CleanupPolicy, now: float, *, cancel: threading.
     result = Baseline(root.path, now, version, tree_signature(root, cancel=cancel), identity,
                       (coverage.known_folders, coverage.skipped_folders, coverage.inaccessible_folders,
                        coverage.pending_folders, len(coverage.unsafe)), candidates, count, root.size)
-    while len(dump_baseline(result)) > MAX_BYTES:
+    while len(dump_baseline(result)) + _MAX_DATE > MAX_BYTES:
+        _check(cancel)
+        if not result.candidates:
+            raise ValueError("Recurring baseline header exceeds its metadata limit")
         result = replace(result, candidates=result.candidates[:-1])
     return result
 

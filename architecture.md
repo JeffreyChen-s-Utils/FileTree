@@ -103,6 +103,9 @@ policy or any captured descendant metadata. Valid observations grant no action a
 ScheduledWorker captures strict current policy and the durable claim/interval, reads the latest bounded
 history/baseline and prepares observations on its thread before saving the bound baseline. Optional
 proposal failures retain ordinary saved history plus a visible error; cancellation publishes neither.
+Capture reserves the maximum history-date length within the 48-KiB bound before truncating candidate
+rows. Their original count remains intact, so omitted rows cannot prove a new path. An oversized
+header fails visibly even when no candidate rows remain, rather than looping or relaxing the limit.
 BackgroundMonitor retains metadata-only current-session reports for at most 32 selected roots. The File
 menu opens RecurringDialog under OperationGroup ownership: three read-only 100-row lists, plain dates/
 coverage/expiry/unknowns, literal full-path tooltips and copy. A small settings/receipt binding check

@@ -10,6 +10,7 @@ import time
 import pytest
 
 from je_file_tree.core import recurring
+from je_file_tree.core import history as history_core
 from je_file_tree.core.background import MonitorConfig, claim_scan
 from je_file_tree.core.cleanup_policy import CleanupPolicy, RuleSetting
 from je_file_tree.core.history import ScanHistory, load_history, load_recurring
@@ -169,6 +170,29 @@ def test_long_cjk_metadata_is_shrunk_before_history_publication(observations):
     entry = store.save(root, baseline=baseline)
     assert load_recurring(entry).candidate_count == 100
     assert load_history(entry).size == root.size
+
+
+def test_history_date_fits_when_captured_baseline_fills_its_metadata_limit(observations, monkeypatch):
+    source, policy, store, _previous, _saved = observations
+    root = scan(source).root
+    now = time.time()
+    before = recurring.capture(root, policy, now)
+    limit = len(recurring.dump_baseline(before))
+    monkeypatch.setattr(recurring, "MAX_BYTES", limit)
+    monkeypatch.setattr(history_core, "MAX_BASELINE_BYTES", limit)
+    captured = recurring.capture(root, policy, now)
+    entry = store.save(root, baseline=captured)
+    loaded = load_recurring(entry)
+    assert loaded.saved == entry.saved
+    assert loaded.candidate_count == 1 and not loaded.inventory_complete
+    assert loaded.size == root.size and len(recurring.dump_baseline(loaded)) <= limit
+
+
+def test_oversized_recurring_header_is_refused_without_an_empty_inventory_loop(observations, monkeypatch):
+    source, policy, _store, _previous, _saved = observations
+    monkeypatch.setattr(recurring, "MAX_BYTES", 1)
+    with pytest.raises(ValueError, match="header exceeds"):
+        recurring.capture(scan(source).root, policy, time.time())
 
 
 def test_deep_observation_digest_is_iterative_and_does_not_add_node_fields(observations):
