@@ -169,6 +169,7 @@ def test_mount_change_in_final_progress_callback_is_checked_before_return(tmp_pa
 
 @pytest.mark.parametrize("contents", ["", "mnt_id: invalid\n", "mnt_id: 2\nmnt_id: 3\n", "x" * 4097])
 def test_missing_or_invalid_descriptor_mount_id_is_not_assumed_safe(monkeypatch, contents):
+    monkeypatch.setattr(mounts, "sys", SimpleNamespace(platform="linux"))
     monkeypatch.setattr(mounts, "_statx_mount", lambda _fd: None)
     monkeypatch.setattr(mounts, "open", lambda _path, **_kwargs: StringIO(contents), raising=False)
     with pytest.raises(MountChangedError):
