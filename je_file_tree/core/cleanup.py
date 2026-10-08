@@ -161,7 +161,10 @@ def _walk(root: Node, matcher: _Matcher, cancel: threading.Event | None,
           coverage: Coverage, blocked: set[Node], omitted: set[Node]) -> dict[str, list[Node]] | None:
     """Every entry beneath ``root`` a rule matches, by group; None when cancelled."""
     found: dict[str, list[Node]] = defaultdict(list)
-    stack: list[tuple[Node, tuple[str, ...]]] = [(root, _parts(root.path))]
+    stack: list[tuple[Node, tuple[str, ...]]] = ([(child, _parts(child.path)) for child in root.children
+                                               if child.is_dir and not child.is_link and child.error is None]
+                                              if root.path is None else
+                                              [(root, _parts(root.path))])
     while stack:
         if cancel is not None and cancel.is_set():
             return None
@@ -231,7 +234,8 @@ def empty_folders(root: Node) -> list[Node]:
         if folder.error is None and all(child.is_dir and not child.is_link and id(child) in empty
                                         for child in folder.children):
             empty.add(id(folder))
-    return outermost(folder for folder in order if id(folder) in empty and folder is not root)
+    return outermost(folder for folder in order if id(folder) in empty and folder is not root
+                     and not (root.path is None and folder.parent is root))
 
 
 class _Matcher:

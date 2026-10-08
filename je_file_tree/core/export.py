@@ -110,6 +110,8 @@ def _folder_json(root: Node, max_depth: int | None) -> Iterator[str]:
                                      accounted_size=node.accounted_size, accounted_allocated=node.accounted_allocated)
         if node.error:
             fields["error"] = node.error
+        if node.path is None:
+            fields["virtual"] = True
         children = iter(child for child in node.children if child.is_dir and not child.is_link)
         first = next(children, None) if max_depth is None or depth < max_depth else None
         encoded = json.dumps(fields, ensure_ascii=False)

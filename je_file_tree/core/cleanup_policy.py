@@ -62,7 +62,7 @@ class CleanupPolicy:
 
     def excludes(self, node: Node) -> bool:
         """Whether this name or exact path must never be proposed, including its descendants."""
-        return self._excluded is not None and self._excluded(node.name, node.path)
+        return node.path is not None and self._excluded is not None and self._excluded(node.name, node.path)
 
     def dumps(self) -> str:
         """Validated JSON suitable for QSettings or an exported policy file."""

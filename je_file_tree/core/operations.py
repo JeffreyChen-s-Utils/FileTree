@@ -48,7 +48,7 @@ def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),
     snapshot_overrides is reserved for trusted post-rename receipts keyed by inode identity; callers
     must never use it to approve arbitrary metadata changes. Defaults leave scan validation unchanged.
     """
-    if node is root or not node.is_in(root):
+    if root.path is None or node.path is None or node is root or not node.is_in(root):
         return "outside"
     reason = _check_ancestors(node)
     if reason is not None:

@@ -553,9 +553,23 @@ runs both fresh formats and preserves their separate JSON evidence for seven day
 NTFS measurements through production savings, native Trash and reviewed native bin emptying.
 It records OS free before Trash, after Trash and after emptying, exact remaining alias identity/full
 hash/link counts, and per-case phase evidence. Raw free deltas include unmeasured directory/bin
-metadata and are not a guaranteed file-data recovery bound. Native one/last/all hard-link and compressed recovery passed; sparse rerun remains pending.
+metadata and are not a guaranteed file-data recovery bound. Native one/last/all hard-link, compressed and 8 MiB sparse recovery passed on both fresh formats
+with confirmed cleanup; observed sparse net/empty recovery was 65,536 bytes.
 
 The 64 MiB sparse fixture reported successful Qt Trash but no native bin item; its emptying was
 not approved or claimed. It remains in the allocation proof; recovery now uses a separate 8 MiB
 sparse fixture. Post-Trash pending records persist actual receipts/free/bin metadata before native
 emptying authorization, including an explicit incomplete phase when counts differ.
+
+`je_file_tree.core.multi_scan.scan_roots(paths, *, options=None, progress=None, cancel=None,
+on_root=None, pause=None)` accepts a bounded sequence of 1–256 explicit roots and returns ScanResult.
+It uses joined normal crawlers sequentially, collapses duplicate/overlapping ordinary paths and
+keeps explicitly selected native mount scopes independent. Its virtual root has name="", path=None,
+no snapshot and absolute-named physical children. Ordinary Node.path values remain strings. This
+root is display/accounting scope only and is refused by source mutation revalidation.
+Failed roots remain error children; cancellation raises ScanCancelledError with active/previous/
+pending roots. Global hard-link accounting runs once across all captured roots when requested.
+CapacityLedger.status="multiple_roots" has no OS total/used/free/remainder but preserves observed
+allocation and coverage. JSON adds virtual:true only at the pathless root; load_saved validates the
+marker/name and returns SavedScan.root=None. CSV/report root paths are blank. ScanHistory.save
+rejects this root before creating history storage; save physical roots individually.

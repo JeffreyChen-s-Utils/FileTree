@@ -115,6 +115,8 @@ def _operate(root: Node, node: Node, mode: str, program: str,
 
 
 def _approved(root: Node, node: Node) -> bool:
+    if root.path is None or node.path is None:
+        return False
     ancestor = node.parent
     while ancestor is not None and ancestor is not root:
         ancestor = ancestor.parent

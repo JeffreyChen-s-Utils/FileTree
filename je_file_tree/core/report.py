@@ -93,7 +93,7 @@ def prepare_report(root: Node, summary: Summary, labels: Mapping[str, str], *, p
     if accounting:
         header += (labels["accounted_bytes"], labels["accounted_allocated"])
     summary_rows = tuple((labels[key], value) for key, value in (
-        ("path", root.path), ("created", _iso_time(time.time())), ("reference", _iso_time(summary.now)),
+        ("path", root.path or ""), ("created", _iso_time(time.time())), ("reference", _iso_time(summary.now)),
         ("bytes", root.size), ("allocated", root.allocated), ("files", root.file_count), ("folders", root.dir_count),
         ("coverage", labels["incomplete"] if partial or not coverage.complete else labels["recorded"]),
         ("skipped", coverage.skipped_folders), ("denied", coverage.inaccessible_folders),

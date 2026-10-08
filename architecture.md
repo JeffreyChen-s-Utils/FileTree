@@ -628,7 +628,8 @@ sparse files, recording OS free before Trash, after Trash and after native empty
 savings bounds and the remaining alias identity/full hash/link count. It shares a joined private-bin
 dialog with native device/GUID checks, one exact drive and two questions. Each completed case saves
 phase evidence; raw free deltas do not independently measure file data or directory/bin metadata.
-Native one/last/all hard-link and compressed recovery passed; sparse rerun remains pending. Provider placeholders, shared
+Native one/last/all hard-link, compressed and 8 MiB sparse recovery passed on both fresh formats
+with confirmed cleanup; observed sparse net/empty recovery was 65,536 bytes. Provider placeholders, shared
 extents, independent reserved bytes and APFS stay unverified/unknown. Phase JSON survives later native
 failures, with detachment/cleanup confirmed only on complete success; the private-bin probe reuses the
 application's bool/tuple-compatible Qt Trash receipt adapter.
@@ -890,3 +891,14 @@ The 64 MiB sparse fixture reported successful Qt Trash but no native bin item; i
 not approved or claimed. It remains in the allocation proof; recovery now uses a separate 8 MiB
 sparse fixture. Post-Trash pending records persist actual receipts/free/bin metadata before native
 emptying authorization, including an explicit incomplete phase when counts differ.
+
+`core.multi_scan.scan_roots` assembles up to 256 sequential normal crawler results under an empty-
+named pathless virtual Node (no extra per-node field). Exact duplicate/ordinary overlaps collapse,
+while native mount boundaries or different-device subfolders preserve explicit independent scopes.
+Each physical child keeps its full absolute name; descendants retain actual paths. Live callbacks
+attach the real roots, join normal workers and aggregate totals without reordering pending slots.
+Failed roots retain errors, cancellation retains active/pending coverage, and hard-link accounting
+is applied once across the combined tree. Virtual capacity has observed allocation but no summed
+OS total/free/remainder; source operations refuse virtual scope. JSON adds a validated virtual
+marker and SavedScan.root=None, CSV/report leave the root path blank. History refuses a virtual
+root before touching storage. GUI/CLI integration remains a separate stage.

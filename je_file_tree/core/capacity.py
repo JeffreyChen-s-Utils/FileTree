@@ -55,7 +55,7 @@ def capacity_ledger(root: Node, *, partial: bool = False) -> CapacityLedger:
         node, in_bin = stack.pop()
         give_way()
         info = unpack_snapshot(node.snapshot) if node.snapshot is not None else None
-        counts.unknown |= info is None or not info.inode
+        counts.unknown |= node.path is not None and (info is None or not info.inode)
         if in_bin:
             counts.bin_found = True
             counts.bin_complete &= node.error is None and not node.is_link
@@ -72,19 +72,21 @@ def capacity_ledger(root: Node, *, partial: bool = False) -> CapacityLedger:
     counts.finish()
     total, used, free, unavailable = _usage(root.path)
     status = _status(root, coverage, counts.unknown or root_info is None, partial)
-    if total is None:
+    if total is None and root.path is not None:
         status = "capacity_unavailable"
     elif status == "estimated" and used is not None and counts.unique > used:
         status = "allocation_exceeds_used"
     remainder = used - counts.unique if status == "estimated" and used is not None else None
-    known = not counts.unknown and root_info is not None
+    known = not counts.unknown and (root_info is not None or root.path is None)
     return CapacityLedger(total, used, free, unavailable, counts.named, counts.unique if known else None,
                           counts.named - counts.unique if known else None, counts.bin_seen if known else None,
                           counts.bin_found and counts.bin_complete, counts.mounts, counts.foreign if known else None,
                           coverage, status, remainder, time.time())
 
 
-def _usage(path: str) -> tuple[int | None, int | None, int | None, int | None]:
+def _usage(path: str | None) -> tuple[int | None, int | None, int | None, int | None]:
+    if path is None:
+        return None, None, None, None
     try:
         usage = shutil.disk_usage(path)
     except OSError:
@@ -93,6 +95,8 @@ def _usage(path: str) -> tuple[int | None, int | None, int | None, int | None]:
 
 
 def _status(root: Node, coverage: Coverage, unknown: bool, partial: bool) -> str:
+    if root.path is None:
+        return "multiple_roots"
     try:
         whole_volume = os.path.ismount(root.path)
         current = stat_snapshot(root.path)
@@ -107,8 +111,10 @@ def _status(root: Node, coverage: Coverage, unknown: bool, partial: bool) -> str
     return "identity_unknown" if unknown else "estimated"
 
 
-def _is_trash(path: str) -> bool:
+def _is_trash(path: str | None) -> bool:
     """Recognise platform Trash namespaces, not an arbitrary folder called Trash."""
+    if path is None:
+        return False
     normal = path.replace("\\", "/").rstrip("/")
     name = normal.rsplit("/", 1)[-1]
     if os.name == "nt":

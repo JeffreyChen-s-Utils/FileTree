@@ -84,8 +84,8 @@ def compression_plan(root: Node, *, cancel: threading.Event | None = None,
             heapq.heapreplace(heap, entry)
     if cancel is not None and cancel.is_set():
         return None
-    filesystem = file_system(root.path)
-    unit = allocation_unit(root.path) if sys.platform == "win32" else None
+    filesystem = file_system(root.path) if root.path is not None else None
+    unit = allocation_unit(root.path) if sys.platform == "win32" and root.path is not None else None
     if cancel is not None and cancel.is_set():
         return None
     return CompressionPlan(root, [node for _size, _order, node in sorted(heap, reverse=True)], count,

@@ -23,6 +23,8 @@ class Node:
 
     Only the root stores a full path (as its ``name``); every other path is
     rebuilt from the names on the way up, see ``path``.
+    An empty root name is reserved for a virtual multi-scan root: its path is None, and its
+    immediate children retain absolute source names. It never represents a filesystem entry.
     ``owner`` is a recorded regular-file POSIX uid or optional Windows SID bytes; None is unknown.
     Shared immutable owner keys add one pointer slot, measured at 8 bytes per node (2026-10-07).
     ``accounting`` optionally holds counted logical/allocation bytes; named totals never change.
@@ -65,8 +67,10 @@ class Node:
         return snapshot_times(self.snapshot)[1]
 
     @property
-    def path(self) -> str:
-        """The full path of this entry."""
+    def path(self) -> str | None:
+        """The full path, or None for an empty-named virtual root with no filesystem identity."""
+        if not self.name and self.parent is None:
+            return None
         names = []
         node: Node | None = self
         while node is not None:

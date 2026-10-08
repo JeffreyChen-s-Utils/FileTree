@@ -175,6 +175,8 @@ class ScanHistory:
         Coverage errors are recorded; partial scans must be rejected by the caller before invoking this.
         """
         _check(cancel)
+        if root.path is None:
+            raise ValueError("Save individual source roots for history; the virtual root has no path")
         _directory(self.directory, create=True)
         lock = self.directory / ".history-lock"
         try:
