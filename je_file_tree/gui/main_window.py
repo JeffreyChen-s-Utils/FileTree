@@ -72,7 +72,7 @@ from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
-from je_file_tree.gui.worker_lifecycle import after_threads
+from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
@@ -211,6 +211,19 @@ class MainWindow(QMainWindow):
     def operation_busy(self) -> bool:
         """Serialize source mutations across this window and any result-tab peers."""
         return self.local_operation_busy or self._operations is not None and self._operations.busy
+
+    def pending_source_workers(self) -> tuple[QThread, ...]:
+        """Quiesce native readers without joining on the GUI thread; queued operations wait for them."""
+        windows = ((self,) if self._operations is None or not self.operation_busy
+                   else tuple(self._operations.windows))
+        readers = tuple(worker for window in windows if not window._closing
+                        for worker in window._quiesce_source_readers())
+        return (*readers, *self.findChildren(QThread))
+
+    def _quiesce_source_readers(self) -> tuple[QThread, ...]:
+        background = self._background_pause(wait=False) if self._background_pause is not None else ()
+        following = self._follow.quiesce(wait=False)
+        return (*background, *following)
 
     # --- scanning ---------------------------------------------------------
 
@@ -496,7 +509,7 @@ class MainWindow(QMainWindow):
             return
         if any(group.kept is None or any(not node.is_in(root) for node in group.files) for group in groups):
             return
-        panel.stop(wait=True)
+        panel.stop()
         self._undo.expire()
         dialog = DuplicateLinksDialog(root, groups, self._journal, self)
         self._path_dialogs.add(dialog)
@@ -540,8 +553,7 @@ class MainWindow(QMainWindow):
         """Scan one folder again and swap it into the results (the whole scan when it is the root)."""
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
             return
-        if self._background_pause is not None:
-            self._background_pause()
+        self.pending_source_workers()
         self._undo.expire()
         if self.results.outcome.result.root.path is None:
             roots = tuple(child.path for child in self.results.outcome.result.root.children)
@@ -570,7 +582,16 @@ class MainWindow(QMainWindow):
         self._scan_workers.add(worker)
         self.results.scan_bar.start()
         self._update_actions()
-        worker.start()
+        queue_worker(worker, lambda: not self._closing and self._worker is worker and not worker._cancel.is_set(),
+                     self, lambda: self._discard_branch(worker))
+
+    def _discard_branch(self, worker: ScanWorker) -> None:
+        if worker is self._worker:
+            if self._closing:
+                self._worker = None
+            else:
+                self._branch_cancelled()
+        self._release_scan(worker)
 
     def _branch_rescanned(self, old: Node, outcome: ScanOutcome, before: int) -> None:
         self._follow.stop()
@@ -643,7 +664,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
             return
         if self.results.duplicates.running:
-            self.results.duplicates.stop(wait=True)
+            self.results.duplicates.stop()
         decisions = self.results.duplicates.decisions_for(chosen)
         explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items()}
         explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
@@ -656,13 +677,18 @@ class MainWindow(QMainWindow):
                                                 copies.redirect)
         self._undo.expire()
         worker.allow_undo = True
-        worker.done.connect(self._trash_finished)
-        worker.finished.connect(worker.deleteLater)
+        worker.done.connect(lambda result: after_threads((worker,), lambda: self._trash_finished(result), self))
         self._trash_worker = worker
         self.results.setEnabled(False)
         self._update_actions()
         self.statusBar().showMessage(tr("trash_running"))
-        worker.start()
+        queue_worker(worker, lambda: not self._closing and self._trash_worker is worker
+                     and not worker._cancel.is_set(), self, lambda: self._discard_trash(worker))
+
+    def _discard_trash(self, worker: TrashWorker) -> None:
+        if worker is self._trash_worker and not self._closing:
+            worker.result = MoveResult()
+            self._trash_finished(worker.result)
 
     def _proposal_current(self, proposal: RecurringReview) -> bool:
         status = proposal.check()
@@ -698,7 +724,7 @@ class MainWindow(QMainWindow):
     def _trash_finished(self, result: MoveResult) -> None:
         worker = self._trash_worker
         if worker is not None:
-            wait_for(worker)
+            worker.deleteLater()
         self._trash_worker = None
         self.refresh_bin_labels()
         if self._closing:
@@ -1299,9 +1325,7 @@ class MainWindow(QMainWindow):
 
     def _update_actions(self) -> None:
         if self.operation_busy:
-            if self._background_pause is not None:
-                self._background_pause()
-            self._follow.quiesce()
+            self.pending_source_workers()
         if self._operations is not None:
             self._operations.refresh(self)
         scanning = self._worker is not None or self.operation_busy

@@ -170,11 +170,13 @@ class FollowChanges(QObject):
                 self._set_status("follow_failed", worker.error)
         worker.deleteLater()
 
-    def quiesce(self) -> None:
+    def quiesce(self, *, wait: bool = True) -> tuple[ChangeWorker, ...]:
         """Stop tree capture before source operations; their observation gap requires full reconciliation."""
-        if self.worker is not None:
-            self.stop()
+        active = self.worker is not None
+        retiring = self.stop(wait=wait)
+        if active:
             self._merge(ChangeBatch(full=True, reason="source_operation"))
+        return retiring
 
     def shutdown(self) -> None:
         """Prevent late replies and join all native work before the tab is destroyed."""

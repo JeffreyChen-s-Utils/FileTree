@@ -15,6 +15,7 @@ from je_file_tree.core.finder_bin import (MAX_ROOTS, FinderEmptyPlan, empty_find
 from je_file_tree.core.trash_size import TrashUsage, empty_windows_bin
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker, retire_worker
 from je_file_tree.gui.volumes import Volume, VolumesDialog
 
 
@@ -144,13 +145,15 @@ class BinDialog(VolumesDialog):
         root = tr("bin_finder_all") if finder else row.root
         if finder or sys.platform.startswith("linux"):
             worker = BinApprovalWorker(root, self, finder=finder)
-            worker.completed.connect(lambda plan, reason: self._approval_finished(worker, plan, reason))
+            worker.completed.connect(lambda plan, reason: after_threads(
+                (worker,), lambda: self._approval_finished(worker, plan, reason), self))
             self._approval_worker = worker
             self.empty_button.setEnabled(False)
             self.stop_button.setEnabled(True)
             self.view.setEnabled(False)
             self.status.setText(tr("bin_preparing", root=root))
-            worker.start()
+            queue_worker(worker, lambda: not self._closed and self._approval_worker is worker
+                         and not worker.cancel.is_set(), self)
             return
         self._confirm(root, row.trash, root)
 
@@ -158,7 +161,6 @@ class BinDialog(VolumesDialog):
                            reason: str) -> None:
         if worker is not self._approval_worker:
             return
-        wait_for(worker)
         self._approval_worker = None
         worker.deleteLater()
         if self._closed:
@@ -202,14 +204,13 @@ class BinDialog(VolumesDialog):
         self.view.setEnabled(False)
         self.status.setText(tr("bin_running", root=root))
         worker = EmptyBinWorker(root, approved, self)
-        worker.completed.connect(self._empty_finished)
+        worker.completed.connect(lambda reason: after_threads((worker,), lambda: self._empty_finished(reason), self))
         self._empty_worker = worker
-        worker.start()
+        queue_worker(worker, lambda: not self._closed and self._empty_worker is worker, self)
 
     def _empty_finished(self, reason: str) -> None:
         worker = self._empty_worker
         if worker is not None:
-            wait_for(worker)
             worker.deleteLater()
         self._empty_worker = None
         if self._closed:
@@ -230,8 +231,7 @@ class BinDialog(VolumesDialog):
         if self._empty_worker is None:
             if self._approval_worker is not None:
                 self._approval_worker.cancel.set()
-                wait_for(self._approval_worker)
-                self._approval_worker.deleteLater()
+                retire_worker(self._approval_worker, self)
                 self._approval_worker = None
                 self.view.setEnabled(True)
             super().stop()

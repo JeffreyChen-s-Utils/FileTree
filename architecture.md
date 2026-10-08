@@ -1392,3 +1392,12 @@ retained outcomes and releases the modal source-operation guard. shutdown(wait=T
 explicit destruction contract. queue_worker serializes replaced previews and approved execution behind
 retained workers, with a captured current-plan/request/cancellation predicate before starting. Replaced
 workers use retire_worker instead of synchronous GUI joins; stale volume replies check worker identity.
+
+Source handoff contract: MainWindow.pending_source_workers cancels gentle scans and native change
+readers across its operation-group tabs without a blocking join, and returns retained threads.
+WorkerDialog forwards this dependency
+provider to its owner; queue_worker waits for captured source readers and prior child workers before
+checking the current request. Main-window branch scans, Trash, Undo and approved bin work use this
+same gate. A discarded queued branch/Trash/Undo request clears its controller through a terminal
+continuation without starting native execution or writing an approval journal. Native operation results
+pass through after_threads before reporting and releasing their source-operation ownership.

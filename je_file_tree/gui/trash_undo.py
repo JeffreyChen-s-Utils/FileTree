@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QMessageBox, QPushButton
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
 from je_file_tree.gui.undo_worker import UndoBatch, UndoEntry, UndoWorker
 
 if TYPE_CHECKING:
@@ -91,18 +92,23 @@ class TrashUndo(QObject):
         window._trash_rescans.clear()
         window._bin_labels.stop()
         worker = UndoWorker(entries, window._journal, deadline, int(window.winId()), window)
-        worker.done.connect(lambda result: self._finished(worker, result))
-        worker.finished.connect(worker.deleteLater)
+        worker.done.connect(lambda result: after_threads((worker,), lambda: self._finished(worker, result), self))
         self.worker = worker
         window.results.setEnabled(False)
         window._update_actions()
         window.statusBar().showMessage(tr("undo_running"))
-        worker.start()
+        queue_worker(worker, lambda: not window._closing and self.worker is worker
+                     and not worker.cancel_event.is_set(), window, lambda: self._discard(worker))
+
+    def _discard(self, worker: UndoWorker) -> None:
+        if worker is self.worker and not self.window._closing:
+            worker.result = UndoBatch()
+            self._finished(worker, worker.result)
 
     def _finished(self, worker: UndoWorker, result: UndoBatch) -> None:
         if worker is not self.worker:
             return
-        wait_for(worker)
+        worker.deleteLater()
         self.worker = None
         window = self.window
         if window._closing:

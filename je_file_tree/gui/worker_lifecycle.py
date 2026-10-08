@@ -51,10 +51,18 @@ def retire_worker(worker: QThread, parent: QObject) -> None:
     after_threads((worker,), worker.deleteLater, parent)
 
 
-def queue_worker(worker: QThread, current: Callable[[], bool], parent: QObject) -> None:
+def queue_worker(worker: QThread, current: Callable[[], bool], parent: QObject,
+                 discarded: Callable[[], None] | None = None) -> None:
     """Coalesce replacements behind retained workers; canceled/stale requests never start."""
-    previous = (pending for pending in parent.findChildren(QThread) if pending is not worker)
-    after_threads(previous, lambda: current() and worker.start(), parent)
+    provider = getattr(parent, "pending_source_workers", None)
+    sources = () if provider is None else provider()
+    previous = (pending for pending in (*parent.findChildren(QThread), *sources) if pending is not worker)
+    def dispatch() -> None:
+        if current():
+            worker.start()
+        elif discarded is not None:
+            discarded()
+    after_threads(previous, dispatch, parent)
 
 
 class WorkerDialog(QDialog):
@@ -68,6 +76,11 @@ class WorkerDialog(QDialog):
     def shutdown(self, *, wait: bool = True) -> None:
         """Subclasses invalidate replies/cancel work; join only when ``wait`` is requested."""
         raise NotImplementedError("Worker dialogs must define their owned cancellation lifecycle")
+
+    def pending_source_workers(self) -> tuple[QThread, ...]:
+        """Collect the owning window's canceled readers before any approved native execution."""
+        provider = getattr(self.parent(), "pending_source_workers", None)
+        return () if provider is None else provider()
 
     def defer_done(self, result: int) -> bool:
         """Defer dismissal until all descendant workers join; retain the first close decision."""

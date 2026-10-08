@@ -9,11 +9,12 @@ from types import SimpleNamespace
 from urllib.parse import quote
 
 import pytest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QMessageBox
 
 from test_gui import _wait
 from test_gui import window as window  # noqa: PLC0414
+from test_worker_lifecycle import _held_follow
 from je_file_tree.core import windows_restore
 from je_file_tree.core.operation_journal import OperationJournal
 from je_file_tree.core.node import Node
@@ -90,6 +91,32 @@ def test_capture_precedes_trash_offer_never_restores_automatically_and_path_surv
     records = window._journal.recent().records
     assert {record.outcome.status for record in records} == {"moved", "restored"}
     assert {record.reason for record in records} == {"manual", "undo"}
+
+
+@pytest.mark.parametrize("cancel", [False, True])
+def test_undo_waits_for_native_reader_with_gui_live_and_cancel_preserves_payload(
+        window, qapp, tmp_path, monkeypatch, cancel):
+    source, payload, receipt, _, calls, _ = _fixture(window, qapp, tmp_path, monkeypatch)
+    release, reader = _held_follow(window, qapp, monkeypatch)
+    try:
+        window._undo.undo()
+        assert reader.cancel.is_set() and reader.isRunning()
+        assert window._undo.busy and calls == ["trash"]
+        if cancel:
+            window.stop_scan()
+        QTimer.singleShot(20, release.set)
+        _wait(qapp, lambda: window._undo.worker is None)
+        assert release.is_set() and not window._undo.busy
+        assert calls == (["trash"] if cancel else ["trash", "restore"])
+        assert payload.exists() == cancel and receipt.exists() == cancel
+        preserved = payload if cancel else source
+        assert (preserved / "file").read_bytes() == b"owned original payload"
+        assert source.exists() is not cancel
+        if cancel:
+            assert {record.reason for record in window._journal.recent().records} == {"manual"}
+        _wait(qapp, lambda: window._worker is None)
+    finally:
+        release.set()
 
 
 def test_collision_preserves_arrival_and_payload_with_plaintext_actual_paths(window, qapp, tmp_path, monkeypatch):

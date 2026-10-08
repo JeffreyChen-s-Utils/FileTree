@@ -3,12 +3,14 @@
 import hashlib
 import threading
 
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, QTimer
 from PySide6.QtWidgets import QMessageBox
 import pytest
 
 from test_gui import _wait
-from je_file_tree.gui import i18n, scan_worker
+from test_worker_lifecycle import _held_follow
+from je_file_tree.core.operations import MoveReceipt
+from je_file_tree.gui import file_actions, i18n, scan_worker
 from je_file_tree.gui.app import create_workspace
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.core.scanner import scan
@@ -79,6 +81,32 @@ def test_operation_owner_blocks_peer_commands_before_confirmation(workspace, tmp
         first._path_dialogs.remove(held)
     first._update_actions()
     assert not second.operation_busy and second._actions["open"].isEnabled()
+
+
+def test_source_operation_waits_for_peer_native_reader_without_blocking_gui(workspace, qapp, tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept"
+    kept.write_bytes(b"kept")
+    first, second = workspace.current, workspace.add_tab()
+    for tab in (first, second):
+        tab.results.show_outcome(scan_worker.analyse(scan(source)))
+    calls = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *_: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *_: QMessageBox.StandardButton.Ok)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: calls.append(path) or MoveReceipt(False))
+    release, reader = _held_follow(second, qapp, monkeypatch)
+    try:
+        first.move_to_trash(first.results.tree_model.root.children)
+        assert reader.cancel.is_set() and reader.isRunning()
+        assert first.operation_busy and second.operation_busy and not calls
+        QTimer.singleShot(20, release.set)
+        _wait(qapp, lambda: first._trash_worker is None)
+        assert release.is_set() and calls == [str(kept)]
+        assert not first.operation_busy and not second.operation_busy
+        assert kept.read_bytes() == b"kept"
+    finally:
+        release.set()
 
 
 def test_close_one_running_tab_joins_only_its_owned_scan(workspace, tmp_path, qapp, monkeypatch):

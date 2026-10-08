@@ -84,7 +84,9 @@ def test_busy_review_retains_events_and_joins_before_tree_mutation(window, qapp,
     window._path_dialogs.add(dialog)
     window._update_actions()
     controller.tick()
-    assert not calls and controller.worker is None and not old.isRunning()
+    assert not calls and controller.worker is None and old.cancel.is_set()
+    _wait(qapp, lambda: not controller._retiring)
+    assert not calls
     assert controller._pending.full
     window._path_dialogs.remove(dialog)
     controller.tick()

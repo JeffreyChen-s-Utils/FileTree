@@ -5,10 +5,15 @@ from __future__ import annotations
 import threading
 import time
 
+import pytest
 from PySide6.QtCore import QObject, QThread, QTimer
+from PySide6.QtWidgets import QMessageBox
 from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
 
-from je_file_tree.gui import scan_worker, welcome
+from je_file_tree.core.operation_journal import OperationJournal
+from je_file_tree.core.operations import MoveReceipt
+from je_file_tree.core.scanner import scan
+from je_file_tree.gui import change_watch, file_actions, scan_worker, welcome
 from je_file_tree.gui.worker_lifecycle import after_threads
 
 
@@ -74,6 +79,78 @@ def test_slow_folder_check_runs_off_gui_and_can_be_canceled(window, qapp, tmp_pa
         window.stop_scan()
         _pump(qapp, lambda: window._worker is None)
         assert window.results.outcome is None
+    finally:
+        release.set()
+
+
+def _held_follow(window, qapp, monkeypatch):
+    release, entered = threading.Event(), threading.Event()
+
+    def watch(_root, _changed, cancel, *, ready):
+        ready("directory_changes")
+        entered.set()
+        cancel.wait(5)
+        release.wait(5)
+
+    monkeypatch.setattr(change_watch, "watch", watch)
+    monkeypatch.setattr(change_watch, "supported", lambda: True)
+    window._actions["follow_changes"].setChecked(True)
+    _pump(qapp, entered.is_set)
+    return release, window._follow.worker
+
+
+@pytest.mark.parametrize("cancel", [False, True])
+def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_path, monkeypatch, cancel):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept"
+    kept.write_bytes(b"kept")
+    window.results.show_outcome(scan_worker.analyse(scan(source)))
+    window._journal = OperationJournal(tmp_path / "journal")
+    root = window.results.tree_model.root
+    calls = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *_: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *_: QMessageBox.StandardButton.Ok)
+    monkeypatch.setattr(file_actions, "trash_receipt", lambda path: calls.append(path) or MoveReceipt(False))
+    release, reader = _held_follow(window, qapp, monkeypatch)
+    try:
+        window.move_to_trash(root.children)
+        assert reader.cancel.is_set() and reader.isRunning()
+        assert window.operation_busy and not calls
+        assert window._follow._pending.full
+        if cancel:
+            window.stop_scan()
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: window._trash_worker is None)
+        assert release.is_set() and not window.operation_busy
+        assert calls == ([] if cancel else [str(kept)])
+        assert kept.read_bytes() == b"kept"
+        if cancel:
+            assert not window._journal.recent().records
+    finally:
+        release.set()
+
+
+def test_cancel_queued_branch_keeps_previous_result_and_clears_busy_state(window, qapp, tmp_path, monkeypatch):
+    branch = tmp_path / "source" / "branch"
+    branch.mkdir(parents=True)
+    kept = branch / "kept"
+    kept.write_bytes(b"kept")
+    window.results.show_outcome(scan_worker.analyse(scan(branch.parent)))
+    previous = window.results.outcome
+    release, reader = _held_follow(window, qapp, monkeypatch)
+    calls = []
+    scanning = scan_worker.scan
+    monkeypatch.setattr(scan_worker, "scan", lambda *args, **kwargs: calls.append(args) or scanning(*args, **kwargs))
+    try:
+        window.rescan_folder(previous.result.root.children[0])
+        assert reader.cancel.is_set() and reader.isRunning()
+        assert window._worker is not None and not calls
+        window.stop_scan()
+        QTimer.singleShot(20, release.set)
+        _pump(qapp, lambda: window._worker is None)
+        assert release.is_set() and not calls
+        assert window.results.outcome is previous and kept.read_bytes() == b"kept"
     finally:
         release.set()
 

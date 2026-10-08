@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#95** (P1) Audit remaining GUI synchronous native calls, tree/model work and shutdown waits after the scan/dialog fixes; reproduce the owner's scan and source-operation hangs with native responsiveness evidence before claiming all hangs resolved.
+- **#95** (P1) Audit remaining direct GUI native calls, tree/model work, completion callbacks and explicit application/tab shutdown joins; verify the owner's Python-source scan and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader timer tests cannot establish that every native UI hang is resolved.
 
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 

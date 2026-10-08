@@ -2,6 +2,8 @@
 
 Closing or canceling an owned analysis/operation dialog requests cancellation and finishes asynchronously after its workers join. The dialog remains owned and prevents competing source operations during an active native call; repeated close input keeps the first decision. Retained partial outcomes/errors are reported before dismissal. Replaced previews queue behind canceled reads and only the latest request starts; a queued, canceled operation never runs. Qt widgets/models remain on the GUI thread. Explicit whole-application shutdown still joins workers before destruction.
 
+Source operations and branch rescans also wait asynchronously for canceled background readers. Trash, Undo and approved bin operations start after the owned readers join; their results release the operation guard only after their own worker joins. Stop discards queued Trash, Undo or branch requests without calling their native operation.
+
 Folder validation and welcome-drive discovery run on owned workers; rendering and action updates use copied drive values. Replacing a scan requests cancellation and waits asynchronously for the old scan, native watcher and gentle scan to join before dispatching the latest request. Repeated replacements coalesce; Stop discards a pending replacement. Slow native calls remain owned until they finish, while the GUI event loop continues handling events. These changes do not establish a throughput improvement.
 
 **See where your disk space goes.** FileTree scans a folder or a whole drive, adds up every file inside
