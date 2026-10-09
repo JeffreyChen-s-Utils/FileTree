@@ -42,6 +42,18 @@ def test_workflows_exist():
     assert _WORKFLOWS
 
 
+def test_local_locked_and_workflow_lint_versions_agree():
+    local = (_ROOT / "dev_requirements.txt").read_text(encoding="utf-8")
+    locked = (_ROOT / ".github/requirements/test.txt").read_text(encoding="utf-8")
+    workflow = (_ROOT / ".github/workflows/test.yml").read_text(encoding="utf-8")
+    local_pins = re.findall(r"^ruff==([\d.]+)", local, re.MULTILINE)
+    locked_pins = re.findall(r"^ruff==([\d.]+)", locked, re.MULTILINE)
+    workflow_pins = re.findall(r"ruff==([\d.]+)", workflow)
+    assert len(local_pins) == 1
+    assert local_pins == locked_pins
+    assert local_pins == workflow_pins
+
+
 @pytest.mark.parametrize("workflow", _ACTION_FILES, ids=lambda p: p.relative_to(_ROOT).as_posix())
 def test_every_action_is_pinned_to_a_commit_with_its_version(workflow):
     bad = [f"{workflow.name}:{number} {ref}{rest}"
