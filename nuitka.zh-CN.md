@@ -6,9 +6,9 @@ Windows 构建明确嵌入 `--product-name=FileTree` 和 `--file-description=Fil
 
 macOS arm64 原生编译与打包已通过 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)：167 个源项目全部保留，解压内容一致。该证据确认此提交的编译与打包，未启动或发布程序。Finder／同意验证与 Developer ID／公证仍缺环境，因此 POSIX 发布门控保持关闭。
 
-Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止 Windows 产物与 GitHub 发行版的发布。先创建版本提交与标签，随后 PyPI 上传与 Windows 编译各自运行。后续 Windows 失败不会撤销版本或已成功的 PyPI 上传。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](docs/windows-signing.md)。
+Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止 Windows 产物与 GitHub 发行版的发布。先创建版本提交与标签，随后 PyPI 上传与 Windows 编译各自运行。后续 Windows 失败不会撤销版本或已成功的 PyPI 上传。独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](docs/windows-signing.md)。
 
-每次发布 PR 合并至 `main` 后，GitHub Actions 都会在 Windows 从新版本标签自动编译 `FileTree-<version>.exe`、独立文件夹 ZIP 与 MSI。GitHub 发行版会保持草稿，直到必要文件全部上传，并核对名称、大小与上传状态后才公开。PyPI 上传独立运行：缺少令牌或上传失败仍会报告，但不阻止 EXE 发布。上传失败可重新运行失败的 `publish-release` 作业以继续上传草稿；已公开的发行版不会覆盖。
+每次发布 PR 合并至 `main` 后，GitHub Actions 都会在 Windows 从新版本标签编译一份完整程序文件夹。发行版提供 `FileTree-<version>-windows-standalone.zip`，以及从同一份文件夹创建的 MSI。解压整个 ZIP 后运行其中的 `FileTree.exe`，并保留旁边的所有程序库、插件与翻译文件。GitHub 发行版会保持草稿，直到必要文件全部上传，并核对名称、大小与上传状态后才公开。PyPI 上传独立运行：缺少令牌或上传失败仍会报告，但不阻止 Windows 发布。上传失败可重新运行失败的 `publish-release` 作业以继续上传草稿；已公开的发行版不会覆盖。
 
 [Nuitka](https://nuitka.net/) 会把 FileTree 编译成原生程序，没有安装 Python 的电脑也能运行。它把 Python 代码转成 C 再编译，所以程序启动很快；代价是编译时间比较长。它编译的入口是仓库根目录的 `start_file_tree.py`。
 
@@ -67,7 +67,7 @@ Windows 发布时可打包完整文件夹（请使用发布的版本号）：
 python tools/package_standalone.py --version 0.1.0
 ```
 
-这会在仓库根目录生成 `FileTree-0.1.0-windows-standalone.zip`，内含带版本号的文件夹及 EXE、所有程序库、插件与翻译文件。`build/standalone` 下必须恰有一个包含 `FileTree.exe` 的完整 `.dist` 文件夹；工具拒绝链接／联接点，以原子方式写入压缩包。发布流程会从同一个标签构建两种形式，同时附上完整文件夹 ZIP 与单文件 EXE。
+这会在仓库根目录生成 `FileTree-0.1.0-windows-standalone.zip`，内含带版本号的文件夹及 EXE、所有程序库、插件与翻译文件。`build/standalone` 下必须恰有一个包含 `FileTree.exe` 的完整 `.dist` 文件夹；工具拒绝链接／联接点，以原子方式写入压缩包。发布流程只编译这份文件夹一次，完整文件夹 ZIP 与 MSI 都使用同一份输出。
 
 在具有 .NET 8 SDK 的 Windows 上，可从同一份完整独立程序输出构建 x64 MSI：
 
@@ -85,7 +85,7 @@ python tools/prepare_packages.py --version 0.1.0
 python tools/build_nuitka.py --onefile
 ```
 
-产物只有一个文件：`build/onefile/FileTree.exe`（其他系统是 `build/onefile/FileTree`）。方便传送，但每次启动都要先解压到临时文件夹，所以打开会稍微慢一点。
+产物只有一个文件：`build/onefile/FileTree.exe`（其他系统是 `build/onefile/FileTree`）。方便传送，但每次启动都要先解压到临时文件夹，所以打开会稍微慢一点。 这是可选的本机构建；Windows 自动发布使用第 2.1 节的程序文件夹。
 
 ### 2.3 macOS 应用程序包
 

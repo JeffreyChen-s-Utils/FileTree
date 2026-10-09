@@ -14,7 +14,7 @@
 #   release          Installs locked build tools, raises both version files, builds/checks Python
 #                    distributions, then commits/tags main and retains those files.
 #   publish-pypi     Uploads those exact distributions independently; its failure never blocks EXE release.
-#   build-exe        Compiles versioned one-file EXE, complete standalone ZIP and MSI on Windows.
+#   build-exe        Compiles one complete standalone folder for its ZIP and MSI on Windows.
 #   publish-release  Requires successful builds, uploads all required assets to a draft, checks
 #                    uploaded names/sizes/state and only then makes the GitHub release public.
 
@@ -156,7 +156,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    timeout-minutes: 90  # separate one-file and standalone Nuitka builds of PySide6
+    timeout-minutes: 90  # standalone Nuitka build of PySide6, followed by ZIP/MSI packaging
     steps:
       - name: Check out the new tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -187,19 +187,14 @@ jobs:
       - name: Install PySide6 and Nuitka
         run: python tools/install_compiler.py
 
-      - name: Compile FileTree.exe
-        run: python tools/build_nuitka.py --onefile
-
       - name: Compile the standalone folder
         run: python tools/build_nuitka.py
 
-      - name: Sign and verify the one-file and standalone executables before packaging
+      - name: Sign and verify the standalone executable before packaging
         if: steps.signing.outputs.enabled == 'true'
         uses: ./.github/actions/sign-windows
         with:
-          files: |
-            ${{ github.workspace }}/build/onefile/FileTree.exe
-            ${{ github.workspace }}/build/standalone/start_file_tree.dist/FileTree.exe
+          files: ${{ github.workspace }}/build/standalone/start_file_tree.dist/FileTree.exe
           client-id: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
@@ -268,20 +263,6 @@ jobs:
           path: FileTree-*-windows-standalone.zip
           if-no-files-found: error
 
-      - name: Name the exe after the version
-        shell: pwsh
-        run: |
-          $name = "FileTree-${{ needs.release.outputs.new }}.exe"
-          Copy-Item build\onefile\FileTree.exe $name
-          echo "EXE_NAME=$name" >> $env:GITHUB_ENV
-
-      - name: Keep the exe for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: filetree-exe
-          path: ${{ env.EXE_NAME }}
-          if-no-files-found: error
-
   build-posix:
     needs: release
     if: vars.FILETREE_POSIX_RELEASE_VERIFIED == 'true'
@@ -308,12 +289,6 @@ jobs:
         with:
           name: pypi-dist
           path: ./dist
-
-      - name: Fetch the exe
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
-        with:
-          name: filetree-exe
-          path: ./release-assets
 
       - name: Fetch the standalone ZIP
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1

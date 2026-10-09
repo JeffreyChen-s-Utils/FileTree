@@ -25,12 +25,11 @@ def release_version(value: str) -> str:
 
 
 def release_assets(version: str, root: Path) -> list[Path]:
-    """Require the exact version's Python and Windows payloads, including a nonempty EXE."""
+    """Require the exact version's Python and Windows payloads, including the complete folder ZIP."""
     version = release_version(version)
     windows = root / "release-assets"
     assets = [root / "dist" / f"je_file_tree-{version}-py3-none-any.whl",
               root / "dist" / f"je_file_tree-{version}.tar.gz",
-              windows / f"FileTree-{version}.exe",
               windows / f"FileTree-{version}-windows-standalone.zip",
               windows / f"FileTree-{version}-windows-x64.msi",
               windows / f"FileTree-{version}-package-drafts.zip"]

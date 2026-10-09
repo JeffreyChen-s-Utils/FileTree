@@ -64,7 +64,7 @@ def test_bump_changes_nothing_when_the_files_disagree(tmp_path: Path) -> None:
     assert _versions(tmp_path) == before
 
 
-def test_the_workflow_releases_on_merge_and_attaches_the_exe() -> None:
+def test_the_workflow_releases_on_merge_and_builds_only_the_program_folder() -> None:
     text = _WORKFLOW.read_text(encoding="utf-8")
     assert "types: [closed]" in text
     assert "github.event.pull_request.merged == true" in text
@@ -74,9 +74,11 @@ def test_the_workflow_releases_on_merge_and_attaches_the_exe() -> None:
     assert "secrets.PYPI_API_TOKEN" not in version
     assert version.index("python -m build --no-isolation") < version.index("git push")
     assert version.index("python -m twine check dist/*") < version.index("git push")
-    assert "python tools/build_nuitka.py --onefile" in text
-    assert "FileTree-" in text
-    assert ".exe" in text
+    windows = text.split("  build-exe:\n", 1)[1].split("  build-posix:\n", 1)[0]
+    assert windows.count("run: python tools/build_nuitka.py\n") == 1
+    assert "--onefile" not in text and "build/onefile" not in text
+    assert "filetree-exe" not in text
+    assert "FileTree-*-windows-standalone.zip" in windows
 
 
 def test_every_install_in_the_release_takes_wheels_only() -> None:

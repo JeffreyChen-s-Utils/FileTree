@@ -50,7 +50,7 @@ Workspace rule shared by every repository under `D:\Codes` (full text: `D:\Codes
 - **`architecture.md`** is the short architecture overview. Cross-project contracts are in its §6.
 - **Never bump the version by hand.** `je_file_tree/__init__.py` and `pyproject.toml` carry it; the release
   workflow (`.github/workflows/release.yml`) raises both with `tools/bump_version.py` when a pull request is
-  merged into `main`, publishes to PyPI and attaches `FileTree-<version>.exe` to a GitHub release.
+  merged into `main`, publishes to PyPI and attaches the complete Windows folder ZIP and MSI to a GitHub release.
 
 ## No AI attribution (HARD REQUIREMENT)
 

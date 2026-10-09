@@ -30,9 +30,9 @@
 
 macOS arm64의 실제 컴파일과 번들 패키징은 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)에서 통과했습니다. 원본 항목 167개가 모두 보존되었으며 압축 해제 결과도 일치했습니다. 이는 검증한 커밋의 컴파일과 패키징에 대한 증거이며 앱을 실행하거나 게시하지 않았습니다. Finder 작업·동의 검증 및 Developer ID·공증 환경이 없어 POSIX 릴리스 게이트는 비활성 상태를 유지합니다.
 
-Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 먼저 버전 커밋과 태그를 만든 뒤 PyPI 업로드와 Windows 컴파일을 각각 실행합니다. 이후 Windows 실패는 버전이나 성공한 PyPI 업로드를 취소하지 않습니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](../docs/windows-signing.md)을 참조하세요.
+Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 먼저 버전 커밋과 태그를 만든 뒤 PyPI 업로드와 Windows 컴파일을 각각 실행합니다. 이후 Windows 실패는 버전이나 성공한 PyPI 업로드를 취소하지 않습니다. 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](../docs/windows-signing.md)을 참조하세요.
 
-릴리스 PR을 `main`에 병합할 때마다 GitHub Actions가 Windows에서 새 버전 태그로 `FileTree-<version>.exe`, 독립 폴더 ZIP 및 MSI를 자동 컴파일합니다. 필수 파일을 모두 업로드하고 이름, 크기와 업로드 상태를 확인할 때까지 GitHub 릴리스는 초안으로 유지됩니다. PyPI 업로드는 독립적으로 실행되며 토큰 누락이나 업로드 실패를 보고하지만 EXE 릴리스는 차단하지 않습니다. 실패한 `publish-release` 작업을 다시 실행하여 초안 업로드를 재개할 수 있습니다. 이미 공개된 릴리스는 덮어쓰지 않습니다.
+릴리스 PR을 `main`에 병합할 때마다 GitHub Actions가 Windows에서 새 버전 태그로 완전한 프로그램 폴더를 한 번만 컴파일합니다. 릴리스에는 `FileTree-<version>-windows-standalone.zip`과 같은 폴더로 만든 MSI가 포함됩니다. ZIP 전체를 압축 해제하고 내부의 `FileTree.exe`를 실행하세요. 모든 라이브러리, 플러그인 및 번역 파일을 함께 보관해야 합니다. 필수 파일을 모두 업로드하고 이름, 크기와 업로드 상태를 확인할 때까지 GitHub 릴리스는 초안으로 유지됩니다. PyPI 업로드는 독립적으로 실행되며 토큰 누락이나 업로드 실패를 보고하지만 Windows 릴리스는 차단하지 않습니다. 실패한 `publish-release` 작업을 다시 실행하여 초안 업로드를 재개할 수 있습니다. 이미 공개된 릴리스는 덮어쓰지 않습니다.
 
 ![FileTree 홈 폴더 표시: 왼쪽에는 폴더 트리, 오른쪽에는 트리맵](../docs/images/main_window_ko.png)
 
@@ -154,11 +154,11 @@ Windows에서 **옵션 → 탐색기 통합…**은 계정의 탐색기 폴더 �
 
 FileTree는 Windows, macOS 및 Linux에서 실행됩니다.
 
-**Windows, Python 없음**: [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 페이지에서 `FileTree-<version>.exe`을 다운로드하고 실행합니다. 설치할 것이 없습니다.
+**Windows, Python 없음**: [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 페이지에서 `FileTree-<version>-windows-standalone.zip`을 다운로드하세요. **전체 폴더**를 압축 해제하고 내부의 `FileTree.exe`를 실행합니다. Python 설치는 필요하지 않습니다.
 
-다음 릴리스부터 동일한 페이지에서 `FileTree-<version>-windows-standalone.zip`도 제공됩니다. 더 빠른 시작을 위해 **전체 폴더**를 추출하고 해당 `FileTree.exe`을 실행합니다. DLL, 플러그인 및 번역을 옆에 보관하세요. 단일 EXE는 휴대하기가 더 쉽지만 시작할 때마다 번들 파일의 압축을 풉니다. 두 형식 모두 Python 없이도 작동합니다.
+폴더의 모든 DLL, 플러그인 및 번역 파일을 함께 보관하세요. FileTree를 이동하거나 복사할 때는 **전체 폴더**를 이동하세요. 실행 파일은 이 파일들을 직접 사용합니다.
 
-다음 릴리스 워크플로에서는 전체 독립 실행형 폴더에서 `FileTree-<version>-windows-x64.msi`도 빌드합니다. Program Files 아래의 모든 사용자를 위해 설치되고 관리자 승인이 필요하며 시작 메뉴 바로 가기를 추가하고 Windows을 통한 업그레이드/제거를 지원합니다. 설치자 CI가 새 일회용 비품을 확인합니다. 별도의 데스크탑 빌드 CI는 실제 독립형 프로그램을 컴파일하고 ZIP/MSI을 유지하며 일회용 Windows 실행기의 모든 페이로드 해시에 대해 설치, 패키지 버전 업그레이드 및 제거를 확인합니다. 업그레이드된 파일 104개 모두, 바로가기, 소스 보존 및 전체 제거에 대한 기본 검사를 통과했습니다. 패키지 업그레이드는 동일한 컴파일된 페이로드에 유효성 검사 표시를 추가합니다. 컴파일러 출력을 보존하고 앱을 실행하지 않습니다. `tools/prepare_packages.py`은 정확한 MSI/ZIP 해시 및 읽기 전용 MSI 메타데이터에서 Winget, Scoop 및 Chocolatey 검토 초안을 생성합니다. CI는 이를 유지합니다. 릴리스에는 패키지 초안 ZIP이 첨부됩니다. 로컬 기본 Winget 검증이 통과되었습니다. 초안은 게시 취소되었으며 해당 릴리스 URL에는 게시된 아티팩트와 일치해야 합니다. 서명 및 저장 제출에는 여전히 소유자의 인증서/계정이 필요합니다.
+릴리스 워크플로에서는 전체 독립 실행형 폴더에서 `FileTree-<version>-windows-x64.msi`도 빌드합니다. Program Files 아래의 모든 사용자를 위해 설치되고 관리자 승인이 필요하며 시작 메뉴 바로 가기를 추가하고 Windows을 통한 업그레이드/제거를 지원합니다. 설치자 CI가 새 일회용 비품을 확인합니다. 별도의 데스크탑 빌드 CI는 실제 독립형 프로그램을 컴파일하고 ZIP/MSI을 유지하며 일회용 Windows 실행기의 모든 페이로드 해시에 대해 설치, 패키지 버전 업그레이드 및 제거를 확인합니다. 업그레이드된 파일 104개 모두, 바로가기, 소스 보존 및 전체 제거에 대한 기본 검사를 통과했습니다. 패키지 업그레이드는 동일한 컴파일된 페이로드에 유효성 검사 표시를 추가합니다. 컴파일러 출력을 보존하고 앱을 실행하지 않습니다. `tools/prepare_packages.py`은 정확한 MSI/ZIP 해시 및 읽기 전용 MSI 메타데이터에서 Winget, Scoop 및 Chocolatey 검토 초안을 생성합니다. CI는 이를 유지합니다. 릴리스에는 패키지 초안 ZIP이 첨부됩니다. 로컬 기본 Winget 검증이 통과되었습니다. 초안은 게시 취소되었으며 해당 릴리스 URL에는 게시된 아티팩트와 일치해야 합니다. 서명 및 저장 제출에는 여전히 소유자의 인증서/계정이 필요합니다.
 
 데스크탑 빌드 CI는 또한 Ubuntu 22.04의 완전한 x86_64 Linux AppImage와 macOS의 arm64 macOS `.app` ZIP을 준비합니다. 기본 추출은 전체 런타임/번들을 비교하고 소스 해시/ID를 보존합니다. 앱이 실행되지 않습니다. CI는 개발 아티팩트와 증명을 7일 동안 보관합니다. 정식 릴리스 첨부 파일은 macOS이 진행 중인 항목 #4를 확인한 후 `FILETREE_POSIX_RELEASE_VERIFIED=true`에 의해 제어됩니다. 개발자 ID 서명/공증 및 Finder/OS 동의는 확인되지 않은 상태로 유지됩니다. 컴파일러 런타임 휠 잠금은 정확한 버전과 해시 확인을 유지하면서 네이티브 Windows/Linux/macOS을 포함합니다. macOS 빌드는 외부 PNG 변환 없이 기본 다중 크기 ICNS를 그립니다. 패키징은 컴파일러의 `start_file_tree.app`을 ZIP의 별도 확인된 `FileTree.app`에 복사합니다. 기본 패키징 명령은 [Nuitka 가이드](../nuitka.ko.md)을 참조하세요. AppImage 로그인 등록은 임시 마운트 외부의 원래 실행 파일을 사용합니다. 해당 파일을 등록된 위치에 보관하세요.
 

@@ -1190,16 +1190,18 @@ both distributions before pushing the version commit/tag. It retains `pypi-dist`
 treated as an error. Independent `publish-pypi` and `build-exe` jobs consume that version; only the
 former sees `PYPI_API_TOKEN`, installs the same locked wheels and uploads the producer's exact files.
 A missing token or failed PyPI upload is reported without blocking Windows compilation/publication.
-The Windows runner builds `FileTree-<version>.exe` with `tools/build_nuitka.py --onefile` and a separate
-standalone build. `tools/package_standalone.py` atomically archives the complete Windows `.dist`
-folder with all libraries/plugins/catalogues into a versioned ZIP; MSI and package drafts follow.
+The Windows runner compiles one standalone folder with `tools/build_nuitka.py`.
+`tools/package_standalone.py` atomically archives the complete Windows `.dist` folder with all
+libraries/plugins/catalogues into `FileTree-<version>-windows-standalone.zip`; MSI and package drafts
+use the same compiled folder. Users extract the whole folder and launch its `FileTree.exe`.
 `publish-release` depends on the producer and required Windows/opt-in native builds, independently
-of `publish-pypi`. `tools/publish_release.py` requires nonempty exact-version EXE/ZIP/MSI/draft and
+of `publish-pypi`. `tools/publish_release.py` requires nonempty exact-version folder ZIP/MSI/draft and
 Python distributions before contacting GitHub. Its CLI version is reconstructed from bounded ASCII
 integers before it enters fixed GitHub CLI argument lists. It creates a draft only for an existing tag, uploads
 all files, checks remote names/sizes/uploaded state, and then publishes. Retrying a failed publication
 resumes its draft; public assets are never overwritten. `test/test_publish_release.py` covers missing
-EXEs, upload errors, incomplete remote receipts and draft recovery. `test/test_workflow_actions.py`
+folder archives, upload errors, incomplete remote receipts and draft recovery. The automatic release
+does not build or attach a single-file executable. `test/test_workflow_actions.py`
 guards locked installs, the producer's backend, publisher token isolation and compatible lock pins.
 The source distribution carries no tests (`MANIFEST.in`,
 `test/test_sdist_manifest.py`).
