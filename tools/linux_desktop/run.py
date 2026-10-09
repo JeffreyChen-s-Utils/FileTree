@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import select
 import subprocess  # nosec B404 - fixed test programs, no shell
 import sys
 import tempfile
-import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TextIO
 
 
 def run_probe(environment: dict[str, str], evidence: Path) -> int:
@@ -27,28 +31,46 @@ def run_probe(environment: dict[str, str], evidence: Path) -> int:
     return 0
 
 
+@contextmanager
+def display_server(environment: dict[str, str], log: TextIO) -> Iterator[None]:
+    """Use Xvfb's private readiness pipe and allocated display; always join the owned child."""
+    reader, writer = os.pipe()
+    server = None
+    try:
+        command = ["/usr/bin/Xvfb", "-displayfd", str(writer), "-screen", "0", "2560x900x24", "-nolisten", "tcp"]
+        server = subprocess.Popen(command, env=environment, stdout=log, stderr=log,  # noqa: S603 # nosec B603
+                                  pass_fds=(writer,))
+        os.close(writer)
+        writer = None
+        if not select.select([reader], [], [], 10)[0]:
+            raise RuntimeError("Xvfb did not report a ready display")
+        display = os.read(reader, 32).decode("ascii").strip()
+        if re.fullmatch(r"[0-9]{1,5}", display) is None or server.poll() is not None:
+            raise RuntimeError("Xvfb reported an invalid display or exited")
+        environment["DISPLAY"] = ":" + display
+        yield
+    finally:
+        os.close(reader)
+        if writer is not None:
+            os.close(writer)
+        if server is not None:
+            if server.poll() is None:
+                server.terminate()
+            server.wait(timeout=10)
+
+
 def main() -> int:
     """Set up only container-owned desktop state; preserve evidence on success or failure."""
-    evidence = Path(sys.argv[1] if len(sys.argv) > 1 else "/evidence")
+    if len(sys.argv) != 1:
+        raise ValueError("Desktop container evidence is fixed at /evidence")
+    evidence = Path("/evidence")
     evidence.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="filetree-desktop-") as scratch:
-        environment = dict(os.environ, DISPLAY=":99", QT_QPA_PLATFORM="xcb", HOME=scratch,
+        environment = dict(os.environ, QT_QPA_PLATFORM="xcb", HOME=scratch,
                            XDG_DATA_HOME=f"{scratch}/data", XDG_CONFIG_HOME=f"{scratch}/config",
                            XDG_CACHE_HOME=f"{scratch}/cache", PYTHONPATH="/workspace")
-        with (evidence / "xvfb.log").open("w", encoding="utf-8") as log:
-            command = ["/usr/bin/Xvfb", ":99", "-screen", "0", "2560x900x24", "-nolisten", "tcp"]
-            server = subprocess.Popen(command, env=environment, stdout=log, stderr=log)  # noqa: S603 # nosec B603
-            try:
-                deadline = time.monotonic() + 10
-                socket = Path("/tmp/.X11-unix/X99")  # noqa: S108 - standard X11 socket inside a fresh container
-                while not socket.exists():
-                    if server.poll() is not None or time.monotonic() > deadline:
-                        raise RuntimeError("Xvfb did not start")
-                    time.sleep(.05)
-                return run_probe(environment, evidence)
-            finally:
-                server.terminate()
-                server.wait(timeout=10)
+        with (evidence / "xvfb.log").open("w", encoding="utf-8") as log, display_server(environment, log):
+            return run_probe(environment, evidence)
 
 
 if __name__ == "__main__":

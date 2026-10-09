@@ -42,7 +42,8 @@ def test_compile_preserves_all_payload_and_publishes_versioned_msi(tmp_path, mon
     assert not list(tmp_path.glob("filetree-msi-*"))
 
 
-@pytest.mark.parametrize("version", ["../bad", "1.2", "01.2.3", "256.0.0", "0.256.0", "0.0.65536"])
+@pytest.mark.parametrize("version", ["../bad", "1.2", "01.2.3", "256.0.0", "0.256.0", "0.0.65536",
+                                     "1.2.3\n", "1.2.3 -d Other=evil", "1.2.3;evil"])
 def test_invalid_msi_version_refuses_before_compiler(tmp_path, monkeypatch, version):
     _compiler(monkeypatch, lambda: pytest.fail("compiler must not run"))
     with pytest.raises(ValueError, match="version"):

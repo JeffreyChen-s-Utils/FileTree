@@ -10,6 +10,7 @@ import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from PySide6.QtCore import (
@@ -1188,6 +1189,26 @@ def test_show_items_needs_a_session_bus(qapp: QApplication, monkeypatch: pytest.
 
 def test_explorer_command_always_quotes_the_path() -> None:
     assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
+
+
+@pytest.mark.parametrize("path", ['C:\\bad" /root,evil', "C:\\bad\nname", "C:\\bad\x00name", ""])
+def test_windows_reveal_rejects_invalid_path_before_starting_process(monkeypatch, path):
+    monkeypatch.setattr(file_actions.sys, "platform", "win32")
+    monkeypatch.setattr(file_actions.subprocess, "Popen", lambda *_args: pytest.fail("invalid path dispatched"))
+    assert not file_actions.reveal_in_file_manager(path)
+
+
+def test_macos_reveal_keeps_option_like_name_as_one_absolute_path(monkeypatch):
+    calls = []
+    paths = SimpleNamespace(abspath=lambda path: "/fixture/" + path)
+    monkeypatch.setattr(file_actions, "os", SimpleNamespace(path=paths))
+    monkeypatch.setattr(file_actions.sys, "platform", "darwin")
+    monkeypatch.setattr(file_actions.subprocess, "Popen", calls.append)
+    assert file_actions.reveal_in_file_manager("-a;quoted '檔案'")
+    assert calls == [["/usr/bin/open", "-R", "/fixture/-a;quoted '檔案'"]]
+    assert not file_actions.reveal_in_file_manager("bad\x00name")
+    assert not file_actions.reveal_in_file_manager("")
+    assert len(calls) == 1
 
 
 def test_double_clicking_a_type_or_an_age_lists_its_largest_files(window: MainWindow, qapp: QApplication,

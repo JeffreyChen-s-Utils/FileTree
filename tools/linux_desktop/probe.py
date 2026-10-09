@@ -173,7 +173,10 @@ def check_background(app: QApplication, evidence: Path) -> dict:
 
 def main() -> int:
     """Run only owned fixtures; emit proof and a native Traditional Chinese screenshot."""
-    evidence, scratch = Path(sys.argv[1]), Path(os.environ["HOME"])
+    arguments = sys.argv[1:]
+    if len(arguments) != 1 or os.path.realpath(arguments[0]) != "/evidence":
+        raise ValueError("Desktop probe evidence must be the container's /evidence mount")
+    evidence, scratch = Path("/evidence"), Path(os.environ["HOME"])
     app = QApplication([])
     app.setOrganizationName("FileTreeDesktopTests")
     app.setApplicationName("FileTreeDesktopTests")

@@ -18,14 +18,15 @@ from tools.package_standalone import _linked  # noqa: E402
 
 _ROOT = Path(__file__).resolve().parents[1]
 _WIX_VERSION = "6.0.2"
-_VERSION = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)")
+_VERSION = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
 _LIMITS = (255, 255, 65535)
 
 
-def _version(version: str) -> None:
-    if (_VERSION.fullmatch(version) is None
+def _version(version: str) -> str:
+    if (re.fullmatch(_VERSION, version) is None
             or any(value > limit for value, limit in zip(map(int, version.split(".")), _LIMITS, strict=True))):
         raise ValueError("MSI version must be major.minor.patch within 255.255.65535")
+    return version
 
 
 def _inventory(folder: Path) -> dict[str, tuple]:
@@ -59,7 +60,7 @@ def build_msi(source: Path, version: str, output: Path) -> Path:
     under Program Files with a Start-menu shortcut; it contains no custom actions or startup entry.
     Compilation and inventory checks are observations, not protection against malicious build inputs.
     """
-    _version(version)
+    version = _version(version)
     folders = [folder for folder in source.glob("*.dist") if (folder / "FileTree.exe").is_file()]
     if len(folders) != 1:
         raise ValueError("expected exactly one standalone .dist folder containing FileTree.exe")

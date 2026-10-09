@@ -281,7 +281,7 @@ python -m je_file_tree.cli scan C:\ --also D:\ --json drives.json
 
 SonarCloud 自动分析使用 [.sonarcloud.properties](../.sonarcloud.properties) 区分主要源与 `test/`。程序、工具、工作流程及版本控制元数据仍纳入分析，未设置排除或修改质量门槛。服务文档要求从默认分支启用，因此只在 dev 新增文件不能证明额度问题已解决；须以最新 API 结果确认分析完成及质量门槛。
 
-SonarCloud 项目经所有者同意改为公开（[配置验证](../docs/updates/sonar-20261009-public.json)）。额度修复后，新的 PR 分析已完成；[保留的质量门槛结果](../docs/updates/sonar-20261009-gate.json) 指出合并前须处理的安全问题。CI 与 Linux 桌面容器使用 `.github/requirements/` 版本控制中的版本／哈希锁定文件，只安装 wheel；依赖变更时须一起更新 runtime 与 test 锁定文件。桌面镜像默认使用对应的非管理员用户。
+SonarCloud 项目经所有者同意改为公开（[配置验证](../docs/updates/sonar-20261009-public.json)）。额度修复后，新的 PR 分析已完成；[保留的质量门槛结果](../docs/updates/sonar-20261009-gate.json) 指出合并前须处理的安全问题。CI 与 Linux 桌面容器使用 `.github/requirements/` 版本控制中的版本／哈希锁定文件，只安装 wheel；依赖变更时须一起更新 runtime 与 test 锁定文件。桌面镜像默认使用对应的非管理员用户。 文件管理器启动时会拒绝 Windows 路径中的非法引号／控制字符，并以单一绝对路径参数交给 macOS open。MSI 版本限用有范围的数字字段。Linux 桌面验证固定将证据写入 `/evidence`，通过私有管道取得 Xvfb 就绪信号／显示编号，并确实等待自建子进程结束。
 
 只使用标准库的 `core/mft.py` 基础模块会有界限地解析 NTFS 3.1 原始 FILE 记录、名称、属性列表、非驻留区段及大小／分配元数据。它拒绝不完整或不支持的记录、保留重用序号，而且不保留驻留的主文件／命名流内容。Python API 可明确指定 `ScanOptions(experimental_mft=True)` 进行顺序元数据审核，普通扫描仍为默认。`core/mft_reader.py` 使用已有的管理员令牌，提供本地固定 NTFS 磁盘的有界限只读访问，核对磁盘几何及扩展记录的序号／归属，不请求提权或修改权限。
 

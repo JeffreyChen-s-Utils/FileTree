@@ -55,3 +55,44 @@ def test_desktop_probe_rejects_a_masked_crash_and_incomplete_evidence(monkeypatc
         module.run_probe({}, tmp_path)
     (tmp_path / "desktop-zh-TW.png").write_bytes(b"owned screenshot fixture")
     assert module.run_probe({}, tmp_path) == 0
+
+
+@pytest.mark.parametrize("response", [b"12\n", b"", b"0;injected\n", None])
+def test_private_display_pipe_requires_readiness_and_always_joins_child(monkeypatch, response):
+    spec = importlib.util.spec_from_file_location("desktop_runner", _ROOT / "tools/linux_desktop/run.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    closed, lifetime, commands = [], [], []
+    server = SimpleNamespace(poll=lambda: None, terminate=lambda: lifetime.append("terminate"),
+                             wait=lambda **_kwargs: lifetime.append("joined"))
+
+    def launch(command, **kwargs):
+        commands.append(command)
+        assert kwargs["pass_fds"] == (41,)
+        return server
+
+    monkeypatch.setattr(module, "os", SimpleNamespace(pipe=lambda: (40, 41), close=closed.append,
+                                                     read=lambda *_args: response))
+    monkeypatch.setattr(module, "select", SimpleNamespace(select=lambda *_args: ([40] if response is not None else [],
+                                                                               [], [])))
+    monkeypatch.setattr(module.subprocess, "Popen", launch)
+    environment = {}
+    if response == b"12\n":
+        with module.display_server(environment, None):
+            assert environment["DISPLAY"] == ":12"
+            assert lifetime == []
+    else:
+        with pytest.raises(RuntimeError, match="Xvfb"), module.display_server(environment, None):
+            pytest.fail("invalid/unready display reached the probe")
+    assert commands[0][:3] == ["/usr/bin/Xvfb", "-displayfd", "41"]
+    assert closed == [41, 40]
+    assert lifetime == ["terminate", "joined"]
+
+
+def test_desktop_container_refuses_an_external_evidence_argument_before_io(monkeypatch):
+    spec = importlib.util.spec_from_file_location("desktop_runner", _ROOT / "tools/linux_desktop/run.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module.sys, "argv", ["run.py", "/outside/evidence"])
+    with pytest.raises(ValueError, match="fixed at /evidence"):
+        module.main()

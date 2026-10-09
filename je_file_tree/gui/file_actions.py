@@ -14,6 +14,7 @@ file manager, the folder is opened instead.
 from __future__ import annotations
 
 import os
+import re
 import subprocess  # nosec B404 - fixed file-manager commands around a local path
 import sys
 
@@ -32,6 +33,8 @@ _DBUS_TIMEOUT_MS = 3000
 
 def explorer_command(path: str) -> str:
     """The ``explorer`` command line that opens a window with ``path`` selected."""
+    if re.fullmatch(r'[^\x00-\x1f"]+', path) is None:
+        raise ValueError("Invalid Windows file-manager path")
     return f'explorer /select,"{os.path.normpath(path)}"'
 
 
@@ -47,9 +50,12 @@ def reveal_in_file_manager(path: str) -> bool:
             subprocess.Popen(explorer_command(path))  # noqa: S603 # nosec B603 - no shell, quoted local path
             return True
         if sys.platform == "darwin":
-            subprocess.Popen(["open", "-R", path])  # noqa: S603,S607 # nosec B603,B607 - fixed program
+            target = os.path.abspath(path)
+            if not path or re.fullmatch(r"/[^\x00]+", target) is None:
+                return False
+            subprocess.Popen(["/usr/bin/open", "-R", target])  # noqa: S603 # nosec B603 - validated absolute path
             return True
-    except OSError:
+    except (OSError, ValueError):
         return False
     return show_items(path) or open_path(os.path.dirname(path) or path)
 

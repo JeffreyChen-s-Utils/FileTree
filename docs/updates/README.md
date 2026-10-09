@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-22 | 2026-10-09 | Validate native operands and private desktop readiness | #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-21 | 2026-10-09 | Lock CI wheels and default desktop container to unprivileged user | #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-20 | 2026-10-09 | Publish approved Sonar project and verify visibility | #docs #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-19 | 2026-10-09 | Validate dropped and selected folders on owned workers | #fix #gui #threads | [2026-10-c](2026-10-c.md) |

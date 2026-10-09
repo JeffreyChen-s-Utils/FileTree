@@ -1421,3 +1421,12 @@ inserts successful checks in original selection order. Acceptance freezes only v
 operation guard is released before dispatching the combined scan. All query threads remain owned until
 full join, including canceled queries. Background capacity/scheduled-scan completion uses the same
 after_threads continuation before reporting or publishing attempt receipts.
+
+File-manager subprocess boundaries reject Windows quote/control characters before constructing the
+quoted Explorer operand. macOS uses fixed /usr/bin/open with a validated absolute path, so an
+option-like relative name remains a single file operand. MSI version validation returns its checked
+bounded numeric value to the compiler caller. Native desktop container evidence is fixed at /evidence;
+the runner/probe reject other evidence arguments. Xvfb uses -displayfd on an inherited private pipe,
+reports only a validated numeric display within ten seconds, and is terminated/joined on every exit.
+No filesystem polling of a publicly writable X11 socket pathname is used as readiness authority.
+Single-line workflow install commands quote the :all: operand as YAML text; hash checks remain required.

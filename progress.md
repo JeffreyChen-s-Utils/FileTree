@@ -34,5 +34,5 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Validation
 
 
-- **#90** (P1) Resolve fresh SonarCloud security findings and verify the current revision's quality gate before merge (`docs/updates/sonar-20261009-gate.json`). The public-visibility change restored completed PR analysis; dependency/container fixes require a fresh rescan, and CLI path/argument findings still require individual assessment.
+- **#90** (P1) Resolve fresh SonarCloud security findings and verify the current revision's quality gate before merge (`docs/updates/sonar-20261009-gate.json`). The public-visibility change restored completed PR analysis; dependency/container and operand/readiness fixes require a current-head rescan. [DECIDE] Choose the local CLI path boundary before resolving the remaining arbitrary-path findings; an owner decision is pending between preserving explicit disk/export paths with contextual review and restricting the CLI to the working directory.
 
