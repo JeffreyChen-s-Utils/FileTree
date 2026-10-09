@@ -6,9 +6,9 @@ Windows builds explicitly embed `--product-name=FileTree` and `--file-descriptio
 
 Native macOS arm64 compilation and bundle packaging passed Desktop builds run [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269): all 167 source entries were preserved and extraction matched. This proves compilation/packaging of that checked commit; the app was neither launched nor published. Finder/consent validation and Developer ID/notarization remain unavailable, so the POSIX release gate stays disabled.
 
-Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops Windows artifact and GitHub release publication. The version commit/tag is created first; PyPI upload and Windows compilation then run independently. A later Windows failure does not roll back the version or a successful PyPI upload. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
+Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops Windows artifact and GitHub release publication. The version commit/tag is created first; PyPI upload and Windows compilation then run independently. A later Windows failure does not roll back the version or a successful PyPI upload. The standalone executable is verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
 
-Every release PR merged into `main` automatically runs GitHub Actions on Windows to compile `FileTree-<version>.exe`, the standalone ZIP and MSI from the new version tag. The GitHub release stays a draft until all required files are uploaded and their names, sizes and upload state are verified. PyPI uploads run independently: a missing token or upload failure is reported but does not block the EXE release. A failed upload can be resumed by rerunning the failed `publish-release` job; already public releases are never overwritten.
+Every release PR merged into `main` automatically runs GitHub Actions on Windows to compile one complete program folder from the new version tag. The release provides `FileTree-<version>-windows-standalone.zip` and an MSI built from the same folder. Extract the whole ZIP and run its `FileTree.exe`; keep all libraries, plugins and translations beside it. The GitHub release stays a draft until all required files are uploaded and their names, sizes and upload state are verified. PyPI uploads run independently: a missing token or upload failure is reported but does not block the Windows release. A failed upload can be resumed by rerunning the failed `publish-release` job; already public releases are never overwritten.
 
 [Nuitka](https://nuitka.net/) turns FileTree into a native program that runs on computers without
 Python. It translates the Python code to C and compiles it, so the program starts quickly; the price is a
@@ -73,11 +73,7 @@ For a Windows release, package the complete folder (use the release's version):
 python tools/package_standalone.py --version 0.1.0
 ```
 
-This writes `FileTree-0.1.0-windows-standalone.zip` in the repository root, containing a versioned
-folder with the EXE, all libraries, plugins and translation catalogues. It requires exactly one
-completed `.dist` folder with `FileTree.exe` under `build/standalone`, rejects links/junctions and
-writes the archive atomically. The release workflow builds both forms from the same tag and attaches
-both the standalone ZIP and the single EXE.
+This writes `FileTree-0.1.0-windows-standalone.zip` in the repository root, containing a versioned folder with the EXE, all libraries, plugins and translation catalogues. It requires exactly one completed `.dist` folder with `FileTree.exe` under `build/standalone`, rejects links/junctions and writes the archive atomically. The release workflow compiles this folder once and uses it for both the standalone ZIP and MSI.
 
 On Windows with the .NET 8 SDK, build an x64 MSI from the same complete standalone output:
 
@@ -110,7 +106,7 @@ python tools/build_nuitka.py --onefile
 ```
 
 The result is one file, `build/onefile/FileTree.exe` (`build/onefile/FileTree` elsewhere). It is easier to hand around,
-but every start unpacks it to a temporary folder first, so it opens a little more slowly.
+but every start unpacks it to a temporary folder first, so it opens a little more slowly. This is an optional local build; automated Windows releases use the program folder from section 2.1.
 
 ### 2.3 A macOS app bundle
 

@@ -33,9 +33,9 @@ Source-operation approval dialogs default to No. Recovery summaries describe cap
 
 Native macOS arm64 compilation and bundle packaging passed Desktop builds run [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269): all 167 source entries were preserved and extraction matched. This proves compilation/packaging of that checked commit; the app was neither launched nor published. Finder/consent validation and Developer ID/notarization remain unavailable, so the POSIX release gate stays disabled.
 
-Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops Windows artifact and GitHub release publication. The version commit/tag is created first; PyPI upload and Windows compilation then run independently. A later Windows failure does not roll back the version or a successful PyPI upload. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
+Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops Windows artifact and GitHub release publication. The version commit/tag is created first; PyPI upload and Windows compilation then run independently. A later Windows failure does not roll back the version or a successful PyPI upload. The standalone executable is verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).
 
-Every release PR merged into `main` automatically runs GitHub Actions on Windows to compile `FileTree-<version>.exe`, the standalone ZIP and MSI from the new version tag. The GitHub release stays a draft until all required files are uploaded and their names, sizes and upload state are verified. PyPI uploads run independently: a missing token or upload failure is reported but does not block the EXE release. A failed upload can be resumed by rerunning the failed `publish-release` job; already public releases are never overwritten.
+Every release PR merged into `main` automatically runs GitHub Actions on Windows to compile one complete program folder from the new version tag. The release provides `FileTree-<version>-windows-standalone.zip` and an MSI built from the same folder. Extract the whole ZIP and run its `FileTree.exe`; keep all libraries, plugins and translations beside it. The GitHub release stays a draft until all required files are uploaded and their names, sizes and upload state are verified. PyPI uploads run independently: a missing token or upload failure is reported but does not block the Windows release. A failed upload can be resumed by rerunning the failed `publish-release` job; already public releases are never overwritten.
 
 ![FileTree showing a home folder: the folder tree on the left, the treemap on the right](docs/images/main_window_en.png)
 
@@ -173,15 +173,11 @@ On Windows, **Options → Explorer integration…** adds or removes **Scan with 
 
 FileTree runs on Windows, macOS and Linux.
 
-**Windows, without Python**: download `FileTree-<version>.exe` from the [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) page and run it;
-there is nothing to install.
+**Windows, without Python**: download `FileTree-<version>-windows-standalone.zip` from the [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) page. Extract the **whole folder** and run its `FileTree.exe`; no Python installation is required.
 
-Starting with the next release, the same page will also offer
-`FileTree-<version>-windows-standalone.zip`. Extract the **whole folder** and run its `FileTree.exe` for
-faster startup. Keep the DLLs, plugins and translations beside it. The single EXE is easier to carry,
-but unpacks its bundled files on every start. Both forms work without Python.
+Keep all DLLs, plugins and translation files in that folder. Move or copy the **whole folder** when relocating FileTree; its executable uses those files directly.
 
-The next release workflow also builds `FileTree-<version>-windows-x64.msi` from the complete
+The release workflow also builds `FileTree-<version>-windows-x64.msi` from the complete
 standalone folder. It installs for all users under Program Files, requires administrator approval,
 adds a Start-menu shortcut and supports upgrades/uninstall through Windows. Installer CI checks
 fresh disposable fixtures. The separate Desktop builds CI compiles the actual standalone program,

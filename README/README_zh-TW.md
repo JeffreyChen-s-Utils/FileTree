@@ -30,9 +30,9 @@
 
 macOS arm64 原生編譯與套件打包已通過 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)：167 個來源項目全部保留，解壓內容一致。這份證據確認該提交的編譯與打包，未啟動或發佈程式。Finder／同意驗證與 Developer ID／公證仍缺環境，因此 POSIX 發行閘門維持關閉。
 
-Windows 發行版可明確啟用 Azure Artifact Signing 的 OIDC 簽章；已啟用但設定缺漏，或簽章、時間戳、發行者驗證失敗時會停止 Windows 產物與 GitHub 發行版的發佈。先建立版本提交與標籤，接著 PyPI 上傳與 Windows 編譯各自執行。後續 Windows 失敗不會撤銷版本或已成功的 PyPI 上傳。單檔與獨立資料夾執行檔在打包前驗證，MSI 在上傳與套件清單雜湊前驗證。開發建置維持未簽署。目前仍缺帳號與原生成功簽署驗證，請參閱 [Windows 簽章設定](../docs/windows-signing.md)。
+Windows 發行版可明確啟用 Azure Artifact Signing 的 OIDC 簽章；已啟用但設定缺漏，或簽章、時間戳、發行者驗證失敗時會停止 Windows 產物與 GitHub 發行版的發佈。先建立版本提交與標籤，接著 PyPI 上傳與 Windows 編譯各自執行。後續 Windows 失敗不會撤銷版本或已成功的 PyPI 上傳。獨立資料夾執行檔在打包前驗證，MSI 在上傳與套件清單雜湊前驗證。開發建置維持未簽署。目前仍缺帳號與原生成功簽署驗證，請參閱 [Windows 簽章設定](../docs/windows-signing.md)。
 
-每次發版 PR 合併至 `main` 後，GitHub Actions 都會在 Windows 從新版本標籤自動編譯 `FileTree-<version>.exe`、獨立資料夾 ZIP 與 MSI。GitHub 發行版會維持草稿，直到必要檔案全部上傳，並核對名稱、大小與上傳狀態後才公開。PyPI 上傳獨立執行：缺少權杖或上傳失敗仍會回報，但不阻擋 EXE 發版。上傳失敗可重跑失敗的 `publish-release` 工作來續傳草稿；已公開的發行版不會覆寫。
+每次發版 PR 合併至 `main` 後，GitHub Actions 都會在 Windows 從新版本標籤編譯一份完整程式資料夾。發行版提供 `FileTree-<version>-windows-standalone.zip`，以及從同一份資料夾建立的 MSI。解壓縮整個 ZIP 後執行其中的 `FileTree.exe`，並保留旁邊的所有程式庫、外掛與翻譯檔。GitHub 發行版會維持草稿，直到必要檔案全部上傳，並核對名稱、大小與上傳狀態後才公開。PyPI 上傳獨立執行：缺少權杖或上傳失敗仍會回報，但不阻擋 Windows 發版。上傳失敗可重跑失敗的 `publish-release` 工作來續傳草稿；已公開的發行版不會覆寫。
 
 ![FileTree 顯示一個使用者資料夾：左邊是資料夾樹，右邊是方塊圖](../docs/images/main_window_zh-TW.png)
 
@@ -154,11 +154,11 @@ Windows 可用 **選項 → 檔案總管整合…**，在自己帳號的檔案�
 
 FileTree 可在 Windows、macOS 與 Linux 上執行。
 
-**Windows，不需要 Python**：從 [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 頁面下載 `FileTree-<版本>.exe` 直接執行，不必安裝。
+**Windows，不需要 Python**：從 [Releases](https://github.com/JeffreyChen-s-Utils/FileTree/releases) 頁面下載 `FileTree-<版本>-windows-standalone.zip`。解壓縮**整個資料夾**後執行其中的 `FileTree.exe`，不必安裝 Python。
 
-從下一次發版起，同一頁也會提供 `FileTree-<版本>-windows-standalone.zip`。解壓縮**整個資料夾**後執行其中的 `FileTree.exe`，啟動較快；DLL、外掛及翻譯檔都要保留在旁邊。單檔 EXE 較方便攜帶，但每次啟動都會先解壓縮內含檔案。兩種形式都不需要 Python。
+請保留資料夾內所有 DLL、外掛與翻譯檔。移動或複製 FileTree 時，請保留**整個資料夾**；執行檔會直接使用這些檔案。
 
-下一次發版流程也會從完整獨立程式資料夾建置 `FileTree-<版本>-windows-x64.msi`。它需要系統管理員核准，為所有使用者安裝至 Program Files，新增開始功能表捷徑，並支援透過 Windows 升級／解除安裝。安裝包 CI 使用全新可拋棄測試資料。獨立的 Desktop builds CI 會實際編譯獨立程式、保留 ZIP／MSI，並在可拋棄的 Windows 主機依全部內容雜湊核對安裝、套件版本升級與解除安裝。原生核對已通過升級後全部 104 個檔案、捷徑、來源保留與完整移除。套件升級只在相同編譯內容新增驗證標記；保留原始輸出且不啟動程式。`tools/prepare_packages.py` 使用實際 MSI／ZIP 雜湊與唯讀 MSI 中繼資料產生 winget、Scoop、Chocolatey 審閱草稿。CI 保留草稿，發版附上 package-drafts ZIP。本機原生 winget 驗證已通過。草稿尚未上架，發版網址須有相符的已發布產物。簽章與商店提交仍需要擁有者的憑證／帳號。
+發版流程也會從完整獨立程式資料夾建置 `FileTree-<版本>-windows-x64.msi`。它需要系統管理員核准，為所有使用者安裝至 Program Files，新增開始功能表捷徑，並支援透過 Windows 升級／解除安裝。安裝包 CI 使用全新可拋棄測試資料。獨立的 Desktop builds CI 會實際編譯獨立程式、保留 ZIP／MSI，並在可拋棄的 Windows 主機依全部內容雜湊核對安裝、套件版本升級與解除安裝。原生核對已通過升級後全部 104 個檔案、捷徑、來源保留與完整移除。套件升級只在相同編譯內容新增驗證標記；保留原始輸出且不啟動程式。`tools/prepare_packages.py` 使用實際 MSI／ZIP 雜湊與唯讀 MSI 中繼資料產生 winget、Scoop、Chocolatey 審閱草稿。CI 保留草稿，發版附上 package-drafts ZIP。本機原生 winget 驗證已通過。草稿尚未上架，發版網址須有相符的已發布產物。簽章與商店提交仍需要擁有者的憑證／帳號。
 
 Desktop builds CI 也會在 Ubuntu 22.04 準備完整 x86_64 Linux AppImage，在 macOS 15 準備 arm64 `.app` ZIP。原生解壓比對完整執行階段／套件，並保留來源雜湊／識別碼，不啟動程式。CI 保留開發產物與證據七天。正式發版附件受 `FILETREE_POSIX_RELEASE_VERIFIED=true` 控制，須先完成進度項目 #4 的 macOS 驗證。Developer ID 簽章／公證與 Finder／系統授權仍未驗證。編譯執行階段 wheel 鎖涵蓋原生 Windows／Linux／macOS，保留固定版本與雜湊驗證。macOS 建置直接繪製原生多尺寸 ICNS，不需外部 PNG 轉換。打包把編譯輸出的 `start_file_tree.app` 複製成 ZIP 內獨立核對的 `FileTree.app`。原生打包指令見 [Nuitka 指南](../nuitka.zh-TW.md)。AppImage 登入登錄使用暫時掛載外的原始執行檔，請將該檔案保留在登錄位置。
 

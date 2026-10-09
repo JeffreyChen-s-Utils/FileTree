@@ -6,9 +6,9 @@ Windows 빌드는 `--product-name=FileTree` 및 `--file-description=FileTree`를
 
 macOS arm64의 실제 컴파일과 번들 패키징은 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)에서 통과했습니다. 원본 항목 167개가 모두 보존되었으며 압축 해제 결과도 일치했습니다. 이는 검증한 커밋의 컴파일과 패키징에 대한 증거이며 앱을 실행하거나 게시하지 않았습니다. Finder 작업·동의 검증 및 Developer ID·공증 환경이 없어 POSIX 릴리스 게이트는 비활성 상태를 유지합니다.
 
-Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 먼저 버전 커밋과 태그를 만든 뒤 PyPI 업로드와 Windows 컴파일을 각각 실행합니다. 이후 Windows 실패는 버전이나 성공한 PyPI 업로드를 취소하지 않습니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](docs/windows-signing.md)을 참조하세요.
+Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 먼저 버전 커밋과 태그를 만든 뒤 PyPI 업로드와 Windows 컴파일을 각각 실행합니다. 이후 Windows 실패는 버전이나 성공한 PyPI 업로드를 취소하지 않습니다. 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](docs/windows-signing.md)을 참조하세요.
 
-릴리스 PR을 `main`에 병합할 때마다 GitHub Actions가 Windows에서 새 버전 태그로 `FileTree-<version>.exe`, 독립 폴더 ZIP 및 MSI를 자동 컴파일합니다. 필수 파일을 모두 업로드하고 이름, 크기와 업로드 상태를 확인할 때까지 GitHub 릴리스는 초안으로 유지됩니다. PyPI 업로드는 독립적으로 실행되며 토큰 누락이나 업로드 실패를 보고하지만 EXE 릴리스는 차단하지 않습니다. 실패한 `publish-release` 작업을 다시 실행하여 초안 업로드를 재개할 수 있습니다. 이미 공개된 릴리스는 덮어쓰지 않습니다.
+릴리스 PR을 `main`에 병합할 때마다 GitHub Actions가 Windows에서 새 버전 태그로 완전한 프로그램 폴더를 한 번만 컴파일합니다. 릴리스에는 `FileTree-<version>-windows-standalone.zip`과 같은 폴더로 만든 MSI가 포함됩니다. ZIP 전체를 압축 해제하고 내부의 `FileTree.exe`를 실행하세요. 모든 라이브러리, 플러그인 및 번역 파일을 함께 보관해야 합니다. 필수 파일을 모두 업로드하고 이름, 크기와 업로드 상태를 확인할 때까지 GitHub 릴리스는 초안으로 유지됩니다. PyPI 업로드는 독립적으로 실행되며 토큰 누락이나 업로드 실패를 보고하지만 Windows 릴리스는 차단하지 않습니다. 실패한 `publish-release` 작업을 다시 실행하여 초안 업로드를 재개할 수 있습니다. 이미 공개된 릴리스는 덮어쓰지 않습니다.
 
 [Nuitka](https://nuitka.net/)는 FileTree를 Python 없이 컴퓨터에서 실행되는 기본 프로그램으로 바꿉니다. Python 코드를 C로 변환하고 컴파일하므로 프로그램이 빠르게 시작됩니다. 가격은 더 긴 빌드입니다. 컴파일하는 진입점은 저장소 루트의 `start_file_tree.py`입니다.
 
@@ -67,7 +67,7 @@ Windows 릴리스의 경우 전체 폴더를 패키지합니다(릴리스 버전
 python tools/package_standalone.py --version 0.1.0
 ```
 
-그러면 EXE, 모든 라이브러리, 플러그인 및 번역 카탈로그가 포함된 버전 폴더가 포함된 저장소 루트에 `FileTree-0.1.0-windows-standalone.zip`이 기록됩니다. `build/standalone` 아래에 `FileTree.exe`이 있는 완성된 `.dist` 폴더가 하나만 필요하며 링크/접합을 거부하고 아카이브를 원자적으로 작성합니다. 릴리스 워크플로우는 동일한 태그에서 두 양식을 모두 작성하고 독립형 ZIP과 단일 EXE를 모두 첨부합니다.
+저장소 루트에 `FileTree-0.1.0-windows-standalone.zip`을 만듭니다. 버전별 폴더에는 EXE, 모든 라이브러리, 플러그인 및 번역 파일이 포함됩니다. `build/standalone` 아래에 `FileTree.exe`가 있는 완전한 `.dist` 폴더가 하나만 있어야 합니다. 도구는 링크와 정션을 거부하고 아카이브를 원자적으로 작성합니다. 릴리스 워크플로는 이 폴더를 한 번만 컴파일하고 같은 출력으로 ZIP과 MSI를 만듭니다.
 
 .NET 8 SDK를 사용하는 Windows에서 동일한 완전한 독립 실행형 출력에서 x64 MSI을 빌드합니다.
 
@@ -85,7 +85,7 @@ python tools/prepare_packages.py --version 0.1.0
 python tools/build_nuitka.py --onefile
 ```
 
-결과는 `build/onefile/FileTree.exe`(다른 곳에서는 `build/onefile/FileTree`)이라는 하나의 파일입니다. 넘겨주기는 더 쉽지만 시작할 때마다 먼저 임시 폴더에 압축을 풀기 때문에 조금 더 느리게 열립니다.
+결과는 `build/onefile/FileTree.exe`(다른 곳에서는 `build/onefile/FileTree`)이라는 하나의 파일입니다. 넘겨주기는 더 쉽지만 시작할 때마다 먼저 임시 폴더에 압축을 풀기 때문에 조금 더 느리게 열립니다. 이는 선택적인 로컬 빌드입니다. Windows 자동 릴리스는 2.1절의 프로그램 폴더를 사용합니다.
 
 ### 2.3 macOS 앱 번들
 

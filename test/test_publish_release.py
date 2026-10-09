@@ -27,7 +27,7 @@ def github_cli(monkeypatch: pytest.MonkeyPatch) -> None:
 def payload(tmp_path: Path) -> Path:
     for directory, names in {
         "dist": ["je_file_tree-1.2.3-py3-none-any.whl", "je_file_tree-1.2.3.tar.gz"],
-        "release-assets": ["FileTree-1.2.3.exe", "FileTree-1.2.3-windows-standalone.zip",
+        "release-assets": ["FileTree-1.2.3-windows-standalone.zip",
                            "FileTree-1.2.3-windows-x64.msi", "FileTree-1.2.3-package-drafts.zip"],
     }.items():
         (tmp_path / directory).mkdir()
@@ -58,19 +58,19 @@ def test_version_is_reconstructed_from_bounded_integers() -> None:
 
 
 @pytest.mark.parametrize("damage", ["missing", "empty", "different-version"])
-def test_missing_or_empty_exe_never_creates_release(
+def test_missing_or_empty_folder_archive_never_creates_release(
     payload: Path, monkeypatch: pytest.MonkeyPatch, damage: str,
 ) -> None:
-    exe = payload / "release-assets/FileTree-1.2.3.exe"
+    archive = payload / "release-assets/FileTree-1.2.3-windows-standalone.zip"
     if damage == "empty":
-        exe.write_bytes(b"")
+        archive.write_bytes(b"")
     elif damage == "different-version":
-        exe.rename(exe.with_name("FileTree-1.2.2.exe"))
+        archive.rename(archive.with_name("FileTree-1.2.2-windows-standalone.zip"))
     else:
-        exe.unlink()
+        archive.unlink()
     run = Mock()
     monkeypatch.setattr(publisher.subprocess, "run", run)
-    with pytest.raises(publisher.PublicationError, match="FileTree-1.2.3.exe"):
+    with pytest.raises(publisher.PublicationError, match="FileTree-1.2.3-windows-standalone.zip"):
         publisher.publish("1.2.3", payload)
     run.assert_not_called()
 
@@ -106,8 +106,9 @@ def test_public_release_is_never_overwritten(payload: Path, monkeypatch: pytest.
     assert run.call_count == 1
 
 
-@pytest.mark.parametrize("changes", [{"size": 0}, {"state": "new"}, {"name": "FileTree-1.2.2.exe"}])
-def test_incomplete_remote_exe_stays_a_draft(
+@pytest.mark.parametrize("changes", [{"size": 0}, {"state": "new"},
+                                     {"name": "FileTree-1.2.2-windows-standalone.zip"}])
+def test_incomplete_remote_folder_archive_stays_a_draft(
     payload: Path, monkeypatch: pytest.MonkeyPatch, changes: dict[str, object],
 ) -> None:
     run = Mock(side_effect=[subprocess.CompletedProcess([], 0, '{"isDraft": true}'),
@@ -133,4 +134,12 @@ def test_includes_optional_native_assets(payload: Path) -> None:
         parent = payload / "release-assets" / directory
         parent.mkdir()
         (parent / name).write_bytes(b"native")
-    assert len(publisher.release_assets("1.2.3", payload)) == 8
+    assert len(publisher.release_assets("1.2.3", payload)) == 7
+
+
+def test_folder_release_does_not_require_or_upload_a_single_executable(payload: Path) -> None:
+    assets = publisher.release_assets("1.2.3", payload)
+    assert len(assets) == 5
+    assert not any(asset.suffix == ".exe" for asset in assets)
+    (payload / "release-assets/FileTree-1.2.3.exe").write_bytes(b"obsolete one-file artifact")
+    assert publisher.release_assets("1.2.3", payload) == assets

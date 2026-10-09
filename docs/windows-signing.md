@@ -1,6 +1,6 @@
 # Windows release signing
 
-The release workflow can sign the one-file executable, the standalone FileTree executable and the
+The release workflow can sign the standalone FileTree executable and the
 MSI through Azure Artifact Signing (formerly Trusted Signing). Signing is optional and disabled
 until configured. Development Desktop builds remain unsigned. No signing account or private key is
 created by this repository. Native successful signing remains blocked on the owner's account.
@@ -45,7 +45,7 @@ signing or verification failure cannot undo the version or a successful PyPI upl
 The workflow does not provide an atomic release across PyPI and GitHub.
 
 The local signing action checks exact nonlinked release paths, then signs only
-`build/onefile/FileTree.exe` and `build/standalone/start_file_tree.dist/FileTree.exe`. It uses SHA-256
+`build/standalone/start_file_tree.dist/FileTree.exe`. It uses SHA-256
 file digests and RFC 3161 SHA-256 timestamps. Native `Get-AuthenticodeSignature` must report a valid
 trusted signature, a timestamp certificate and the exact expected publisher. Verification failure
 stops packaging. The standalone ZIP and MSI therefore contain the verified standalone executable.

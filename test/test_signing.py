@@ -58,7 +58,7 @@ def test_signing_finishes_before_artifact_packaging_upload_and_store_hashes():
     release = (_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     body = release.split("\n  build-exe:", 1)[1].split("\n  build-posix:", 1)[0]
     assert body.index("check_signing.py") < body.index("install_compiler.py")
-    assert body.index("Sign and verify the one-file") < body.index("package_standalone.py")
+    assert body.index("Sign and verify the standalone") < body.index("package_standalone.py")
     assert body.index("build_msi.py") < body.index("Sign and verify the MSI") < body.index("filetree-msi")
     assert body.index("Sign and verify the MSI") < body.index("prepare_packages.py")
     assert body.count("if: steps.signing.outputs.enabled == 'true'") == 2
