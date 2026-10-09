@@ -91,4 +91,7 @@ def test_workflow_builds_uploads_downloads_and_attaches_the_standalone_zip() -> 
     assert "run: python tools/package_standalone.py --version" in workflow
     assert workflow.count("name: filetree-standalone") == 2
     assert "path: FileTree-*-windows-standalone.zip\n          if-no-files-found: error" in workflow
-    assert "release-assets/*.exe release-assets/*.zip" in workflow
+    assert "tools/publish_release.py" in workflow
+    publisher = (_ROOT / "tools/publish_release.py").read_text(encoding="utf-8")
+    assert 'f"FileTree-{version}.exe"' in publisher
+    assert 'f"FileTree-{version}-windows-standalone.zip"' in publisher

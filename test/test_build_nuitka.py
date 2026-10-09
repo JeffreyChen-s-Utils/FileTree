@@ -47,6 +47,17 @@ def test_modes() -> None:
     assert "--macos-app-name=FileTree" not in build.nuitka_command("standalone", [])
 
 
+def test_windows_executables_carry_filetree_identity(monkeypatch) -> None:
+    build = _load()
+    monkeypatch.setattr(build.sys, "platform", "win32")
+    for mode in ("standalone", "onefile"):
+        command = build.nuitka_command(mode, [])
+        assert "--product-name=FileTree" in command
+        assert "--file-description=FileTree" in command
+    monkeypatch.setattr(build.sys, "platform", "linux")
+    assert "--file-description=FileTree" not in build.nuitka_command("standalone", [])
+
+
 def test_the_catalogues_keep_their_place_relative_to_the_package(tmp_path: Path) -> None:
     translations = tmp_path / "PySide6" / "Qt" / "translations"
     translations.mkdir(parents=True)

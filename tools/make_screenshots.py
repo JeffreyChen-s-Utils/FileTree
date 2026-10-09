@@ -10,6 +10,7 @@ from __future__ import annotations
 import random
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,7 +79,7 @@ def main() -> None:
         settings.setValue("language", language)
         window = create_workspace(settings)
         window.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
-        window.resize(1200, 720)
+        window.resize(1200, 800)
         window.show()
         window.current.results.show_outcome(analyse(ScanResult(demo_tree(), [], 2.4)))
         window.current.pages.setCurrentIndex(RESULTS_PAGE)
@@ -87,6 +88,12 @@ def main() -> None:
             app.processEvents()
         window.grab().save(str(OUTPUT / f"main_window_{language}.png"))
         window.close()
+        deadline = time.monotonic() + 30
+        while not window._close_ready:
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Screenshot workspace shutdown timed out")
+            app.processEvents()
+            time.sleep(.01)
         window.deleteLater()
 
 

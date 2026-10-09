@@ -12,6 +12,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
 from je_file_tree.core.trash_size import TrashUsage, trash_usage
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 _LIMIT = 256
 
@@ -98,8 +99,7 @@ class BinLabels(QObject):
         self._current = worker
         self._running.add(worker)
         worker.ready.connect(lambda rows, root: self._show(worker, rows, root))
-        worker.finished.connect(lambda: self._finished(worker))
-        worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._retire(worker), self))
         self.busy_changed.emit(True)
         worker.start()
 
@@ -113,6 +113,10 @@ class BinLabels(QObject):
             self._current = None
             self.busy_changed.emit(False)
 
+    def _retire(self, worker: BinLabelsWorker) -> None:
+        self._finished(worker)
+        worker.deleteLater()
+
     def stop(self, *, wait: bool = False) -> None:
         """Invalidate replies and cancel between OS queries; optional waiting joins every owned thread."""
         self._current = None
@@ -122,7 +126,7 @@ class BinLabels(QObject):
                 wait_for(worker)
         self.busy_changed.emit(False)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Prevent more queries and join outstanding metadata calls before the window is destroyed."""
         self._closed = True
-        self.stop(wait=True)
+        self.stop(wait=wait)

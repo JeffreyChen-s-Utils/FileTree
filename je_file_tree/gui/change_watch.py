@@ -180,11 +180,11 @@ class FollowChanges(QObject):
             self._merge(ChangeBatch(full=True, reason="source_operation"))
         return retiring
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Prevent late replies and join all native work before the tab is destroyed."""
         self._closing = True
         self.timer.stop()
-        self.stop(clear=True, wait=True)
+        self.stop(clear=True, wait=wait)
 
     def _merge(self, batch: ChangeBatch) -> None:
         if not batch.folders and not batch.full:

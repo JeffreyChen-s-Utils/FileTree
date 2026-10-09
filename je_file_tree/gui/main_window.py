@@ -6,7 +6,7 @@ import json
 import os
 from collections.abc import Callable, Sequence
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, QThread, Qt, QTimer
+from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, QThread, Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (
@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMenu,
     QMessageBox,
+    QPushButton,
     QStackedWidget,
     QToolBar,
 )
@@ -117,6 +118,8 @@ def read_workers(settings: QSettings) -> int:
 class MainWindow(QMainWindow):
     """The FileTree window."""
 
+    shutdown_finished = Signal()
+
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
         self._operations, self._language_base_font = operations, self.font()
@@ -131,7 +134,7 @@ class MainWindow(QMainWindow):
         self._trash_worker: TrashWorker | None = None
         self._path_dialogs: set[QDialog] = set()
         self._trash_rescans: list[Node] = []
-        self._closing = False
+        self._closing, self._close_waiting, self._close_ready = False, False, False
         self._analyser: AnalyseWorker | None = None
         self._analysers: set[AnalyseWorker] = set()
         self._exports: set[ExportWorker] = set()
@@ -164,7 +167,7 @@ class MainWindow(QMainWindow):
         self._build_toolbar()
         self._connect()
         self.setAcceptDrops(True)
-        self.resize(1100, 720)
+        self.resize(1240, 800)
         self._restore()
         self.retranslate()
         self._update_actions()
@@ -316,6 +319,8 @@ class MainWindow(QMainWindow):
         worker.start()
 
     def _release_scan(self, worker: ScanWorker) -> None:
+        if self._closing and self._worker is worker:
+            self._worker = None
         self._scan_workers.discard(worker)
         worker.deleteLater()
 
@@ -342,7 +347,7 @@ class MainWindow(QMainWindow):
             self._live_timer.stop()
 
     def _is_current(self, worker: ScanWorker) -> bool:
-        return worker is self._worker
+        return not self._closing and worker is self._worker
 
     def pause_scan(self, paused: bool) -> None:
         """Pause or resume the current folder scan while live refreshes keep running."""
@@ -739,6 +744,7 @@ class MainWindow(QMainWindow):
         self._trash_worker = None
         self.refresh_bin_labels()
         if self._closing:
+            self._report_copy_errors(result)
             return
         self.results.setEnabled(True)
         self._update_actions()
@@ -1025,12 +1031,20 @@ class MainWindow(QMainWindow):
             action.setText(tr(f"action_{key}"))
             action.setToolTip(tr(f"action_{key}_tip"))
             action.setStatusTip(tr(f"action_{key}_tip"))
+        if elevation.supported() and not elevation.compiled():
+            for key in ("elevate", "ask_admin"):
+                tip = tr(f"action_{key}_tip") + "\n" + tr("elevate_python_tip")
+                self._actions[key].setToolTip(tip)
+                self._actions[key].setStatusTip(tip)
         for key, menu in self._menus.items():
             menu.setTitle(tr(key))
         for unit, action in self._unit_actions.items():
             action.setText(tr("unit_auto") if unit == AUTO_UNIT else unit)
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
         self.path_edit.setToolTip(tr("path_placeholder"))
+        self.path_edit.setAccessibleName(tr("overview_path"))
+        self._scan_path.setText(tr("overview_scan_path"))
+        self._scan_path.setToolTip(tr("overview_scan_path_tip"))
         self.welcome.retranslate()
         self.results.retranslate()
         self.theme_menu.retranslate()
@@ -1056,7 +1070,7 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         splitter = self.settings.value("splitter")
         if isinstance(splitter, QByteArray):
-            self.results.splitter.restoreState(splitter)
+            self.results.restore_splitter(splitter)
         self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
@@ -1073,37 +1087,73 @@ class MainWindow(QMainWindow):
         self.welcome.set_recent(self._recent())
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        """Qt: stop the scan and remember the window layout."""
+        """Cancel first; retain the window until zero-time joins permit safe destruction."""
+        if self._close_ready:
+            super().closeEvent(event)
+            return
+        if self._close_waiting:
+            event.ignore()
+            return
+        self._close_waiting = True
+        self._closing = True
+        self.setEnabled(False)
+        self.statusBar().showMessage(tr("closing_workers"))
+        self._shutdown(wait=False)
+        workers = tuple(self.findChildren(QThread))
+        if all(worker.wait(0) for worker in workers):
+            self._finish_close()
+            super().closeEvent(event)
+            return
+        event.ignore()
+        after_threads(workers, self._resume_close, self)
+
+    def _resume_close(self) -> None:
+        self._finish_close()
+        self.close()
+
+    def _finish_close(self) -> None:
+        self._shutdown(wait=True)
+        self._close_ready = True
+        self.shutdown_finished.emit()
+
+    def _shutdown(self, *, wait: bool) -> None:
+        """Invalidate all replies; optional joins are used only after the closing fence has completed."""
         self._trash_rescans.clear()
         self._closing = True
-        self._folder_drops.shutdown()
-        self.welcome.shutdown()
-        self._follow.shutdown()
-        self._updates.shutdown()
-        self._undo.shutdown()
+        self._live_timer.stop()
+        self._folder_drops.shutdown(wait=wait)
+        self.welcome.shutdown(wait=wait)
+        self._follow.shutdown(wait=wait)
+        self._updates.shutdown(wait=wait)
+        self._undo.shutdown(wait=wait)
         for dialog in self._path_dialogs.copy():
-            dialog.shutdown()
-            dialog.reject()
-        self._bin_labels.shutdown()
+            dialog.shutdown(wait=wait)
+            if wait:
+                dialog.reject()
+        self._bin_labels.shutdown(wait=wait)
         if self._trash_worker is not None:
             worker = self._trash_worker
             worker.cancel()
-            wait_for(worker)
-            self._trash_worker = None
-            self._report_copy_errors(worker.result)
-        self.stop_scan(wait=True)
+            if wait:
+                wait_for(worker)
+                self._trash_worker = None
+                self._report_copy_errors(worker.result)
+        self.stop_scan(wait=wait)
         for worker in self._scan_workers.copy():
             worker.cancel()
-            wait_for(worker)
-        self.results.search.stop(wait=True)
-        self.results.duplicates.stop(wait=True)
-        self.results.cleanup.stop(wait=True)
-        self.results.users.stop(wait=True)
-        self.results.changes.stop(wait=True)
-        self.results.details.stop(wait=True)
-        self.results.wait_for_lists()
+            if wait:
+                wait_for(worker)
+        self.results.search.stop(wait=wait)
+        self.results.duplicates.stop(wait=wait)
+        self.results.cleanup.stop(wait=wait)
+        self.results.users.stop(wait=wait)
+        self.results.changes.stop(wait=wait)
+        self.results.details.stop(wait=wait)
+        self.results.wait_for_lists(wait=wait)
         for capture in self._captures.copy():
             capture.cancel()
+        if not wait:
+            return
         for worker in self._analysers.copy():
             wait_for(worker)
         for worker in self._exports.copy():  # a file being written is finished, never left half-written
@@ -1111,7 +1161,6 @@ class MainWindow(QMainWindow):
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
         self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
-        super().closeEvent(event)
 
     # --- drag and drop ----------------------------------------------------
 
@@ -1294,16 +1343,26 @@ class MainWindow(QMainWindow):
         toolbar.setObjectName("main_toolbar")
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        toolbar.setStyleSheet("QToolBar { spacing: 6px; padding: 6px; }"
+                             "QToolButton, QPushButton, QLineEdit { min-height: 28px; }")
         toolbar.addAction(self._actions["open"])
         toolbar.addAction(self._actions["rescan"])
         toolbar.addAction(self._actions["stop"])
         toolbar.addSeparator()
         self.path_edit.setClearButtonEnabled(True)
-        self.path_edit.returnPressed.connect(lambda: self.start_scan(self.path_edit.text()))
         toolbar.addWidget(self.path_edit)
+        self._scan_path = QPushButton()
+        self._scan_path.clicked.connect(lambda: self.start_scan(self.path_edit.text()))
+        self.path_edit.returnPressed.connect(self._scan_path.click)
+        self.path_edit.textChanged.connect(self._update_path_button)
+        toolbar.addWidget(self._scan_path)
         toolbar.addSeparator()
         toolbar.addAction(self._actions["help"])
         self.addToolBar(toolbar)
+
+    def _update_path_button(self) -> None:
+        ready = bool(self.path_edit.text().strip()) and not self.operation_busy and not self._closing
+        self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
         self.welcome.drives_changed.connect(self._update_actions)
@@ -1336,6 +1395,7 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        self._update_path_button()
         if self.operation_busy:
             self.pending_source_workers()
         if self._operations is not None:

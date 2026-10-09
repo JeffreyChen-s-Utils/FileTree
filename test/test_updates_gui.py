@@ -78,12 +78,13 @@ def test_disabling_or_closing_cancels_owned_request_and_discards_late_notice(
     monkeypatch.setattr(updates, "fetch_release", delayed)
     notice.start()
     notice.check()
-    worker = notice.worker
+    cancelled = notice.worker.cancel
     _wait(qapp, entered.is_set)
     if closing:
         window.close()
-        assert not worker.isRunning()
+        _wait(qapp, lambda: window._close_ready)
     else:
         window._actions["check_updates"].setChecked(False)
     _wait(qapp, lambda: notice.worker is None)
+    assert cancelled.is_set()
     assert not notice.version and notice.label.isHidden()

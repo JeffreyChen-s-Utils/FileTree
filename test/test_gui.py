@@ -78,6 +78,7 @@ def window(qapp: QApplication, tmp_path: Path):
     main = create_window(settings)
     yield main
     main.close()
+    _wait(qapp, lambda: main._close_ready)
     main.deleteLater()
     i18n.set_language(i18n.DEFAULT_LANGUAGE)
     apply_qt_translation(i18n.DEFAULT_LANGUAGE)
@@ -871,8 +872,10 @@ def test_the_chart_mode_is_remembered(window: MainWindow, qapp: QApplication, sa
     assert restored.results.charts.mode == TREE
     assert restored.results.charts.tree.orientation == "vertical"
     restored.close()
+    _wait(qapp, lambda: restored._close_ready)
     restored.deleteLater()
     again.close()
+    _wait(qapp, lambda: again._close_ready)
     again.deleteLater()
 
 
@@ -982,6 +985,7 @@ def test_search_conditions_and_saved_searches(window: MainWindow, qapp: QApplica
     again = create_window(window.settings)  # a new window finds it in the settings
     assert again.results.search.saved.findData("Pictures and code") > 0
     again.close()
+    _wait(qapp, lambda: again._close_ready)
     again.deleteLater()
     panel.box.setText("")
     filters.apply({})

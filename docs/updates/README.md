@@ -67,6 +67,12 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-30 | 2026-10-09 | 整合開發工具依賴 PR 並同步 Ruff CI 版本 | #migration #dependencies #ci #validation | [2026-10-c](2026-10-c.md) |
+| U-20261009-29 | 2026-10-09 | 修正自動發版 PR 的參數驗證與品質檢查 | #fix #release #quality #validation | [2026-10-c](2026-10-c.md) |
+| U-20261009-28 | 2026-10-09 | 自動 Windows 發版獨立於 PyPI 並驗證草稿產物 | #fix #release #ci #validation | [2026-10-c](2026-10-c.md) |
+| U-20261009-27 | 2026-10-09 | Keep scan shutdown responsive and clarify elevation identity | #fix #gui #threads #windows #validation | [2026-10-c](2026-10-c.md) |
+| U-20261009-26 | 2026-10-09 | Preserve saved analysis layout and synchronize drive fixtures | #fix #ui #ux #validation #ci | [2026-10-c](2026-10-c.md) |
+| U-20261009-25 | 2026-10-09 | Implement adaptive scan overview and analysis navigation | #ui #ux #gui #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-24 | 2026-10-09 | Review explicit local CLI path capabilities and restore Sonar gate | #done #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-23 | 2026-10-09 | Confine desktop fallback helper to its owned Linux fixture | #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-22 | 2026-10-09 | Validate native operands and private desktop readiness | #security #validation #sonar | [2026-10-c](2026-10-c.md) |

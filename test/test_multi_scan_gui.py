@@ -105,9 +105,11 @@ def test_multi_worker_saves_only_actual_source_history(qapp, sources, tmp_path):
 
 def test_closing_combined_scan_joins_current_worker_and_ignores_late_results(window, sources, qapp):
     window.start_scan_roots(tuple(map(str, sources)))
-    worker = window._worker
+    cancelled = window._worker._cancel
     window.close()
-    assert not worker.isRunning() and window._worker is None
+    _wait(qapp, lambda: window._close_ready)
+    assert cancelled.is_set()
+    assert window._worker is None
     qapp.processEvents()
     assert window._closing
 

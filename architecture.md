@@ -35,6 +35,23 @@ retained on failure. This fixture cannot establish slow remote-link performance 
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+The GUI presentation follows `docs/ui-ux.md`: `result_overview.py` renders root scalar totals and
+explicit live/finished/incomplete coverage; `result_navigation.py` synchronizes a sidebar or narrow
+dropdown with existing result-page indexes and hides unavailable comparisons. Its `AnalysisTabs`
+minimum geometry follows the active page, so inactive search controls cannot squeeze the tree.
+`results_view.py` retains the shared tree/analysis selection and selected-folder scope above a
+noncollapsible splitter. `ResultsView.restore_splitter` restores valid saved state before first
+display and marks the initial layout established, preserving saved proportions while disabling legacy
+pane collapse. Invalid saved state leaves first-display defaults available. The welcome content
+scrolls; an explicit path Scan button and Enter share
+one enabled condition under the existing operation guard. `scan_bar.py` owns only a visible-page
+one-second elapsed timer and a plain-text elided path; cooperative pause/analysis/stop feedback does
+not join workers or query native storage. New presentation work is bounded, stays on the GUI thread
+and uses captured data; source operations, worker ownership and §6 factory contracts remain unchanged.
+`ThreadFence` zero-time joins preserve the current GUI pacing gate; only blocking `wait_for` opens
+it explicitly. Nonblocking retirement must not let background traversal compete with an active GUI
+event. Normal dispatcher idle transitions still release workers between events.
+
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
 cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all
@@ -942,6 +959,10 @@ to start a second copy through the "runas" verb (the UAC prompt) unless the `ask
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
 continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
 the scanned folder as its argument. A built program restarts itself; from Python it is `-m je_file_tree`.
+UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
+execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
+Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.
+These resources do not supply a signature or establish a verified publisher.
 
 **Language.** `i18n.set_language` + `qt_translation.apply_qt_translation` (Qt's own buttons and dialogs),
 then every widget's `retranslate()`. The choice is stored in `QSettings` with the unit, window layout and
@@ -966,6 +987,16 @@ installs fonts; missing families retain normal system fallback across workspace 
   `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
+
+GUI closing is asynchronous when work remains. MainWindow.close requests cancellation, disables
+commands and displays a closing status while ThreadFence polls only zero-time joins. The owner stays
+alive until scans, native readers, analysis and exports have finished; late Trash/Undo failures retain
+their reporting path. MainWindow.shutdown_finished signals readiness for destruction. Integrations
+must retain windows until this signal (or _close_ready in owned probes), rather than close/delete
+immediately. ScanWorkspace retains retiring tabs and their operation guards, closes peers independently,
+and finishes explicit Quit only after every tab and background service joins. No terminate, artificial
+production processEvents loop or blocking native wait is used to initiate closure. Validation/screenshot
+tools pump their owned Qt application until actual closing readiness before disposing fixtures.
 
 `tools/validate_windows_share.ps1 -DisposableRunner` is a hosted-Windows-only native validation
 entry point, never a caller-selected source/share cleanup API. It persists `windows-share.json`,
@@ -1153,20 +1184,29 @@ Outside the workspace it is published as `je_file_tree` on PyPI (command `je-fil
 `file_tree` and `file-tree` belong to FSL's `file-tree`, which installs a module and a command of that
 name, so they must not come back. `.github/workflows/release.yml` releases on every pull request merged
 into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
-`je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
-stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
-with `tools/build_nuitka.py --onefile` and a separate standalone build for the GitHub release.
-`tools/package_standalone.py` atomically archives the sole complete Windows `.dist` folder with all
-libraries/plugins/catalogues into a versioned ZIP; the workflow requires both artifacts and downloads
-both before publishing the EXE and ZIP together. The job that holds the token installs
-nothing but `.github/requirements/publish.txt` (`build`, `twine`, the build backend `setuptools` and
-what they need): wheels only, at locked hashes, generated from `publish.in` beside it, before the
-version is pushed. It builds with `python -m build --no-isolation`, so the backend is that locked
-`setuptools` and nothing is downloaded during the build; the lock has to satisfy
-`build-system.requires` in `pyproject.toml`. `test/test_workflow_actions.py` fails when that job runs
-any other `pip install`, builds with isolation, or when the lock does not satisfy
-`build-system.requires`. The source distribution carries no tests (`MANIFEST.in`,
+`je_file_tree/__init__.py` together. The `release` producer installs only hash-locked wheels
+from `.github/requirements/publish.txt`, builds with `python -m build --no-isolation` and checks
+both distributions before pushing the version commit/tag. It retains `pypi-dist` with missing files
+treated as an error. Independent `publish-pypi` and `build-exe` jobs consume that version; only the
+former sees `PYPI_API_TOKEN`, installs the same locked wheels and uploads the producer's exact files.
+A missing token or failed PyPI upload is reported without blocking Windows compilation/publication.
+The Windows runner builds `FileTree-<version>.exe` with `tools/build_nuitka.py --onefile` and a separate
+standalone build. `tools/package_standalone.py` atomically archives the complete Windows `.dist`
+folder with all libraries/plugins/catalogues into a versioned ZIP; MSI and package drafts follow.
+`publish-release` depends on the producer and required Windows/opt-in native builds, independently
+of `publish-pypi`. `tools/publish_release.py` requires nonempty exact-version EXE/ZIP/MSI/draft and
+Python distributions before contacting GitHub. Its CLI version is reconstructed from bounded ASCII
+integers before it enters fixed GitHub CLI argument lists. It creates a draft only for an existing tag, uploads
+all files, checks remote names/sizes/uploaded state, and then publishes. Retrying a failed publication
+resumes its draft; public assets are never overwritten. `test/test_publish_release.py` covers missing
+EXEs, upload errors, incomplete remote receipts and draft recovery. `test/test_workflow_actions.py`
+guards locked installs, the producer's backend, publisher token isolation and compatible lock pins.
+The source distribution carries no tests (`MANIFEST.in`,
 `test/test_sdist_manifest.py`).
+
+Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI test requirements
+match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
+one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
 
 ## 7. Design constraints
 
@@ -1217,7 +1257,8 @@ request to the fixed PyPI host; it follows no redirects and installs nothing. `g
 an opt-out hourly/startup timer, QLockFile daily claim around synced QSettings, UpdateWorker and
 translated fixed-link notice. Only gui.app.main starts scheduling; constructors, tests, screenshots
 and CLI remain passive. Attempts are persisted before networking, including failures; disabling
-cancels publication and close joins the owned request through wait_for. No scan data is sent.
+cancels publication and asynchronous close retains the owned request until its closing fence joins.
+No scan data is sent.
 
 Private Windows validation records six sparse logical lengths after the actual recovery cases.
 `windows_sparse_trash_probe` separates Qt success, source disappearance, native-bin retention,
@@ -1408,8 +1449,10 @@ continuation without starting native execution or writing an approval journal. N
 pass through after_threads before reporting and releasing their source-operation ownership.
 
 Normal FollowChanges.stop/configure/adopt calls retire readers without blocking; queued rearming
-checks the current reader and cancellation state after old readers join. Explicit shutdown uses
-stop(wait=True). History and comparison ready/failure callbacks are identity-guarded join continuations;
+checks the current reader and cancellation state after old readers join. Shutdown accepts wait=False
+to cancel native work before the owning window's closing fence; final destruction uses wait=True only
+after the captured descendant threads have joined. History and comparison ready/failure callbacks are
+identity-guarded join continuations;
 they enable comparisons and publish captured saved scans only after termination. Recurring foreground
 scan delivery/review validation and virtual-disk query completion use the same nonblocking join gate.
 

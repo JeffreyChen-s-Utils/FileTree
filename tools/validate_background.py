@@ -157,6 +157,7 @@ def _join(workspace: ScanWorkspace | None, original: Callable[[], Path],
         try:
             if workspace is not None:
                 workspace.quit_application()
+                pump(QApplication.instance(), lambda: workspace._close_ready)
         finally:
             history.history_folder = original
 
@@ -212,12 +213,18 @@ def _session(app: QApplication, owned: Path, args, retain: Callable[[str, dict],
         retain("capturing_dialog", proof)
         _capture_dialog(app, workspace.background.config, workspace, args.evidence)
         retain("quitting", proof)
-        workspace.quit_application()
+        _quit_joined(app, workspace)
         require(workspace.background.scan is None and workspace.background.capacity is None, "Quit did not join work")
         proof["quit_joined"] = True
         return proof
     finally:
         _join(workspace, original, retain, proof)
+
+
+def _quit_joined(app: QApplication, workspace: ScanWorkspace) -> None:
+    """Keep native Qt dispatch alive until the asynchronous closing fence has joined all work."""
+    workspace.quit_application()
+    pump(app, lambda: workspace._close_ready)
 
 
 def _save(evidence: Path, proof: dict) -> None:

@@ -109,9 +109,10 @@ class ArchiveController(QObject):
         for worker in self._workers:
             worker.cancel.set()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Stop and join owned library calls before the view is destroyed."""
         self._closed = True
         self.invalidate()
-        for worker in self._workers.copy():
-            wait_for(worker)
+        if wait:
+            for worker in self._workers.copy():
+                wait_for(worker)

@@ -180,6 +180,7 @@ def test_close_cancels_producer_before_joining_stream_writer(window, qapp, monke
     worker.start()
     capture.start()
     window.close()
+    _wait(qapp, lambda: window._close_ready)
     assert not worker.isRunning() and target.read_text(encoding='utf-8') == 'keep'
     assert not list(tmp_path.glob('.file-tree-*'))
     view.deleteLater()

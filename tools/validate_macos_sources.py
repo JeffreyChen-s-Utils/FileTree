@@ -132,6 +132,11 @@ def _render(app: QApplication, owned: Path, source: Path, evidence: Path) -> dic
                 "scan_bytes": window.current.results.outcome.result.root.size}
     finally:
         window.close()
+        deadline = time.monotonic() + 30
+        while not window._close_ready:
+            require(time.monotonic() < deadline, "Native owned GUI shutdown timed out")
+            app.processEvents()
+            time.sleep(.01)
 
 
 def main() -> None:

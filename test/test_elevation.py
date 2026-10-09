@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 import pytest
+from test_gui import _wait
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
@@ -83,7 +84,8 @@ def window(qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     settings.setValue("language", "en")
     main = create_window(settings)
     yield main
-    main.close()
+    MainWindow.close(main)  # use the real teardown even when a case replaces the instance's close action
+    _wait(qapp, lambda: main._close_ready)
     main.deleteLater()
     i18n.set_language(i18n.DEFAULT_LANGUAGE)
     apply_qt_translation(i18n.DEFAULT_LANGUAGE)
@@ -96,6 +98,16 @@ def test_the_menu_offers_a_restart_and_the_start_up_setting(window: MainWindow) 
     assert window._actions["ask_admin"].isChecked()
     window._actions["ask_admin"].trigger()
     assert str(window.settings.value(ASK_ADMIN_KEY)).lower() == "false"
+
+
+def test_source_uac_identity_is_explained_in_both_actions(window, monkeypatch):
+    monkeypatch.setattr(elevation, "compiled", lambda: False)
+    window.retranslate()
+    for key in ("elevate", "ask_admin"):
+        assert "Windows UAC displays Python" in window._actions[key].toolTip()
+    monkeypatch.setattr(elevation, "compiled", lambda: True)
+    window.retranslate()
+    assert "Windows UAC displays Python" not in window._actions["elevate"].toolTip()
 
 
 def test_restarting_passes_the_folder_and_a_declined_prompt_keeps_this_copy(

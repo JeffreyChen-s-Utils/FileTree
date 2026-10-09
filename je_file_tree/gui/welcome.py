@@ -9,9 +9,12 @@ from PySide6.QtCore import QStorageInfo, QThread, QTimer, Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QProgressBar,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -105,6 +108,7 @@ class WelcomePage(QWidget):
         self._recent_title = QLabel()
         self._recent_box = QVBoxLayout()
         self._tip = QLabel()
+        self._workflow = QLabel()
         self._build()
         self.retranslate()
         self._drive_timer = QTimer(self)
@@ -147,13 +151,14 @@ class WelcomePage(QWidget):
             self._drive_refresh_pending = False
             self.refresh_drives()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Invalidate replies and join discovery before this page is destroyed."""
         self._closed = True
         self._drive_timer.stop()
         if self._drive_worker is not None:
             self._drive_worker.cancel.set()
-            wait_for(self._drive_worker)
+            if wait:
+                wait_for(self._drive_worker)
 
     def set_bin_metadata(self, rows: dict[str, TrashUsage]) -> None:
         """Update visible drive labels with copied query results; missing scopes remain unqueried."""
@@ -185,10 +190,11 @@ class WelcomePage(QWidget):
         self.bin_refresh.setToolTip(tr("bin_labels_hint"))
         self._recent_title.setText(tr("welcome_recent"))
         self._tip.setText(tr("welcome_tip"))
+        self._workflow.setText(tr("overview_workflow"))
         self._fill_drives()
         self._fill_recent()
 
-    def _build(self) -> None:
+    def _decorate(self) -> None:
         title_font = QFont(self._title.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.8)
         title_font.setBold(True)
@@ -196,39 +202,66 @@ class WelcomePage(QWidget):
         self._subtitle.setWordWrap(True)
         self._choose.setMinimumHeight(44)
         self._choose.setDefault(True)
+        self._choose.setStyleSheet("QPushButton { background: palette(highlight);"
+                                   " color: palette(highlighted-text); padding: 8px 20px; border-radius: 6px; }"
+                                   "QPushButton:disabled { background: palette(button);"
+                                   " color: palette(placeholder-text); }"
+                                   "QPushButton:focus { border: 2px solid palette(text); }")
         self._choose.clicked.connect(self.choose_folder_requested)
         self._tip.setWordWrap(True)
         self._tip.setStyleSheet("color: palette(placeholder-text);")
+        self._workflow.setWordWrap(True)
+        self._workflow.setStyleSheet("color: palette(placeholder-text);")
+        for label in (self._title, self._subtitle, self._workflow, self._tip):
+            label.setTextFormat(Qt.TextFormat.PlainText)
+            label.setWordWrap(True)
         for label in (self._drives_title, self._recent_title):
             font = QFont(label.font())
             font.setBold(True)
             label.setFont(font)
 
+    def _build(self) -> None:
+        self._decorate()
         card = QWidget()
-        card.setMinimumWidth(480)
-        card.setMaximumWidth(680)
+        card.setMaximumWidth(920)
         column = QVBoxLayout(card)
         column.setContentsMargins(0, 0, 0, 0)
         column.setSpacing(12)
         column.addWidget(self._title)
         column.addWidget(self._subtitle)
-        column.addWidget(self._choose)
-        column.addWidget(self.scan_all)
+        actions = QHBoxLayout()
+        actions.addWidget(self._choose, 2)
+        actions.addWidget(self.scan_all, 1)
+        column.addLayout(actions)
+        column.addWidget(self._workflow)
         column.addSpacing(8)
         column.addWidget(self._drives_title)
         column.addLayout(self._drives)
-        column.addWidget(self._overview)
-        column.addWidget(self._bins)
-        column.addWidget(self.bin_refresh)
+        tools = QHBoxLayout()
+        for button in (self._overview, self._bins, self.bin_refresh):
+            tools.addWidget(button)
+        column.addLayout(tools)
         column.addSpacing(8)
         column.addWidget(self._recent_title)
         column.addLayout(self._recent_box)
         column.addSpacing(8)
         column.addWidget(self._tip)
-        outer = QVBoxLayout(self)
+        content = QWidget()
+        outer = QVBoxLayout(content)
         outer.setContentsMargins(24, 32, 24, 24)
-        outer.addWidget(card, 0, Qt.AlignmentFlag.AlignHCenter)
+        centered = QHBoxLayout()
+        centered.addStretch(1)
+        centered.addWidget(card, 4)
+        centered.addStretch(1)
+        outer.addLayout(centered)
         outer.addStretch(1)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.scroll.setWidget(content)
+        page = QVBoxLayout(self)
+        page.setContentsMargins(0, 0, 0, 0)
+        page.addWidget(self.scroll)
 
     def _fill_drives(self) -> None:
         _clear(self._drives)
@@ -237,7 +270,7 @@ class WelcomePage(QWidget):
             used = volume.total - volume.available
             name = volume.name or volume.root
             root = volume.root
-            button = QPushButton(f"{name}  ({root})" if name != root else root)
+            button = QPushButton((f"{name}  ({root})" if name != root else root).replace("&", "&&"))
             button.setToolTip(tr("welcome_drive_tip", path=root))
             button.clicked.connect(lambda _checked=False, path=root: self.scan_requested.emit(path))
             bar = QProgressBar()
@@ -247,6 +280,7 @@ class WelcomePage(QWidget):
             bar.setMaximumHeight(10)
             free = QLabel(tr("welcome_drive_free", free=format_size(volume.available),
                              total=format_size(volume.total)))
+            free.setWordWrap(True)
             self._drives.addWidget(button, row * 2, 0)
             self._drives.addWidget(bar, row * 2, 1)
             self._drives.addWidget(free, row * 2, 2)
@@ -263,7 +297,9 @@ class WelcomePage(QWidget):
         _clear(self._recent_box)
         self._recent_title.setVisible(bool(self._recent))
         for folder in self._recent:
-            button = QPushButton(folder)
+            button = QPushButton(folder.replace("&", "&&"))
+            button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+            button.setAccessibleName(folder)
             button.setFlat(True)
             button.setStyleSheet("text-align: left;")
             button.setToolTip(tr("welcome_drive_tip", path=folder))

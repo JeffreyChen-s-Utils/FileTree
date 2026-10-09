@@ -2,9 +2,13 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows 빌드는 `--product-name=FileTree` 및 `--file-description=FileTree`를 명시적으로 포함하고 `--product-version` 및 `--file-version`은 패키지 버전을 사용합니다. 권한을 높일 때 해당 실행 파일을 다시 시작합니다. Python 소스는 Python/pythonw의 권한을 높이므로 UAC에 해당 인터프리터가 표시됩니다. 창 제목으로 변경할 수 없습니다. 이 리소스 설정은 검증된 게시자나 서명된 빌드를 증명하지 않습니다.
+
 macOS arm64의 실제 컴파일과 번들 패키징은 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)에서 통과했습니다. 원본 항목 167개가 모두 보존되었으며 압축 해제 결과도 일치했습니다. 이는 검증한 커밋의 컴파일과 패키징에 대한 증거이며 앱을 실행하거나 게시하지 않았습니다. Finder 작업·동의 검증 및 Developer ID·공증 환경이 없어 POSIX 릴리스 게이트는 비활성 상태를 유지합니다.
 
-Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 버전 커밋·태그와 PyPI 업로드가 먼저 완료되며 이후 Windows 작업 실패로 취소되지 않습니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](docs/windows-signing.md)을 참조하세요.
+Windows 릴리스에서 Azure Artifact Signing과 OIDC 서명을 명시적으로 활성화할 수 있습니다. 활성화된 설정이 누락되거나 서명·타임스탬프·게시자 검증에 실패하면 Windows 산출물과 GitHub 릴리스 게시를 중지합니다. 먼저 버전 커밋과 태그를 만든 뒤 PyPI 업로드와 Windows 컴파일을 각각 실행합니다. 이후 Windows 실패는 버전이나 성공한 PyPI 업로드를 취소하지 않습니다. 단일 파일 및 독립 폴더 실행 파일은 패키징 전에, MSI는 업로드와 매니페스트 해시 계산 전에 검증합니다. 개발 빌드는 서명되지 않습니다. 계정과 실제 운영체제 서명 성공 검증은 아직 사용할 수 없습니다. [Windows 서명 설정](docs/windows-signing.md)을 참조하세요.
+
+릴리스 PR을 `main`에 병합할 때마다 GitHub Actions가 Windows에서 새 버전 태그로 `FileTree-<version>.exe`, 독립 폴더 ZIP 및 MSI를 자동 컴파일합니다. 필수 파일을 모두 업로드하고 이름, 크기와 업로드 상태를 확인할 때까지 GitHub 릴리스는 초안으로 유지됩니다. PyPI 업로드는 독립적으로 실행되며 토큰 누락이나 업로드 실패를 보고하지만 EXE 릴리스는 차단하지 않습니다. 실패한 `publish-release` 작업을 다시 실행하여 초안 업로드를 재개할 수 있습니다. 이미 공개된 릴리스는 덮어쓰지 않습니다.
 
 [Nuitka](https://nuitka.net/)는 FileTree를 Python 없이 컴퓨터에서 실행되는 기본 프로그램으로 바꿉니다. Python 코드를 C로 변환하고 컴파일하므로 프로그램이 빠르게 시작됩니다. 가격은 더 긴 빌드입니다. 컴파일하는 진입점은 저장소 루트의 `start_file_tree.py`입니다.
 
