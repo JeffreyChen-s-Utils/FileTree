@@ -1323,6 +1323,14 @@ quality-gate changes are not quota remedies. Before merge, require a completed f
 the current revision/PR and API findings/gate evidence. The credential stays in the process environment;
 sonar-20261009-visibility.json records the pre-approval diagnosis and sonar-20261009-public.json records
 the approved change and verification. Neither snapshot contains credential values.
+The first completed post-change PR analysis at 837998a is retained in sonar-20261009-gate.json;
+it confirms quota recovery and identifies a security-gate failure, not merge readiness.
+CI uses .github/requirements/test.txt and the desktop image uses runtime.txt, both generated with
+uv pip compile --universal --python-version 3.10 --generate-hashes --only-binary :all:.
+The runtime lock is constrained by the test lock so application versions align; update both from
+dev_requirements.txt/requirements.txt when inputs change. pip requires hashes and refuses source builds.
+The pinned desktop base image installs system prerequisites at build time, then defaults to the mapped
+unprivileged DESKTOP_UID:DESKTOP_GID; the runner also supplies an explicit matching --user.
 
 Native background validation atomically persists each phase before workspace/tray/service creation,
 scheduled work, recurring review, optional notification, capture and quit/join calls. A failure retains

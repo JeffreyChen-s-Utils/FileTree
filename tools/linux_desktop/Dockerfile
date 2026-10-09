@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-render-util0 libxcb-xinerama0 libxcb-shape0 libxcb-sync1 libxcb-randr0 \
     libxcb-xfixes0 libsm6 libice6 libglib2.0-0 libdbus-1-3 thunar xdotool openbox trayer
 WORKDIR /workspace
-COPY requirements.txt /tmp/filetree-requirements.txt
-RUN python -m pip install --no-cache-dir -r /tmp/filetree-requirements.txt
+COPY .github/requirements/runtime.txt /opt/filetree/runtime.txt
+RUN python -m pip install --no-cache-dir --require-hashes --only-binary :all: -r /opt/filetree/runtime.txt
 RUN python -c 'from PySide6.QtCore import QLibraryInfo; import subprocess; from pathlib import Path; p = Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)) / "platforms/libqxcb.so"; r = subprocess.run(["/usr/bin/ldd", str(p)], capture_output=True, text=True, check=True); print(r.stdout); assert "not found" not in r.stdout'
+USER ${DESKTOP_UID}:${DESKTOP_GID}
 ENTRYPOINT ["python", "/workspace/tools/linux_desktop/run.py"]

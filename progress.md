@@ -34,5 +34,5 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ### Validation
 
 
-- **#90** (P1) Rerun SonarCloud analysis for the current PR revision after the approved public-visibility change; inspect/resolve fresh findings and verify the quality gate before merge. Setting verification: `docs/updates/sonar-20261009-public.json`; public visibility alone does not establish a completed fresh gate.
+- **#90** (P1) Resolve fresh SonarCloud security findings and verify the current revision's quality gate before merge (`docs/updates/sonar-20261009-gate.json`). The public-visibility change restored completed PR analysis; dependency/container fixes require a fresh rescan, and CLI path/argument findings still require individual assessment.
 

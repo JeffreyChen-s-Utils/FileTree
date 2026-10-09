@@ -1,0 +1,43 @@
+{
+  "observed_date": "2026-10-09",
+  "repository": "JeffreyChen-s-Utils/FileTree",
+  "revision": "837998a94a3f14c2c7622261b1364131dcdbc4c2",
+  "pull_request": "8",
+  "task_id": "AaEexQxHUaog4_3KUhS6",
+  "task_status": "SUCCESS",
+  "analysis_id": "949d3aae-c480-47f7-a8a7-c50b891528d2",
+  "quality_gate": "ERROR",
+  "new_security_rating": 4,
+  "bugs": 0,
+  "vulnerabilities": 17,
+  "code_smells": 1152,
+  "private_loc_failure": false,
+  "gate_conditions": {
+    "new_reliability_rating": {
+      "actual": "1",
+      "status": "OK"
+    },
+    "new_security_rating": {
+      "actual": "4",
+      "status": "ERROR"
+    },
+    "new_maintainability_rating": {
+      "actual": "1",
+      "status": "OK"
+    },
+    "new_duplicated_lines_density": {
+      "actual": "0.1",
+      "status": "OK"
+    },
+    "new_security_hotspots_reviewed": {
+      "actual": "100.0",
+      "status": "OK"
+    }
+  },
+  "provenance": [
+    "/api/ce/activity",
+    "/api/project_pull_requests/list",
+    "/api/qualitygates/project_status?analysisId",
+    "/api/issues/search?pullRequest=8"
+  ]
+}

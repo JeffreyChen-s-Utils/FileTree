@@ -281,7 +281,7 @@ python -m je_file_tree.cli scan C:\ --also D:\ --json drives.json
 
 SonarCloud 自動分析使用 [.sonarcloud.properties](../.sonarcloud.properties) 區分主要來源與 `test/`。程式、工具、工作流程及版控中繼資料仍納入分析，未設定排除或修改品質門檻。服務文件要求從預設分支啟用，因此只在 dev 新增檔案不能證明額度問題已解決；須以最新 API 結果確認分析完成及品質門檻。
 
-[已驗證的可見性／分析設定診斷](../docs/updates/sonar-20261009-visibility.json) 確認來源／測試設定已生效，並發現公開 GitHub 倉庫綁定了私有 SonarCloud 專案。經擁有者同意，專案已改為公開（[設定驗證](../docs/updates/sonar-20261009-public.json)）；公開專案不占私有 LOC 額度。仍須確認新的分析完成及品質門檻。
+SonarCloud 專案經擁有者同意改為公開（[設定驗證](../docs/updates/sonar-20261009-public.json)）。額度修復後，新的 PR 分析已完成；[保留的品質門檻結果](../docs/updates/sonar-20261009-gate.json) 指出合併前須處理的安全問題。CI 與 Linux 桌面容器使用 `.github/requirements/` 版控中的版本／雜湊鎖定檔，只安裝 wheel；相依套件變更時須一起更新 runtime 與 test 鎖定檔。桌面映像預設使用對應的非管理員使用者。
 
 只使用標準函式庫的 `core/mft.py` 基礎模組會有界限地解析 NTFS 3.1 原始 FILE 記錄、名稱、屬性清單、非駐留區段及大小／配置中繼資料。它拒絕不完整或不支援的記錄、保留重用序號，而且不保留駐留的主檔案／具名串流內容。Python API 可明確指定 `ScanOptions(experimental_mft=True)` 進行循序中繼資料稽核，一般掃描仍為預設。`core/mft_reader.py` 使用已有的系統管理員權杖，提供本機固定 NTFS 磁碟的有界限唯讀存取，核對磁碟幾何及延伸記錄的序號／歸屬，不要求提升權限或修改權限。
 

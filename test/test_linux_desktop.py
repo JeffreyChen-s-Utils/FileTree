@@ -34,7 +34,7 @@ def test_desktop_job_uses_a_read_only_repository_and_small_container():
     assert "linux-desktop-evidence" in workflow and "if: always()" in workflow
     assert "shell: bash" in workflow
     ignore = (_ROOT / "tools/linux_desktop/Dockerfile.dockerignore").read_text(encoding="utf-8")
-    assert "**\n!requirements.txt" in ignore
+    assert "!.github/requirements/runtime.txt" in ignore
 
 
 def test_desktop_probe_rejects_a_masked_crash_and_incomplete_evidence(monkeypatch, tmp_path):

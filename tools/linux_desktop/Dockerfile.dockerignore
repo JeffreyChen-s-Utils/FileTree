@@ -1,2 +1,4 @@
 **
-!requirements.txt
+!.github/
+!.github/requirements/
+!.github/requirements/runtime.txt
