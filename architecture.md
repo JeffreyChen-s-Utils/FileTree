@@ -1430,3 +1430,8 @@ the runner/probe reject other evidence arguments. Xvfb uses -displayfd on an inh
 reports only a validated numeric display within ten seconds, and is terminated/joined on every exit.
 No filesystem polling of a publicly writable X11 socket pathname is used as readiness authority.
 Single-line workflow install commands quote the :all: operand as YAML text; hash checks remain required.
+
+The disconnected-bus fallback helper is Linux-only, rejects CLI target/output selectors before Qt
+construction and derives only the fixed owned fixture/record names from its private HOME scratch.
+It rejects a linked, foreign-owned or non-private scratch directory before invoking the file manager.
+The parent probe creates those exact fixtures and passes no path arguments to this helper.

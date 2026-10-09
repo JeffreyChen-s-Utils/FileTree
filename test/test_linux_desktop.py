@@ -96,3 +96,14 @@ def test_desktop_container_refuses_an_external_evidence_argument_before_io(monke
     monkeypatch.setattr(module.sys, "argv", ["run.py", "/outside/evidence"])
     with pytest.raises(ValueError, match="fixed at /evidence"):
         module.main()
+
+
+def test_fallback_refuses_an_external_target_before_native_dispatch(monkeypatch):
+    spec = importlib.util.spec_from_file_location("desktop_fallback", _ROOT / "tools/linux_desktop/fallback.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="linux", argv=["fallback.py", "/foreign/target"]))
+    monkeypatch.setattr(module, "QApplication", lambda *_args: pytest.fail("foreign target reached Qt"))
+    monkeypatch.setattr(module, "reveal_in_file_manager", lambda *_args: pytest.fail("foreign target dispatched"))
+    with pytest.raises(ValueError, match="private Linux container fixture"):
+        module.main()

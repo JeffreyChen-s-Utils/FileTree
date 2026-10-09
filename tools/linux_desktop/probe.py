@@ -133,7 +133,7 @@ def check_fallback(app: QApplication, evidence: Path, scratch: Path) -> dict[str
     target.write_text("owned fallback", encoding="utf-8")
     environment = dict(os.environ, DBUS_SESSION_BUS_ADDRESS=f"unix:path={scratch}/absent-bus",
                        FILETREE_XDG_LOG=str(record), PATH=f"{binary}:{os.environ['PATH']}")
-    command = [sys.executable, "/workspace/tools/linux_desktop/fallback.py", str(target), str(record)]
+    command = [sys.executable, "/workspace/tools/linux_desktop/fallback.py"]
     with (evidence / "fallback.log").open("w", encoding="utf-8") as log:
         child = subprocess.Popen(command, env=environment, stdout=log, stderr=log)  # noqa: S603 # nosec B603
         try:
