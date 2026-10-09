@@ -1204,6 +1204,10 @@ guards locked installs, the producer's backend, publisher token isolation and co
 The source distribution carries no tests (`MANIFEST.in`,
 `test/test_sdist_manifest.py`).
 
+Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI test requirements
+match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
+one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
+
 ## 7. Design constraints
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with
