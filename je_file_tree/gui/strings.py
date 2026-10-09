@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+_JA_FOLDER = "フォルダー"
+
 
 def _cjk(html: str) -> str:
     """Join the source lines of Chinese HTML: a line break there would show up as a space between characters."""
@@ -4082,7 +4084,7 @@ JA: dict[str, str] = {
     'overview_size': '論理サイズ',
     'overview_allocated': '記録された割り当て',
     'overview_files': 'ファイル',
-    'overview_folders': 'フォルダー',
+    'overview_folders': _JA_FOLDER,
     'overview_problems': '読み取り不可の項目を確認（{count}）',
     'overview_navigation': '分析ビュー',
     'overview_coverage_hint': '今回のスキャン範囲を示します。除外設定とマウント境界は引き続き適用されます。',
@@ -5567,9 +5569,9 @@ JA: dict[str, str] = {
     'column_share': '親の%',
     'column_share_total': '全体の %',
     'column_files': 'ファイル',
-    'column_folders': 'フォルダー',
+    'column_folders': _JA_FOLDER,
     'column_modified': '修正済み',
-    'column_folder': 'フォルダー',
+    'column_folder': _JA_FOLDER,
     'column_extension': '延長',
     'column_type': '種類',
     'column_path': 'パス',

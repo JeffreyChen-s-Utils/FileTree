@@ -201,7 +201,8 @@ def test_close_joins_native_inverse_and_reports_late_partial_truth(window, qapp,
     assert window._worker is None, "scan cannot overlap an active inverse operation"
     window.close()
     _wait(qapp, lambda: window._close_ready)
-    assert window._undo.worker is None and worker.result.results[0].restored
+    assert window._undo.worker is None
+    assert worker.result.results[0].restored
     assert (source / "file").exists() and not payload.exists() and receipt.exists() and calls == ["trash", "restore"]
     assert "late receipt error <error>&" in questions[-1][1] and questions[-1][0] == Qt.TextFormat.PlainText
     qapp.processEvents()

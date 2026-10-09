@@ -47,7 +47,8 @@ def test_nonblocking_thread_fence_preserves_the_gui_pacing_gate(qapp):
         assert not WINDOW.is_open, "a zero-time join must not release the GUI's worker-priority gate"
         QTimer.singleShot(20, worker.release.set)
         _pump(qapp, lambda: bool(callbacks))
-        assert worker.release.is_set() and callbacks == [False]
+        assert worker.release.is_set()
+        assert callbacks == [False]
         after_threads((), lambda: callbacks.append(WINDOW.is_open), owner)
         assert callbacks == [False, False]
     finally:

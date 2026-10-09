@@ -15,10 +15,18 @@ class PublicationError(Exception):
     """The release payload or remote draft is incomplete or unsafe to replace."""
 
 
+def release_version(value: str) -> str:
+    """Turn an untrusted CLI value into a canonical version composed only of bounded integers."""
+    match = re.fullmatch(r"([0-9]{1,6})\.([0-9]{1,6})\.([0-9]{1,6})", value)
+    if match is None:
+        raise PublicationError("Expected a numeric major.minor.patch version")
+    major, minor, patch = (int(part) for part in match.groups())
+    return f"{major}.{minor}.{patch}"
+
+
 def release_assets(version: str, root: Path) -> list[Path]:
     """Require the exact version's Python and Windows payloads, including a nonempty EXE."""
-    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-        raise PublicationError("Expected a numeric major.minor.patch version")
+    version = release_version(version)
     windows = root / "release-assets"
     assets = [root / "dist" / f"je_file_tree-{version}-py3-none-any.whl",
               root / "dist" / f"je_file_tree-{version}.tar.gz",
@@ -47,6 +55,7 @@ def _gh(arguments: list[str], *, capture: bool = False, check: bool = True) -> s
 
 def publish(version: str, root: Path) -> None:
     """Resume a draft, upload and verify assets, then publish; never replace a public release."""
+    version = release_version(version)
     assets = release_assets(version, root)
     tag = f"v{version}"
     existing = _gh(["view", tag, "--json", "isDraft"], capture=True, check=False)

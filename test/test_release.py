@@ -111,7 +111,8 @@ def test_windows_release_does_not_depend_on_the_pypi_upload() -> None:
     text = _WORKFLOW.read_text(encoding="utf-8")
     publisher = text.split("  publish-pypi:\n", 1)[1].split("  build-exe:\n", 1)[0]
     windows = text.split("  build-exe:\n", 1)[1].split("  build-posix:\n", 1)[0]
-    assert "needs: release" in publisher and "needs: release" in windows
+    assert 'needs: release' in publisher
+    assert 'needs: release' in windows
     assert "publish-pypi" not in windows
     assert "name: pypi-dist" in publisher
     assert "python -m build" not in publisher, "upload the producer's exact files"

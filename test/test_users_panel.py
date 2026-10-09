@@ -94,7 +94,8 @@ def test_replacement_and_stop_close_discard_late_ownership_inventory(window, qap
     cancelled = active.cancel
     window.close()
     _wait(qapp, lambda: window._close_ready)
-    assert cancelled.is_set() and not panel.busy
+    assert cancelled.is_set()
+    assert not panel.busy
     panel._show(active, OwnerInventory([], 0, 0, 0, 0, 0, False))
     assert panel.model.rowCount() == 0
 

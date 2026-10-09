@@ -25,11 +25,14 @@ def test_single_window_close_waits_for_native_discovery_without_blocking(window,
     try:
         window.close()
         window.close()  # repeat requests must neither destroy ownership nor initiate another join
-        assert not window._close_ready and window.isVisible() and not release.is_set()
+        assert not window._close_ready
+        assert window.isVisible()
+        assert not release.is_set()
         assert "Closing FileTree" in window.statusBar().currentMessage()
         QTimer.singleShot(30, release.set)
         _wait(qapp, lambda: window._close_ready)
-        assert release.is_set() and not window.isVisible()
+        assert release.is_set()
+        assert not window.isVisible()
     finally:
         release.set()
         _wait(qapp, lambda: window._close_ready)
@@ -60,11 +63,14 @@ def test_quit_retains_native_capacity_and_finishes_the_owned_export(workspace, q
     _wait(qapp, entered.is_set)
     try:
         workspace.quit_application()
-        assert capacity.cancel.is_set() and not workspace._close_ready
-        assert not exported.is_set() and not release.is_set()
+        assert capacity.cancel.is_set()
+        assert not workspace._close_ready
+        assert not exported.is_set()
+        assert not release.is_set()
         QTimer.singleShot(30, release.set)
         _wait(qapp, lambda: workspace._close_ready)
-        assert exported.is_set() and target.read_text(encoding="utf-8") == "complete owned report"
+        assert exported.is_set()
+        assert target.read_text(encoding='utf-8') == 'complete owned report'
     finally:
         release.set()
         _wait(qapp, lambda: workspace._close_ready)
@@ -93,11 +99,14 @@ def test_retiring_one_scan_tab_keeps_the_other_scan_running(workspace, qapp, tmp
     second_cancel = second._worker._cancel
     try:
         workspace.close_tab(workspace.tabs.indexOf(first))
-        assert workspace.tabs.count() == 2 and not first._close_ready
+        assert workspace.tabs.count() == 2
+        assert not first._close_ready
         QTimer.singleShot(30, release[0].set)
         _wait(qapp, lambda: workspace.tabs.count() == 1)
-        assert workspace.current is second and second._worker.isRunning()
-        assert not second_cancel.is_set() and not release[1].is_set()
+        assert workspace.current is second
+        assert second._worker.isRunning()
+        assert not second_cancel.is_set()
+        assert not release[1].is_set()
         assert all((root / "kept").read_bytes() == b"source" for root in roots)
     finally:
         for event in release:

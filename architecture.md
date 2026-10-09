@@ -1195,7 +1195,8 @@ standalone build. `tools/package_standalone.py` atomically archives the complete
 folder with all libraries/plugins/catalogues into a versioned ZIP; MSI and package drafts follow.
 `publish-release` depends on the producer and required Windows/opt-in native builds, independently
 of `publish-pypi`. `tools/publish_release.py` requires nonempty exact-version EXE/ZIP/MSI/draft and
-Python distributions before contacting GitHub, creates a draft only for an existing tag, uploads
+Python distributions before contacting GitHub. Its CLI version is reconstructed from bounded ASCII
+integers before it enters fixed GitHub CLI argument lists. It creates a draft only for an existing tag, uploads
 all files, checks remote names/sizes/uploaded state, and then publishes. Retrying a failed publication
 resumes its draft; public assets are never overwritten. `test/test_publish_release.py` covers missing
 EXEs, upload errors, incomplete remote receipts and draft recovery. `test/test_workflow_actions.py`

@@ -111,7 +111,12 @@ class ScanBar(QFrame):
         paused = self._pause.isChecked() and not self._analysing and not self._stopping
         self._busy.setRange(0, 1 if paused else 0)
         self._busy.setValue(0)
-        phase = "stopping" if self._stopping else "analysing" if self._analysing else "paused" if paused else "running"
+        if self._stopping:
+            phase = "stopping"
+        elif self._analysing:
+            phase = "analysing"
+        else:
+            phase = "paused" if paused else "running"
         self._feedback.setText(tr("overview_scan_" + phase) + " · "
                                + tr("overview_scan_elapsed", time=format_duration(time.monotonic() - self._started)))
         self._busy.setAccessibleName(tr("overview_scan_" + phase))

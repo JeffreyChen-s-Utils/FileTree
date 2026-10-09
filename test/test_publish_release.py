@@ -12,7 +12,8 @@ import pytest
 
 _ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("publish_release", _ROOT / "tools/publish_release.py")
-assert _spec is not None and _spec.loader is not None
+assert _spec is not None
+assert _spec.loader is not None
 publisher = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(publisher)
 
@@ -42,13 +43,18 @@ def _receipt(root: Path, **changes: object) -> str:
     return json.dumps({"assets": assets})
 
 
-@pytest.mark.parametrize("invalid", ["--help", "../1.2.3", "v1.2.3", "1.2", "1.2.3; command"])
+@pytest.mark.parametrize("invalid", ["--help", "../1.2.3", "v1.2.3", "1.2", "1.2.3; command",
+                                    "1.2.3\n", "9999999.2.3", "١.٢.٣"])
 def test_invalid_version_never_calls_github(payload: Path, monkeypatch: pytest.MonkeyPatch, invalid: str) -> None:
     run = Mock()
     monkeypatch.setattr(publisher.subprocess, "run", run)
     with pytest.raises(publisher.PublicationError, match="numeric"):
         publisher.publish(invalid, payload)
     run.assert_not_called()
+
+
+def test_version_is_reconstructed_from_bounded_integers() -> None:
+    assert publisher.release_version("001.002.003") == "1.2.3"
 
 
 @pytest.mark.parametrize("damage", ["missing", "empty", "different-version"])
@@ -86,7 +92,8 @@ def test_uploads_to_draft_and_publishes_only_after_verification(
     assert [command[2] for command in commands] == (
         ["view", "upload", "view", "edit"] if resume else ["view", "create", "upload", "view", "edit"])
     if not resume:
-        assert "--draft" in commands[1] and "--verify-tag" in commands[1]
+        assert '--draft' in commands[1]
+        assert '--verify-tag' in commands[1]
     assert "--clobber" in next(command for command in commands if command[2] == "upload")
     assert commands[-1] == ["/runner/gh", "release", "edit", "v1.2.3", "--draft=false"]
 

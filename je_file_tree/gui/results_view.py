@@ -777,8 +777,10 @@ class ResultsView(QWidget):
     def _update_overview(self) -> None:
         outcome = self._outcome
         root = outcome.result.root if outcome is not None else self.tree_model.root
-        state = ("partial" if outcome.partial or outcome.result.errors else "complete") if outcome else (
-            "live" if self.scan_bar.isVisibleTo(self) else "empty")
+        if outcome is not None:
+            state = "partial" if outcome.partial or outcome.result.errors else "complete"
+        else:
+            state = "live" if self.scan_bar.isVisibleTo(self) else "empty"
         self.overview.show_totals(root, state, len(outcome.result.errors) if outcome else 0)
         self._analysis_hint.setText(tr("overview_live_hint" if outcome is None else "overview_result_hint"))
 

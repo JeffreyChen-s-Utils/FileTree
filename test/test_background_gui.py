@@ -260,7 +260,8 @@ def test_explicit_quit_joins_native_capacity_work_instead_of_hiding(monitored, t
     cancelled = monitor.capacity.cancel
     monitored.current.quit_application()
     _wait(qapp, lambda: monitored._close_ready)
-    assert ended.is_set() and cancelled.is_set()
+    assert ended.is_set()
+    assert cancelled.is_set()
     assert monitor.closing and monitored._closing and not monitor.can_hide
 
 

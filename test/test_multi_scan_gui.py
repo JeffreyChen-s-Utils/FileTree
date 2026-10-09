@@ -108,7 +108,8 @@ def test_closing_combined_scan_joins_current_worker_and_ignores_late_results(win
     cancelled = window._worker._cancel
     window.close()
     _wait(qapp, lambda: window._close_ready)
-    assert cancelled.is_set() and window._worker is None
+    assert cancelled.is_set()
+    assert window._worker is None
     qapp.processEvents()
     assert window._closing
 

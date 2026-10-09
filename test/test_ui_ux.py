@@ -75,7 +75,8 @@ def test_sidebar_keyboard_compact_chooser_and_comparison_stay_in_sync(window, qa
     results.tabs.setCurrentIndex(CHART_TAB)
     window.resize(860, 720)
     _wait(qapp, lambda: navigation.compact)
-    assert navigation.list.isHidden() and not navigation.combo.isHidden()
+    assert navigation.list.isHidden()
+    assert not navigation.combo.isHidden()
     navigation.combo.setCurrentIndex(navigation.combo.findData(PROBLEMS_TAB))
     assert results.tabs.currentIndex() == PROBLEMS_TAB
     results._reveal_changes = True
@@ -103,13 +104,18 @@ def test_scan_feedback_ticks_during_a_stalled_read_and_retains_the_full_plain_pa
         before = bar._feedback.text()
         now[0] = 104.0
         bar._clock.timeout.emit()
-        assert bar._feedback.text() != before and "4.0 s" in bar._feedback.text()
-        assert bar._current.full_text() == path and bar._current.toolTip() == path
+        assert bar._feedback.text() != before
+        assert '4.0 s' in bar._feedback.text()
+        assert bar._current.full_text() == path
+        assert bar._current.toolTip() == path
         assert bar._current.textFormat() == Qt.TextFormat.PlainText
         bar._pause.click()
-        assert bar._busy.maximum() == 1 and bar._stop.isEnabled()
+        assert bar._busy.maximum() == 1
+        assert bar._stop.isEnabled()
         bar.analysing()
-        assert bar._busy.maximum() == 0 and not bar._pause.isEnabled() and bar._stop.isEnabled()
+        assert bar._busy.maximum() == 0
+        assert not bar._pause.isEnabled()
+        assert bar._stop.isEnabled()
         bar.stopping()
         assert i18n.tr("overview_scan_stopping") in bar._feedback.text()
         assert not bar._stop.isEnabled()
@@ -132,7 +138,8 @@ def test_home_scrolls_many_cached_drives_and_preserves_literal_recent_paths(wind
     _wait(qapp, lambda: page.scroll.verticalScrollBar().maximum() > 0)
     assert page._tip.height() >= page._tip.heightForWidth(page._tip.width())
     button = page._recent_box.itemAt(0).widget()
-    assert isinstance(button, QPushButton) and "R&&D" in button.text()
+    assert isinstance(button, QPushButton)
+    assert 'R&&D' in button.text()
     requested = []
     page.scan_requested.connect(requested.append)
     button.click()
@@ -177,14 +184,16 @@ def test_explicit_path_scan_button_and_enter_respect_empty_input_and_review_guar
     monkeypatch.setattr(window, "start_scan", requested.append)
     window.path_edit.setText("   ")
     window.path_edit.returnPressed.emit()
-    assert not window._scan_path.isEnabled() and not requested
+    assert not window._scan_path.isEnabled()
+    assert not requested
     window.path_edit.setText("/owned/folder")
     window.path_edit.returnPressed.emit()
     assert requested == ["/owned/folder"]
     monkeypatch.setattr(type(window), "operation_busy", property(lambda _self: True))
     window._update_path_button()
     window.path_edit.returnPressed.emit()
-    assert not window._scan_path.isEnabled() and requested == ["/owned/folder"]
+    assert not window._scan_path.isEnabled()
+    assert requested == ['/owned/folder']
 
 
 def test_narrow_overview_wraps_readable_values_without_losing_totals(qapp, sample_tree):
