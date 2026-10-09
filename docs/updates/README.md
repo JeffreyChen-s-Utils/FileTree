@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-28 | 2026-10-09 | 自動 Windows 發版獨立於 PyPI 並驗證草稿產物 | #fix #release #ci #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-27 | 2026-10-09 | Keep scan shutdown responsive and clarify elevation identity | #fix #gui #threads #windows #validation | [2026-10-c](2026-10-c.md) |
 | U-20261009-26 | 2026-10-09 | Preserve saved analysis layout and synchronize drive fixtures | #fix #ui #ux #validation #ci | [2026-10-c](2026-10-c.md) |
 | U-20261009-25 | 2026-10-09 | Implement adaptive scan overview and analysis navigation | #ui #ux #gui #validation | [2026-10-c](2026-10-c.md) |

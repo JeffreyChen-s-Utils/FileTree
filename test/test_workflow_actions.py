@@ -225,10 +225,10 @@ def _lock_option(option: str) -> str:
     return match.group(1)
 
 
-def test_the_job_that_holds_the_pypi_token_is_the_release_job():
-    # The build-exe and publish-release jobs never see the token; a new job that reads it must be
+def test_only_the_isolated_pypi_upload_job_holds_the_pypi_token():
+    # The producer, build-exe and publish-release never see the token; a new job reading it must be
     # held to the rules below.
-    assert _PUBLISH_IDS == ["release.yml:release"]
+    assert _PUBLISH_IDS == ["release.yml:publish-pypi"]
 
 
 @pytest.mark.parametrize("body", _PUBLISH_BODIES, ids=_PUBLISH_IDS)
@@ -240,17 +240,19 @@ def test_publish_job_installs_only_the_hash_locked_tooling(body):
     assert [command.strip() for command in _PIP_INSTALL.findall(body)] == [_LOCKED_INSTALL]
 
 
-@pytest.mark.parametrize("body", _PUBLISH_BODIES, ids=_PUBLISH_IDS)
-def test_publish_job_installs_before_it_pushes_anything(body):
+def test_release_producer_installs_before_it_pushes_anything():
     # A lock that no longer installs must stop the release before the version commit and the tag exist.
+    body = dict(_jobs(_ROOT / ".github/workflows/release.yml"))["release"]
+    assert [command.strip() for command in _PIP_INSTALL.findall(body)] == [_LOCKED_INSTALL]
     assert body.index(_LOCKED_INSTALL) < body.index("git push")
+    assert "secrets.PYPI_API_TOKEN" not in body
 
 
-@pytest.mark.parametrize("body", _PUBLISH_BODIES, ids=_PUBLISH_IDS)
-def test_publish_job_builds_with_the_locked_backend(body):
+def test_release_producer_builds_with_the_locked_backend():
     # An isolated build makes an environment of its own and downloads the newest setuptools of that
     # minute into it, outside publish.txt, in the job that is about to upload with the token.
     # --no-isolation builds with the backend the locked install put in the job.
+    body = dict(_jobs(_ROOT / ".github/workflows/release.yml"))["release"]
     builds = _builds(body)
     assert builds
     assert [build for build in builds if "--no-isolation" not in build.split()] == []
@@ -264,8 +266,9 @@ def test_the_build_check_sees_an_isolated_build():
 
 def test_publish_in_lists_exactly_the_tools_the_jobs_run_and_the_build_backend():
     # A tool the job starts using has to be locked first, or the release fails at that step. The
-    # backend is not run by name: build imports it from the job's own environment (--no-isolation).
-    used = set().union(*(_tools(body) for body in _PUBLISH_BODIES))
+    # backend is not run by name: the producer imports it from its own environment (--no-isolation).
+    producer = dict(_jobs(_ROOT / ".github/workflows/release.yml"))["release"]
+    used = set().union(*(_tools(body) for body in [*_PUBLISH_BODIES, producer]))
     backend = {_distribution(requirement.name)
                for metadata in _METADATA for requirement in _build_requires(metadata)}
     assert backend

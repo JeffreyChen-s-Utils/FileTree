@@ -1184,19 +1184,23 @@ Outside the workspace it is published as `je_file_tree` on PyPI (command `je-fil
 `file_tree` and `file-tree` belong to FSL's `file-tree`, which installs a module and a command of that
 name, so they must not come back. `.github/workflows/release.yml` releases on every pull request merged
 into `main`: `tools/bump_version.py` raises the version in `pyproject.toml` and
-`je_file_tree/__init__.py` together, the sdist and wheel go to PyPI (secret `PYPI_API_TOKEN`; the job
-stops before pushing anything when it is missing), and a Windows runner builds `FileTree-<version>.exe`
-with `tools/build_nuitka.py --onefile` and a separate standalone build for the GitHub release.
-`tools/package_standalone.py` atomically archives the sole complete Windows `.dist` folder with all
-libraries/plugins/catalogues into a versioned ZIP; the workflow requires both artifacts and downloads
-both before publishing the EXE and ZIP together. The job that holds the token installs
-nothing but `.github/requirements/publish.txt` (`build`, `twine`, the build backend `setuptools` and
-what they need): wheels only, at locked hashes, generated from `publish.in` beside it, before the
-version is pushed. It builds with `python -m build --no-isolation`, so the backend is that locked
-`setuptools` and nothing is downloaded during the build; the lock has to satisfy
-`build-system.requires` in `pyproject.toml`. `test/test_workflow_actions.py` fails when that job runs
-any other `pip install`, builds with isolation, or when the lock does not satisfy
-`build-system.requires`. The source distribution carries no tests (`MANIFEST.in`,
+`je_file_tree/__init__.py` together. The `release` producer installs only hash-locked wheels
+from `.github/requirements/publish.txt`, builds with `python -m build --no-isolation` and checks
+both distributions before pushing the version commit/tag. It retains `pypi-dist` with missing files
+treated as an error. Independent `publish-pypi` and `build-exe` jobs consume that version; only the
+former sees `PYPI_API_TOKEN`, installs the same locked wheels and uploads the producer's exact files.
+A missing token or failed PyPI upload is reported without blocking Windows compilation/publication.
+The Windows runner builds `FileTree-<version>.exe` with `tools/build_nuitka.py --onefile` and a separate
+standalone build. `tools/package_standalone.py` atomically archives the complete Windows `.dist`
+folder with all libraries/plugins/catalogues into a versioned ZIP; MSI and package drafts follow.
+`publish-release` depends on the producer and required Windows/opt-in native builds, independently
+of `publish-pypi`. `tools/publish_release.py` requires nonempty exact-version EXE/ZIP/MSI/draft and
+Python distributions before contacting GitHub, creates a draft only for an existing tag, uploads
+all files, checks remote names/sizes/uploaded state, and then publishes. Retrying a failed publication
+resumes its draft; public assets are never overwritten. `test/test_publish_release.py` covers missing
+EXEs, upload errors, incomplete remote receipts and draft recovery. `test/test_workflow_actions.py`
+guards locked installs, the producer's backend, publisher token isolation and compatible lock pins.
+The source distribution carries no tests (`MANIFEST.in`,
 `test/test_sdist_manifest.py`).
 
 ## 7. Design constraints
