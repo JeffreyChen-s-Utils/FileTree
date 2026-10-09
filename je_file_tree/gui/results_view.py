@@ -19,10 +19,11 @@ from collections.abc import Callable, Mapping, Sequence
 from PySide6.QtCore import (
     QItemSelectionModel, QModelIndex, QPoint, QSettings, QSortFilterProxyModel, Qt, QTimer, Signal,
 )
-from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent
+from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent, QShowEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QButtonGroup,
+    QBoxLayout,
     QPushButton,
     QComboBox,
     QHBoxLayout,
@@ -76,6 +77,8 @@ from je_file_tree.gui.details_panel import DetailsPanel
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
+from je_file_tree.gui.result_navigation import AnalysisTabs, ResultNavigation
+from je_file_tree.gui.result_overview import ResultOverview
 from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.archives import ArchiveController
 from je_file_tree.gui.search_panel import SearchPanel
@@ -114,6 +117,7 @@ _CHANGE_COLUMN = 3
 _PROBLEM_COLUMN_WIDTH = 220
 _TYPES_SHARE_COLUMN = 3
 _AGE_SHARE_COLUMN = 2
+_COMPACT_NAVIGATION_WIDTH = 1000
 CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
 USERS_TAB = 8
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
@@ -165,6 +169,7 @@ class ResultsView(QWidget):
         self.scan_bar = ScanBar()
         self._live_ticks = 0
         self.summary = _summary_label()
+        self.overview = ResultOverview()
         self.capacity = CapacityPanel()
         self.tree = self._build_tree(settings)
         self._build_chart_controls()
@@ -196,7 +201,7 @@ class ResultsView(QWidget):
         self.problems_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self._problems_hint = QLabel()
         self._elevate_button = QPushButton()
-        self.tabs = QTabWidget()
+        self.tabs = AnalysisTabs()
         self._build_scope_switch()
         self._assemble()
         self.retranslate()
@@ -247,6 +252,7 @@ class ResultsView(QWidget):
             return
         self._live_ticks += 1
         self.tree_model.refresh()
+        self._update_overview()
         if self._live_ticks % 3 == 0:
             self.charts.invalidate()
         self.selection_changed.emit(self.selected_node())  # its size has grown too
@@ -256,6 +262,7 @@ class ResultsView(QWidget):
         self.scan_bar.show_progress(progress)
         if self._outcome is None:
             self.summary.setText(self._summary_text())
+            self._update_overview()
 
     def end_scan(self) -> None:
         """Hide the progress bar (the scan ended without a result to show)."""
@@ -263,6 +270,7 @@ class ResultsView(QWidget):
         if self._outcome is None:
             self.tree_model.set_root(None)
             self.charts.set_view_root(None)
+        self._update_overview()
 
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
@@ -359,6 +367,8 @@ class ResultsView(QWidget):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
+        self.overview.unit = unit
+        self.overview.retranslate()
         self.tree_model.set_unit(unit)
         self.capacity.unit = unit
         self.capacity.retranslate()
@@ -646,7 +656,6 @@ class ResultsView(QWidget):
         self._scope_button.setCheckable(True)
         self._scope_button.toggled.connect(self._scope_toggled)
         self._scope_button.toggled.connect(lambda _on: self._update_scope_button())
-        self.tabs.setCornerWidget(self._scope_button, Qt.Corner.TopRightCorner)
         self.tabs.currentChanged.connect(lambda _index: self._update_scope_button())
         self._scope_timer.setSingleShot(True)
         self._scope_timer.setInterval(250)
@@ -714,16 +723,56 @@ class ResultsView(QWidget):
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self._tree_with_details())
         splitter.addWidget(self.tabs)
+        splitter.setChildrenCollapsible(False)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
-        splitter.setSizes([650, 450])
+        self._splitter_initialized = False
         self.splitter = splitter
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(6, 6, 6, 6)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(8)
         layout.addWidget(self.scan_bar)
+        layout.addWidget(self.overview)
         layout.addWidget(self.summary)
         layout.addWidget(self.capacity)
-        layout.addWidget(splitter, 1)
+        self._assemble_navigation(splitter, layout)
+
+    def _assemble_navigation(self, splitter: QSplitter, layout: QVBoxLayout) -> None:
+        self.tabs.tabBar().hide()
+        self.navigation = ResultNavigation(self.tabs)
+        self._analysis_hint = QLabel()
+        self._analysis_hint.setWordWrap(True)
+        self._analysis_hint.setTextFormat(Qt.TextFormat.PlainText)
+        self._analysis_hint.setStyleSheet("color: palette(placeholder-text);")
+        header = QWidget()
+        row = QHBoxLayout(header)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.addWidget(self._analysis_hint, 1)
+        row.addWidget(self._scope_button)
+        layout.addWidget(header)
+        body = QWidget()
+        self._body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, body)
+        self._body_layout.setContentsMargins(0, 0, 0, 0)
+        self._body_layout.setSpacing(12)
+        self._body_layout.addWidget(self.navigation)
+        self._body_layout.addWidget(splitter, 1)
+        layout.addWidget(body, 1)
+        self.overview.problems_requested.connect(lambda: self.tabs.setCurrentIndex(PROBLEMS_TAB))
+        self._responsive_layout()
+
+    def _responsive_layout(self) -> None:
+        compact = self.width() < _COMPACT_NAVIGATION_WIDTH
+        self.navigation.set_compact(compact)
+        direction = QBoxLayout.Direction.TopToBottom if compact else QBoxLayout.Direction.LeftToRight
+        self._body_layout.setDirection(direction)
+
+    def _update_overview(self) -> None:
+        outcome = self._outcome
+        root = outcome.result.root if outcome is not None else self.tree_model.root
+        state = ("partial" if outcome.partial or outcome.result.errors else "complete") if outcome else (
+            "live" if self.scan_bar.isVisibleTo(self) else "empty")
+        self.overview.show_totals(root, state, len(outcome.result.errors) if outcome else 0)
+        self._analysis_hint.setText(tr("overview_live_hint" if outcome is None else "overview_result_hint"))
 
     def _tree_with_details(self) -> QWidget:
         column = QWidget()
@@ -799,6 +848,7 @@ class ResultsView(QWidget):
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
+        self.navigation.refresh()
         if shown and self._reveal_changes:
             self.tabs.setCurrentIndex(CHANGES_TAB)
         self._reveal_changes = False
@@ -1001,10 +1051,12 @@ class ResultsView(QWidget):
         self.cleanup_pages.setTabText(DUPLICATES_PAGE, tr("tab_duplicates"))
         self.tabs.setTabText(PROBLEMS_TAB, tr("tab_problems_count", count=errors) if errors else tr("tab_problems"))
         self.tabs.setTabText(USERS_TAB, tr("tab_users"))
+        self.navigation.refresh()
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
         self._legend.setText(self._legend_html())
         self.summary.setText(self._summary_text())
+        self._update_overview()
 
     def _summary_text(self) -> str:
         outcome = self._outcome
@@ -1039,6 +1091,20 @@ class ResultsView(QWidget):
         """Qt: fit the scanned path in the summary line again."""
         super().resizeEvent(event)
         self.summary.setText(self._summary_text())
+        if hasattr(self, "navigation"):
+            self._responsive_layout()
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """Qt: allocate the first split using the actual available width; later user adjustments persist."""
+        super().showEvent(event)
+        QTimer.singleShot(0, self._initialize_splitter)
+
+    def _initialize_splitter(self) -> None:
+        if self._splitter_initialized or not self.isVisible():
+            return
+        self._splitter_initialized = True
+        width = self.splitter.width()
+        self.splitter.setSizes([round(width * .45), round(width * .55)])
 
     def _legend_html(self) -> str:
         if self.charts.mode in (TREEMAP, SUNBURST) and self.charts.treemap.colour_mode == BY_AGE:

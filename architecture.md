@@ -35,6 +35,20 @@ retained on failure. This fixture cannot establish slow remote-link performance 
 
 The core never imports Qt or the GUI (`test/test_layers.py`).
 
+The GUI presentation follows `docs/ui-ux.md`: `result_overview.py` renders root scalar totals and
+explicit live/finished/incomplete coverage; `result_navigation.py` synchronizes a sidebar or narrow
+dropdown with existing result-page indexes and hides unavailable comparisons. Its `AnalysisTabs`
+minimum geometry follows the active page, so inactive search controls cannot squeeze the tree.
+`results_view.py` retains the shared tree/analysis selection and selected-folder scope above a
+noncollapsible splitter. The welcome content scrolls; an explicit path Scan button and Enter share
+one enabled condition under the existing operation guard. `scan_bar.py` owns only a visible-page
+one-second elapsed timer and a plain-text elided path; cooperative pause/analysis/stop feedback does
+not join workers or query native storage. New presentation work is bounded, stays on the GUI thread
+and uses captured data; source operations, worker ownership and §6 factory contracts remain unchanged.
+`ThreadFence` zero-time joins preserve the current GUI pacing gate; only blocking `wait_for` opens
+it explicitly. Nonblocking retirement must not let background traversal compete with an active GUI
+event. Normal dispatcher idle transitions still release workers between events.
+
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
 cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all

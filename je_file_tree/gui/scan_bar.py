@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import time
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtGui import QHideEvent, QShowEvent
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.scanner import ScanProgress
 from je_file_tree.gui.i18n import format_duration, tr
+from je_file_tree.gui.elided_label import ElidedLabel
 
 _BUSY_BAR_WIDTH = 120
 
@@ -27,11 +29,17 @@ class ScanBar(QFrame):
         self._stopping = False
         self._analysing = False
         self._counts = QLabel()
-        self._current = QLabel()
+        self._current = ElidedLabel()
+        self._feedback = QLabel()
+        self._feedback.setTextFormat(Qt.TextFormat.PlainText)
+        self._counts.setTextFormat(Qt.TextFormat.PlainText)
         self._busy = QProgressBar()
         self._stop = QPushButton()
         self._pause = QPushButton()
         self._pause.setCheckable(True)
+        self._clock = QTimer(self)
+        self._clock.setInterval(1000)
+        self._clock.timeout.connect(self._update)
         self._build()
         self.retranslate()
 
@@ -88,7 +96,10 @@ class ScanBar(QFrame):
         texts.addWidget(self._counts)
         texts.addWidget(self._current)
         row = QHBoxLayout(self)
-        row.setContentsMargins(8, 6, 8, 6)
+        texts.addWidget(self._feedback)
+        self._feedback.setWordWrap(True)
+        self._feedback.setStyleSheet("color: palette(placeholder-text);")
+        row.setContentsMargins(12, 10, 12, 10)
         row.addWidget(self._busy)
         row.addLayout(texts, 1)
         row.addWidget(self._pause)
@@ -97,6 +108,13 @@ class ScanBar(QFrame):
 
     def _update(self) -> None:
         self._pause.setText(tr("scan_resume" if self._pause.isChecked() else "scan_pause"))
+        paused = self._pause.isChecked() and not self._analysing and not self._stopping
+        self._busy.setRange(0, 1 if paused else 0)
+        self._busy.setValue(0)
+        phase = "stopping" if self._stopping else "analysing" if self._analysing else "paused" if paused else "running"
+        self._feedback.setText(tr("overview_scan_" + phase) + " · "
+                               + tr("overview_scan_elapsed", time=format_duration(time.monotonic() - self._started)))
+        self._busy.setAccessibleName(tr("overview_scan_" + phase))
         if self._stopping:
             self._counts.setText(tr("scan_stopping"))
             return
@@ -115,6 +133,14 @@ class ScanBar(QFrame):
                                 time=elapsed))
         if self._pause.isChecked():
             self._counts.setText(tr("scan_paused", progress=self._counts.text()))
-        width = max(100, self._current.width())
-        self._current.setText(self._current.fontMetrics().elidedText(progress.current, Qt.TextElideMode.ElideMiddle,
-                                                                     width))
+        self._current.setText(progress.current)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """Qt: refresh elapsed feedback even while a worker is waiting inside one native read."""
+        super().showEvent(event)
+        self._clock.start()
+
+    def hideEvent(self, event: QHideEvent) -> None:
+        """Qt: stop presentation updates when no scan bar is visible."""
+        self._clock.stop()
+        super().hideEvent(event)

@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMenu,
     QMessageBox,
+    QPushButton,
     QStackedWidget,
     QToolBar,
 )
@@ -164,7 +165,7 @@ class MainWindow(QMainWindow):
         self._build_toolbar()
         self._connect()
         self.setAcceptDrops(True)
-        self.resize(1100, 720)
+        self.resize(1240, 800)
         self._restore()
         self.retranslate()
         self._update_actions()
@@ -1031,6 +1032,9 @@ class MainWindow(QMainWindow):
             action.setText(tr("unit_auto") if unit == AUTO_UNIT else unit)
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
         self.path_edit.setToolTip(tr("path_placeholder"))
+        self.path_edit.setAccessibleName(tr("overview_path"))
+        self._scan_path.setText(tr("overview_scan_path"))
+        self._scan_path.setToolTip(tr("overview_scan_path_tip"))
         self.welcome.retranslate()
         self.results.retranslate()
         self.theme_menu.retranslate()
@@ -1294,16 +1298,26 @@ class MainWindow(QMainWindow):
         toolbar.setObjectName("main_toolbar")
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        toolbar.setStyleSheet("QToolBar { spacing: 6px; padding: 6px; }"
+                             "QToolButton, QPushButton, QLineEdit { min-height: 28px; }")
         toolbar.addAction(self._actions["open"])
         toolbar.addAction(self._actions["rescan"])
         toolbar.addAction(self._actions["stop"])
         toolbar.addSeparator()
         self.path_edit.setClearButtonEnabled(True)
-        self.path_edit.returnPressed.connect(lambda: self.start_scan(self.path_edit.text()))
         toolbar.addWidget(self.path_edit)
+        self._scan_path = QPushButton()
+        self._scan_path.clicked.connect(lambda: self.start_scan(self.path_edit.text()))
+        self.path_edit.returnPressed.connect(self._scan_path.click)
+        self.path_edit.textChanged.connect(self._update_path_button)
+        toolbar.addWidget(self._scan_path)
         toolbar.addSeparator()
         toolbar.addAction(self._actions["help"])
         self.addToolBar(toolbar)
+
+    def _update_path_button(self) -> None:
+        ready = bool(self.path_edit.text().strip()) and not self.operation_busy and not self._closing
+        self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
         self.welcome.drives_changed.connect(self._update_actions)
@@ -1336,6 +1350,7 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        self._update_path_button()
         if self.operation_busy:
             self.pending_source_workers()
         if self._operations is not None:

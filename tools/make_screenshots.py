@@ -78,7 +78,7 @@ def main() -> None:
         settings.setValue("language", language)
         window = create_workspace(settings)
         window.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
-        window.resize(1200, 720)
+        window.resize(1200, 800)
         window.show()
         window.current.results.show_outcome(analyse(ScanResult(demo_tree(), [], 2.4)))
         window.current.pages.setCurrentIndex(RESULTS_PAGE)

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QMessageBox
 from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
 
 from je_file_tree.core.operation_journal import OperationJournal
+from je_file_tree.core.pacing import WINDOW
 from je_file_tree.core.operations import MoveReceipt
 from je_file_tree.core.scanner import scan
 from je_file_tree.gui import change_watch, file_actions, folder_validation, scan_worker, welcome
@@ -33,6 +34,27 @@ class HeldWorker(QThread):
 
     def run(self):
         self.release.wait(5)
+
+
+def test_nonblocking_thread_fence_preserves_the_gui_pacing_gate(qapp):
+    owner = QObject()
+    worker = HeldWorker(owner)
+    callbacks = []
+    worker.start()
+    WINDOW.close()
+    try:
+        after_threads((worker,), lambda: callbacks.append(WINDOW.is_open), owner)
+        assert not WINDOW.is_open, "a zero-time join must not release the GUI's worker-priority gate"
+        QTimer.singleShot(20, worker.release.set)
+        _pump(qapp, lambda: bool(callbacks))
+        assert worker.release.is_set() and callbacks == [False]
+        after_threads((), lambda: callbacks.append(WINDOW.is_open), owner)
+        assert callbacks == [False, False]
+    finally:
+        worker.release.set()
+        worker.wait()
+        WINDOW.open()
+        owner.deleteLater()
 
 
 def _held_folder(path, monkeypatch):
