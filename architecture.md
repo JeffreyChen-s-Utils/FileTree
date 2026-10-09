@@ -959,6 +959,10 @@ to start a second copy through the "runas" verb (the UAC prompt) unless the `ask
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
 continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
 the scanned folder as its argument. A built program restarts itself; from Python it is `-m je_file_tree`.
+UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
+execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
+Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.
+These resources do not supply a signature or establish a verified publisher.
 
 **Language.** `i18n.set_language` + `qt_translation.apply_qt_translation` (Qt's own buttons and dialogs),
 then every widget's `retranslate()`. The choice is stored in `QSettings` with the unit, window layout and
@@ -983,6 +987,16 @@ installs fonts; missing families retain normal system fallback across workspace 
   `chart_<mode>` and `chart_<mode>_tip` texts in every language (the mode button appears by itself).
 
 ## 6. Cross-project boundaries
+
+GUI closing is asynchronous when work remains. MainWindow.close requests cancellation, disables
+commands and displays a closing status while ThreadFence polls only zero-time joins. The owner stays
+alive until scans, native readers, analysis and exports have finished; late Trash/Undo failures retain
+their reporting path. MainWindow.shutdown_finished signals readiness for destruction. Integrations
+must retain windows until this signal (or _close_ready in owned probes), rather than close/delete
+immediately. ScanWorkspace retains retiring tabs and their operation guards, closes peers independently,
+and finishes explicit Quit only after every tab and background service joins. No terminate, artificial
+production processEvents loop or blocking native wait is used to initiate closure. Validation/screenshot
+tools pump their owned Qt application until actual closing readiness before disposing fixtures.
 
 `tools/validate_windows_share.ps1 -DisposableRunner` is a hosted-Windows-only native validation
 entry point, never a caller-selected source/share cleanup API. It persists `windows-share.json`,
@@ -1234,7 +1248,8 @@ request to the fixed PyPI host; it follows no redirects and installs nothing. `g
 an opt-out hourly/startup timer, QLockFile daily claim around synced QSettings, UpdateWorker and
 translated fixed-link notice. Only gui.app.main starts scheduling; constructors, tests, screenshots
 and CLI remain passive. Attempts are persisted before networking, including failures; disabling
-cancels publication and close joins the owned request through wait_for. No scan data is sent.
+cancels publication and asynchronous close retains the owned request until its closing fence joins.
+No scan data is sent.
 
 Private Windows validation records six sparse logical lengths after the actual recovery cases.
 `windows_sparse_trash_probe` separates Qt success, source disappearance, native-bin retention,
@@ -1425,8 +1440,10 @@ continuation without starting native execution or writing an approval journal. N
 pass through after_threads before reporting and releasing their source-operation ownership.
 
 Normal FollowChanges.stop/configure/adopt calls retire readers without blocking; queued rearming
-checks the current reader and cancellation state after old readers join. Explicit shutdown uses
-stop(wait=True). History and comparison ready/failure callbacks are identity-guarded join continuations;
+checks the current reader and cancellation state after old readers join. Shutdown accepts wait=False
+to cancel native work before the owning window's closing fence; final destruction uses wait=True only
+after the captured descendant threads have joined. History and comparison ready/failure callbacks are
+identity-guarded join continuations;
 they enable comparisons and publish captured saved scans only after termination. Recurring foreground
 scan delivery/review validation and virtual-disk query completion use the same nonblocking join gate.
 

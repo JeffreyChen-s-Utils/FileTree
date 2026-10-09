@@ -79,9 +79,10 @@ class FolderDrops(QObject):
             worker.cancel.set()
             after_threads((worker,), lambda: self._retire(worker), self)
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Join retained folder queries before their owning window is destroyed."""
         self.cancel()
         for worker in tuple(self.workers):
             worker.cancel.set()
-            wait_for(worker)
+            if wait:
+                wait_for(worker)

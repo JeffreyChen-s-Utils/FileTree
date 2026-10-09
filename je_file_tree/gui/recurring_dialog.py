@@ -145,6 +145,6 @@ class RecurringDialog(QDialog):
                 self.requested = report
                 self.accept()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Stop metadata refresh when the owning workspace closes its modal view."""
         self.timer.stop()

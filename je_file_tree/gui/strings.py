@@ -9,6 +9,10 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "closing_workers": "Closing FileTree: stopping background work; waiting for current filesystem calls to finish…",
+    "elevate_python_tip": (
+        "Running from Python: Windows UAC displays Python, the executable being elevated. "
+        "Use the FileTree executable for a FileTree prompt."),
     'overview_empty': 'Choose a folder to begin',
     'overview_live': 'Scan in progress · totals are still growing',
     'overview_complete': 'Scan finished',
@@ -1443,6 +1447,10 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "closing_workers": "正在關閉 FileTree：停止背景工作，等待目前的檔案系統呼叫完成…",
+    "elevate_python_tip": (
+        "目前由 Python 執行：Windows UAC 會顯示實際提升權限的 Python 執行檔。"
+        "使用 FileTree 執行檔時，提示才會顯示 FileTree。"),
     'overview_empty': '選擇資料夾開始掃描',
     'overview_live': '掃描中 · 統計仍持續增加',
     'overview_complete': '掃描已完成',
@@ -2744,6 +2752,10 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "closing_workers": "正在关闭 FileTree：停止后台工作，等待当前文件系统调用完成…",
+    "elevate_python_tip": (
+        "当前由 Python 运行：Windows UAC 会显示实际提升权限的 Python 可执行文件。"
+        "使用 FileTree 可执行文件时，提示才会显示 FileTree。"),
     'overview_empty': '选择文件夹开始扫描',
     'overview_live': '扫描中 · 统计仍在增加',
     'overview_complete': '扫描已完成',
@@ -4057,6 +4069,12 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "closing_workers": (
+        "FileTree を終了しています：バックグラウンド処理を停止し、"
+        "現在のファイルシステム呼び出しの完了を待っています…"),
+    "elevate_python_tip": (
+        "Python から実行中：Windows UAC は昇格する実行ファイルの Python を表示します。"
+        "FileTree の表示には FileTree 実行ファイルを使用してください。"),
     'overview_empty': 'フォルダーを選んで開始',
     'overview_live': 'スキャン中 · 集計は更新中です',
     'overview_complete': 'スキャン完了',
@@ -5711,6 +5729,10 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "closing_workers": "FileTree 종료 중: 백그라운드 작업을 중지하고 현재 파일 시스템 호출이 끝나기를 기다리는 중…",
+    "elevate_python_tip": (
+        "Python으로 실행 중: Windows UAC에는 권한을 높이는 실행 파일인 Python이 표시됩니다. "
+        "FileTree 표시를 원하면 FileTree 실행 파일을 사용하세요."),
     'overview_empty': '폴더를 선택하여 시작하세요',
     'overview_live': '스캔 중 · 통계가 계속 갱신됩니다',
     'overview_complete': '스캔 완료',

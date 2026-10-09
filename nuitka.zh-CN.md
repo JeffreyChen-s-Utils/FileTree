@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows 构建明确嵌入 `--product-name=FileTree` 和 `--file-description=FileTree`，`--product-version` 和 `--file-version` 来自包版本。提升权限时重新启动该实际可执行文件。Python 源码则提升 Python/pythonw，UAC 会识别该解释器；更改窗口标题无法改变此名称。这些资源设置不代表已验证发布者或已签名构建。
+
 macOS arm64 原生编译与打包已通过 Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269)：167 个源项目全部保留，解压内容一致。该证据确认此提交的编译与打包，未启动或发布程序。Finder／同意验证与 Developer ID／公证仍缺环境，因此 POSIX 发布门控保持关闭。
 
 Windows 发行版可显式启用 Azure Artifact Signing 的 OIDC 签名；已启用但配置缺失，或签名、时间戳、发布者验证失败时会停止 Windows 产物与 GitHub 发行版的发布。版本提交、标签和 PyPI 上传会先完成，后续 Windows 失败不会撤销这些发布。单文件与独立文件夹可执行文件在打包前验证，MSI 在上传与软件包清单哈希前验证。开发构建保持未签名。目前仍缺账号与原生成功签署验证，请参阅 [Windows 签名设置](docs/windows-signing.md)。

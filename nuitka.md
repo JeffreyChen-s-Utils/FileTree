@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows builds explicitly embed `--product-name=FileTree` and `--file-description=FileTree`, with `--product-version` and `--file-version` taken from the package version. Elevation relaunches that actual executable. Python source instead elevates Python/pythonw and UAC identifies that interpreter; changing a window title cannot change it. These resource settings do not establish a verified publisher or a signed build.
+
 Native macOS arm64 compilation and bundle packaging passed Desktop builds run [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269): all 167 source entries were preserved and extraction matched. This proves compilation/packaging of that checked commit; the app was neither launched nor published. Finder/consent validation and Developer ID/notarization remain unavailable, so the POSIX release gate stays disabled.
 
 Windows release signing can be explicitly enabled through Azure Artifact Signing with OIDC; missing enabled configuration or invalid signature/timestamp/publisher stops Windows artifact and GitHub release publication. The version commit/tag and PyPI upload occur first and are not rolled back by a later Windows failure. The one-file/standalone executables are verified before packaging, and the MSI before upload and manifest hashing. Development builds stay unsigned. Account setup and native successful signing remain unavailable; see [Windows signing setup](docs/windows-signing.md).

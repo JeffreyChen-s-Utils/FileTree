@@ -2,6 +2,8 @@
 
 [English](nuitka.md) | [繁體中文](nuitka.zh-TW.md) | [简体中文](nuitka.zh-CN.md) | [日本語](nuitka.ja.md) | [한국어](nuitka.ko.md)
 
+Windows ビルドには `--product-name=FileTree` と `--file-description=FileTree` を明示的に埋め込み、`--product-version` と `--file-version` はパッケージのバージョンから取得します。昇格時はその実行ファイルを再起動します。Python ソースでは Python/pythonw を昇格するため、UAC はそのインタープリターを識別します。ウィンドウ名では変更できません。このリソース設定は発行元の検証や署名済みビルドを証明しません。
+
 macOS arm64 のネイティブコンパイルとバンドル作成は Desktop builds [37788683269](https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37788683269) に合格しました。167 個の元の項目をすべて保持し、解凍結果も一致しました。この証拠は検証したコミットのコンパイルとパッケージ作成に限られ、アプリは起動・公開していません。Finder の操作・同意検証と Developer ID・公証の環境は未提供のため、POSIX リリースのゲートは無効のままです。
 
 Windows リリースでは Azure Artifact Signing と OIDC による署名を明示的に有効化できます。有効時に設定が不足した場合や、署名・タイムスタンプ・発行者の検証に失敗した場合は Windows 成果物と GitHub リリースの公開を停止します。バージョンのコミット・タグと PyPI へのアップロードは先に完了し、その後の Windows の失敗では取り消されません。単一ファイル版・独立フォルダー版の実行ファイルはパッケージ作成前、MSI はアップロードとマニフェストのハッシュ計算前に検証します。開発ビルドは未署名です。アカウントとネイティブ署名の成功検証はまだ利用できません。[Windows 署名の設定](docs/windows-signing.md)を参照してください。

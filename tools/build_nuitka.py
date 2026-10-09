@@ -95,6 +95,9 @@ def nuitka_command(mode: str, extra: list[str]) -> list[str]:
     if mode == "app":
         command.extend((f"--macos-app-name={PROGRAM_NAME}", "--macos-signed-app-name=io.github.jechen.FileTree",
                         f"--macos-app-version={__version__}"))
+    if sys.platform == "win32":
+        command.extend((f"--product-name={PROGRAM_NAME}", f"--file-description={PROGRAM_NAME}",
+                        f"--product-version={__version__}", f"--file-version={__version__}"))
     return [*command, *extra, str(ENTRY_POINT)]
 
 

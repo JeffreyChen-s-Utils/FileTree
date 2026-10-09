@@ -168,6 +168,7 @@ def test_first_result_display_preserves_the_saved_tree_analysis_split(window, qa
         assert restored.results.splitter.sizes() == after
     finally:
         restored.close()
+        _wait(qapp, lambda: restored._close_ready)
         restored.deleteLater()
 
 

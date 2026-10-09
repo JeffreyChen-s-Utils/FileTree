@@ -112,6 +112,7 @@ class TrashUndo(QObject):
         self.worker = None
         window = self.window
         if window._closing:
+            self.report(result)
             return
         window.results.setEnabled(True)
         window._analyser = None
@@ -144,13 +145,14 @@ class TrashUndo(QObject):
             message.setTextFormat(Qt.TextFormat.PlainText)
             message.exec()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Expire authority, cancel unstarted entries, join native work and report its retained result."""
         self.expire()
         if self.worker is not None:
             worker = self.worker
             worker.cancel()
-            wait_for(worker)
-            self.worker = None
-            self.report(worker.result)
+            if wait:
+                wait_for(worker)
+                self.worker = None
+                self.report(worker.result)
         self._operation_root = None

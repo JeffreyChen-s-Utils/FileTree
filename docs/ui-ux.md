@@ -32,6 +32,13 @@ waiting without inventing a completion percentage or implying that an incomplete
   minimum widths do not squeeze the chart's tree pane; the active page retains its control minimum.
   Selected-folder list scope stays above the views. A short hint explains when whole-scan analysis
   lists will become available.
+- **Closing:** display a translated closing status, cancel pending readers and release paused scans,
+  and keep ordinary Qt events running until native calls and exports finish. Retain each tab and all
+  its workers until joined; peer scans remain independent. Report late source-operation failures
+  before releasing the owner. Close-to-tray keeps its explicitly enabled behavior.
+- **Elevation identity:** administrator-action tips explain that Python source elevates Python/pythonw,
+  so UAC identifies the interpreter. Compiled Windows FileTree embeds its own product/file descriptions;
+  changing Qt titles cannot change source-mode UAC identity or establish publisher verification.
 - **Small windows:** overview cards wrap to two columns below 680 logical pixels. The welcome scroll
   area retains access to tools and recent sources. Existing list horizontal scrolling continues to
   expose extra columns; it does not hide or discard data.

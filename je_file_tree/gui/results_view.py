@@ -887,13 +887,14 @@ class ResultsView(QWidget):
         if node is not None:
             self.chart_menu_requested.emit(node, [node], point)
 
-    def wait_for_lists(self) -> None:
+    def wait_for_lists(self, *, wait: bool = True) -> None:
         """Wait for list computations still running (before the window closes)."""
         self._stop_focused()
-        self.tree_filter.shutdown()
-        self.archives.shutdown()
-        for worker in self._list_workers.copy():
-            wait_for(worker)
+        self.tree_filter.shutdown(wait=wait)
+        self.archives.shutdown(wait=wait)
+        if wait:
+            for worker in self._list_workers.copy():
+                wait_for(worker)
 
     def _show_lists(self, largest: Sequence[Node], extensions: Sequence[ExtensionStat],
                     ages: Sequence[AgeStat]) -> None:

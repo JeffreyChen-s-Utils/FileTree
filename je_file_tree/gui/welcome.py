@@ -151,13 +151,14 @@ class WelcomePage(QWidget):
             self._drive_refresh_pending = False
             self.refresh_drives()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Invalidate replies and join discovery before this page is destroyed."""
         self._closed = True
         self._drive_timer.stop()
         if self._drive_worker is not None:
             self._drive_worker.cancel.set()
-            wait_for(self._drive_worker)
+            if wait:
+                wait_for(self._drive_worker)
 
     def set_bin_metadata(self, rows: dict[str, TrashUsage]) -> None:
         """Update visible drive labels with copied query results; missing scopes remain unqueried."""

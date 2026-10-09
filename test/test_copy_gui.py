@@ -182,6 +182,7 @@ def test_main_close_joins_owned_copy_and_suppresses_post_close_trash(window, qap
     _wait(qapp, entered.is_set)
     window._path_dialogs.add(dialog)
     window.close()
+    _wait(qapp, lambda: window._close_ready)
     assert dialog._closed and not dialog.operation.isRunning() and not dialog.finish_requested
     assert (source / "folder" / "file").read_bytes() == b"payload"
     window._path_dialogs.discard(dialog)
@@ -207,6 +208,7 @@ def test_main_close_surfaces_final_copy_gate_failure_received_during_join(window
     worker.start()
     _wait(qapp, entered.is_set)
     window.close()
+    _wait(qapp, lambda: window._close_ready)
     assert not worker.isRunning() and worker.result.copy_errors and not moves
     assert window._trash_worker is None and len(questions) == 1
     assert "closed <verification> retained" in questions[0][0] and questions[0][1] == Qt.TextFormat.PlainText

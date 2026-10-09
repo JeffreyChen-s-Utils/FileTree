@@ -10,6 +10,7 @@ from __future__ import annotations
 import random
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +88,12 @@ def main() -> None:
             app.processEvents()
         window.grab().save(str(OUTPUT / f"main_window_{language}.png"))
         window.close()
+        deadline = time.monotonic() + 30
+        while not window._close_ready:
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Screenshot workspace shutdown timed out")
+            app.processEvents()
+            time.sleep(.01)
         window.deleteLater()
 
 

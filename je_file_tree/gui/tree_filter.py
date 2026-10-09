@@ -187,9 +187,10 @@ class TreeFilter(QObject):
         finally:
             self._switching = False
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Invalidate late replies and join all workers before the main window closes."""
         self._closed = True
         self._request()
-        for worker in self._workers.copy():
-            wait_for(worker)
+        if wait:
+            for worker in self._workers.copy():
+                wait_for(worker)
