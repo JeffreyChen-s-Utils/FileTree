@@ -4,4 +4,4 @@ The package has two layers: ``je_file_tree.core`` scans a folder and computes th
 numbers (no Qt dependency), and ``je_file_tree.gui`` shows them in a PySide6 window.
 """
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
