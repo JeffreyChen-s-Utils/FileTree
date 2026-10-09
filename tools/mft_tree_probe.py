@@ -1,0 +1,250 @@
+"""Native tree/options/ACL/performance comparisons only inside a fresh owned private NTFS image."""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import asdict, replace
+import json
+import os
+from pathlib import Path
+import statistics
+import stat
+import subprocess
+import threading
+import time
+import uuid
+
+from je_file_tree.core.mft_reader import NTFSReader
+from je_file_tree.core.mft_scan import _audit
+from je_file_tree.core.scanner import ACCESS_DENIED, NOT_SCANNED, ScanCancelledError, ScanOptions, ScanResult, scan
+from je_file_tree.core.snapshot import pack_snapshot, snapshot_times, stable_snapshot, unpack_snapshot
+from je_file_tree.core.windows_directory import WindowsEntry
+from tools.windows_owned_volume import OwnedVolume, require, verify_volume
+
+_ROW_FIELDS = ("path", "is_dir", "is_link", "size", "allocated", "file_count", "dir_count", "modified",
+               "error", "snapshot", "owner", "accounting")
+_SNAPSHOT_COLUMN = _ROW_FIELDS.index("snapshot")
+_DIRECTORY = 0x10
+_NTFS_DIRECTORY = 0x10000000
+_UNAVAILABLE = 0x400 | 0x1000 | 0x40000 | 0x400000
+
+
+def _rows(result: ScanResult) -> list[tuple]:
+    return sorted((node.path, node.is_dir, node.is_link, node.size, node.allocated, node.file_count,
+                   node.dir_count, node.modified, node.error, node.snapshot, node.owner, node.accounting)
+                  for node in result.root.iter_nodes())
+
+
+def _field_difference(name: str, left: object, right: object) -> object:
+    if name == "snapshot" and isinstance(left, bytes) and isinstance(right, bytes):
+        before, after = asdict(unpack_snapshot(left)), asdict(unpack_snapshot(right))
+        before["times"], after["times"] = snapshot_times(left), snapshot_times(right)
+        return {key: (value, after[key]) for key, value in before.items() if value != after[key]}
+    return repr(left)[:256], repr(right)[:256]
+
+
+def _same_snapshot(left: bytes | None, right: bytes | None) -> bool:
+    if left == right:
+        return True
+    if left is None or right is None or len(left) != len(right):
+        return False
+    before, after = unpack_snapshot(left), unpack_snapshot(right)
+    if (not before.is_dir or not after.is_dir or before.is_link or after.is_link
+            or not before.attributes & after.attributes & _DIRECTORY
+            or (before.attributes | after.attributes) & _UNAVAILABLE):
+        return False
+    # Native evidence proves only this internal DIRECTORY representation differs across the APIs.
+    # Full published snapshots remain intact; all other metadata and optional date bytes must agree.
+    return (replace(before, attributes=before.attributes & ~_NTFS_DIRECTORY)
+            == replace(after, attributes=after.attributes & ~_NTFS_DIRECTORY)
+            and left[len(stable_snapshot(left)):] == right[len(stable_snapshot(right)):])
+
+
+def _same_rows(left: list[tuple], right: list[tuple]) -> bool:
+    if len(left) != len(right):
+        return False
+    for before, after in zip(left, right, strict=True):
+        if before == after:
+            continue
+        if (before[:_SNAPSHOT_COLUMN] != after[:_SNAPSHOT_COLUMN]
+                or before[_SNAPSHOT_COLUMN + 1:] != after[_SNAPSHOT_COLUMN + 1:]
+                or not before[1] or before[2]
+                or not _same_snapshot(before[_SNAPSHOT_COLUMN], after[_SNAPSHOT_COLUMN])):
+            return False
+    return True
+
+
+def _parity_detail(ordinary: ScanResult, audited: ScanResult) -> str:
+    before, after = _rows(ordinary), _rows(audited)
+    if len(before) != len(after):
+        return f"node counts ordinary={len(before)}, mft={len(after)}"
+    for left, right in zip(before, after, strict=True):
+        if not _same_rows([left], [right]):
+            changes = {name: _field_difference(name, a, b)
+                       for name, a, b in zip(_ROW_FIELDS, left, right, strict=True) if a != b}
+            return f"first owned node {left[0]!r}: {changes!r}"[:2048]
+    return f"errors ordinary={ordinary.errors[:3]!r}, mft={audited.errors[:3]!r}"[:2048]
+
+
+def _diagnose(root: Path, ordinary: ScanResult) -> None:
+    # If a candidate refuses, retain the precise owned raw discrepancy without changing scan fallback.
+    with NTFSReader(str(root)) as native:
+        for node in ordinary.root.iter_nodes():
+            if node is ordinary.root or node.snapshot is None or node.is_link:
+                continue
+            info = os.lstat(node.path)
+            if info.st_file_attributes & (0x400 | 0x1000 | 0x40000 | 0x400000):
+                continue
+            entry = WindowsEntry(node.name, info.st_ino, info.st_size, 0, info.st_file_attributes,
+                                 info.st_reparse_tag, (info.st_ctime_ns, 0, info.st_mtime_ns, info.st_ctime_ns))
+            _audit(native, info, entry, os.lstat(node.parent.path).st_ino, lambda: None)
+    raise RuntimeError("Experimental private-image tree refused despite matching per-entry raw metadata")
+
+
+def _compare(root: Path, options: ScanOptions, *, allow_fallback: bool = False) -> dict:
+    started = time.perf_counter()
+    ordinary = scan(root, options=options)
+    ordinary_seconds = time.perf_counter() - started
+    published = []
+    started = time.perf_counter()
+    audited = scan(root, options=replace(options, experimental_mft=True), on_root=published.append)
+    mft_seconds = time.perf_counter() - started
+    if audited.backend != "mft" and not allow_fallback:
+        _diagnose(root, ordinary)
+    require(audited.backend in ("mft", "ordinary"), "Unknown native scan backend")
+    require(len(published) == 1 and audited.root is published[0], "Native scan published another root")
+    require(_same_rows(_rows(ordinary), _rows(audited)) and sorted(ordinary.errors) == sorted(audited.errors),
+            "Native metadata tree differs from ordinary Node/options/coverage: " + _parity_detail(ordinary, audited))
+    require(ordinary.hard_links == audited.hard_links, "Native metadata hard-link accounting differs")
+    return {"options": asdict(options), "ordinary_seconds": ordinary_seconds,
+            "mft_seconds": mft_seconds if audited.backend == "mft" else None,
+            "requested_mft_seconds": mft_seconds, "nodes": len(_rows(audited)), "errors": len(audited.errors),
+            "files": audited.root.file_count, "logical_bytes": audited.root.size,
+            "allocated_bytes": audited.root.allocated, "backend": audited.backend, "equal": True,
+            "snapshot_representation": "known ordinary NTFS DIRECTORY bit only"}
+
+
+def _acl(volume: OwnedVolume, path: Path, action: str, descriptor: str = "") -> str:
+    verify_volume(volume)
+    require(path.parent == volume.root / "owned-fixtures" and path.name.startswith("denied-"),
+            "Refusing a nonowned ACL fixture")
+    program = Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+    script = Path(__file__).with_name("mft_fixture_acl.ps1").resolve(strict=True)
+    # A Python child of PowerShell 7 inherits incompatible module locations for Windows PowerShell.
+    environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
+    environment["PSModulePath"] = str(program.parent / "Modules")
+    try:
+        result = subprocess.run([str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),  # noqa: S603
+                                 "-Action", action, "-Path", str(path), "-VolumeId", volume.volume_id,
+                                 "-Descriptor", descriptor], check=True, timeout=30,
+                                capture_output=True, encoding="utf-8", env=environment)
+    except subprocess.SubprocessError as error:
+        detail = getattr(error, "stderr", "") or str(error)
+        raise RuntimeError(f"Owned ACL {action} failed: {str(detail)[-2000:]}") from error
+    return json.loads(result.stdout)["descriptor"]
+
+
+def _denied(volume: OwnedVolume, root: Path, save: Callable[[dict], None]) -> dict:
+    path = root / ("denied-" + uuid.uuid4().hex)
+    path.mkdir()
+    payload = path / "keep-secret.bin"
+    payload.write_bytes(b"owned permission fixture")
+    identity, original = (path.stat().st_dev, path.stat().st_ino), _acl(volume, path, "Read")
+    save({"acl_restoration": {"original_descriptor": original}})
+    try:
+        _acl(volume, path, "Deny")
+        result = scan(root, options=ScanOptions(experimental_mft=True))
+        require(result.backend == "mft", "Native denied branch caused unexpected ordinary fallback")
+        node = next(child for child in result.root.children if child.path == str(path))
+        require(node.error == ACCESS_DENIED and not node.children
+                and (str(path), ACCESS_DENIED) in result.errors, "Raw scan bypassed denied directory listing")
+        compared = _compare(root, ScanOptions())
+        save({"denied_branch": {"path": str(path), "equal": True, "incomplete": True}})
+    finally:
+        current = path.lstat()
+        require((current.st_dev, current.st_ino) == identity and not getattr(current, "st_file_attributes", 0) & 0x400,
+                "Denied fixture changed before exact ACL restoration")
+        restored = _acl(volume, path, "Restore", original)
+        save({"acl_restoration": {"original_descriptor": original, "restored_descriptor": restored,
+                                  "equal": restored == original}})
+        require(restored == original, "Original owned DACL was not restored exactly")
+    require(payload.read_bytes() == b"owned permission fixture", "Denied payload changed")
+    return {"equal": True, "incomplete": True, "descriptor_restored": True, "comparison": compared}
+
+
+def _cancel(root: Path) -> dict:
+    cancel, published = threading.Event(), []
+    try:
+        scan(root, options=ScanOptions(experimental_mft=True, count_hard_links=True),
+             cancel=cancel, on_root=published.append, progress=lambda _p: cancel.set(), progress_interval=0)
+    except ScanCancelledError as error:
+        partial = error.partial
+        require(partial is not None and partial.backend == "mft" and partial.root is published[0],
+                "Native cancellation lost the single partial root")
+        require(any(node.error == NOT_SCANNED for node in partial.root.iter_nodes()),
+                "Native cancellation hid unread branches")
+        require(partial.hard_links is not None, "Native partial scan lost hard-link accounting")
+        return {"backend": partial.backend, "partial": True, "single_root": True, "counted": True}
+    raise RuntimeError("Native cancellation fixture completed without honoring stop")
+
+
+def _link_state(path: Path) -> tuple[bytes, str]:
+    info = path.lstat()
+    require(stat.S_ISLNK(info.st_mode), "Owned fixture is no longer a symlink")
+    return pack_snapshot(info), os.readlink(path)
+
+
+def validate_tree(volume: OwnedVolume, root: Path, save: Callable[[dict], None]) -> dict:
+    """Compare options and the whole private drive, restore only the owned denied DACL, keep payloads.
+
+    save receives bounded scalar phase evidence before expensive comparisons. Timings are native
+    observations on this disposable drive, never proof of large-volume speed or default enablement.
+    """
+    verify_volume(volume)
+    require(root == volume.root / "owned-fixtures", "Refusing a nonowned tree fixture")
+    branch = root / "tree-branch"
+    branch.mkdir()
+    (branch / "empty").mkdir()
+    (branch / "keep.bin").write_bytes(b"owned tree bytes")
+    (root / ".tree-hidden.bin").write_bytes(b"owned hidden bytes")
+    link = root / "tree-link"
+    os.symlink(branch, link, target_is_directory=True)
+    original_link = _link_state(link)
+    save({"tree_link": {"original_target": original_link[1]}})
+    options = [ScanOptions(workers=1), ScanOptions(workers=4), ScanOptions(include_hidden=False),
+               ScanOptions(exclude=("tree-branch",)),
+               ScanOptions(file_times=True, windows_owners=True, exact_windows_allocation=True,
+                           count_hard_links=True)]
+    comparisons = []
+    for option in options:
+        comparison = _compare(root, option)
+        comparisons.append(comparison)
+        save({"tree_comparisons": comparisons})
+    denied = _denied(volume, root, save)
+    save({"denied_branch": denied})
+    cancelled = _cancel(root)
+    save({"cancellation": cancelled})
+    full_drive = []
+    for _ in range(3):
+        # Windows-managed volume metadata may refuse the audit; its ordinary fallback must still match.
+        full_drive.append(_compare(volume.root, ScanOptions(), allow_fallback=True))
+        save({"full_private_drive": full_drive})
+    mft_times = [row["mft_seconds"] for row in full_drive if row["backend"] == "mft"]
+    medians = {f"{backend}_seconds": statistics.median(row[f"{backend}_seconds"] for row in full_drive)
+               for backend in ("ordinary", "requested_mft")}
+    medians["mft_seconds"] = statistics.median(mft_times) if mft_times else None
+    require((branch / "keep.bin").read_bytes() == b"owned tree bytes"
+            and (root / ".tree-hidden.bin").read_bytes() == b"owned hidden bytes",
+            "Additional tree payloads changed")
+    current_link = _link_state(link)
+    link_evidence = {"original_target": original_link[1], "current_target": current_link[1],
+                     "snapshot_preserved": current_link[0] == original_link[0],
+                     "target_preserved": current_link[1] == original_link[1]}
+    save({"tree_link": link_evidence})
+    require(current_link == original_link, "Owned fixture symlink snapshot/target changed")
+    return {"tree_comparisons": comparisons, "denied_branch": denied, "cancellation": cancelled,
+            "full_private_drive": full_drive, "full_private_drive_medians": medians,
+            "full_private_drive_mft_samples": len(mft_times),
+            "full_private_drive_fallback_samples": len(full_drive) - len(mft_times),
+            "tree_link": link_evidence,
+            "default_enabled": False, "large_real_drive_validated": False, "tree_payloads_preserved": True}

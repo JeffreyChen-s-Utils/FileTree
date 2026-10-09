@@ -1,4 +1,4 @@
-"""Start the application: ``python -m je_file_tree [folder]`` or the ``file-tree`` command."""
+"""Start the application: ``python -m je_file_tree [folder]`` or the ``je-file-tree`` command."""
 
 from __future__ import annotations
 
@@ -10,10 +10,13 @@ from PySide6.QtWidgets import QApplication
 
 from je_file_tree import __version__
 from je_file_tree.gui.i18n import LANGUAGES, match_language, set_language
-from je_file_tree.gui.icon import app_icon
+from je_file_tree.gui.icon import app_icon, claim_taskbar_button
 from je_file_tree.gui import elevation
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
 from je_file_tree.gui.qt_translation import apply_qt_translation
+from je_file_tree.gui.scan_worker import pace_workers
+from je_file_tree.gui.themes import theme_controller
+from je_file_tree.gui.workspace import ScanWorkspace
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
@@ -25,6 +28,7 @@ def create_window(settings: QSettings, folder: str | None = None) -> MainWindow:
     if language not in LANGUAGES:
         language = match_language(QLocale.system().name())
     set_language(language)
+    theme_controller().apply(str(settings.value('theme', 'system')))
     apply_qt_translation(language)
     window = MainWindow(settings)
     window.setWindowIcon(app_icon())
@@ -38,8 +42,19 @@ def wants_admin_prompt(settings: QSettings) -> bool:
     return elevation.can_elevate() and read_flag(settings, ASK_ADMIN_KEY, True)
 
 
+def create_workspace(settings: QSettings, folder: str | None = None) -> ScanWorkspace:
+    """Build concurrent result tabs; keep create_window available for single-window integrations."""
+    first = create_window(settings)
+    workspace = ScanWorkspace(settings, first)
+    workspace.setWindowIcon(app_icon())
+    if folder:
+        first.start_scan(folder)
+    return workspace
+
+
 def main(argv: Sequence[str]) -> int:
     """Run the window until it is closed; ``argv`` may hold one folder to scan right away."""
+    claim_taskbar_button()  # before any window exists, or Windows files it under Python's button
     app = QApplication.instance() or QApplication([sys.argv[0], *argv])
     app.setOrganizationName(ORGANIZATION)
     app.setApplicationName(APPLICATION)
@@ -48,13 +63,18 @@ def main(argv: Sequence[str]) -> int:
     folder = next((argument for argument in argv if not argument.startswith("-")), None)
     settings = QSettings()
     # Like TreeSize: ask first, so every folder can be read. Declining keeps this copy.
-    if wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
+    background = "--background" in argv
+    if not background and wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
         return 0
-    window = create_window(settings, folder)
+    pace_workers()  # background work waits while the window is busy
+    window = create_workspace(settings, folder)
     window.show()
+    window.start_services()
+    if background and window.background.can_hide:
+        window.hide()
     return app.exec()
 
 
 def run() -> None:
-    """Entry point of the ``file-tree`` command."""
+    """Entry point of the ``je-file-tree`` command."""
     sys.exit(main(sys.argv[1:]))

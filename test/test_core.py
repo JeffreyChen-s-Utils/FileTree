@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -30,6 +31,35 @@ from je_file_tree.core.analysis import (
 from je_file_tree.core.formatting import format_count, format_share, format_size, format_time
 from je_file_tree.core.node import Node, outermost
 from je_file_tree.core.scanner import scan
+
+
+def test_json_export_handles_folders_deeper_than_python_recursion_limit(tmp_path: Path) -> None:
+    root = Node("root", True, children=[])
+    parent = root
+    depth = sys.getrecursionlimit() + 10
+    for _ in range(depth):
+        child = Node("nested", True, children=[], parent=parent)
+        parent.children.append(child)
+        parent = child
+    target = tmp_path / "deep.json"
+    export.export_json(root, target)
+    text = target.read_text(encoding="utf-8")
+    assert text.count('"name": "nested"') == depth
+    assert text.count('"children"') == depth
+
+
+def test_streaming_export_keeps_old_file_if_iteration_fails(tmp_path: Path) -> None:
+    target = tmp_path / "files.csv"
+    target.write_text("previous", encoding="utf-8")
+
+    def failing_files():
+        yield Node("first", False, size=1)
+        raise OSError("source changed")
+
+    with pytest.raises(OSError, match="source changed"):
+        export.export_files_csv(failing_files(), target)
+    assert target.read_text(encoding="utf-8") == "previous"
+    assert not list(tmp_path.glob(".file-tree-*"))
 
 
 def _child(node: Node, name: str) -> Node:

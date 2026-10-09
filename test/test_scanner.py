@@ -62,14 +62,14 @@ def test_scanning_a_file_or_a_missing_path_raises(tmp_path: Path) -> None:
 def test_an_unreadable_folder_is_recorded_and_the_scan_goes_on(sample_tree: Path,
                                                                monkeypatch: pytest.MonkeyPatch) -> None:
     locked = str(sample_tree / "photos")
-    real_scandir = os.scandir
+    real_listing = scanner.MountSurvey.listing
 
-    def scandir(path: str):
+    def listing(self, path: str, snapshot: bytes):
         if path == locked:
             raise PermissionError(13, "存取被拒。")  # the OS words it in the system's language
-        return real_scandir(path)
+        return real_listing(self, path, snapshot)
 
-    monkeypatch.setattr(scanner.os, "scandir", scandir)
+    monkeypatch.setattr(scanner.MountSurvey, "listing", listing)
     result = scan(sample_tree)
     assert result.errors == [(locked, scanner.ACCESS_DENIED)]
     photos = _child(result.root, "photos")

@@ -3,7 +3,12 @@ updates:
   # Development work, dependency bumps included, goes to dev; main takes
   # releases only.
   - package-ecosystem: "pip"
-    directory: "/"
+    # The project's own manifests at the root, and the hash-locked tools the
+    # release job installs (publish.txt): from the root Dependabot does not look
+    # as deep as .github/requirements, so the directory is named.
+    directories:
+      - "/"
+      - "/.github/requirements"
     schedule:
       interval: "weekly"
     target-branch: "dev"

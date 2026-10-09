@@ -1,0 +1,70 @@
+name: Sign exact Windows release files
+description: Use Azure OIDC and verify trusted timestamped signatures before packaging or upload.
+inputs:
+  files:
+    description: Exact absolute paths separated by newlines.
+    required: true
+  client-id:
+    description: Azure application identifier.
+    required: true
+  tenant-id:
+    description: Azure tenant identifier.
+    required: true
+  subscription-id:
+    description: Azure subscription identifier.
+    required: true
+  endpoint:
+    description: Regional Azure Artifact Signing endpoint.
+    required: true
+  account:
+    description: Signing account name.
+    required: true
+  profile:
+    description: Public trust certificate profile name.
+    required: true
+  publisher:
+    description: Exact expected certificate subject.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Check exact owned release paths before signing
+      shell: pwsh
+      env:
+        FILETREE_SIGNED_FILES: ${{ inputs.files }}
+        FILETREE_EXPECTED_PUBLISHER: ${{ inputs.publisher }}
+      run: ./tools/verify_signatures.ps1 -Files $env:FILETREE_SIGNED_FILES -ExpectedPublisher $env:FILETREE_EXPECTED_PUBLISHER -CheckPathsOnly
+    - name: Authenticate only through Azure OIDC
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906  # v3.1.0
+      with:
+        client-id: ${{ inputs.client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        subscription-id: ${{ inputs.subscription-id }}
+    - name: Sign only the reviewed release files
+      uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82  # v2
+      with:
+        endpoint: ${{ inputs.endpoint }}
+        signing-account-name: ${{ inputs.account }}
+        certificate-profile-name: ${{ inputs.profile }}
+        files: ${{ inputs.files }}
+        file-digest: SHA256
+        timestamp-rfc3161: https://timestamp.acs.microsoft.com
+        timestamp-digest: SHA256
+        cache-dependencies: false
+        trace: false
+        exclude-environment-credential: true
+        exclude-workload-identity-credential: true
+        exclude-managed-identity-credential: true
+        exclude-shared-token-cache-credential: true
+        exclude-visual-studio-credential: true
+        exclude-visual-studio-code-credential: true
+        exclude-azure-cli-credential: false
+        exclude-azure-powershell-credential: true
+        exclude-azure-developer-cli-credential: true
+        exclude-interactive-browser-credential: true
+    - name: Refuse invalid missing or unexpected signatures
+      shell: pwsh
+      env:
+        FILETREE_SIGNED_FILES: ${{ inputs.files }}
+        FILETREE_EXPECTED_PUBLISHER: ${{ inputs.publisher }}
+      run: ./tools/verify_signatures.ps1 -Files $env:FILETREE_SIGNED_FILES -ExpectedPublisher $env:FILETREE_EXPECTED_PUBLISHER

@@ -1,0 +1,76 @@
+name: Desktop builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/build.yml
+      - .github/workflows/posix-build.yml
+      - tools/install_compiler.py
+      - tools/build_nuitka.py
+      - tools/build_msi.py
+      - tools/prepare_packages.py
+      - tools/msi_metadata.py
+      - tools/package_posix.py
+      - tools/lock_compiler_wheels.py
+      - .github/requirements/archives.txt
+      - .github/requirements/photos.txt
+      - .github/requirements/reports.txt
+      - tools/validate_msi.ps1
+      - tools/installer/**
+
+permissions:
+  contents: read
+
+jobs:
+  posix:
+    uses: ./.github/workflows/posix-build.yml
+    with:
+      ref: ${{ github.sha }}
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install shared pinned compiler tools
+        run: python tools/install_compiler.py
+      - name: Compile the actual FileTree standalone program
+        run: python tools/build_nuitka.py
+      - name: Install the pinned MSI compiler
+        run: |
+          dotnet tool install wix --version 6.0.2 --tool-path .tools/wix
+          "$env:GITHUB_WORKSPACE/.tools/wix" >> $env:GITHUB_PATH
+      - name: Package the compiled program at its checked-in version
+        shell: pwsh
+        run: |
+          $version = python -c "from je_file_tree import __version__; print(__version__)"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot read the program version.' }
+          python tools/package_standalone.py --version $version
+          if ($LASTEXITCODE -ne 0) { throw 'Standalone archive failed.' }
+          python tools/build_msi.py --version $version
+          if ($LASTEXITCODE -ne 0) { throw 'Compiled installer failed.' }
+          python tools/prepare_packages.py --version $version
+          if ($LASTEXITCODE -ne 0) { throw 'Package review drafts failed.' }
+      - name: Verify compiled payload install upgrade and removal in this disposable runner
+        run: ./tools/validate_msi.ps1 -DisposableRunner -CompiledPayload
+      - name: Retain compiled binaries and native evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: windows-compiled
+          path: |
+            FileTree-*-windows-standalone.zip
+            FileTree-*-windows-x64.msi
+            msi-proof.json
+            install.log
+            upgrade.log
+            uninstall.log
+            package-drafts/
+          if-no-files-found: warn
+          retention-days: 7

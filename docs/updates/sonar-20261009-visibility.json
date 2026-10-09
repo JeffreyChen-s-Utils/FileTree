@@ -1,0 +1,45 @@
+{
+  "observed_date": "2026-10-09",
+  "repository": "JeffreyChen-s-Utils/FileTree",
+  "revision": "ff1fa7a6a2b10cc908e717ec9c1d71e097c42cc6",
+  "github_visibility": "PUBLIC",
+  "sonar_project": "JeffreyChen-s-Utils_FileTree",
+  "sonar_organization": "jeffreychen-s-utils",
+  "sonar_visibility": "private",
+  "sonar_alm_url": "https://github.com/JeffreyChen-s-Utils/FileTree",
+  "token_authenticated": true,
+  "project_administration_read_verified": true,
+  "task": {
+    "id": "AaEdPL-RHxi1U64p2g3E",
+    "submitted_at": "2026-10-08T20:38:02+0000",
+    "pull_request": "8",
+    "status": "FAILED",
+    "analysis_id": null,
+    "private_loc_limit": 50000,
+    "organization_loc_usage": 38415,
+    "analysis_loc": 38158,
+    "python_loc": 35607
+  },
+  "scanner_context": {
+    "sonar.sources": "je_file_tree,tools,.github,docs,pyproject.toml,start_file_tree.py",
+    "sonar.tests": "test",
+    "sonar.pullrequest.key": "8"
+  },
+  "visibility_change": {
+    "endpoint": "POST /api/projects/update_visibility",
+    "project": "JeffreyChen-s-Utils_FileTree",
+    "visibility": "public",
+    "required_permission": "Project administer",
+    "executed": false,
+    "owner_public_analysis_decision": "pending"
+  },
+  "subscription_reference": "https://docs.sonarsource.com/sonarqube-cloud/administering-sonarcloud/managing-subscription/subscription-plans",
+  "provenance": [
+    "GitHub repository visibility API",
+    "Sonar /api/components/show",
+    "Sonar /api/navigation/component",
+    "Sonar /api/ce/activity",
+    "Sonar /api/ce/task additionalFields=scannerContext",
+    "Sonar /api/webservices/list"
+  ]
+}

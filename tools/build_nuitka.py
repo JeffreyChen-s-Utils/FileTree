@@ -2,7 +2,7 @@
 
     python tools/build_nuitka.py             # a program folder: build/standalone/start_file_tree.dist/
     python tools/build_nuitka.py --onefile   # one file: build/onefile/FileTree.exe
-    python tools/build_nuitka.py --app       # macOS: build/app/FileTree.app
+    python tools/build_nuitka.py --app       # macOS: build/app/start_file_tree.app
 
 Any other option is passed on to Nuitka unchanged (for example
 ``--windows-icon-from-ico=icon.ico``). The script exists because one option
@@ -29,8 +29,9 @@ sys.path.insert(0, str(ROOT))
 import PySide6  # noqa: E402
 from PySide6.QtCore import QLibraryInfo  # noqa: E402
 
-from je_file_tree.gui.icon import draw, ico_bytes, png_bytes  # noqa: E402
+from je_file_tree.gui.icon import draw, icns_bytes, ico_bytes, png_bytes  # noqa: E402
 from je_file_tree.gui.qt_translation import CATALOGUES  # noqa: E402
+from je_file_tree import __version__  # noqa: E402
 
 ENTRY_POINT = ROOT / "start_file_tree.py"
 PROGRAM_NAME = "FileTree"
@@ -61,8 +62,8 @@ def translation_options(translations: Path, packages: Path) -> list[str]:
 def icon_options(folder: Path, extra: list[str]) -> list[str]:
     """Write the program icon into ``folder`` and return the Nuitka option that uses it.
 
-    Windows gets a multi-size ``.ico``, Linux a 256-pixel PNG; macOS wants an
-    ``.icns``, which is not made here. Nothing is added when ``extra`` already
+    Windows gets a multi-size ``.ico``, macOS a native multi-size ``.icns`` and Linux a PNG.
+    No external conversion dependency is required. Nothing is added when ``extra`` already
     names an icon.
     """
     if any(option.split("=")[0].endswith("-icon") or "-icon-" in option for option in extra):
@@ -72,6 +73,10 @@ def icon_options(folder: Path, extra: list[str]) -> list[str]:
         path = folder / f"{PROGRAM_NAME}.ico"
         path.write_bytes(ico_bytes())
         return [f"--windows-icon-from-ico={path}"]
+    if sys.platform == "darwin":
+        path = folder / f"{PROGRAM_NAME}.icns"
+        path.write_bytes(icns_bytes())
+        return [f"--macos-app-icon={path}"]
     if sys.platform.startswith("linux"):
         path = folder / f"{PROGRAM_NAME}.png"
         path.write_bytes(png_bytes(draw(256)))
@@ -88,7 +93,8 @@ def nuitka_command(mode: str, extra: list[str]) -> list[str]:
         *translation_options(qt_translations_folder(), Path(PySide6.__file__).parent.parent),
     ]
     if mode == "app":
-        command.append(f"--macos-app-name={PROGRAM_NAME}")
+        command.extend((f"--macos-app-name={PROGRAM_NAME}", "--macos-signed-app-name=io.github.jechen.FileTree",
+                        f"--macos-app-version={__version__}"))
     return [*command, *extra, str(ENTRY_POINT)]
 
 

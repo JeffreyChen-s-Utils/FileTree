@@ -35,11 +35,11 @@ def layout(root: Node, *, max_depth: int = 4, min_span: float = 0.002, max_segme
     queue: deque[tuple[Node, float, float, int]] = deque([(root, 0.0, 1.0, 1)])
     while queue and len(segments) < max_segments:
         folder, start, span, depth = queue.popleft()
-        if folder.size <= 0:
+        if folder.accounted_size <= 0:
             continue
         offset = start
         for child in sorted(folder.children, key=_size, reverse=True):
-            child_span = span * child.size / folder.size
+            child_span = span * child.accounted_size / folder.accounted_size
             if child_span < min_span or len(segments) >= max_segments:
                 break
             segments.append(Segment(child, depth, offset, child_span))
@@ -55,4 +55,4 @@ def segment_at(segments: list[Segment], depth: int, fraction: float) -> Segment 
 
 
 def _size(node: Node) -> int:
-    return node.size
+    return node.accounted_size

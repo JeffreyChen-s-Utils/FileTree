@@ -43,6 +43,7 @@ def test_modes() -> None:
     onefile = build.nuitka_command("onefile", [])
     assert "--mode=onefile" in onefile and "--output-dir=build/onefile" in onefile
     assert "--macos-app-name=FileTree" in build.nuitka_command("app", [])
+    assert "--macos-signed-app-name=io.github.jechen.FileTree" in build.nuitka_command("app", [])
     assert "--macos-app-name=FileTree" not in build.nuitka_command("standalone", [])
 
 

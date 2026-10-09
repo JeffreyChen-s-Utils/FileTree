@@ -1,4 +1,4 @@
-"""Translations: English, Traditional Chinese (Taiwan) and Simplified Chinese.
+"""Translations: English, Traditional/Simplified Chinese, Japanese and Korean.
 
 Every text the window shows goes through ``tr(key, **values)``. The string
 tables live in ``je_file_tree.gui.strings``; a key missing from a language falls
@@ -10,7 +10,8 @@ from __future__ import annotations
 
 from je_file_tree.gui.strings import STRINGS
 
-LANGUAGES: dict[str, str] = {"en": "English", "zh-TW": "繁體中文", "zh-CN": "简体中文"}
+LANGUAGES: dict[str, str] = {"en": "English", "zh-TW": "繁體中文", "zh-CN": "简体中文",
+                           "ja": "日本語", "ko": "한국어"}
 DEFAULT_LANGUAGE = "en"
 _state = {"language": DEFAULT_LANGUAGE}
 _SECONDS_PER_MINUTE = 60
@@ -40,6 +41,9 @@ def tr(key: str, **values: object) -> str:
 def match_language(locale_name: str) -> str:
     """The supported language closest to a system locale name such as ``"zh_TW"`` or ``"en_US"``."""
     name = locale_name.replace("-", "_").lower()
+    base = name.split("_", 1)[0]
+    if base in ("ja", "ko"):
+        return base
     if not name.startswith("zh"):
         return DEFAULT_LANGUAGE
     traditional = ("_tw", "_hk", "_mo", "hant")

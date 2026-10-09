@@ -6,6 +6,8 @@ import os
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
+from je_file_tree.core.snapshot import snapshot_times
+
 
 @dataclass(slots=True, eq=False)
 class Node:
@@ -21,6 +23,12 @@ class Node:
 
     Only the root stores a full path (as its ``name``); every other path is
     rebuilt from the names on the way up, see ``path``.
+    An empty root name is reserved for a virtual multi-scan root: its path is None, and its
+    immediate children retain absolute source names. It never represents a filesystem entry.
+    ``owner`` is a recorded regular-file POSIX uid or optional Windows SID bytes; None is unknown.
+    Shared immutable owner keys add one pointer slot, measured at 8 bytes per node (2026-10-07).
+    ``accounting`` optionally holds counted logical/allocation bytes; named totals never change.
+    An accounted root always has this tuple, including when no hard-link alias was observed.
     """
 
     name: str
@@ -34,10 +42,35 @@ class Node:
     allocated: int = 0
     children: list[Node] | tuple[()] = field(default=())
     parent: Node | None = field(default=None, repr=False)
+    snapshot: bytes | None = field(default=None, repr=False)
+    owner: int | bytes | None = field(default=None, repr=False)
+    accounting: tuple[int, int] | None = field(default=None, repr=False)
 
     @property
-    def path(self) -> str:
-        """The full path of this entry."""
+    def accounted_size(self) -> int:
+        """Optional once-per-recorded-identity total; size always retains each named file's true length."""
+        return self.size if self.accounting is None else self.accounting[0]
+
+    @property
+    def accounted_allocated(self) -> int:
+        """Optional once-per-recorded-identity allocation; allocated retains the per-name estimate."""
+        return self.allocated if self.accounting is None else self.accounting[1]
+
+    @property
+    def accessed(self) -> float | None:
+        """Recorded file access time, if optional capture was enabled; it does not prove actual use."""
+        return snapshot_times(self.snapshot)[0]
+
+    @property
+    def created(self) -> float | None:
+        """Recorded file birth time, if the platform provides it and optional capture was enabled."""
+        return snapshot_times(self.snapshot)[1]
+
+    @property
+    def path(self) -> str | None:
+        """The full path, or None for an empty-named virtual root with no filesystem identity."""
+        if not self.name and self.parent is None:
+            return None
         names = []
         node: Node | None = self
         while node is not None:

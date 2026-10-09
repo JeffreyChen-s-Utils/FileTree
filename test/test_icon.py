@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import importlib.util
 import struct
 import sys
@@ -56,6 +57,7 @@ def _build_script():
 @pytest.mark.parametrize(("platform", "option", "file"), [
     ("win32", "--windows-icon-from-ico=", "FileTree.ico"),
     ("linux", "--linux-icon=", "FileTree.png"),
+    ("darwin", "--macos-app-icon=", "FileTree.icns"),
 ])
 def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                               platform: str, option: str, file: str) -> None:
@@ -66,11 +68,48 @@ def test_the_build_writes_and_passes_the_icon(qapp: QApplication, tmp_path: Path
     assert (tmp_path / file).stat().st_size > 0
 
 
-def test_the_build_leaves_macos_and_an_icon_given_by_hand_alone(tmp_path: Path,
-                                                                 monkeypatch: pytest.MonkeyPatch) -> None:
+def test_native_icns_has_four_readable_sizes_and_complete_bounds(qapp: QApplication, tmp_path: Path) -> None:
+    data = icon.icns_bytes()
+    assert data[:4] == b"icns" and struct.unpack_from(">I", data, 4)[0] == len(data)
+    at = 8
+    for kind, size in ((b"ic07", 128), (b"ic08", 256), (b"ic09", 512), (b"ic10", 1024)):
+        length = struct.unpack_from(">I", data, at + 4)[0]
+        assert data[at:at + 4] == kind and data[at + 8:at + 16] == b"\x89PNG\r\n\x1a\n"
+        assert struct.unpack_from(">II", data, at + 24) == (size, size)
+        at += length
+    assert at == len(data)
+    path = tmp_path / "FileTree.icns"
+    path.write_bytes(data)
+    reader = QImageReader(str(path))
+    assert reader.canRead() and reader.imageCount() == 4
+    for index, size in enumerate((128, 256, 512, 1024)):
+        assert reader.jumpToImage(index)
+        image = reader.read()
+        assert image.width() == image.height() == size and image.pixelColor(0, 0).alpha() < 32
+
+
+@pytest.mark.parametrize("platform, option", [("win32", "--windows-icon-from-ico=mine.ico"),
+                                            ("linux", "--linux-icon=mine.png"),
+                                            ("darwin", "--macos-app-icon=mine.icns")])
+def test_the_build_leaves_an_icon_given_by_hand_alone(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                    platform: str, option: str) -> None:
     build = _build_script()
-    monkeypatch.setattr(sys, "platform", "darwin")
-    assert build.icon_options(tmp_path, []) == []
-    monkeypatch.setattr(sys, "platform", "win32")
-    assert build.icon_options(tmp_path, ["--windows-icon-from-ico=mine.ico"]) == []
+    monkeypatch.setattr(sys, "platform", platform)
+    assert build.icon_options(tmp_path, [option]) == []
     assert list(tmp_path.iterdir()) == []
+
+
+def test_the_taskbar_button_is_filetree_s_own(monkeypatch: pytest.MonkeyPatch) -> None:
+    if sys.platform != "win32":
+        assert icon.claim_taskbar_button() is False
+        return
+    assert icon.claim_taskbar_button() is True
+    shell32 = ctypes.windll.shell32
+    value = ctypes.c_wchar_p()
+    shell32.GetCurrentProcessExplicitAppUserModelID.argtypes = [ctypes.POINTER(ctypes.c_wchar_p)]
+    shell32.GetCurrentProcessExplicitAppUserModelID.restype = ctypes.c_long
+    assert shell32.GetCurrentProcessExplicitAppUserModelID(ctypes.byref(value)) == 0
+    assert value.value == icon.APP_USER_MODEL_ID
+    ctypes.windll.ole32.CoTaskMemFree(value)
+    monkeypatch.setattr(icon.sys, "platform", "linux")
+    assert icon.claim_taskbar_button() is False, "nothing to claim elsewhere"

@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import NamedTuple
 
 from je_file_tree.core.node import Node
 
@@ -45,12 +46,24 @@ class Tile:
 
     ``header`` is the height of the strip at the top of a folder's tile kept free for its name
     (0 when the folder got none); its children are laid out below it.
+
+    A *group* tile (``grouped`` > 0) stands for that many entries of the folder ``node`` that were
+    each too small for a tile of their own, ``grouped_size`` bytes together; it is not ``node`` itself.
     """
 
     node: Node
     rect: Rect
     depth: int
     header: float = 0.0
+    grouped: int = 0
+    grouped_size: int = 0
+
+
+class _Group(NamedTuple):
+    """A folder's entries too small for tiles of their own: how many, and their size together."""
+
+    count: int
+    size: int
 
 
 def squarify(values: Sequence[float], rect: Rect) -> list[Rect]:
@@ -121,32 +134,52 @@ def layout(root: Node, rect: Rect, *, max_depth: int | None = None, min_side: fl
            padding: float = 2.0, max_tiles: int = 20000, header: float = 0.0) -> list[Tile]:
     """Tiles for everything beneath ``root`` inside ``rect``, parents before their children.
 
-    Entries whose rectangle would be narrower than ``min_side`` are left out
-    (their space stays empty), folders are nested ``padding`` inside their own
-    tile, and layout stops at ``max_depth`` levels or ``max_tiles`` tiles, so the
-    cost stays bounded however large the tree is. With ``header``, a folder whose
-    children are laid out keeps a strip that high at its top for its name, when
-    its tile is at least three strips wide and tall.
+    No tile is narrower than ``min_side``: the entries of a folder too small for
+    a tile that size share one group tile (see ``Tile``), so many small files
+    make one block rather than a mass of specks, and a group or an entry whose
+    rectangle still comes out narrower is left out (its space stays empty).
+    Folders are nested ``padding`` inside their own tile and open only when at
+    least one of their entries gets a tile of its own; layout stops at
+    ``max_depth`` levels or ``max_tiles`` tiles, so the cost stays bounded
+    however large the tree is. With ``header``, an opened folder keeps a strip
+    that high at its top for its name, when its tile is at least three strips
+    wide and tall.
     """
     tiles: list[Tile] = []
     queue: deque[tuple[Node, Rect, int]] = deque([(root, rect, 1)])
     while queue and len(tiles) < max_tiles:
         folder, area, depth = queue.popleft()
-        for child, child_rect in _place_children(folder, area, min_side):
-            inner = child_rect.inset(padding)
-            opens = _opens(child, inner, depth < max_depth if max_depth is not None else True, min_side)
-            strip = _strip(inner, header) if opens else 0.0
-            tiles.append(Tile(child, child_rect, depth, strip))
+        deeper = max_depth is None or depth < max_depth
+        for child, child_rect, group in _place_children(folder, area, min_side):
+            if group is not None:
+                tiles.append(Tile(folder, child_rect, depth, grouped=group.count, grouped_size=group.size))
+                opened = None
+            else:
+                opened = _opened(child, child_rect.inset(padding), header, min_side) if deeper else None
+                tiles.append(Tile(child, child_rect, depth, opened[0] if opened else 0.0))
             if len(tiles) >= max_tiles:
                 break
-            if opens:
-                queue.append((child, Rect(inner.x, inner.y + strip, inner.width, inner.height - strip), depth + 1))
+            if opened is not None:
+                queue.append((child, opened[1], depth + 1))
     return tiles
 
 
-def _opens(node: Node, inner: Rect, deeper_allowed: bool, min_side: float) -> bool:
-    """Whether ``node``'s children are laid out inside ``inner`` (a non-empty folder, depth left, room enough)."""
-    return node.is_dir and bool(node.children) and deeper_allowed and min(inner.width, inner.height) >= min_side
+def _opened(node: Node, inner: Rect, header: float, min_side: float) -> tuple[float, Rect] | None:
+    """The header strip and the area for ``node``'s children inside ``inner``, or None when it stays one tile.
+
+    A folder stays one tile when it is empty, has too little room, or when every entry in it would
+    be too small for a tile of its own: a single group tile filling it would only repeat the folder.
+    """
+    if not node.is_dir or not node.children or node.accounted_size <= 0:
+        return None
+    strip = _strip(inner, header)
+    body = Rect(inner.x, inner.y + strip, inner.width, inner.height - strip)
+    if min(body.width, body.height) < min_side:
+        return None
+    largest = max(child.accounted_size for child in node.children)
+    if largest * body.area / node.accounted_size < min_side * min_side:
+        return None
+    return strip, body
 
 
 def _strip(inner: Rect, header: float) -> float:
@@ -154,25 +187,39 @@ def _strip(inner: Rect, header: float) -> float:
     return header if header > 0 and min(inner.width, inner.height) >= 3 * header else 0.0
 
 
-def _place_children(folder: Node, area: Rect, min_side: float) -> list[tuple[Node, Rect]]:
-    """Squarify ``folder``'s non-empty children into ``area``, dropping those too small to see.
+def _place_children(folder: Node, area: Rect, min_side: float) -> list[tuple[Node, Rect, _Group | None]]:
+    """Squarify ``folder``'s non-empty children into ``area``: (child, rectangle, None) for each shown child.
 
-    The ones too small to see are laid out together as one unnamed block, so
-    the others keep their true proportions.
+    The children too small for a tile of their own are laid out together as
+    one block, so the others keep their true proportions; it comes back as
+    (folder, rectangle, group) when there are at least two of them.
+    Rectangles narrower than ``min_side`` are dropped.
     """
-    if folder.size <= 0 or area.area <= 0:
+    if folder.accounted_size <= 0 or area.area <= 0:
         return []
     min_area = min_side * min_side
-    scale = area.area / folder.size
-    shown = [child for child in folder.children if child.size * scale >= min_area]
-    entries: list[tuple[int, Node | None]] = [(child.size, child) for child in shown]
-    rest = folder.size - sum(child.size for child in shown)
+    scale = area.area / folder.accounted_size
+    entries: list[tuple[int, Node | None]] = []
+    count = rest = 0
+    for child in folder.children:
+        if child.accounted_size * scale >= min_area:
+            entries.append((child.accounted_size, child))
+        elif child.accounted_size > 0:
+            count += 1
+            rest += child.accounted_size
     if rest > 0:
         entries.append((rest, None))
     entries.sort(key=_entry_size, reverse=True)  # stays right after a deletion shrank a folder
     rects = squarify([size for size, _ in entries], area)
-    return [(child, rect) for (_, child), rect in zip(entries, rects, strict=True)
-            if child is not None and min(rect.width, rect.height) >= min_side]
+    placed: list[tuple[Node, Rect, _Group | None]] = []
+    for (_, child), rect in zip(entries, rects, strict=True):
+        if min(rect.width, rect.height) < min_side:
+            continue
+        if child is not None:
+            placed.append((child, rect, None))
+        elif count > 1:
+            placed.append((folder, rect, _Group(count, rest)))
+    return placed
 
 
 def _entry_size(entry: tuple[int, Node | None]) -> int:

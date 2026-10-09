@@ -15,6 +15,7 @@ from typing import Any
 
 from je_file_tree.core.export import JSON_FORMAT
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 
 class SavedScanError(ValueError):
@@ -33,7 +34,7 @@ class SavedFolder:
 class SavedScan:
     """A saved scan: the folder scanned, when it was saved (ISO 8601, ``""`` if unknown) and its folders."""
 
-    root: str
+    root: str | None
     saved: str
     folders: dict[str, SavedFolder]  # keyed by ``folder_key(path)``
 
@@ -76,7 +77,10 @@ def load_saved(file: str | os.PathLike[str]) -> SavedScan:
     if not isinstance(top, dict) or not isinstance(top.get("name"), str):
         raise SavedScanError("the scan has no root folder")
     saved = document.get("saved")
-    return SavedScan(top["name"], saved if isinstance(saved, str) else "", _folders_of(top))
+    virtual = top.get("virtual", False)
+    if not isinstance(virtual, bool) or virtual and top["name"] != "" or not virtual and not top["name"]:
+        raise SavedScanError("invalid virtual root marker/name")
+    return SavedScan(None if virtual else top["name"], saved if isinstance(saved, str) else "", _folders_of(top))
 
 
 def _folders_of(top: dict[str, Any]) -> dict[str, SavedFolder]:
@@ -117,6 +121,7 @@ def compare(root: Node, saved: SavedScan) -> list[FolderChange]:
     seen: set[str] = set()
     stack: list[tuple[Node, str]] = [(root, "")]
     while stack:
+        give_way()
         folder, path = stack.pop()
         key = folder_key(path)
         seen.add(key)

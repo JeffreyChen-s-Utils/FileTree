@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 # File-type groups shown in the "File types" view and used to colour the
 # treemap. Keys are stable identifiers (the GUI translates them).
@@ -106,12 +107,16 @@ class AgeStat:
 
 @dataclass(frozen=True, slots=True)
 class Summary:
-    """What the result views show, computed in one pass."""
+    """Named result totals, with optional counted category bytes for chart legends.
+
+    ``counted_categories`` is None outside accounting mode; its counts still include every name.
+    """
 
     largest: list[Node]
     extensions: list[ExtensionStat]
     ages: list[AgeStat]
     now: float
+    counted_categories: list[CategoryStat] | None = None
 
 
 def summarise(root: Node, limit: int = 1000, *, now: float | None = None) -> Summary:
@@ -122,9 +127,11 @@ def summarise(root: Node, limit: int = 1000, *, now: float | None = None) -> Sum
     the moment ages are counted from (the current time when omitted).
     """
     now = time.time() if now is None else now
-    files, sizes, counts = _files_and_extensions(root)
+    accounted: dict[str, int] | None = {} if root.accounting is not None else None
+    files, sizes, counts = _files_and_extensions(root, accounted=accounted)
     largest = heapq.nlargest(limit, files, key=_file_size) if limit > 0 else []
-    return Summary(largest, _extension_list(sizes, counts), age_stats(files, now), now)
+    counted = category_stats(_extension_list(accounted, counts)) if accounted is not None else None
+    return Summary(largest, _extension_list(sizes, counts), age_stats(files, now), now, counted)
 
 
 def largest_files(root: Node, limit: int = 1000) -> list[Node]:
@@ -175,7 +182,8 @@ def extension_stats(root: Node) -> list[ExtensionStat]:
     return _extension_list(sizes, counts)
 
 
-def _files_and_extensions(root: Node) -> tuple[list[Node], dict[str, int], dict[str, int]]:
+def _files_and_extensions(root: Node, *, accounted: dict[str, int] | None = None
+                          ) -> tuple[list[Node], dict[str, int], dict[str, int]]:
     """Every file beneath ``root`` (links left out), with the total size and count per extension."""
     files: list[Node] = []
     sizes: dict[str, int] = {}
@@ -186,12 +194,15 @@ def _files_and_extensions(root: Node) -> tuple[list[Node], dict[str, int], dict[
         if node.is_link:
             continue
         if node.is_dir:
+            give_way()
             stack.extend(node.children)
             continue
         files.append(node)
         extension = extension_of(node.name)
         sizes[extension] = sizes.get(extension, 0) + node.size
         counts[extension] = counts.get(extension, 0) + 1
+        if accounted is not None:
+            accounted[extension] = accounted.get(extension, 0) + node.accounted_size
     return files, sizes, counts
 
 

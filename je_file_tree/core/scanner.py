@@ -18,14 +18,23 @@ from __future__ import annotations
 
 import errno
 import os
+import stat
 import threading
 import time
-from collections.abc import Callable
-from dataclasses import dataclass, field
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from dataclasses import dataclass, field, fields
 from typing import cast
 
 from je_file_tree.core.allocation import Allocation, allocation_for
+from je_file_tree.core.exclusions import Excluded, exclusion_test
 from je_file_tree.core.node import Node
+from je_file_tree.core.hard_links import HardLinkAccounting, account_hard_links
+from je_file_tree.core.owner_id import file_owner
+from je_file_tree.core.mounts import MOUNT_BOUNDARY, MountChangedError, MountSurvey, boundary_path, mount_points
+from je_file_tree.core.pacing import give_way
+from je_file_tree.core.priority import background_priority
+from je_file_tree.core.snapshot import pack_snapshot, stat_snapshot, unpack_snapshot
 
 # Windows reparse tags of links that must not be followed. A junction (and a
 # volume mounted into a folder) is a mount point; ``is_symlink()`` is False for
@@ -52,6 +61,9 @@ _WINDOWS_PATH_TOO_LONG = 206  # ERROR_FILENAME_EXCED_RANGE
 
 # ``Node.error`` of a folder the scan never got to because it was stopped.
 NOT_SCANNED = "not scanned: the scan was stopped first"
+EXCLUDED = "excluded: skipped by the exclusions"
+HIDDEN_OMITTED = "excluded: hidden entries omitted"
+PARTIAL_FOLDER = "incomplete: some entries could not be read"
 
 
 class ScanCancelledError(Exception):
@@ -69,10 +81,22 @@ class ScanCancelledError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class ScanOptions:
-    """What a scan includes and how many folders it reads at once."""
+    """What a scan includes and how many folders it reads at once.
+
+    ``count_hard_links`` adds counted totals from recorded identities without changing named bytes.
+    ``experimental_mft`` opts into a serial checked NTFS metadata audit; ordinary fallback/default
+    remains available without elevation. Native ACL/parity/performance baselines are still required.
+    """
 
     include_hidden: bool = True
     workers: int = DEFAULT_WORKERS
+    exclude: tuple[str, ...] = ()  # folder name patterns and folder paths to skip (see core/exclusions.py)
+    gentle: bool = False
+    file_times: bool = False
+    windows_owners: bool = False
+    exact_windows_allocation: bool = False
+    count_hard_links: bool = False
+    experimental_mft: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,11 +111,14 @@ class ScanProgress:
 
 @dataclass(slots=True)
 class ScanResult:
-    """A finished scan: the tree, the entries that could not be read, and how long it took."""
+    """A finished tree, coverage and duration; backend is ordinary or the opt-in mft audit."""
 
     root: Node
     errors: list[tuple[str, str]] = field(default_factory=list)
     elapsed: float = 0.0
+    warnings: list[str] = field(default_factory=list)
+    hard_links: HardLinkAccounting | None = None
+    backend: str = "ordinary"
 
 
 ProgressCallback = Callable[[ScanProgress], None]
@@ -111,47 +138,112 @@ class _FolderRead:
 
 def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  # noqa: PLR0913
          progress: ProgressCallback | None = None, cancel: threading.Event | None = None,
-         progress_interval: float = 0.1, on_root: RootCallback | None = None) -> ScanResult:
+         progress_interval: float = 0.1, on_root: RootCallback | None = None,
+         pause: threading.Event | None = None) -> ScanResult:
     """Scan the folder at ``path`` and return its tree.
 
     ``on_root`` is called once with the (still empty) root before any folder is
     read, for showing the tree while it grows. ``progress`` is called about
     every ``progress_interval`` seconds (and once at the end). Both run on the
     calling thread. Setting ``cancel`` stops the scan within one interval.
+    While ``pause`` is set, workers take no new folders; in-flight folder reads finish.
+    Clearing it resumes within 0.1 seconds. Cancellation works while paused.
+    Experimental MFT stages a separate candidate and adopts success/cancelled partial results into
+    the single published root. Raw/unsupported failures discard the candidate before ordinary
+    fallback; progress may restart. Per-path native ACL metadata remains mandatory, without elevation.
+    Windows native directory entries use ordinary no-follow path stat even with a cached file ID,
+    so full snapshot attributes do not depend on the enumeration API. Audited adapters retain their
+    already verified metadata; other platforms keep cached stat with missing-identity fallback.
 
     :raises NotADirectoryError: when ``path`` is not an existing folder
     :raises ScanCancelledError: when ``cancel`` is set; ``partial`` holds what was read
+    :raises OSError: when Linux mount boundaries are unknown or change during scanning
     """
     root_path = os.path.abspath(os.fspath(path))
     if not os.path.isdir(root_path):
         raise NotADirectoryError(root_path)
     options = options or ScanOptions()
     started = time.monotonic()
-    root = Node(name=root_path, is_dir=True, children=[])
+    root = Node(name=root_path, is_dir=True, children=[], error=NOT_SCANNED)
+    root.snapshot = stat_snapshot(root_path)
+    if unpack_snapshot(root.snapshot).is_link:
+        raise NotADirectoryError("scan roots must not be links or junctions")
     if on_root is not None:
         on_root(root)
-    crawler = _Crawler(root, root_path, options, cancel)
+    if options.experimental_mft:
+        try:
+            candidate = _mft_candidate(root, options, progress, cancel, pause, progress_interval)
+        except ScanCancelledError as stopped:
+            if stopped.partial is not None:
+                stopped.partial.elapsed = time.monotonic() - started
+            raise
+        if candidate is not None:
+            candidate.elapsed = time.monotonic() - started
+            return candidate
+    crawler = _Crawler(root, root_path, options, cancel, pause)
     try:
         crawler.run(progress, cancel, progress_interval)
     except ScanCancelledError:
         for folder, _ in crawler.unread():
             folder.error = NOT_SCANNED
         _add_up(crawler.folders)
-        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started)) from None
+        accounting = account_hard_links(root) if options.count_hard_links else None
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started,
+                                            sorted(set(crawler.warnings)), accounting)) from None
     _add_up(crawler.folders)
+    accounting = account_hard_links(root, cancel=cancel) if options.count_hard_links else None
+    if cancel is not None and cancel.is_set():
+        raise ScanCancelledError(ScanResult(root, crawler.errors, time.monotonic() - started,
+                                            sorted(set(crawler.warnings)), accounting))
     if progress is not None:
         progress(crawler.snapshot())
-    return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started)
+    crawler.verify_mounts()
+    return ScanResult(root=root, errors=crawler.errors, elapsed=time.monotonic() - started,
+                      warnings=sorted(set(crawler.warnings)), hard_links=accounting)
+
+
+def _adopt_mft(root: Node, result: ScanResult) -> ScanResult:
+    for item in fields(Node):
+        if item.name not in ("name", "parent", "snapshot"):
+            setattr(root, item.name, getattr(result.root, item.name))
+    for child in root.children:
+        child.parent = root
+    result.root = root
+    return result
+
+
+def _mft_candidate(root: Node, options: ScanOptions, progress: ProgressCallback | None,
+                   cancel: threading.Event | None, pause: threading.Event | None,
+                   interval: float) -> ScanResult | None:
+    from je_file_tree.core.mft_scan import build  # noqa: PLC0415 - optional metadata backend, no Qt
+
+    try:
+        result = build(root, options, progress=progress, cancel=cancel, pause=pause, interval=interval)
+    except ScanCancelledError as stopped:
+        if stopped.partial is not None:
+            _adopt_mft(root, stopped.partial)
+            if options.count_hard_links:
+                stopped.partial.hard_links = account_hard_links(root)
+        raise
+    if result is None:
+        if unpack_snapshot(stat_snapshot(root.name)).identity != unpack_snapshot(cast(bytes, root.snapshot)).identity:
+            raise OSError("NTFS scan root changed before ordinary fallback")
+        return None
+    return _adopt_mft(root, result)
 
 
 class _Crawler:
     """Worker threads sharing one stack of folders still to read."""
 
     def __init__(self, root: Node, root_path: str, options: ScanOptions,
-                 cancel: threading.Event | None = None) -> None:
+                 cancel: threading.Event | None = None, pause: threading.Event | None = None) -> None:
         self._options = options
-        self._allocation = allocation_for(root_path)
+        self._mounts = MountSurvey(root_path, cast(bytes, root.snapshot), mount_points())
+        self._allocation = (allocation_for(root_path, exact_windows=True) if options.exact_windows_allocation
+                            else allocation_for(root_path))
+        self._excluded = exclusion_test(options.exclude)
         self._cancel = cancel
+        self._pause = pause
         self._pending: list[tuple[Node, str]] = [(root, root_path)]
         self._busy = 0
         self._stopped = False
@@ -161,8 +253,13 @@ class _Crawler:
         self._current = root_path
         self.folders: list[Node] = [root]  # every folder after its parent
         self.errors: list[tuple[str, str]] = []
+        self.warnings: list[str] = []
         self.files = 0
         self.size = 0
+
+    def verify_mounts(self) -> None:
+        """Recheck scope after workers and final aggregation, before publishing a complete scan."""
+        self._mounts.verify(mount_points())
 
     def unread(self) -> list[tuple[Node, str]]:
         """The folders still waiting to be read (after ``run`` has returned or raised)."""
@@ -210,9 +307,16 @@ class _Crawler:
         self._done.set()
 
     def _work(self) -> None:
+        with background_priority(self._options.gentle) as warnings:
+            self._read_all()
+        with self._condition:
+            self.warnings.extend(warnings)
+
+    def _read_all(self) -> None:
         while (task := self._take()) is not None:
+            give_way()
             try:
-                read = _read_folder(task[0], task[1], self._options, self._allocation)
+                read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded, self._mounts)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
                 with self._condition:
                     self._failure = error
@@ -223,8 +327,12 @@ class _Crawler:
     def _take(self) -> tuple[Node, str] | None:
         """The next folder to read, or None once there is nothing left anywhere."""
         with self._condition:
-            while not self._pending and self._busy and not self._stopped:
-                self._condition.wait()
+            while not self._stopped and not (self._cancel is not None and self._cancel.is_set()):
+                if not self._pending and not self._busy:
+                    break
+                if ((self._pause is None or not self._pause.is_set()) and self._pending):
+                    break
+                self._condition.wait(0.1)
             cancelled = self._cancel is not None and self._cancel.is_set()
             if self._stopped or cancelled or not self._pending:
                 self._condition.notify_all()
@@ -261,51 +369,101 @@ def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:
         node = node.parent
 
 
-def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation) -> _FolderRead:
+def _read_folder(folder: Node, path: str, options: ScanOptions, allocation: Allocation,
+                 excluded: Excluded | None = None,
+                 boundaries: frozenset[str] | MountSurvey = frozenset()) -> _FolderRead:
     """Add ``folder``'s entries as its children and report what was found."""
     read = _FolderRead()
     try:
-        with os.scandir(path) as entries:
+        listing_context = (boundaries.listing(path, folder.snapshot) if isinstance(boundaries, MountSurvey)
+                           else _path_listing(path))
+        with listing_context as entries:
             listing = list(entries)
+            _record_entries(folder, listing, options, allocation, excluded, boundaries, read)
+    except MountChangedError:
+        raise
     except OSError as error:
         folder.error = _describe(error)
         read.errors.append((path, folder.error))
         return read
-    children = cast(list[Node], folder.children)  # folders are always created with a list
-    for entry in listing:
-        child = _entry_node(entry, options, read, allocation)
-        if child is None:
-            continue
-        child.parent = folder
-        children.append(child)
-        if child.is_dir and not child.is_link:
-            read.subfolders.append((child, entry.path))
+    if read.errors:
+        folder.error = HIDDEN_OMITTED if all(reason == HIDDEN_OMITTED for _, reason in read.errors) else PARTIAL_FOLDER
+    else:
+        folder.error = None
     return read
 
 
+@contextmanager
+def _path_listing(path: str) -> Iterator[Iterator[os.DirEntry[str]]]:
+    with os.scandir(path) as entries:
+        yield entries
+
+
+def _record_entries(folder: Node, listing: list[os.DirEntry[str]], options: ScanOptions, allocation: Allocation,
+                    excluded: Excluded | None, boundaries: frozenset[str] | MountSurvey, read: _FolderRead) -> None:
+    children = cast(list[Node], folder.children)  # folders are always created with a list
+    for entry in listing:
+        child = _entry_node(entry, options, read, allocation, excluded)
+        if child is None:
+            continue
+        if boundaries and child.is_dir and not child.is_link and boundary_path(entry.path) in boundaries:
+            child.is_link = True
+            child.error = MOUNT_BOUNDARY
+            read.errors.append((entry.path, MOUNT_BOUNDARY))
+        elif _other_volume(folder, child):
+            child.is_link = True  # a mount boundary is listed, never traversed
+            child.error = None
+        child.parent = folder
+        children.append(child)
+        if child.is_dir and not child.is_link and child.error == NOT_SCANNED:
+            read.subfolders.append((child, entry.path))
+
+
+def _other_volume(folder: Node, child: Node) -> bool:
+    """Different-device directory mounts must not bring another volume into this scan."""
+    return bool(child.is_dir and folder.snapshot is not None and child.snapshot is not None
+                and unpack_snapshot(folder.snapshot).device != unpack_snapshot(child.snapshot).device)
+
+
 def _entry_node(entry: os.DirEntry[str], options: ScanOptions, read: _FolderRead,
-                allocation: Allocation) -> Node | None:
+                allocation: Allocation, excluded: Excluded | None = None) -> Node | None:
     """The node for one directory entry, or None when it is skipped or unreadable."""
     try:
         info = entry.stat(follow_symlinks=False)
+        if not info.st_ino or (os.name == "nt" and isinstance(entry, os.DirEntry)):
+            # Windows cached enumeration can omit native attributes even with a valid file ID.
+            # Audited adapters already supply checked no-follow metadata; retain that exact result.
+            info = os.lstat(entry.path)
     except FileNotFoundError:
         return None  # removed while we were scanning
     except OSError as error:
         read.errors.append((entry.path, _describe(error)))
         return None
     if not options.include_hidden and _is_hidden(entry.name, info):
+        read.errors.append((entry.path, HIDDEN_OMITTED))
         return None
-    if entry.is_symlink() or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
+    snapshot = pack_snapshot(info, file_times=True) if options.file_times else pack_snapshot(info)
+    if stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", 0) in _LINK_REPARSE_TAGS:
         return Node(name=entry.name, is_dir=_points_to_folder(entry), modified=info.st_mtime,
-                    is_link=True)
-    if entry.is_dir(follow_symlinks=False):
-        return Node(name=entry.name, is_dir=True, modified=info.st_mtime, children=[])
+                    is_link=True, snapshot=snapshot)
+    if stat.S_ISDIR(info.st_mode):
+        node = _folder_node(entry, info.st_mtime, excluded)
+        node.snapshot = snapshot
+        return node
     allocated = allocation(entry, info)
     read.files += 1
     read.size += info.st_size
     read.allocated += allocated
     return Node(name=entry.name, is_dir=False, size=info.st_size, allocated=allocated, file_count=1,
-                modified=info.st_mtime)
+                modified=info.st_mtime, snapshot=snapshot,
+                owner=file_owner(entry.path, info, windows=options.windows_owners))
+
+
+def _folder_node(entry: os.DirEntry[str], modified: float, excluded: Excluded | None) -> Node:
+    """A folder to read, or, when the exclusions match it, one that is listed but never read."""
+    skipped = excluded is not None and excluded(entry.name, entry.path)
+    return Node(name=entry.name, is_dir=True, modified=modified,
+                error=EXCLUDED if skipped else NOT_SCANNED, children=[])
 
 
 def _is_hidden(name: str, info: os.stat_result) -> bool:
@@ -337,6 +495,7 @@ def _add_up(folders: list[Node]) -> None:
     ``folders`` must list every folder after its parent.
     """
     for folder in reversed(folders):
+        give_way()
         size = allocated = files = subfolders = 0
         newest = folder.modified
         children = folder.children
@@ -344,7 +503,7 @@ def _add_up(folders: list[Node]) -> None:
             size += child.size
             allocated += child.allocated
             files += child.file_count
-            if child.is_dir and not child.is_link:
+            if child.is_dir and not child.is_link and child.error != EXCLUDED:
                 subfolders += 1 + child.dir_count
             newest = max(newest, child.modified)
         folder.size = size

@@ -9,36 +9,66 @@ interrupted export never leaves a half-written file under the chosen name.
 from __future__ import annotations
 
 import csv
-import io
 import json
 import os
 import tempfile
 import time
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TextIO
 
 from je_file_tree.core.node import Node
+from je_file_tree.core.pacing import give_way
 
 FOLDER_COLUMNS = ("path", "size_bytes", "allocated_bytes", "share_of_parent", "files", "folders", "modified",
-                  "error")
-FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified")
+                  "error", "accounted_size_bytes", "accounted_allocated_bytes", "hard_link_accounting")
+FILE_COLUMNS = ("path", "size_bytes", "allocated_bytes", "modified", "accessed", "created",
+                "accounted_size_bytes", "accounted_allocated_bytes", "hard_link_accounting")
 JSON_FORMAT = "file-tree/1"  # also what a saved scan must say to be compared (core/compare.py)
 
 
 def export_folders_csv(root: Node, target: str | os.PathLike[str],
                        max_depth: int | None = None) -> int:
-    """Write one row per folder (``root`` included, down to ``max_depth`` levels); return the row count."""
+    """Write folder rows with named/countable bytes and a 0/1 accounting flag; return the row count.
+
+    Include ``root`` and descend to ``max_depth`` levels when supplied.
+    """
     rows = ([node.path, node.size, node.allocated, round(node.share_of_parent(), 6), node.file_count,
-             node.dir_count, _iso_time(node.modified), node.error or ""]
+             node.dir_count, _iso_time(node.modified), node.error or "", node.accounted_size, node.accounted_allocated,
+             int(_has_accounting(node))]
             for node in _folders(root, max_depth))
     return _write_csv(target, FOLDER_COLUMNS, rows)
 
 
 def export_files_csv(files: Iterable[Node], target: str | os.PathLike[str]) -> int:
-    """Write one row per file in ``files``, in the given order; return the row count."""
-    rows = ([node.path, node.size, node.allocated, _iso_time(node.modified)] for node in files)
+    """Write files in given order with named/counted bytes and a 0/1 mode flag; return the row count."""
+    rows = ([node.path, node.size, node.allocated, _iso_time(node.modified), _iso_time(node.accessed or 0.0),
+             _iso_time(node.created or 0.0), node.accounted_size, node.accounted_allocated,
+             int(_has_accounting(node))] for node in files)
     return _write_csv(target, FILE_COLUMNS, rows)
+
+
+def export_table_csv(header: Sequence[str], rows: Iterable[Sequence[str]],
+                     target: str | os.PathLike[str]) -> int:
+    """Atomically save displayed table text as UTF-8/BOM CSV, escaping spreadsheet formulas."""
+    return _write_csv(target, tuple(spreadsheet_text(cell) for cell in header),
+                      ([spreadsheet_text(cell) for cell in row] for row in rows))
+
+
+def _has_accounting(node: Node) -> bool:
+    current: Node | None = node
+    while current is not None:
+        if current.accounting is not None:
+            return True
+        current = current.parent
+    return False
+
+
+def spreadsheet_text(cell: str) -> str:
+    """Prefix text that a spreadsheet could interpret as an executable formula."""
+    dangerous = cell.startswith(('\t', '\r', '\n')) or cell.lstrip().startswith(('=', '+', '-', '@'))
+    return "'" + cell if dangerous else cell
 
 
 def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | None = None) -> None:
@@ -46,14 +76,20 @@ def export_json(root: Node, target: str | os.PathLike[str], max_depth: int | Non
 
     The file doubles as a saved scan to compare a later scan with (``core/compare.py``); ``saved`` is
     when it was written.
+    Named ``size`` remains the comparison basis; counted fields and the mode flag are additive.
     """
-    document = {"format": JSON_FORMAT, "saved": _iso_time(time.time()), "root": _folder_json(root, max_depth)}
-    _write_atomically(target, json.dumps(document, ensure_ascii=False, indent=1), encoding="utf-8")
+    header = json.dumps({"format": JSON_FORMAT, "saved": _iso_time(time.time()),
+                         "hard_link_accounting": root.accounting is not None}, ensure_ascii=False)
+    with _atomic_file(target, encoding="utf-8") as stream:
+        stream.write(header[:-1] + ', "root": ')
+        stream.writelines(_folder_json(root, max_depth))
+        stream.write("}\n")
 
 
 def _folders(root: Node, max_depth: int | None) -> Iterable[Node]:
     stack = [(root, 0)]
     while stack:
+        give_way()
         node, depth = stack.pop()
         yield node
         if max_depth is not None and depth >= max_depth:
@@ -62,24 +98,39 @@ def _folders(root: Node, max_depth: int | None) -> Iterable[Node]:
                      if child.is_dir and not child.is_link)
 
 
-def _folder_json(root: Node, max_depth: int | None) -> dict[str, Any]:
-    """The JSON object for ``root``, built without recursion so deep trees cannot overflow."""
-    top: dict[str, Any] = {}
-    stack: list[tuple[Node, dict[str, Any], int]] = [(root, top, 0)]
-    while stack:
-        node, target, depth = stack.pop()
-        target.update(name=node.name, size=node.size, allocated=node.allocated, files=node.file_count,
-                      folders=node.dir_count, modified=_iso_time(node.modified))
+def _folder_json(root: Node, max_depth: int | None) -> Iterator[str]:
+    """Stream nested folders with a depth-sized stack, without a second tree or recursive JSON encoder."""
+    stack: list[tuple[Iterator[Node], int]] = []
+    node: Node | None = root
+    depth = 0
+    while node is not None:
+        give_way()
+        fields: dict[str, Any] = dict(name=node.name, size=node.size, allocated=node.allocated,
+                                     files=node.file_count, folders=node.dir_count, modified=_iso_time(node.modified),
+                                     accounted_size=node.accounted_size, accounted_allocated=node.accounted_allocated)
         if node.error:
-            target["error"] = node.error
-        if max_depth is not None and depth >= max_depth:
+            fields["error"] = node.error
+        if node.path is None:
+            fields["virtual"] = True
+        children = iter(child for child in node.children if child.is_dir and not child.is_link)
+        first = next(children, None) if max_depth is None or depth < max_depth else None
+        encoded = json.dumps(fields, ensure_ascii=False)
+        if first is not None:
+            yield encoded[:-1] + ', "children": ['
+            stack.append((children, depth))
+            node, depth = first, depth + 1
             continue
-        children = [child for child in node.children if child.is_dir and not child.is_link]
-        if children:
-            target["children"] = [{} for _ in children]
-            stack.extend((child, slot, depth + 1)
-                         for child, slot in zip(children, target["children"], strict=True))
-    return top
+        yield encoded
+        node = None
+        while stack and node is None:
+            children, parent_depth = stack[-1]
+            node = next(children, None)
+            if node is None:
+                stack.pop()
+                yield "]}"
+            else:
+                depth = parent_depth + 1
+                yield ", "
 
 
 def _iso_time(timestamp: float) -> str:
@@ -93,25 +144,25 @@ def _iso_time(timestamp: float) -> str:
 
 def _write_csv(target: str | os.PathLike[str], header: tuple[str, ...],
                rows: Iterable[list[Any]]) -> int:
-    buffer = io.StringIO(newline="")
-    writer = csv.writer(buffer)
-    writer.writerow(header)
     count = 0
-    for row in rows:
-        writer.writerow(row)
-        count += 1
-    _write_atomically(target, buffer.getvalue(), encoding="utf-8-sig")
+    with _atomic_file(target, encoding="utf-8-sig") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(header)
+        for row in rows:
+            writer.writerow(row)
+            count += 1
     return count
 
 
-def _write_atomically(target: str | os.PathLike[str], text: str, *, encoding: str) -> None:
-    """Write ``text`` to a temporary file next to ``target`` and move it into place."""
+@contextmanager
+def _atomic_file(target: str | os.PathLike[str], *, encoding: str) -> Iterator[TextIO]:
+    """Write to a temporary sibling, replacing the destination only after a successful close."""
     target = os.fspath(target)
     folder = os.path.dirname(os.path.abspath(target))
     handle, temporary = tempfile.mkstemp(prefix=".file-tree-", suffix=".tmp", dir=folder)
     try:
         with os.fdopen(handle, "w", encoding=encoding, newline="") as stream:
-            stream.write(text)
+            yield stream
         os.replace(temporary, target)
     except BaseException:
         os.unlink(temporary)

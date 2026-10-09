@@ -88,3 +88,18 @@ def test_every_install_in_the_release_takes_wheels_only() -> None:
         assert "--only-binary :all:" in line, line
     exempt = [line for line in installs if "--no-binary" in line]
     assert all("--no-binary nuitka" in line for line in exempt), exempt
+
+
+def test_optional_native_release_requires_verification_and_does_not_publish_after_a_failed_build() -> None:
+    text = _WORKFLOW.read_text(encoding="utf-8")
+    native = text.split("  build-posix:\n", 1)[1].split("  publish-release:\n", 1)[0]
+    publish = text.split("  publish-release:\n", 1)[1]
+    assert "if: vars.FILETREE_POSIX_RELEASE_VERIFIED == 'true'" in native
+    assert "ref: v${{ needs.release.outputs.new }}" in native
+    assert "uses: ./.github/workflows/posix-build.yml" in native
+    assert "needs: [release, build-exe, build-posix]" in publish
+    assert "needs.release.result == 'success'" in publish and "needs.build-exe.result == 'success'" in publish
+    assert "needs.build-posix.result == 'success' || needs.build-posix.result == 'skipped'" in publish
+    assert publish.count("if: needs.build-posix.result == 'success'") == 2
+    assert "shopt -s nullglob" in publish and '"${assets[@]}"' in publish
+    assert "release-assets/linux/*.AppImage" in publish and "release-assets/macos/*.zip" in publish

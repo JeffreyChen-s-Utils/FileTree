@@ -14,11 +14,13 @@ file manager, the folder is opened instead.
 from __future__ import annotations
 
 import os
+import re
 import subprocess  # nosec B404 - fixed file-manager commands around a local path
 import sys
 
 from PySide6.QtCore import QFile, QUrl
 from PySide6.QtGui import QDesktopServices, QGuiApplication
+from je_file_tree.core.operations import MoveReceipt
 
 try:
     from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
@@ -31,6 +33,8 @@ _DBUS_TIMEOUT_MS = 3000
 
 def explorer_command(path: str) -> str:
     """The ``explorer`` command line that opens a window with ``path`` selected."""
+    if re.fullmatch(r'[^\x00-\x1f"]+', path) is None:
+        raise ValueError("Invalid Windows file-manager path")
     return f'explorer /select,"{os.path.normpath(path)}"'
 
 
@@ -46,9 +50,12 @@ def reveal_in_file_manager(path: str) -> bool:
             subprocess.Popen(explorer_command(path))  # noqa: S603 # nosec B603 - no shell, quoted local path
             return True
         if sys.platform == "darwin":
-            subprocess.Popen(["open", "-R", path])  # noqa: S603,S607 # nosec B603,B607 - fixed program
+            target = os.path.abspath(path)
+            if not path or re.fullmatch(r"/[^\x00]+", target) is None:
+                return False
+            subprocess.Popen(["/usr/bin/open", "-R", target])  # noqa: S603 # nosec B603 - validated absolute path
             return True
-    except OSError:
+    except (OSError, ValueError):
         return False
     return show_items(path) or open_path(os.path.dirname(path) or path)
 
@@ -75,4 +82,12 @@ def copy_path(path: str) -> None:
 
 def move_to_trash(path: str) -> bool:
     """Move a file or folder to the Recycle Bin / Trash; False when the system refused."""
-    return bool(QFile.moveToTrash(path))
+    return trash_receipt(path).success
+
+
+def trash_receipt(path: str) -> MoveReceipt:
+    """Move an approved path, preserving Qt's destination when the platform exposes it."""
+    result = QFile.moveToTrash(path)
+    if isinstance(result, tuple):
+        return MoveReceipt(bool(result[0]), result[1] or None)
+    return MoveReceipt(bool(result))

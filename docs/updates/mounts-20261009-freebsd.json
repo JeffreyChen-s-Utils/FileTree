@@ -1,0 +1,46 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "85490ec05e41dd21d6cb351200f816ae2bec9bad",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37808218838",
+  "job_id": 113417986093,
+  "job_conclusion": "success",
+  "artifact": {
+    "id": 11564240856,
+    "name": "freebsd-native-mounts",
+    "size_in_bytes": 422,
+    "json_sha256": "6ff7ea7e481543802ac3c2f0bd2ca0269c5db435d7d8aee529cb70ddcc1dc48e"
+  },
+  "scope": "Fresh read-only nullfs mounts in a disposable FreeBSD 14.3 CI guest",
+  "evidence": {
+    "phase": "complete",
+    "platform": "freebsd14",
+    "cleanup_verified": true,
+    "owned_scratch": "/tmp/filetree-nullfs-owned-t1xqnqt1",
+    "static": {
+      "same_device": false,
+      "source_device": 64,
+      "target_device": 687931137,
+      "not_traversed": true,
+      "incomplete": true,
+      "workers": [
+        1,
+        4
+      ]
+    },
+    "before_open": {
+      "same_device": false,
+      "completion_refused": true,
+      "original_descriptor_kept": false
+    },
+    "after_open": {
+      "same_device": false,
+      "completion_refused": true,
+      "original_descriptor_kept": true
+    },
+    "source_preserved": true,
+    "underlying_preserved": true
+  },
+  "limitations": [
+    "Native nullfs has different source/target st_dev; no same-device mount claim."
+  ]
+}

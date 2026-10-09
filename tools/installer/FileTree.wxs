@@ -1,0 +1,24 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="FileTree" Manufacturer="JE-Chen" Version="$(Version)" Language="1033"
+           UpgradeCode="1CF91EA0-1ED2-45CB-B2FC-A6F321F67B73" Scope="perMachine">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of FileTree is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="FileTree">
+        <Component Id="MainExecutable" Guid="*">
+          <File Id="FileTreeExe" Source="$(Payload)\FileTree.exe" KeyPath="yes">
+            <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="FileTree"
+                      Advertise="yes" WorkingDirectory="INSTALLFOLDER" />
+          </File>
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <Feature Id="Complete" Title="FileTree" Level="1">
+      <ComponentRef Id="MainExecutable" />
+      <Files Directory="INSTALLFOLDER" Include="$(Payload)\**">
+        <Exclude Files="$(Payload)\FileTree.exe" />
+      </Files>
+    </Feature>
+  </Package>
+</Wix>

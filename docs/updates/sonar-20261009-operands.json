@@ -1,0 +1,28 @@
+{
+  "observed_date": "2026-10-09",
+  "repository": "JeffreyChen-s-Utils/FileTree",
+  "revision": "53fecfe7b807146fdc5db0c15adb361ed0c42ebb",
+  "pull_request": "8",
+  "task_id": "AaEe10aUfMhXOoG4KvOk",
+  "task_status": "SUCCESS",
+  "analysis_id": "23e0a14d-3ad0-43f9-bde7-2b0fb9c83049",
+  "quality_gate": "ERROR",
+  "new_security_rating": 3,
+  "bugs": 0,
+  "vulnerabilities": 7,
+  "code_smells": 1153,
+  "remaining_rules": {
+    "pythonsecurity:S8707": 6,
+    "pythonsecurity:S8705": 1
+  },
+  "issue_status_changes": false,
+  "scan_scope_reduced": false,
+  "quality_gate_weakened": false,
+  "owner_cli_path_boundary_decision": "pending",
+  "provenance": [
+    "/api/ce/activity",
+    "/api/project_pull_requests/list",
+    "/api/qualitygates/project_status?analysisId",
+    "/api/issues/search?pullRequest=8"
+  ]
+}

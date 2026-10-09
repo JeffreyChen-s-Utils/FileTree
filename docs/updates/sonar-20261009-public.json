@@ -1,0 +1,19 @@
+{
+  "observed_date": "2026-10-09",
+  "repository": "JeffreyChen-s-Utils/FileTree",
+  "sonar_project": "JeffreyChen-s-Utils_FileTree",
+  "owner_public_analysis_decision": "approved",
+  "visibility_change": {
+    "endpoint": "POST /api/projects/update_visibility",
+    "http_status": 204,
+    "visibility": "public",
+    "executed": true
+  },
+  "verification": {
+    "endpoint": "GET /api/components/show",
+    "visibility": "public"
+  },
+  "fresh_analysis_verified": false,
+  "fresh_gate_verified": false,
+  "prior_diagnosis": "sonar-20261009-visibility.json"
+}

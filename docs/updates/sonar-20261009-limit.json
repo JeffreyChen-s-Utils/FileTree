@@ -1,0 +1,29 @@
+{
+  "inspected_on": "2026-10-09",
+  "project_key": "JeffreyChen-s-Utils_FileTree",
+  "pull_request": 8,
+  "head_sha": "85490ec05e41dd21d6cb351200f816ae2bec9bad",
+  "check_run_id": 113418767363,
+  "check_conclusion": "cancelled",
+  "check_output_title": "SonarQube Cloud analysis failed",
+  "source_api": "https://sonarcloud.io/api/ce/activity?component=JeffreyChen-s-Utils_FileTree&status=FAILED&ps=2",
+  "task_id": "AaEcU9tFIzmvNDCiTbvO",
+  "task_status": "FAILED",
+  "submitted_at": "2026-10-09T00:23:40+08:00",
+  "executed_at": "2026-10-09T00:23:48+08:00",
+  "reason": "Analysis would exceed the organization's maximum allowed lines limit; administrator action required.",
+  "maximum_allowed_lines": 50000,
+  "current_organization_loc_usage": 38415,
+  "loc_in_rejected_analysis": 53297,
+  "language_distribution": {
+    "docker": 10,
+    "json": 213,
+    "powershell": 277,
+    "py": 51983,
+    "yaml": 814
+  },
+  "fresh_analysis_completed": false,
+  "previous_quality_gate_is_fresh_evidence": false,
+  "analysis_scope_modified": false,
+  "account_or_plan_modified": false
+}

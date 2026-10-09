@@ -1,0 +1,118 @@
+{
+  "inspected_on": "2026-10-09",
+  "head_sha": "5034a0c22b550cba2a28d93265b4138f26596b63",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/37821165490",
+  "job_id": 113462254129,
+  "job_conclusion": "success",
+  "artifact": {
+    "id": 11569421841,
+    "name": "windows-native-share",
+    "size_in_bytes": 764,
+    "json_sha256": "58ebba6be8ecc4f28dbc50075b3aeb493e56221bbf7cd96145fe88f13d8e58f2"
+  },
+  "scope": "Fresh account-read-only loopback SMB share and unused nonpersistent mapped drive on hosted Windows",
+  "evidence": {
+    "phase": "complete",
+    "transport": "native SMB loopback",
+    "prepare": {
+      "files": 1026,
+      "branches": 256
+    },
+    "compare": {
+      "cases": [
+        {
+          "transport": "UNC",
+          "workers": 1,
+          "seconds": 1.1870000000000118,
+          "allocation_unit": 4096,
+          "files": 1026,
+          "logical_bytes": 4327955,
+          "allocated_bytes": 8519704,
+          "equal": true
+        },
+        {
+          "transport": "UNC",
+          "workers": 4,
+          "seconds": 1.718999999999994,
+          "allocation_unit": 4096,
+          "files": 1026,
+          "logical_bytes": 4327955,
+          "allocated_bytes": 8519704,
+          "equal": true
+        },
+        {
+          "transport": "mapped",
+          "workers": 1,
+          "seconds": 0.8129999999999882,
+          "allocation_unit": 4096,
+          "files": 1026,
+          "logical_bytes": 4327955,
+          "allocated_bytes": 8519704,
+          "equal": true
+        },
+        {
+          "transport": "mapped",
+          "workers": 4,
+          "seconds": 1.0470000000000255,
+          "allocation_unit": 4096,
+          "files": 1026,
+          "logical_bytes": 4327955,
+          "allocated_bytes": 8519704,
+          "equal": true
+        }
+      ],
+      "slow_remote_link_verified": false
+    },
+    "denied": {
+      "cases": [
+        {
+          "transport": "UNC",
+          "workers": 1,
+          "access_denied": true,
+          "incomplete": true,
+          "empty_cleanup_proposals": 0
+        },
+        {
+          "transport": "UNC",
+          "workers": 4,
+          "access_denied": true,
+          "incomplete": true,
+          "empty_cleanup_proposals": 0
+        },
+        {
+          "transport": "mapped",
+          "workers": 1,
+          "access_denied": true,
+          "incomplete": true,
+          "empty_cleanup_proposals": 0
+        },
+        {
+          "transport": "mapped",
+          "workers": 4,
+          "access_denied": true,
+          "incomplete": true,
+          "empty_cleanup_proposals": 0
+        }
+      ]
+    },
+    "disconnect": {
+      "disconnected": true,
+      "observed_files_before_disconnect": 6,
+      "incomplete": true,
+      "errors": 254,
+      "files": 10,
+      "empty_cleanup_proposals": 0
+    },
+    "verify": {
+      "source_preserved": true,
+      "identity_and_hashes_equal": true
+    },
+    "owned_fixture_cleanup": true
+  },
+  "acl_restored_exactly": true,
+  "limitations": [
+    "Loopback timings do not establish throughput on a slow remote link.",
+    "One timing sample per transport/worker count; no default-concurrency speed claim.",
+    "Owned fixture permissions are initialized before the exact denial baseline is captured."
+  ]
+}

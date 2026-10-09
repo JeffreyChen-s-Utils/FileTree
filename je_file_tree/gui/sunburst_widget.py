@@ -8,6 +8,7 @@ cached pixmap; the mouse only adds the highlight.
 from __future__ import annotations
 
 import math
+import time
 
 from PySide6.QtCore import QEvent, QPoint, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import (
@@ -25,8 +26,12 @@ from PySide6.QtWidgets import QToolTip, QWidget
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.sunburst import Segment, layout, segment_at
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.age_colours import age_colour
+from je_file_tree.gui.colours import readable_ink
+from je_file_tree.gui.treemap_widget import BY_AGE, BY_FOLDER, BY_TYPE, COLOUR_MODES, colour_for
 
 RINGS = 4  # at most; fewer when the tree is shallower, so the rings always fill the space
 _GOLDEN = 0.618033988749895
@@ -55,8 +60,21 @@ class SunburstWidget(QWidget):
         self._selected: Node | None = None
         self._hues: dict[int, float] = {}
         self._rings = 1
+        self._colours = BY_FOLDER
+        self.age_reference = time.time()
 
     # --- the same interface as the treemap --------------------------------
+
+    @property
+    def colour_mode(self) -> str:
+        """File-type, top-folder or recorded modified-age colouring."""
+        return self._colours
+
+    def set_colour_mode(self, mode: str) -> None:
+        """Use a shared chart colouring mode and discard the cached drawing."""
+        if mode in COLOUR_MODES:
+            self._colours = mode
+            self.invalidate()
 
     @property
     def view_root(self) -> Node | None:
@@ -109,7 +127,7 @@ class SunburstWidget(QWidget):
     def paintEvent(self, event: QPaintEvent) -> None:
         """Qt: the cached rings plus the hover and selection outlines."""
         painter = QPainter(self)
-        if self._view_root is None or self._view_root.size <= 0:
+        if self._view_root is None or self._view_root.accounted_size <= 0:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
             return
         if self._pixmap is None:
@@ -195,7 +213,7 @@ class SunburstWidget(QWidget):
             self._rings = max((segment.depth for segment in self._segments), default=1)
             self._hues = {id(child): (index * _GOLDEN) % 1.0
                           for index, child in enumerate(sorted(self._view_root.children,
-                                                               key=lambda node: node.size, reverse=True))}
+                                                               key=lambda node: node.accounted_size, reverse=True))}
         return self._segments
 
     def _path(self, segment: Segment) -> QPainterPath:
@@ -216,14 +234,22 @@ class SunburstWidget(QWidget):
     # --- drawing -----------------------------------------------------------
 
     def _render(self) -> None:
-        root = self._view_root
-        if root is None:
-            return
         ratio = self.devicePixelRatioF()
         pixmap = QPixmap(max(1, round(self.width() * ratio)), max(1, round(self.height() * ratio)))
         pixmap.setDevicePixelRatio(ratio)
         pixmap.fill(self.palette().base().color())
         painter = QPainter(pixmap)
+        self.draw_vector(painter)
+        painter.end()
+        self._pixmap = pixmap
+
+    def draw_vector(self, painter: QPainter) -> None:
+        """Draw the bounded current rings directly, for lossless SVG output without a cached bitmap."""
+        root = self._view_root
+        if root is None or root.accounted_size <= 0:
+            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("treemap_empty"))
+            return
+        painter.fillRect(self.rect(), self.palette().base())
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         border = QPen(self.palette().base().color())
         border.setWidthF(1.0)
@@ -241,10 +267,8 @@ class SunburstWidget(QWidget):
         painter.drawEllipse(centre, inner - 2, inner - 2)
         painter.setPen(self.palette().text().color())
         box = QRectF(centre.x() - inner, centre.y() - inner, 2 * inner, 2 * inner).adjusted(6, 6, -6, -6)
-        name = painter.fontMetrics().elidedText(root.name, Qt.TextElideMode.ElideMiddle, int(box.width()))
-        painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.size, self.unit)}")
-        painter.end()
-        self._pixmap = pixmap
+        name = painter.fontMetrics().elidedText(node_name(root), Qt.TextElideMode.ElideMiddle, int(box.width()))
+        painter.drawText(box, Qt.AlignmentFlag.AlignCenter, f"{name}\n{format_size(root.accounted_size, self.unit)}")
 
     def _draw_label(self, painter: QPainter, segment: Segment, radius: float, ring: float) -> None:
         angle = (segment.start + segment.span / 2) * 2 * math.pi
@@ -252,11 +276,15 @@ class SunburstWidget(QWidget):
         point = QPointF(centre.x() + radius * math.sin(angle), centre.y() - radius * math.cos(angle))
         width = min(segment.span * 2 * math.pi * radius, ring * 1.6)
         box = QRectF(point.x() - width / 2, point.y() - ring / 2, width, ring)
-        painter.setPen(QColor("#000000"))
+        painter.setPen(readable_ink(self._colour(segment)))
         text = painter.fontMetrics().elidedText(segment.node.name, Qt.TextElideMode.ElideRight, int(width))
         painter.drawText(box, Qt.AlignmentFlag.AlignCenter, text)
 
     def _colour(self, segment: Segment) -> QColor:
+        if self._colours == BY_AGE:
+            return age_colour(segment.node, self.age_reference)
+        if self._colours == BY_TYPE:
+            return colour_for(segment.node)
         top = segment.node
         while top.parent is not None and top.parent is not self._view_root:
             top = top.parent
@@ -266,6 +294,6 @@ class SunburstWidget(QWidget):
 
     def _describe(self, node: Node) -> str:
         root = self._view_root
-        share = node.size / root.size if root is not None and root.size else 0.0
-        return tr("treemap_tooltip", name=node.name, size=format_size(node.size, self.unit),
-                  share=format_share(share), path=node.path)
+        share = node.accounted_size / root.accounted_size if root is not None and root.accounted_size else 0.0
+        return tr("treemap_tooltip", name=node.name, size=format_size(node.accounted_size, self.unit),
+                  share=format_share(share), path=node_path(node))

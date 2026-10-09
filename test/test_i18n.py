@@ -31,7 +31,7 @@ def test_every_language_has_exactly_the_english_keys() -> None:
         assert set(table) == english, language
 
 
-@pytest.mark.parametrize("language", ["zh-TW", "zh-CN"])
+@pytest.mark.parametrize("language", ["zh-TW", "zh-CN", "ja", "ko"])
 def test_placeholders_match_english(language: str) -> None:
     for key, text in STRINGS["en"].items():
         assert _placeholders(STRINGS[language][key]) == _placeholders(text), key
@@ -57,9 +57,30 @@ def test_an_unknown_language_is_refused() -> None:
 @pytest.mark.parametrize(("locale_name", "language"), [
     ("en_US", "en"), ("de_DE", "en"), ("zh_TW", "zh-TW"), ("zh_HK", "zh-TW"),
     ("zh-Hant-TW", "zh-TW"), ("zh_CN", "zh-CN"), ("zh_SG", "zh-CN"), ("C", "en"),
+    ("ja_JP", "ja"), ("ja-JP", "ja"), ("ja", "ja"), ("ko_KR", "ko"), ("ko-KR", "ko"), ("ko", "ko"),
 ])
 def test_match_language(locale_name: str, language: str) -> None:
     assert i18n.match_language(locale_name) == language
+
+
+@pytest.mark.parametrize("language, expected", [("ja", "スキャン"), ("ko", "스캔")])
+def test_japanese_and_korean_translate_real_scanning_and_irreversible_approval(language, expected):
+    i18n.set_language(language)
+    assert expected in i18n.tr("welcome_drive_tip", path="owned-root")
+    message = i18n.tr("bin_irreversible", root="owned-root", size="123 B", count=7)
+    assert all(value in message for value in ("owned-root", "123 B", "7"))
+    assert ("元に戻せません" if language == "ja" else "되돌릴 수 없습니다") in message
+
+
+@pytest.mark.parametrize("language, cancel_text", [("ja", "キャンセル"), ("ko", "취소")])
+def test_real_qt_catalogues_translate_standard_buttons(qapp, language, cancel_text):
+    from PySide6.QtCore import QCoreApplication
+    from je_file_tree.gui.qt_translation import apply_qt_translation
+    try:
+        assert apply_qt_translation(language)
+        assert QCoreApplication.translate("QPlatformTheme", "Cancel") == cancel_text
+    finally:
+        apply_qt_translation("en")
 
 
 def test_format_duration() -> None:

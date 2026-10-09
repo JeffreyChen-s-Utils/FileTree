@@ -11,7 +11,7 @@ from je_file_tree.core.compare import FolderChange, SavedScan
 from je_file_tree.core.formatting import format_change, format_count, format_size, format_time
 from je_file_tree.core.node import Node
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.scan_worker import CompareWorker
+from je_file_tree.gui.scan_worker import CompareWorker, wait_for
 from je_file_tree.gui.tables import ChangesModel
 
 
@@ -63,6 +63,11 @@ class ChangesPanel(QWidget):
         if self._root is not None:
             self._run(CompareWorker(self._root, file=file, parent=self))
 
+    def compare_saved(self, saved: SavedScan) -> None:
+        """Compare with worker-loaded local history, including deeply nested saved trees."""
+        if self._root is not None:
+            self._run(CompareWorker(self._root, saved=saved, parent=self))
+
     def set_root(self, root: Node | None) -> None:
         """Compare this tree from now on (None while a scan runs: the list waits for the result)."""
         self._root = root
@@ -91,7 +96,7 @@ class ChangesPanel(QWidget):
         self._current = None
         if wait:
             for worker in self._running.copy():
-                worker.wait()
+                wait_for(worker)
 
     def retranslate(self) -> None:
         """Re-read every translated text (and the sizes, after a change of unit)."""
@@ -134,7 +139,7 @@ class ChangesPanel(QWidget):
             return ""
         if root is None:
             return tr("changes_waiting")
-        return tr("changes_summary", path=saved.root, when=_when(saved.saved),
+        return tr("changes_summary", path=saved.root or tr("multi_roots"), when=_when(saved.saved),
                   before=format_size(saved.size, self.model.unit), now=format_size(root.size, self.model.unit),
                   change=format_change(root.size - saved.size, self.model.unit),
                   count=format_count(self.model.rowCount()))

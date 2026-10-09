@@ -1,0 +1,31 @@
+{
+  "root": "repository",
+  "files": 8092,
+  "folders": 899,
+  "scan_seconds": 0.46983920002821833,
+  "ledger_seconds": [
+    0.016197399934753776,
+    0.017148900078609586,
+    0.01637009996920824
+  ],
+  "median_ledger_seconds": 0.01637009996920824,
+  "ledger": {
+    "total": 1023917682688,
+    "used": 900790947840,
+    "free": 123126734848,
+    "unavailable_free": 0,
+    "named_allocated": 908832768,
+    "unique_allocated": 908832768,
+    "hard_link_overcount": 0,
+    "recycle_bin_seen": 0,
+    "recycle_bin_complete": false,
+    "mounted_folders": 0,
+    "foreign_allocated_seen": 0,
+    "status": "folder_only",
+    "unaccounted": null,
+    "measured_at": 1791349912.4251957,
+    "metadata_bytes": null,
+    "omitted_bytes": null,
+    "other_volumes_bytes": null
+  }
+}

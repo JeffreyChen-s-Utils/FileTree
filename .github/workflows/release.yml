@@ -11,14 +11,15 @@
 #   release:patch  0.1.3 -> 0.1.4   (also when there is no label)
 #
 # Jobs:
-#   1. release          Stops at once if the token is missing (before anything is pushed), raises
-#                       the version in pyproject.toml and je_file_tree/__init__.py together
+#   1. release          Stops at once if the token is missing (before anything is pushed), installs
+#                       its build tools from the hash-locked .github/requirements/publish.txt,
+#                       raises the version in pyproject.toml and je_file_tree/__init__.py together
 #                       (tools/bump_version.py), commits and tags on main, builds the sdist and
-#                       the wheel, uploads them to PyPI.
+#                       the wheel with the setuptools of that lock, uploads them to PyPI.
 #   2. build-exe        On Windows, compiles FileTree.exe (one file, icon and Qt's translations
-#                       included) from the new tag with tools/build_nuitka.py --onefile.
+#                       included) plus a complete standalone folder ZIP and x64 MSI from the new tag.
 #   3. publish-release  Creates the GitHub release with the sdist, the wheel and
-#                       FileTree-<version>.exe, only once both jobs above succeeded.
+#                       FileTree-<version>.exe, standalone ZIP and MSI, once both jobs succeeded.
 
 name: Release
 
@@ -63,6 +64,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # This job holds the PyPI token, so its tools are wheels only at locked hashes and nothing
+      # else is installed. It comes before the version is pushed: a lock that does not install
+      # releases nothing. The command that regenerates publish.txt is in publish.in.
+      - name: Install build tooling (hash-locked, from .github/requirements/publish.in)
+        run: |
+          python -m pip install --require-hashes --only-binary :all: -r .github/requirements/publish.txt
+
       - name: Read the bump type from the labels
         id: bump
         env:
@@ -97,17 +105,15 @@ jobs:
           git push origin main
           git push origin "v$NEW"
 
+      # --no-isolation: the backend is the setuptools locked in publish.txt, not a fresh download.
       - name: Build the sdist and the wheel
-        run: |
-          python -m pip install --upgrade --only-binary :all: "pip==26.1.2" "build==1.5.0"
-          python -m build
+        run: python -m build --no-isolation
 
       - name: Upload to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          python -m pip install --upgrade --only-binary :all: "twine==6.2.0"
           python -m twine check dist/*
           python -m twine upload dist/*
 
@@ -120,7 +126,11 @@ jobs:
   build-exe:
     needs: release
     runs-on: windows-latest
-    timeout-minutes: 60  # a one-file Nuitka build of PySide6
+    environment: windows-signing
+    permissions:
+      contents: read
+      id-token: write
+    timeout-minutes: 90  # separate one-file and standalone Nuitka builds of PySide6
     steps:
       - name: Check out the new tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -133,18 +143,104 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate explicit Windows signing configuration before compiling
+        id: signing
+        env:
+          FILETREE_WINDOWS_SIGNING: ${{ vars.FILETREE_WINDOWS_SIGNING }}
+          FILETREE_AZURE_CLIENT_ID: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          FILETREE_AZURE_TENANT_ID: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          FILETREE_AZURE_SUBSCRIPTION_ID: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          FILETREE_SIGNING_ENDPOINT: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          FILETREE_SIGNING_ACCOUNT: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          FILETREE_SIGNING_PROFILE: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          FILETREE_SIGNING_PUBLISHER: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
+        run: python tools/check_signing.py
+
       # Pinned: an unpinned install would let a new upstream release into the published exe.
       # Nuitka publishes only an sdist, so it alone is exempt from the wheels-only rule.
       - name: Install PySide6 and Nuitka
-        shell: bash
-        run: |
-          python -m pip install --upgrade --only-binary :all: "pip==26.1.2" "wheel==0.47.0"
-          pip install --only-binary :all: "PySide6==6.11.2"
-          pip install --only-binary :all: --no-binary nuitka \
-            "nuitka==4.2.2" "ordered-set==4.1.0" "zstandard==0.25.0"
+        run: python tools/install_compiler.py
 
       - name: Compile FileTree.exe
         run: python tools/build_nuitka.py --onefile
+
+      - name: Compile the standalone folder
+        run: python tools/build_nuitka.py
+
+      - name: Sign and verify the one-file and standalone executables before packaging
+        if: steps.signing.outputs.enabled == 'true'
+        uses: ./.github/actions/sign-windows
+        with:
+          files: |
+            ${{ github.workspace }}/build/onefile/FileTree.exe
+            ${{ github.workspace }}/build/standalone/start_file_tree.dist/FileTree.exe
+          client-id: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          endpoint: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          account: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          profile: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
+
+      - name: Package the complete standalone folder
+        env:
+          NEW: ${{ needs.release.outputs.new }}
+        shell: pwsh
+        run: python tools/package_standalone.py --version "$env:NEW"
+
+      - name: Install the pinned MSI compiler
+        run: |
+          dotnet tool install wix --version 6.0.2 --tool-path .tools/wix
+          "$env:GITHUB_WORKSPACE/.tools/wix" >> $env:GITHUB_PATH
+
+      - name: Build the x64 Windows installer from the complete standalone folder
+        env:
+          NEW: ${{ needs.release.outputs.new }}
+        run: python tools/build_msi.py --version "$env:NEW"
+
+      - name: Sign and verify the MSI before upload and package-draft hashing
+        if: steps.signing.outputs.enabled == 'true'
+        uses: ./.github/actions/sign-windows
+        with:
+          files: ${{ github.workspace }}/FileTree-${{ needs.release.outputs.new }}-windows-x64.msi
+          client-id: ${{ secrets.FILETREE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.FILETREE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.FILETREE_AZURE_SUBSCRIPTION_ID }}
+          endpoint: ${{ vars.FILETREE_SIGNING_ENDPOINT }}
+          account: ${{ vars.FILETREE_SIGNING_ACCOUNT }}
+          profile: ${{ vars.FILETREE_SIGNING_PROFILE }}
+          publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
+
+      - name: Keep the MSI for the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: filetree-msi
+          path: FileTree-*-windows-x64.msi
+          if-no-files-found: error
+
+      - name: Prepare unpublished store review drafts from the exact release artifacts
+        env:
+          NEW: ${{ needs.release.outputs.new }}
+        shell: pwsh
+        run: |
+          python tools/prepare_packages.py --version "$env:NEW"
+          if ($LASTEXITCODE -ne 0) { throw 'Package review drafts failed.' }
+          python -m zipfile -c "FileTree-$env:NEW-package-drafts.zip" package-drafts
+          if ($LASTEXITCODE -ne 0) { throw 'Package draft archive failed.' }
+
+      - name: Keep review drafts without submitting to package stores
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: filetree-package-drafts
+          path: FileTree-*-package-drafts.zip
+          if-no-files-found: error
+
+      - name: Keep the standalone ZIP for the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: filetree-standalone
+          path: FileTree-*-windows-standalone.zip
+          if-no-files-found: error
 
       - name: Name the exe after the version
         shell: pwsh
@@ -160,8 +256,16 @@ jobs:
           path: ${{ env.EXE_NAME }}
           if-no-files-found: error
 
+  build-posix:
+    needs: release
+    if: vars.FILETREE_POSIX_RELEASE_VERIFIED == 'true'
+    uses: ./.github/workflows/posix-build.yml
+    with:
+      ref: v${{ needs.release.outputs.new }}
+
   publish-release:
-    needs: [release, build-exe]
+    needs: [release, build-exe, build-posix]
+    if: ${{ !cancelled() && needs.release.result == 'success' && needs.build-exe.result == 'success' && (needs.build-posix.result == 'success' || needs.build-posix.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -185,11 +289,45 @@ jobs:
           name: filetree-exe
           path: ./release-assets
 
+      - name: Fetch the standalone ZIP
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: filetree-standalone
+          path: ./release-assets
+
+      - name: Fetch the MSI
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: filetree-msi
+          path: ./release-assets
+
+      - name: Fetch the unpublished store review drafts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: filetree-package-drafts
+          path: ./release-assets
+
+      - name: Fetch the verified native AppImage
+        if: needs.build-posix.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: linux-compiled
+          path: ./release-assets/linux
+
+      - name: Fetch the verified native app bundle
+        if: needs.build-posix.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: macos-compiled
+          path: ./release-assets/macos
+
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW: ${{ needs.release.outputs.new }}
         run: |
-          gh release create "v$NEW" dist/* release-assets/*.exe \
+          shopt -s nullglob
+          assets=(dist/* release-assets/*.exe release-assets/*.zip release-assets/*.msi release-assets/linux/*.AppImage release-assets/macos/*.zip)
+          gh release create "v$NEW" "${assets[@]}" \
             --title "FileTree $NEW" \
             --generate-notes
