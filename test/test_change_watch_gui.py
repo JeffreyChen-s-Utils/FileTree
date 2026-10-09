@@ -132,9 +132,11 @@ def test_feed_error_is_visible_plain_text_without_automatic_retry(window, qapp, 
     window._follow.tick()
     assert "owned <unsafe> native limit" in window._follow.label.text()
     assert not calls
-    worker = window._follow.worker
+    cancelled = window._follow.worker.cancel
     window.close()
-    assert not worker.isRunning() and window._follow.worker is None
+    _wait(qapp, lambda: window._close_ready)
+    assert cancelled.is_set()
+    assert window._follow.worker is None
 
 
 def test_unrelated_dirty_branches_survive_the_first_refresh(window, qapp, tmp_path, monkeypatch):
@@ -199,13 +201,19 @@ def test_tab_close_joins_only_its_monitor_and_pending_state_is_independent(qapp,
         second_controller = _enable(second, qapp, monkeypatch)
         _dirty(first_controller, first_source / "資料")
         first_worker, second_worker = first_controller.worker, second_controller.worker
+        first_cancelled = first_worker.cancel
+        first_finished = QSignalSpy(first_worker.finished)
         assert first_controller._pending.folders and not second_controller._pending.folders
         workspace.close_tab(0)
-        assert first_controller.worker is None and first_worker.cancel.is_set() and not first_worker.isRunning()
+        _wait(qapp, lambda: workspace.tabs.count() == 1)
+        assert first_controller.worker is None
+        assert first_cancelled.is_set()
+        assert first_finished.count() == 1
         assert second_controller.worker is second_worker and second_worker.isRunning()
         assert not second_worker.cancel.is_set() and not second_controller._pending.folders
     finally:
         workspace.close()
+        _wait(qapp, lambda: workspace._close_ready)
 
 
 @pytest.mark.skipif(not (sys.platform == "win32" or sys.platform.startswith("linux")), reason="native feed platform")
@@ -242,5 +250,9 @@ def test_native_event_replaces_one_branch_preserves_other_source_and_joins(windo
     assert cancelled.is_set() and finished.count() == 1
     active = window._follow.worker
     assert active is not None
+    active_cancelled = active.cancel
+    active_finished = QSignalSpy(active.finished)
     window.close()
-    assert not active.isRunning() and active.cancel.is_set()
+    _wait(qapp, lambda: window._close_ready)
+    assert active_finished.count() == 1
+    assert active_cancelled.is_set()

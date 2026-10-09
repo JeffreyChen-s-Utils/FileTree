@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 import json
+from PySide6.QtCore import QTimer
 
 import pytest
 
@@ -66,10 +67,11 @@ def test_native_probe_persists_phase_before_call_and_never_completes_failed_sess
 
 
 @pytest.mark.parametrize("failure", ["record", "quit", "none"])
-def test_native_probe_join_and_history_restoration_survive_diagnostic_or_quit_errors(monkeypatch, failure):
+def test_native_probe_join_and_history_restoration_survive_diagnostic_or_quit_errors(monkeypatch, failure, qapp):
     original = probe.history.history_folder
     monkeypatch.setattr(probe.history, "history_folder", lambda: None)
     calls = []
+    workspace = SimpleNamespace(_close_ready=False)
 
     def retain(phase, proof):
         calls.append(phase)
@@ -80,11 +82,15 @@ def test_native_probe_join_and_history_restoration_survive_diagnostic_or_quit_er
         calls.append("quit")
         if failure == "quit":
             raise RuntimeError("native quit refused")
+        QTimer.singleShot(10, lambda: setattr(workspace, "_close_ready", True))
+
+    workspace.quit_application = quit_application
 
     if failure != "none":
         with pytest.raises((OSError, RuntimeError), match="refused"):
-            probe._join(SimpleNamespace(quit_application=quit_application), original, retain, {})
+            probe._join(workspace, original, retain, {})
     else:
-        probe._join(SimpleNamespace(quit_application=quit_application), original, retain, {})
+        probe._join(workspace, original, retain, {})
     assert calls == ["joining", "quit"]
     assert probe.history.history_folder is original
+    assert workspace._close_ready == (failure != "quit")

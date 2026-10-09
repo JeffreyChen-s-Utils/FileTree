@@ -118,7 +118,9 @@ def test_release_and_native_fixture_validation_keep_msi_artifacts():
     workflow = (builder._ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     assert "dotnet tool install wix --version 6.0.2" in workflow
     assert "python tools/build_msi.py --version" in workflow
-    assert "name: filetree-msi" in workflow and "release-assets/*.msi" in workflow
+    assert "name: filetree-msi" in workflow and "tools/publish_release.py" in workflow
+    publisher = (builder._ROOT / "tools/publish_release.py").read_text(encoding="utf-8")
+    assert 'f"FileTree-{version}-windows-x64.msi"' in publisher
     native = (builder._ROOT / "tools/validate_msi.ps1").read_text(encoding="utf-8")
     assert "$env:GITHUB_ACTIONS -ne 'true'" in native
     assert "Existing FileTree installation/shortcut/product found" in native

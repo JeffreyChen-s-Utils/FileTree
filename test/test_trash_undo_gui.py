@@ -195,12 +195,14 @@ def test_close_joins_native_inverse_and_reports_late_partial_truth(window, qapp,
     monkeypatch.setattr(undo_worker, "restore_windows", partial)
     window._undo.undo()
     worker = window._undo.worker
-    assert entered.wait(3)
+    _wait(qapp, entered.is_set)
     assert window.operation_busy and not window._actions["open"].isEnabled()
     window.start_scan(str(source.parent))
     assert window._worker is None, "scan cannot overlap an active inverse operation"
     window.close()
-    assert not worker.isRunning() and window._undo.worker is None and worker.result.results[0].restored
+    _wait(qapp, lambda: window._close_ready)
+    assert window._undo.worker is None
+    assert worker.result.results[0].restored
     assert (source / "file").exists() and not payload.exists() and receipt.exists() and calls == ["trash", "restore"]
     assert "late receipt error <error>&" in questions[-1][1] and questions[-1][0] == Qt.TextFormat.PlainText
     qapp.processEvents()
@@ -238,7 +240,7 @@ def test_late_inverse_result_never_rescans_a_replaced_tree(window, qapp, tmp_pat
 
     monkeypatch.setattr(undo_worker, "restore_windows", blocked)
     window._undo.undo()
-    assert entered.wait(3)
+    _wait(qapp, entered.is_set)
     other = tmp_path / "other"
     other.mkdir()
     (other / "preserved").write_bytes(b"other tree")

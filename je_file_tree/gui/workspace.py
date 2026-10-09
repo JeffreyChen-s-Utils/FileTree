@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from PySide6.QtCore import QByteArray, QSettings, Qt
+from PySide6.QtCore import QByteArray, QSettings, QThread, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QToolButton
 
@@ -13,6 +13,7 @@ from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 MAX_TABS = 16
 
@@ -33,6 +34,7 @@ class ScanWorkspace(QMainWindow):
         self.setCentralWidget(self.tabs)
         self._closing, self._services = False, False
         self._force_close = False
+        self._close_ready = False
         self.background = BackgroundMonitor(self)
         self.new_button = QToolButton(self)
         self.new_button.clicked.connect(lambda _checked=False: self.add_tab())
@@ -67,6 +69,7 @@ class ScanWorkspace(QMainWindow):
         window._language_changed = self.retranslate
         window.setWindowFlags(Qt.WindowType.Widget)
         self.operations.windows.append(window)
+        window.shutdown_finished.connect(lambda: QTimer.singleShot(0, self, lambda: self._remove_closed_tab(window)))
         window.path_edit.textChanged.connect(lambda: self._label(window))
         window.results.tree_model.modelReset.connect(lambda: self._label(window))
         self.tabs.setCurrentIndex(self.tabs.addTab(window, tr("workspace_empty")))
@@ -100,7 +103,7 @@ class ScanWorkspace(QMainWindow):
             self.current._update_actions()
 
     def close_tab(self, index: int) -> None:
-        """Cancel and join only the closed tab's workers before destroying its result objects."""
+        """Cancel only this tab; keep its ownership until its asynchronous shutdown completes."""
         if self._closing or not 0 <= index < self.tabs.count():
             return
         if self.tabs.count() == 1:
@@ -108,6 +111,13 @@ class ScanWorkspace(QMainWindow):
             return
         window = self.tabs.widget(index)
         window.close()
+
+    def _remove_closed_tab(self, window: MainWindow) -> None:
+        if self._closing:
+            return
+        index = self.tabs.indexOf(window)
+        if index < 0 or not window._close_ready:
+            return
         self.tabs.removeTab(index)
         self.operations.windows.remove(window)
         window.deleteLater()
@@ -141,14 +151,31 @@ class ScanWorkspace(QMainWindow):
         self.close()
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        """Join every owned tab before closing the application; never leave a scan thread behind."""
+        """Keep Qt events running while all owned tabs and background services retire."""
+        if self._close_ready:
+            super().closeEvent(event)
+            return
+        if self._closing:
+            event.ignore()
+            return
         if not self._force_close and self.background.can_hide:
             self.hide()
             event.ignore()
             return
         self._closing = True
-        self.background.shutdown()
+        self.setEnabled(False)
+        self.statusBar().showMessage(tr("closing_workers"))
+        self.background.shutdown(wait=False)
         for window in tuple(self.operations.windows):
             window.close()
+        event.ignore()
+        after_threads(tuple(self.findChildren(QThread)), lambda: QTimer.singleShot(0, self, self._finish_close), self)
+
+    def _finish_close(self) -> None:
+        if any(not window._close_ready for window in self.operations.windows):
+            QTimer.singleShot(10, self, self._finish_close)
+            return
+        self.background.shutdown()
         self.settings.setValue("workspace_geometry", self.saveGeometry())
-        super().closeEvent(event)
+        self._close_ready = True
+        self.close()

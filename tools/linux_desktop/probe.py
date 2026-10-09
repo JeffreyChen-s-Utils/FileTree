@@ -210,6 +210,11 @@ def main() -> int:
         return 0
     finally:
         window.close()
+        deadline = time.monotonic() + 30
+        while not window._close_ready:
+            require(time.monotonic() < deadline, "Native desktop shutdown timed out")
+            app.processEvents()
+            time.sleep(.01)
 
 
 if __name__ == "__main__":

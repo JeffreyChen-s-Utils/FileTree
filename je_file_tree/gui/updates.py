@@ -16,6 +16,7 @@ from je_file_tree import __version__
 from je_file_tree.core.updates import PROJECT_URL, check_due, fetch_release
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.worker_lifecycle import after_threads
 
 ENABLED_KEY = "check_updates"
 ATTEMPT_KEY = "update_last_attempt"
@@ -127,7 +128,7 @@ class UpdateNotice(QObject):
             return
         worker = UpdateWorker(self)
         worker.ready.connect(lambda version: self._ready(worker, version))
-        worker.finished.connect(lambda: self._finished(worker))
+        worker.finished.connect(lambda: after_threads((worker,), lambda: self._finished(worker), self))
         self.worker = worker
         worker.start()
 
@@ -149,13 +150,15 @@ class UpdateNotice(QObject):
                                f'{html.escape(tr("update_available", version=self.version))}</a>')
             self.label.setToolTip(tr("action_check_updates_tip"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Stop timers and join the current request before the window is destroyed."""
         self._closing = True
         self.timer.stop()
         self.initial.stop()
         if self.worker:
-            worker, self.worker = self.worker, None
+            worker = self.worker
             worker.cancel.set()
-            wait_for(worker)
-            self.last_error = worker.error
+            if wait:
+                wait_for(worker)
+                self.worker = None
+                self.last_error = worker.error

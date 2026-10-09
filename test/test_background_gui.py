@@ -66,6 +66,7 @@ def monitored(qapp, tmp_path, monkeypatch):
     workspace = create_workspace(settings)
     yield workspace
     workspace.quit_application()
+    _wait(qapp, lambda: workspace._close_ready)
     workspace.deleteLater()
 
 
@@ -218,7 +219,7 @@ def test_foreground_scan_cancels_and_joins_gentle_scan_before_dispatch(monitored
     monkeypatch.setattr(workers, "scan", blocking)
     monitor = _enable(monitored, (str(source),))
     monitor.tick()
-    assert entered.wait(5)
+    _wait(qapp, entered.is_set)
     worker = monitor.scan
     monitored.current.start_scan(str(source))
     assert worker.cancel.is_set()
@@ -244,7 +245,7 @@ def test_low_capacity_notifies_once_unknown_stays_unknown_and_only_opens_window(
     assert not monitored.isHidden() and monitored.current.results.outcome is None
 
 
-def test_explicit_quit_joins_native_capacity_work_instead_of_hiding(monitored, tmp_path, monkeypatch):
+def test_explicit_quit_joins_native_capacity_work_instead_of_hiding(monitored, tmp_path, monkeypatch, qapp):
     entered, ended = threading.Event(), threading.Event()
 
     def blocking(self):
@@ -255,10 +256,12 @@ def test_explicit_quit_joins_native_capacity_work_instead_of_hiding(monitored, t
     monkeypatch.setattr(workers.CapacityWorker, "run", blocking)
     monitor = _enable(monitored)
     monitor.tick()
-    assert entered.wait(5)
-    worker = monitor.capacity
+    _wait(qapp, entered.is_set)
+    cancelled = monitor.capacity.cancel
     monitored.current.quit_application()
-    assert ended.is_set() and not worker.isRunning()
+    _wait(qapp, lambda: monitored._close_ready)
+    assert ended.is_set()
+    assert cancelled.is_set()
     assert monitor.closing and monitored._closing and not monitor.can_hide
 
 

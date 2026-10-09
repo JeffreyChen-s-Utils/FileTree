@@ -24,6 +24,7 @@ def workspace(qapp, tmp_path):
     window = create_workspace(settings)
     yield window
     window.close()
+    _wait(qapp, lambda: window._close_ready)
     window.deleteLater()
     i18n.set_language("en")
     apply_qt_translation("en")
@@ -121,13 +122,61 @@ def test_close_one_running_tab_joins_only_its_owned_scan(workspace, tmp_path, qa
     monkeypatch.setattr(scan_worker, "scan", held)
     first, second = workspace.current, workspace.add_tab()
     second.start_scan(str(tmp_path))
-    worker = second._worker
-    assert entered.wait(5)
+    _wait(qapp, entered.is_set)
     workspace.close_tab(workspace.tabs.indexOf(second))
-    assert not worker.isRunning() and second._closing and second._worker is None
+    _wait(qapp, lambda: second._close_ready)
+    assert second._closing
+    assert second._worker is None
+    _wait(qapp, lambda: workspace.tabs.count() == 1)
     assert workspace.current is first and not first._closing and workspace.tabs.count() == 1
     qapp.processEvents()
     assert first.results.outcome is None
+
+
+@pytest.mark.parametrize("paused", [False, True])
+def test_close_during_a_held_scan_keeps_the_event_loop_alive(workspace, tmp_path, qapp, monkeypatch, paused):
+    source = tmp_path / "source"
+    source.mkdir()
+    kept = source / "kept.bin"
+    kept.write_bytes(b"source remains untouched")
+    entered, release = threading.Event(), threading.Event()
+    original = scan_worker.scan
+
+    def held(path, **kwargs):
+        entered.set()
+        assert release.wait(5), "closing blocked the GUI release timer"
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(scan_worker, "scan", held)
+    tab = workspace.current
+    workspace.show()
+    tab.start_scan(str(source))
+    _wait(qapp, entered.is_set)
+    tab.pause_scan(paused)
+    ticks = []
+    timer = QTimer(workspace)
+    timer.setInterval(5)
+    timer.timeout.connect(lambda: ticks.append(True))
+    timer.start()
+    try:
+        workspace.quit_application()
+        assert not release.is_set()
+        assert not workspace._close_ready
+        assert workspace.isVisible()
+        assert tab._closing
+        assert tab._worker._cancel.is_set()
+        assert not tab._worker._pause.is_set()
+        QTimer.singleShot(50, release.set)
+        _wait(qapp, lambda: workspace._close_ready)
+        assert ticks
+        assert release.is_set()
+        assert tab._close_ready
+        assert not workspace.isVisible()
+        assert kept.read_bytes() == b'source remains untouched'
+    finally:
+        release.set()
+        timer.stop()
+        _wait(qapp, lambda: workspace._close_ready)
 
 
 def test_language_changes_every_tab_and_workspace(workspace):

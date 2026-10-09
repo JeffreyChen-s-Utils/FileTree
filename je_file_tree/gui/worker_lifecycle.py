@@ -8,8 +8,6 @@ from PySide6.QtCore import QObject, QThread, QTimer
 from PySide6.QtWidgets import QDialog, QWidget
 from shiboken6 import isValid
 
-from je_file_tree.core.pacing import WINDOW
-
 
 class ThreadFence(QObject):
     """Retain worker references and poll zero-time joins; never terminate an active native call."""
@@ -24,7 +22,6 @@ class ThreadFence(QObject):
 
     def start(self) -> None:
         """Run immediately when already joined, otherwise let normal Qt events drive completion."""
-        WINDOW.open()
         self._timer.start()
         self._poll()
 

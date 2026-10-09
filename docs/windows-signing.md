@@ -39,8 +39,9 @@ unsigned output. `tools/check_signing.py` writes only the enabled boolean to the
 does not echo identifiers or contact the service.
 
 This gate protects Windows artifacts and the GitHub release. The preceding `release` job has
-already committed/tagged the version and uploaded the Python packages to PyPI before `build-exe`
-starts. A Windows configuration, signing or verification failure cannot undo that publication.
+already committed/tagged the version before `build-exe` starts. PyPI upload runs independently
+in `publish-pypi`; its failure does not block Windows release publication. A Windows configuration,
+signing or verification failure cannot undo the version or a successful PyPI upload.
 The workflow does not provide an atomic release across PyPI and GitHub.
 
 The local signing action checks exact nonlinked release paths, then signs only

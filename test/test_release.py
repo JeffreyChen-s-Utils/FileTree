@@ -70,8 +70,10 @@ def test_the_workflow_releases_on_merge_and_attaches_the_exe() -> None:
     assert "github.event.pull_request.merged == true" in text
     assert "python tools/bump_version.py" in text, "the tested script, not an inline copy"
     assert "git add pyproject.toml je_file_tree/__init__.py" in text
-    assert text.index("PYPI_API_TOKEN repository secret is not set") < text.index("python tools/bump_version.py"), (
-        "a missing token stops the release before anything is pushed")
+    version = text.split("  release:\n", 1)[1].split("  publish-pypi:\n", 1)[0]
+    assert "secrets.PYPI_API_TOKEN" not in version
+    assert version.index("python -m build --no-isolation") < version.index("git push")
+    assert version.index("python -m twine check dist/*") < version.index("git push")
     assert "python tools/build_nuitka.py --onefile" in text
     assert "FileTree-" in text
     assert ".exe" in text
@@ -101,5 +103,18 @@ def test_optional_native_release_requires_verification_and_does_not_publish_afte
     assert "needs.release.result == 'success'" in publish and "needs.build-exe.result == 'success'" in publish
     assert "needs.build-posix.result == 'success' || needs.build-posix.result == 'skipped'" in publish
     assert publish.count("if: needs.build-posix.result == 'success'") == 2
-    assert "shopt -s nullglob" in publish and '"${assets[@]}"' in publish
-    assert "release-assets/linux/*.AppImage" in publish and "release-assets/macos/*.zip" in publish
+    assert 'python3 tools/publish_release.py --version "$NEW"' in publish
+    assert "publish-pypi" not in publish
+
+
+def test_windows_release_does_not_depend_on_the_pypi_upload() -> None:
+    text = _WORKFLOW.read_text(encoding="utf-8")
+    publisher = text.split("  publish-pypi:\n", 1)[1].split("  build-exe:\n", 1)[0]
+    windows = text.split("  build-exe:\n", 1)[1].split("  build-posix:\n", 1)[0]
+    assert 'needs: release' in publisher
+    assert 'needs: release' in windows
+    assert "publish-pypi" not in windows
+    assert "name: pypi-dist" in publisher
+    assert "python -m build" not in publisher, "upload the producer's exact files"
+    assert "contents: write" not in publisher
+    assert "continue-on-error" not in publisher, "a PyPI failure must still be reported"

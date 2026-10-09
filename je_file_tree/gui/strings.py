@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+_JA_FOLDER = "フォルダー"
+
 
 def _cjk(html: str) -> str:
     """Join the source lines of Chinese HTML: a line break there would show up as a space between characters."""
@@ -9,6 +11,34 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "closing_workers": "Closing FileTree: stopping background work; waiting for current filesystem calls to finish…",
+    "elevate_python_tip": (
+        "Running from Python: Windows UAC displays Python, the executable being elevated. "
+        "Use the FileTree executable for a FileTree prompt."),
+    'overview_empty': 'Choose a folder to begin',
+    'overview_live': 'Scan in progress · totals are still growing',
+    'overview_complete': 'Scan finished',
+    'overview_partial': 'Incomplete results · some entries were not read',
+    'overview_size': 'Logical size',
+    'overview_allocated': 'Recorded allocation',
+    'overview_files': 'Files',
+    'overview_folders': 'Folders',
+    'overview_problems': 'Review unreadable entries ({count})',
+    'overview_navigation': 'Analysis view',
+    'overview_coverage_hint': 'Coverage describes this scan. Exclusions and mount boundaries still apply.',
+    'overview_allocation_hint': 'Recorded allocation may be estimated or shared. It is not recoverable space.',
+    'overview_live_hint': 'Explore the growing tree and charts. Analysis lists populate when scanning finishes.',
+    'overview_result_hint': 'Choose an analysis view; select an entry to locate it in the tree.',
+    'overview_path': 'Folder or drive path',
+    'overview_scan_path': 'Scan path',
+    'overview_scan_path_tip': 'Scan the entered folder or drive (Enter). A running scan is replaced safely.',
+    'overview_workflow': '1  Choose a folder or drive   →   2  Explore its space usage   →   3  Review before cleanup',
+    'overview_scan_running': 'Reading folders in the background. You can explore the growing results.',
+    'overview_scan_paused': ('Pause requested; the current filesystem call may finish first. '
+                             'Resume or Stop to continue.'),
+    'overview_scan_analysing': 'Preparing analysis in the background. Stop remains available.',
+    'overview_scan_stopping': 'Waiting for current filesystem work to finish; available partial results are retained.',
+    'overview_scan_elapsed': 'Elapsed {time}',
     'recurring_review': 'Rescan and review current candidates…',
     'recurring_validating': 'Validating the dated proposal against the entire fresh scan and current source metadata…',
     'recurring_refused': ('Proposal cannot continue: {status}. '
@@ -1419,6 +1449,33 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "closing_workers": "正在關閉 FileTree：停止背景工作，等待目前的檔案系統呼叫完成…",
+    "elevate_python_tip": (
+        "目前由 Python 執行：Windows UAC 會顯示實際提升權限的 Python 執行檔。"
+        "使用 FileTree 執行檔時，提示才會顯示 FileTree。"),
+    'overview_empty': '選擇資料夾開始掃描',
+    'overview_live': '掃描中 · 統計仍持續增加',
+    'overview_complete': '掃描已完成',
+    'overview_partial': '結果不完整 · 部分項目未讀取',
+    'overview_size': '邏輯大小',
+    'overview_allocated': '記錄的磁碟配置',
+    'overview_files': '檔案',
+    'overview_folders': '資料夾',
+    'overview_problems': '查看無法讀取的項目（{count}）',
+    'overview_navigation': '分析檢視',
+    'overview_coverage_hint': '此狀態描述本次掃描；排除規則與掛載邊界仍適用。',
+    'overview_allocation_hint': '記錄的配置可能是估計值或共享空間，不代表可回收空間。',
+    'overview_live_hint': '可探索持續更新的樹狀清單與圖表；分析清單會在掃描結束後填入。',
+    'overview_result_hint': '選擇分析檢視；選取項目即可在樹狀清單中定位。',
+    'overview_path': '資料夾或磁碟路徑',
+    'overview_scan_path': '掃描路徑',
+    'overview_scan_path_tip': '掃描輸入的資料夾或磁碟（Enter）；會安全地取代進行中的掃描。',
+    'overview_workflow': '1  選擇資料夾或磁碟   →   2  探索空間用量   →   3  清理前先審閱',
+    'overview_scan_running': '正在背景讀取資料夾，可探索持續更新的結果。',
+    'overview_scan_paused': '已要求暫停；目前的檔案系統呼叫可能會先完成。可繼續或停止掃描。',
+    'overview_scan_analysing': '正在背景準備分析，仍可要求停止。',
+    'overview_scan_stopping': '正在等候目前的檔案系統工作結束；會保留已取得的部分結果。',
+    'overview_scan_elapsed': '已經過 {time}',
     'recurring_review': '重新掃描並審查目前候選…',
     'recurring_validating': '正在比對具日期建議、完整的新掃描與目前來源中繼資料…',
     'recurring_refused': '無法繼續此建議：{status}。請執行新的排程掃描，以產生目前的觀察資料。',
@@ -2697,6 +2754,33 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "closing_workers": "正在关闭 FileTree：停止后台工作，等待当前文件系统调用完成…",
+    "elevate_python_tip": (
+        "当前由 Python 运行：Windows UAC 会显示实际提升权限的 Python 可执行文件。"
+        "使用 FileTree 可执行文件时，提示才会显示 FileTree。"),
+    'overview_empty': '选择文件夹开始扫描',
+    'overview_live': '扫描中 · 统计仍在增加',
+    'overview_complete': '扫描已完成',
+    'overview_partial': '结果不完整 · 部分项目未读取',
+    'overview_size': '逻辑大小',
+    'overview_allocated': '记录的磁盘分配',
+    'overview_files': '文件',
+    'overview_folders': '文件夹',
+    'overview_problems': '查看无法读取的项目（{count}）',
+    'overview_navigation': '分析视图',
+    'overview_coverage_hint': '此状态描述本次扫描；排除规则与挂载边界仍然适用。',
+    'overview_allocation_hint': '记录的分配可能是估计值或共享空间，不代表可回收空间。',
+    'overview_live_hint': '可浏览持续更新的树状列表和图表；分析列表会在扫描结束后填入。',
+    'overview_result_hint': '选择分析视图；选中项目即可在树状列表中定位。',
+    'overview_path': '文件夹或磁盘路径',
+    'overview_scan_path': '扫描路径',
+    'overview_scan_path_tip': '扫描输入的文件夹或磁盘（Enter）；会安全地替换进行中的扫描。',
+    'overview_workflow': '1  选择文件夹或磁盘   →   2  浏览空间用量   →   3  清理前先审核',
+    'overview_scan_running': '正在后台读取文件夹，可浏览持续更新的结果。',
+    'overview_scan_paused': '已请求暂停；当前文件系统调用可能会先完成。可继续或停止扫描。',
+    'overview_scan_analysing': '正在后台准备分析，仍可请求停止。',
+    'overview_scan_stopping': '正在等待当前文件系统工作结束；会保留已取得的部分结果。',
+    'overview_scan_elapsed': '已过 {time}',
     'recurring_review': '重新扫描并审核当前候选…',
     'recurring_validating': '正在比对带日期建议、完整的新扫描与当前源元数据…',
     'recurring_refused': '无法继续此建议：{status}。请执行新的计划扫描，以生成当前的观察数据。',
@@ -3987,6 +4071,37 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "closing_workers": (
+        "FileTree を終了しています：バックグラウンド処理を停止し、"
+        "現在のファイルシステム呼び出しの完了を待っています…"),
+    "elevate_python_tip": (
+        "Python から実行中：Windows UAC は昇格する実行ファイルの Python を表示します。"
+        "FileTree の表示には FileTree 実行ファイルを使用してください。"),
+    'overview_empty': 'フォルダーを選んで開始',
+    'overview_live': 'スキャン中 · 集計は更新中です',
+    'overview_complete': 'スキャン完了',
+    'overview_partial': '不完全な結果 · 読み取れなかった項目があります',
+    'overview_size': '論理サイズ',
+    'overview_allocated': '記録された割り当て',
+    'overview_files': 'ファイル',
+    'overview_folders': _JA_FOLDER,
+    'overview_problems': '読み取り不可の項目を確認（{count}）',
+    'overview_navigation': '分析ビュー',
+    'overview_coverage_hint': '今回のスキャン範囲を示します。除外設定とマウント境界は引き続き適用されます。',
+    'overview_allocation_hint': '記録された割り当てには推定値や共有領域が含まれます。回収可能な容量ではありません。',
+    'overview_live_hint': '更新中のツリーとグラフを確認できます。分析リストはスキャン終了後に表示されます。',
+    'overview_result_hint': '分析ビューを選択し、項目を選んでツリー内の位置を確認します。',
+    'overview_path': 'フォルダーまたはドライブのパス',
+    'overview_scan_path': 'パスをスキャン',
+    'overview_scan_path_tip': ('入力したフォルダーまたはドライブをスキャン（Enter）。'
+                               '実行中のスキャンは安全に切り替えます。'),
+    'overview_workflow': '1  フォルダーやドライブを選ぶ   →   2  容量を調べる   →   3  クリーンアップ前に確認',
+    'overview_scan_running': 'バックグラウンドで読み取り中です。更新中の結果を確認できます。',
+    'overview_scan_paused': ('一時停止を要求しました。現在のファイルシステム呼び出し完了を待つ場合があります。'
+                             '再開または停止できます。'),
+    'overview_scan_analysing': 'バックグラウンドで分析を準備中です。停止を要求できます。',
+    'overview_scan_stopping': '現在のファイルシステム処理の終了を待っています。取得済みの部分的な結果は保持されます。',
+    'overview_scan_elapsed': '経過 {time}',
     'recurring_review': '再スキャンして現在の候補を確認…',
     'recurring_validating': '日付の付いた提案を新しいスキャン全体と現在のソース メタデータと照合して検証しています…',
     'recurring_refused': (
@@ -5454,9 +5569,9 @@ JA: dict[str, str] = {
     'column_share': '親の%',
     'column_share_total': '全体の %',
     'column_files': 'ファイル',
-    'column_folders': 'フォルダー',
+    'column_folders': _JA_FOLDER,
     'column_modified': '修正済み',
-    'column_folder': 'フォルダー',
+    'column_folder': _JA_FOLDER,
     'column_extension': '延長',
     'column_type': '種類',
     'column_path': 'パス',
@@ -5616,6 +5731,34 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "closing_workers": "FileTree 종료 중: 백그라운드 작업을 중지하고 현재 파일 시스템 호출이 끝나기를 기다리는 중…",
+    "elevate_python_tip": (
+        "Python으로 실행 중: Windows UAC에는 권한을 높이는 실행 파일인 Python이 표시됩니다. "
+        "FileTree 표시를 원하면 FileTree 실행 파일을 사용하세요."),
+    'overview_empty': '폴더를 선택하여 시작하세요',
+    'overview_live': '스캔 중 · 통계가 계속 갱신됩니다',
+    'overview_complete': '스캔 완료',
+    'overview_partial': '불완전한 결과 · 읽지 못한 항목이 있습니다',
+    'overview_size': '논리 크기',
+    'overview_allocated': '기록된 할당량',
+    'overview_files': '파일',
+    'overview_folders': '폴더',
+    'overview_problems': '읽지 못한 항목 확인 ({count})',
+    'overview_navigation': '분석 보기',
+    'overview_coverage_hint': '이번 스캔의 범위입니다. 제외 규칙과 마운트 경계는 계속 적용됩니다.',
+    'overview_allocation_hint': '기록된 할당량은 추정치나 공유 공간일 수 있으며 회수 가능한 공간을 뜻하지 않습니다.',
+    'overview_live_hint': '갱신되는 트리와 차트를 탐색할 수 있습니다. 분석 목록은 스캔이 끝나면 표시됩니다.',
+    'overview_result_hint': '분석 보기를 선택하고 항목을 선택하여 트리에서 위치를 확인하세요.',
+    'overview_path': '폴더 또는 드라이브 경로',
+    'overview_scan_path': '경로 스캔',
+    'overview_scan_path_tip': '입력한 폴더나 드라이브를 스캔합니다(Enter). 실행 중인 스캔은 안전하게 교체됩니다.',
+    'overview_workflow': '1  폴더나 드라이브 선택   →   2  공간 사용량 탐색   →   3  정리 전 검토',
+    'overview_scan_running': '백그라운드에서 폴더를 읽는 중입니다. 갱신되는 결과를 탐색할 수 있습니다.',
+    'overview_scan_paused': ('일시 중지를 요청했습니다. 현재 파일 시스템 호출이 먼저 끝날 수 있습니다. '
+                             '재개하거나 중지할 수 있습니다.'),
+    'overview_scan_analysing': '백그라운드에서 분석을 준비하는 중입니다. 중지를 요청할 수 있습니다.',
+    'overview_scan_stopping': '현재 파일 시스템 작업이 끝나기를 기다립니다. 얻은 부분 결과는 유지됩니다.',
+    'overview_scan_elapsed': '경과 {time}',
     'recurring_review': '다시 스캔하고 현재 후보 항목 검토…',
     'recurring_validating': '전체 신규 스캔 및 현재 소스 메타데이터에 대해 날짜가 지정된 제안을 검증하는 중…',
     'recurring_refused': '제안을 계속할 수 없습니다: {status}. 현재 관찰을 준비하려면 새로운 예약 검사를 실행하세요.',

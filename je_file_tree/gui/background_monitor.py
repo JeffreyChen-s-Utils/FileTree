@@ -359,13 +359,16 @@ class BackgroundMonitor(QObject):
                                  worker.root)
         worker.deleteLater()
 
-    def _stop_workers(self) -> None:
+    def _stop_workers(self, *, wait: bool = True) -> None:
         capacity, self.capacity = self.capacity, None
         if capacity is not None:
             capacity.cancel.set()
-            wait_for(capacity)
-            capacity.deleteLater()
-        self.quiesce()
+            if wait:
+                wait_for(capacity)
+                capacity.deleteLater()
+            else:
+                after_threads((capacity,), capacity.deleteLater, self)
+        self.quiesce(wait=wait)
 
     def quiesce(self, *, wait: bool = True) -> tuple[ScheduledWorker, ...]:
         """Cancel gentle scanning before foreground scans/source reviews, retaining its claimed period."""
@@ -397,12 +400,12 @@ class BackgroundMonitor(QObject):
             self._failed(scan.error)
         scan.deleteLater()
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, wait: bool = True) -> None:
         """Explicit Quit joins every native call and scan; close-to-tray is a separate workspace choice."""
         self.closing = True
         self.timer.stop()
         self.tray.hide()
-        self._stop_workers()
+        self._stop_workers(wait=wait)
 
     def _failed(self, detail: str) -> None:
         self.error = detail
