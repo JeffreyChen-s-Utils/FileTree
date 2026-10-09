@@ -1,0 +1,80 @@
+{
+  "observed_date": "2026-10-09",
+  "repository": "JeffreyChen-s-Utils/FileTree",
+  "reviewed_revision": "7a8b174960b8db9d753e752d065eab6f81e4030f",
+  "pull_request": "8",
+  "owner_cli_path_boundary_decision": "preserve explicit arbitrary local paths and review context",
+  "issue_transition": "accept",
+  "reviews": [
+    {
+      "key": "AaEexSm_qmO1JbIdGNgX",
+      "rule": "pythonsecurity:S8707",
+      "component": "tools/prepare_packages.py",
+      "line": 146,
+      "decision": "ACCEPTED",
+      "reason": "Explicit local package-draft output is an operator-selected directory. The version is numeric and bounded; inputs are checked release artifacts. Drafts are written only into a fresh private temporary sibling, with an anchored output parent and no-replace final publication. Existing output is refused. No remote request selects the path."
+    },
+    {
+      "key": "AaEexSpYqmO1JbIdGNgh",
+      "rule": "pythonsecurity:S8707",
+      "component": "tools/validate_change_watch.py",
+      "line": 101,
+      "decision": "ACCEPTED",
+      "reason": "The only CLI selector is the explicit evidence file. Native source fixtures are freshly owned temporary directories, not supplied source, volume or bin selectors; native readers join or retain their owned fixture. The evidence destination is intentionally selected by the local operator under current OS permissions."
+    },
+    {
+      "key": "AaEexRrgqmO1JbIdGNQt",
+      "rule": "pythonsecurity:S8707",
+      "component": "je_file_tree/core/mounts.py",
+      "line": 132,
+      "decision": "ACCEPTED",
+      "reason": "The scan root is an explicit local disk-viewer selection and may be on any permitted disk. MountSurvey opens that root read-only with directory/no-follow/close-on-exec flags, checks mounted identity and closes its descriptor. No remote request or saved metadata chooses another filesystem root."
+    },
+    {
+      "key": "AaEUuFZCZbq2mkR8pEZy",
+      "rule": "pythonsecurity:S8707",
+      "component": "je_file_tree/core/export.py",
+      "line": 166,
+      "decision": "ACCEPTED",
+      "reason": "The report destination is explicitly selected by the local operator and may be outside the invocation directory. Atomic export creates an exclusive temporary sibling and replaces only that requested destination after successful serialization; failure retains an existing report. No source move/removal is offered by the headless CLI."
+    },
+    {
+      "key": "AaEUkgctCV1trJHFqOK2",
+      "rule": "pythonsecurity:S8707",
+      "component": "tools/measure_scale.py",
+      "line": 180,
+      "decision": "ACCEPTED",
+      "reason": "The bounded measurement tool scans an explicit operator-selected root and writes its report only to the explicitly supplied output file. Memory/time/worker budgets remain enforced. Arbitrary local output selection is intentional; no remote request selects a path and this tool does not offer source deletion."
+    },
+    {
+      "key": "AaEUuFd9Zbq2mkR8pEZz",
+      "rule": "pythonsecurity:S8707",
+      "component": "je_file_tree/core/compare.py",
+      "line": 71,
+      "decision": "ACCEPTED",
+      "reason": "The saved comparison file is an explicit local input. Its JSON format, node structure and sizes are validated; embedded paths are comparison labels and are not opened or executed. Reading operator-selected saved scans outside the invocation directory is an intended feature."
+    }
+  ],
+  "source_exclusions_added": false,
+  "rules_disabled": false,
+  "gate_thresholds_changed": false,
+  "provenance": [
+    "GET /api/issues/search",
+    "POST /api/issues/do_transition with per-issue review comment"
+  ],
+  "verification": {
+    "completed_task": "AaEe3zwmlLooC1-UBfab",
+    "analysis_id": "ac37295c-8680-4e17-a582-12be6db0106d",
+    "revision": "7a8b174960b8db9d753e752d065eab6f81e4030f",
+    "live_pr_gate_after_review": "OK",
+    "historical_analysis_snapshot_gate": "ERROR",
+    "open_vulnerabilities": 0,
+    "accepted_path_findings": 6,
+    "github_checks_after_review": {
+      "success": 29,
+      "failure": 0
+    },
+    "push_tests": "37882896463",
+    "pull_request_tests": "37882899898"
+  }
+}

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261009-24 | 2026-10-09 | Review explicit local CLI path capabilities and restore Sonar gate | #done #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-23 | 2026-10-09 | Confine desktop fallback helper to its owned Linux fixture | #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-22 | 2026-10-09 | Validate native operands and private desktop readiness | #security #validation #sonar | [2026-10-c](2026-10-c.md) |
 | U-20261009-21 | 2026-10-09 | Lock CI wheels and default desktop container to unprivileged user | #security #validation #sonar | [2026-10-c](2026-10-c.md) |

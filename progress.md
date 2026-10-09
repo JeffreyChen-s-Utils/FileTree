@@ -30,9 +30,3 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 - **#47** (P2) [BLOCKED] Configure an owner Azure Artifact Signing Public Trust account/profile and OIDC environment identifiers for the opt-in release signing flow (`docs/windows-signing.md`), then verify real timestamped EXE/MSI signatures and downloaded artifact hashes. No signing certificate/service environment is available. macOS Developer ID signing/notarization also requires unavailable owner credentials; unsigned builds do not establish signing or SmartScreen reputation.
 - **#48** (P3) [BLOCKED] Submit reviewed winget/Scoop/Chocolatey drafts for the exact published release artifacts and verify real store installation/upgrades. Store-publishing tokens/accounts remain unavailable from the owner.
-
-### Validation
-
-
-- **#90** (P1) Resolve fresh SonarCloud security findings and verify the current revision's quality gate before merge (`docs/updates/sonar-20261009-gate.json`). The public-visibility change restored completed PR analysis; dependency/container and operand/readiness fixes require a current-head rescan. [DECIDE] Choose the local CLI path boundary before resolving the remaining arbitrary-path findings; an owner decision is pending between preserving explicit disk/export paths with contextual review and restricting the CLI to the working directory.
-

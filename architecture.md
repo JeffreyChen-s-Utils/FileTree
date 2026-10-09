@@ -1435,3 +1435,16 @@ The disconnected-bus fallback helper is Linux-only, rejects CLI target/output se
 construction and derives only the fixed owned fixture/record names from its private HOME scratch.
 It rejects a linked, foreign-owned or non-private scratch directory before invoking the file manager.
 The parent probe creates those exact fixtures and passes no path arguments to this helper.
+
+The owner-approved CLI path boundary retains explicit local scan roots, saved-comparison inputs and
+report destinations under current OS permissions. The headless command provides scanning/reporting,
+not source move/removal or a working-directory sandbox. Saved tree paths remain labels, not extra
+filesystem authority. Source traversal uses the no-follow mount/identity guards; export uses an
+exclusive temporary sibling and atomically replaces only the selected report. The native validation
+and measurement CLIs accept explicit evidence destinations while creating their own source fixtures.
+Six pythonsecurity:S8707 findings were individually reviewed as accepted local capabilities, with
+per-issue reasons retained in SonarCloud and sonar-20261009-cli-review.json. They are accepted decisions,
+not code repairs or false-positive dismissals. Rules, source scope and gate thresholds remain active.
+Historical analysis snapshots can retain ERROR after issue review; the live project/PR gate endpoint
+reflects the reviewed state. Require matching current PR revision and completed fresh analysis, the
+analysisId gate, the live PR gate and current GitHub checks before merge.

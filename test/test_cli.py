@@ -51,6 +51,32 @@ def test_console_comparison_prints_the_biggest_changes(tmp_path: Path, capsys) -
     assert documents[1]["changes"][0]["change"] == 6
 
 
+def test_explicit_paths_outside_invocation_directory_preserve_unselected_sources(tmp_path, monkeypatch, capsys):
+    invocation, source, reports = (tmp_path / name for name in ("invocation", "source", "reports"))
+    for folder in (invocation, source, reports):
+        folder.mkdir()
+    selected, unselected = source / "選取.txt", tmp_path / "unselected.txt"
+    selected.write_bytes(b"old")
+    unselected.write_bytes(b"unselected source must remain intact")
+    export.export_json(scan(source).root, reports / "baseline.json")
+    selected.write_bytes(b"current selected data")
+    identity = selected.stat().st_ino
+    baseline = (reports / "baseline.json").read_bytes()
+    monkeypatch.chdir(invocation)
+    assert cli.main(["scan", "../source", "--compare", "../reports/baseline.json",
+                     "--json", "../reports/current.json"]) == cli.OK
+    output = capsys.readouterr().out
+    documents = [json.loads(line) for line in output.splitlines()]
+    assert documents[0]["root"] == str(source) and documents[0]["files"] == 1
+    assert documents[1]["changes"][0]["change"] == len(b"current selected data") - len(b"old")
+    assert "unselected.txt" not in output
+    assert selected.read_bytes() == b"current selected data" and selected.stat().st_ino == identity
+    assert unselected.read_bytes() == b"unselected source must remain intact"
+    assert (reports / "baseline.json").read_bytes() == baseline
+    assert set(path.name for path in reports.iterdir()) == {"baseline.json", "current.json"}
+    assert list(invocation.iterdir()) == []
+
+
 def test_exclusions_produce_partial_coverage_and_exit_one(tmp_path: Path, capsys) -> None:
     (tmp_path / "skipped").mkdir()
     assert cli.main(["scan", str(tmp_path), "--exclude", "skipped"]) == cli.INCOMPLETE
