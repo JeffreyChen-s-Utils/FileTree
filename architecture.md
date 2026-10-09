@@ -40,7 +40,10 @@ explicit live/finished/incomplete coverage; `result_navigation.py` synchronizes 
 dropdown with existing result-page indexes and hides unavailable comparisons. Its `AnalysisTabs`
 minimum geometry follows the active page, so inactive search controls cannot squeeze the tree.
 `results_view.py` retains the shared tree/analysis selection and selected-folder scope above a
-noncollapsible splitter. The welcome content scrolls; an explicit path Scan button and Enter share
+noncollapsible splitter. `ResultsView.restore_splitter` restores valid saved state before first
+display and marks the initial layout established, preserving saved proportions while disabling legacy
+pane collapse. Invalid saved state leaves first-display defaults available. The welcome content
+scrolls; an explicit path Scan button and Enter share
 one enabled condition under the existing operation guard. `scan_bar.py` owns only a visible-page
 one-second elapsed timer and a plain-text elided path; cooperative pause/analysis/stop feedback does
 not join workers or query native storage. New presentation work is bounded, stays on the GUI thread

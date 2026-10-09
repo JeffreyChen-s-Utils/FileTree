@@ -17,7 +17,7 @@ import time
 from collections.abc import Callable, Mapping, Sequence
 
 from PySide6.QtCore import (
-    QItemSelectionModel, QModelIndex, QPoint, QSettings, QSortFilterProxyModel, Qt, QTimer, Signal,
+    QByteArray, QItemSelectionModel, QModelIndex, QPoint, QSettings, QSortFilterProxyModel, Qt, QTimer, Signal,
 )
 from PySide6.QtGui import QFont, QFontMetrics, QResizeEvent, QShowEvent
 from PySide6.QtWidgets import (
@@ -212,6 +212,14 @@ class ResultsView(QWidget):
     def outcome(self) -> ScanOutcome | None:
         """The scan shown."""
         return self._outcome
+
+    def restore_splitter(self, state: QByteArray) -> bool:
+        """Restore a valid saved layout without first-display defaults replacing it; keep both panes available."""
+        restored = self.splitter.restoreState(state)
+        if restored:
+            self._splitter_initialized = True
+        self.splitter.setChildrenCollapsible(False)
+        return restored
 
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""

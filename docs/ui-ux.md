@@ -26,7 +26,9 @@ waiting without inventing a completion percentage or implying that an incomplete
   comparison pages stay absent from both until available. Keyboard selection, menu shortcuts,
   comparison reveals and cross-view selections synchronize with the original page indexes.
 - **Analysis workspace:** the tree and current analysis share a noncollapsible splitter, initially
-  about 45% / 55% of its actual width. Later user resizing is retained within the tab. Inactive pages'
+  about 45% / 55% of its actual width unless a valid saved split is restored. Later user resizing is
+  retained within the tab and the saved split survives reopening. Legacy saved states cannot restore
+  collapsible panes; both the tree and analysis remain available. Inactive pages'
   minimum widths do not squeeze the chart's tree pane; the active page retains its control minimum.
   Selected-folder list scope stays above the views. A short hint explains when whole-scan analysis
   lists will become available.

@@ -11,6 +11,7 @@ from test_gui import _wait, window as window  # noqa: PLC0414 - shared pytest fi
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.scanner import ScanProgress, scan
 from je_file_tree.gui import i18n
+from je_file_tree.gui.app import create_window
 from je_file_tree.gui.main_window import RESULTS_PAGE
 from je_file_tree.gui.results_view import CHANGES_TAB, CHART_TAB, LARGEST_TAB, PROBLEMS_TAB, SEARCH_TAB
 from je_file_tree.gui.result_overview import ResultOverview
@@ -119,9 +120,10 @@ def test_scan_feedback_ticks_during_a_stalled_read_and_retains_the_full_plain_pa
         bar.deleteLater()
 
 
-def test_home_scrolls_many_cached_drives_and_preserves_literal_recent_paths(window, qapp):
+def test_home_scrolls_many_cached_drives_and_preserves_literal_recent_paths(window, qapp, monkeypatch):
+    monkeypatch.setattr("je_file_tree.gui.welcome.drives", lambda: [])
     page = window.welcome
-    _wait(qapp, lambda: page._drive_worker is None)
+    _wait(qapp, lambda: not page._drive_timer.isActive() and page._drive_worker is None)
     page.drive_rows = tuple(DriveSnapshot(f"/owned/{index}", f"Drive {index}", 1000, 400) for index in range(24))
     page.set_recent(["/owned/R&D/" + "folder/" * 50])
     page.retranslate()
@@ -135,6 +137,38 @@ def test_home_scrolls_many_cached_drives_and_preserves_literal_recent_paths(wind
     page.scan_requested.connect(requested.append)
     button.click()
     assert requested == page._recent
+
+
+def test_first_result_display_preserves_the_saved_tree_analysis_split(window, qapp, sample_tree):
+    outcome = analyse(scan(sample_tree))
+    window.resize(1840, 900)
+    window.results.show_outcome(outcome)
+    window.pages.setCurrentIndex(RESULTS_PAGE)
+    window.show()
+    _wait(qapp, lambda: window.results._splitter_initialized)
+    window.results.splitter.setSizes([1000, 650])
+    qapp.processEvents()
+    before = window.results.splitter.sizes()
+    window.results.splitter.setChildrenCollapsible(True)  # old saved layouts allowed collapsing either pane
+    window.settings.setValue("geometry", window.saveGeometry())
+    window.settings.setValue("splitter", window.results.splitter.saveState())
+    restored = create_window(window.settings)
+    try:
+        restored.resize(window.size())  # geometry restoration may clamp to the platform's virtual screen
+        restored.results.show_outcome(outcome)
+        restored.pages.setCurrentIndex(RESULTS_PAGE)
+        restored.show()
+        _wait(qapp, lambda: restored.results._splitter_initialized)
+        after = restored.results.splitter.sizes()
+        assert after[0] / sum(after) == pytest.approx(before[0] / sum(before), abs=.01)
+        assert not restored.results.splitter.childrenCollapsible()
+        restored.results.hide()
+        restored.results.show()
+        qapp.processEvents()
+        assert restored.results.splitter.sizes() == after
+    finally:
+        restored.close()
+        restored.deleteLater()
 
 
 def test_explicit_path_scan_button_and_enter_respect_empty_input_and_review_guard(window, monkeypatch):

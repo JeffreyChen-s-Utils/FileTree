@@ -1060,7 +1060,7 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         splitter = self.settings.value("splitter")
         if isinstance(splitter, QByteArray):
-            self.results.splitter.restoreState(splitter)
+            self.results.restore_splitter(splitter)
         self._actions["hidden"].setChecked(read_flag(self.settings, "include_hidden", True))
         self._actions["ask_admin"].setChecked(read_flag(self.settings, ASK_ADMIN_KEY, True))
         self._actions["gentle"].setChecked(read_flag(self.settings, "gentle_scan", False))
