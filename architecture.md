@@ -1314,18 +1314,15 @@ versioned documentation metadata and root launcher/project metadata are main sou
 test directory is test code. No exclusion, suppression or reduced quality gate is configured.
 The source/test paths are disjoint and include all currently tracked Python/PowerShell/JSON/YAML/shell
 and TOML files. Adding another source root requires extending this explicit source list.
-Sonar's [automatic analysis configuration](https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis)
-documents default-branch activation; placing the file on dev alone does not prove the service used it.
-Its [initial scope contract](https://docs.sonarsource.com/sonarqube-cloud/managing-your-projects/project-analysis/setting-analysis-scope/setting-initial-scope)
-distinguishes test analysis from source metrics and billed LOC. The current rejected analysis must
-be replaced by observed fresh API evidence before claiming quota or gate recovery. This configuration
-neither changes an account/plan nor triggers a release, default-branch merge or paid action.
-Observed PR analysis at d138131 subsequently reported 36,803 lines (Python 34,951), down from 53,297,
-but task AaEccZ39tYWSxWQdgf3A still refused the organization's 50,000-line allowance with current
-organization usage 38,415. The reduced Python count is consistent with test classification; scanner
-context was unavailable and analysis never completed. Retained sonar-20261009-classification.json
-distinguishes this observation from a successful fresh gate. Quota resolution remains an owner/admin
-decision; source scope and quality gates stay intact.
+Authenticated scanner context confirms these main roots and sonar.tests=test are active. The GitHub
+ALM binding points to the public FileTree repository. With the owner's approval, the project visibility
+was changed to public using POST /api/projects/update_visibility and verified via /api/components/show.
+Sonar's [subscription contract](https://docs.sonarsource.com/sonarqube-cloud/administering-sonarcloud/managing-subscription/subscription-plans)
+places public projects outside the private LOC allowance. Source exclusions, issue suppressions and
+quality-gate changes are not quota remedies. Before merge, require a completed fresh analysisId,
+the current revision/PR and API findings/gate evidence. The credential stays in the process environment;
+sonar-20261009-visibility.json records the pre-approval diagnosis and sonar-20261009-public.json records
+the approved change and verification. Neither snapshot contains credential values.
 
 Native background validation atomically persists each phase before workspace/tray/service creation,
 scheduled work, recurring review, optional notification, capture and quit/join calls. A failure retains

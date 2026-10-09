@@ -281,7 +281,7 @@ python -m je_file_tree.cli scan C:\ --also D:\ --json drives.json
 
 SonarCloud 自动分析使用 [.sonarcloud.properties](../.sonarcloud.properties) 区分主要源与 `test/`。程序、工具、工作流程及版本控制元数据仍纳入分析，未设置排除或修改质量门槛。服务文档要求从默认分支启用，因此只在 dev 新增文件不能证明额度问题已解决；须以最新 API 结果确认分析完成及质量门槛。
 
-[最新观测到的 PR 分析](../docs/updates/sonar-20261009-classification.json) 报告 36,803 行，仍因组织额度遭拒。须由管理员处理额度，并确认新的分析完成及质量门槛。
+[已验证的可见性／分析配置诊断](../docs/updates/sonar-20261009-visibility.json) 确认源／测试配置已生效，并发现公开 GitHub 仓库绑定了私有 SonarCloud 项目。经所有者同意，项目已改为公开（[配置验证](../docs/updates/sonar-20261009-public.json)）；公开项目不占私有 LOC 额度。仍须确认新的分析完成及质量门槛。
 
 只使用标准库的 `core/mft.py` 基础模块会有界限地解析 NTFS 3.1 原始 FILE 记录、名称、属性列表、非驻留区段及大小／分配元数据。它拒绝不完整或不支持的记录、保留重用序号，而且不保留驻留的主文件／命名流内容。Python API 可明确指定 `ScanOptions(experimental_mft=True)` 进行顺序元数据审核，普通扫描仍为默认。`core/mft_reader.py` 使用已有的管理员令牌，提供本地固定 NTFS 磁盘的有界限只读访问，核对磁盘几何及扩展记录的序号／归属，不请求提权或修改权限。
 
