@@ -7,7 +7,7 @@ import threading
 import uuid
 
 import pytest
-from PySide6.QtCore import QSettings, Qt
+from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import QDialog, QMessageBox
 
 from test_background_gui import _enable, monitored as _monitored
@@ -202,10 +202,13 @@ def test_expired_or_canceled_request_never_creates_a_scan_tab(report, monitored,
 def test_cancel_or_close_during_fresh_scan_discards_review_intent(report, monitored, qapp, monkeypatch, close):
     monitor, source, current = report
     proof, entered, ended, reviewed = _proof(source), threading.Event(), threading.Event(), []
+    release = threading.Event()
 
     def blocking(root, **kwargs):
         entered.set()
         kwargs["cancel"].wait()
+        if close:
+            assert release.wait(5), "closing blocked the GUI release timer"
         ended.set()
         raise ScanCancelledError(scan(root))
 
@@ -214,13 +217,19 @@ def test_cancel_or_close_during_fresh_scan_discards_review_intent(report, monito
     owner = monitored.add_tab()
     RecurringFlow(monitor, owner, current).start()
     assert entered.wait(5)
-    if close:
-        monitored.close_tab(monitored.tabs.indexOf(owner))
-    else:
-        owner.stop_scan(wait=True)
-    assert ended.is_set()
-    qapp.processEvents()
-    assert not reviewed and _proof(source) == proof and not monitored.operations.busy
+    try:
+        if close:
+            monitored.close_tab(monitored.tabs.indexOf(owner))
+            assert owner._closing and not ended.is_set()
+            QTimer.singleShot(0, release.set)
+            _wait(qapp, lambda: monitored.tabs.count() == 1)
+        else:
+            owner.stop_scan(wait=True)
+        assert ended.is_set()
+        qapp.processEvents()
+        assert not reviewed and _proof(source) == proof and not monitored.operations.busy
+    finally:
+        release.set()
 
 
 def test_rule_change_between_items_is_checked_on_the_operation_thread(report, monitored, monkeypatch):
