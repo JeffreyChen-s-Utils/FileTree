@@ -21,6 +21,9 @@ Every change must pass, before it is committed:
    translations** in `README/` (Traditional/Simplified Chinese, Japanese and Korean) in the same commit, with the same
    sections, tables and commands. `test/test_readme_parity.py` checks the structure; the content is a
    manual check.
+   Keep READMEs as short, plain-language project introductions with installation and basic use.
+   Put detailed workflows, implementation constraints and validation evidence in `docs/guide.md`
+   and its four `docs/guide_<language>.md` translations or the relevant technical/update documents.
 4. A change to what the window looks like reruns `py -3 tools/make_screenshots.py` so the README pictures
    stay current. Never edit the pictures by hand.
 5. A change to how FileTree is built into a stand-alone program (`tools/build_nuitka.py`, its options, a new

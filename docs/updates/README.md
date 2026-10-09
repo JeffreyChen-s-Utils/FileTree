@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261010-01 | 2026-10-10 | Simplify project introductions across all five languages | #docs #readme | [2026-10-c](2026-10-c.md) |
 | U-20261009-32 | 2026-10-09 | Publish Windows releases as complete program folders | #release #windows #distribution | [2026-10-c](2026-10-c.md) |
 | U-20261009-31 | 2026-10-09 | Validate recurring-review closure against asynchronous shutdown | #incident #tests #gui | [2026-10-c](2026-10-c.md) |
 | U-20261009-30 | 2026-10-09 | 整合開發工具依賴 PR 並同步 Ruff CI 版本 | #migration #dependencies #ci #validation | [2026-10-c](2026-10-c.md) |
