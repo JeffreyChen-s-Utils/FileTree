@@ -207,6 +207,12 @@ class FolderTreeModel(QAbstractItemModel):
         row = self._row_of(node)
         return self.createIndex(row, 0, node) if row >= 0 else QModelIndex()
 
+    def indexes_for(self, nodes: Iterable[Node]) -> list[QModelIndex]:
+        """Find column-zero indexes in input order, batching wide sibling searches and keeping invalid slots."""
+        entries = list(nodes)
+        self._prime_rows([(node, 0) for node in entries])
+        return [self.index_for(node) for node in entries]
+
     def remove(self, node: Node) -> None:
         """Take ``node`` out of the tree after it was deleted from disk, updating every total above it."""
         self.remove_many((node,))

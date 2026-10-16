@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import threading
 
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QObject, QSortFilterProxyModel, QThread, QTimer, Qt, Signal
+from PySide6.QtCore import (
+    QItemSelection, QItemSelectionModel, QModelIndex, QObject, QSortFilterProxyModel, QThread, QTimer, Qt, Signal,
+)
 from PySide6.QtWidgets import QLineEdit, QTreeView
 
 from je_file_tree.core.node import Node
@@ -176,7 +178,8 @@ class TreeFilter(QObject):
             self._switch(True)
 
     def _switch(self, filtered: bool) -> None:
-        selected = [index.data(NODE_ROLE) for index in self.tree.selectionModel().selectedRows()]
+        selected = [node for index in self.tree.selectionModel().selectedRows()
+                    if isinstance(node := index.data(NODE_ROLE), Node)]
         current = self.tree.currentIndex().data(NODE_ROLE)
         state = self.tree.header().saveState()
         self._switching = True
@@ -192,10 +195,15 @@ class TreeFilter(QObject):
                 if index.isValid():
                     self.tree.expand(index)
             selection = self.tree.selectionModel()
-            for node in selected:
-                index = self.index_for(node)
+            picked = QItemSelection()
+            last_column = self.tree.model().columnCount() - 1
+            for source in self.source.indexes_for(selected):
+                index = self.proxy.mapFromSource(source) if filtered else source
                 if index.isValid():
-                    selection.select(index, selection.SelectionFlag.Select | selection.SelectionFlag.Rows)
+                    picked.select(index, index.siblingAtColumn(last_column))
+            # 100k records / 1k selected took 3.6–4.2 s with individual lookup/selection (2026-10-16).
+            if not picked.isEmpty():
+                selection.select(picked, selection.SelectionFlag.Select)
             if current is not None:
                 selection.setCurrentIndex(self.index_for(current), selection.SelectionFlag.NoUpdate)
             if not filtered:

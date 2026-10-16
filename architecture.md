@@ -79,6 +79,12 @@ then defer their destruction with `deleteLater`. Later caller-supplied models ar
 when parented to the tree; another view may still use them. Filter switching restores the current
 node, visible selection, expansion and header state before normal interaction resumes.
 
+`FolderTreeModel.indexes_for` preserves input order and invalid positions while sharing the existing
+requested-sibling row lookup. Filter switching captures only real `NODE_ROLE` values, maps the batch
+to visible indexes and applies one complete-column `QItemSelection`; the current index is restored
+separately without another selection update. Virtual archive rows expose no filesystem node and are
+excluded before mapping, preventing the old `None.is_in` failure without authorizing file actions.
+
 Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
 scope, starting/replacing a result or closing invalidates the active reply before retiring its
 worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker

@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-11 | 2026-10-16 | Restore filtered row selections in one scoped batch | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-10 | 2026-10-16 | Retire generated selection models when tree filters switch | #snapshot #fix #gui #resources #filter | [2026-10-c](2026-10-c.md) |
 | U-20261016-09 | 2026-10-16 | Repaint tree units and capacity without structural relayouts | #snapshot #fix #gui #performance #settings | [2026-10-c](2026-10-c.md) |
 | U-20261016-08 | 2026-10-16 | Preserve each owned APFS detach attempt before later refusal | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |
