@@ -970,6 +970,18 @@ and model changes are blocked during the batch; Stop cancels remaining entries a
 These are immediate no-follow checks; Qt's path-based Trash call is not an atomic transaction with the
 identity check, so it does not provide an OS guarantee against concurrent malicious path substitution.
 
+`MainWindow._without_managed` partitions recorded Nodes once instead of searching a refused list
+for every survivor. `_show_skipped` retains existing notices for at most eight entries with at most
+1,024 characters and no markup-like text; other preflight, invalidated-root and worker-skip batches
+go to `gui.skipped_dialog`. Its lazy
+`SkippedModel` exposes all captured pairs in original order, formats only requested paths/reasons
+and has no file-operation Node roles. Escape tooltip payloads for Qt rich text while preserving
+literal markup, tabs and newlines; details and clipboard use raw plain text. The modal table uses
+the existing yielding, quoted TSV clipboard capture. Register it in `_path_dialogs` to serialize
+source actions; shutdown cancels pending capture. Returning during owner closing aborts preflight,
+and dismissing the notice does not grant operation approval. No source reads, moves or result cap
+are added by this display path.
+
 **Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
 and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
 and verified-copy proof restriction. Cleanup reasons are also narrowed to that reviewed selection;

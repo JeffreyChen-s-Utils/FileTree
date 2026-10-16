@@ -11,6 +11,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "trash_skipped_title": "Skipped entries",
+    "trash_skipped_summary": "Skipped entries: {count}. Rescan their folders before trying again.",
+    "trash_skipped_hint": "Select a row for its full path and reason. {shortcut} copies selected rows.",
     "closing_workers": "Closing FileTree: stopping background work; waiting for current filesystem calls to finish…",
     "elevate_python_tip": (
         "Running from Python: Windows UAC displays Python, the executable being elevated. "
@@ -1449,6 +1452,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "trash_skipped_title": "已略過的項目",
+    "trash_skipped_summary": "已略過 {count} 個項目，請重新掃描其資料夾後再試。",
+    "trash_skipped_hint": "選取一列可查看完整路徑與原因。使用 {shortcut} 複製選取的資料列。",
     "closing_workers": "正在關閉 FileTree：停止背景工作，等待目前的檔案系統呼叫完成…",
     "elevate_python_tip": (
         "目前由 Python 執行：Windows UAC 會顯示實際提升權限的 Python 執行檔。"
@@ -2754,6 +2760,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "trash_skipped_title": "已跳过的项目",
+    "trash_skipped_summary": "已跳过 {count} 个项目，请重新扫描其文件夹后再试。",
+    "trash_skipped_hint": "选择一行可查看完整路径与原因。使用 {shortcut} 复制选中的行。",
     "closing_workers": "正在关闭 FileTree：停止后台工作，等待当前文件系统调用完成…",
     "elevate_python_tip": (
         "当前由 Python 运行：Windows UAC 会显示实际提升权限的 Python 可执行文件。"
@@ -4071,6 +4080,9 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "trash_skipped_title": "スキップした項目",
+    "trash_skipped_summary": "{count} 件をスキップしました。再試行する前にフォルダーを再スキャンしてください。",
+    "trash_skipped_hint": "行を選ぶと完全なパスと理由を表示します。{shortcut} で選択行をコピーします。",
     "closing_workers": (
         "FileTree を終了しています：バックグラウンド処理を停止し、"
         "現在のファイルシステム呼び出しの完了を待っています…"),
@@ -5731,6 +5743,9 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "trash_skipped_title": "건너뛴 항목",
+    "trash_skipped_summary": "{count}개 항목을 건너뛰었습니다. 다시 시도하기 전에 해당 폴더를 다시 스캔하세요.",
+    "trash_skipped_hint": "행을 선택하면 전체 경로와 이유를 표시합니다. {shortcut}로 선택한 행을 복사합니다.",
     "closing_workers": "FileTree 종료 중: 백그라운드 작업을 중지하고 현재 파일 시스템 호출이 끝나기를 기다리는 중…",
     "elevate_python_tip": (
         "Python으로 실행 중: Windows UAC에는 권한을 높이는 실행 파일인 Python이 표시됩니다. "

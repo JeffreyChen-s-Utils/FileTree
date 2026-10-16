@@ -56,6 +56,7 @@ from je_file_tree.gui.copy_dialog import CopyDialog
 from je_file_tree.gui.duplicate_link_dialog import DuplicateLinksDialog
 from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.gui.report_dialog import ReportDialog
+from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -87,6 +88,7 @@ LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
+_MAX_REFUSAL_NOTICE = 1024
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
@@ -633,11 +635,31 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
     def _without_managed(self, nodes: list[Node]) -> list[Node]:
-        blocked = [node for node in nodes if system_file(node.path) is not None]
+        # 10k managed refusals: the old full warning label took 5.14 s to display.
+        blocked, allowed = [], []
+        for node in nodes:
+            (blocked if system_file(node.path) is not None else allowed).append(node)
         if blocked:
-            lines = '\n'.join(f"{node.path}: {tr('trash_skip_system_managed')}" for node in blocked)
-            QMessageBox.warning(self, tr('trash_confirm_title'), tr('trash_skipped', names=lines))
-        return [node for node in nodes if node not in blocked]
+            self._show_skipped([(node, "system_managed") for node in blocked])
+        return allowed
+
+    def _show_skipped(self, skipped: Sequence[tuple[Node, str]]) -> None:
+        """Keep small notices familiar; show every large refusal in a lazy read-only table."""
+        if len(skipped) <= _LISTED_NAMES:
+            lines = "\n".join(f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in skipped)
+            text = tr("trash_skipped", names=lines)
+            if len(text) <= _MAX_REFUSAL_NOTICE and "<" not in text and ">" not in text:
+                QMessageBox.warning(self, tr("trash_confirm_title"), text)
+                return
+        dialog = SkippedEntriesDialog(skipped, self)
+        self._path_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
+            dialog.deleteLater()
 
     def _summary_ready(self, summary: Summary) -> None:
         self.results.apply_summary(summary)
@@ -663,6 +685,8 @@ class MainWindow(QMainWindow):
                                             or not self._proposal_current(proposal))):
             return
         chosen = self._without_managed(chosen)
+        if self._closing:
+            return
         reasons = self.results.cleanup.reasons_for(chosen) if proposal is None else proposal.reasons
         if reasons and chosen:
             chosen = self._review_cleanup(chosen, reasons, root)
@@ -676,8 +700,7 @@ class MainWindow(QMainWindow):
         if answer != QMessageBox.StandardButton.Yes or proposal is not None and not self._proposal_current(proposal):
             return
         if self._worker is not None or self.operation_busy or self.results.tree_model.root is not root:
-            lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
+            self._show_skipped([(node, "outside") for node in chosen])
             return
         if self.results.duplicates.running:
             self.results.duplicates.stop()
@@ -767,8 +790,7 @@ class MainWindow(QMainWindow):
                        tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
             QMessageBox.warning(self, tr("trash_confirm_title"), message + self._holder_lines(result))
         if result.skipped:
-            lines = [f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in result.skipped]
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names="\n".join(lines)))
+            self._show_skipped(result.skipped)
         if result.journal_errors:
             QMessageBox.warning(self, tr("action_recent_actions"),
                                 tr("journal_write_failed", reason="\n".join(result.journal_errors)))
