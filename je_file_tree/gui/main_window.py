@@ -57,6 +57,8 @@ from je_file_tree.gui.duplicate_link_dialog import DuplicateLinksDialog
 from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
+from je_file_tree.gui.entry_report import EntryReportDialog
+from je_file_tree.gui.failed_dialog import FailedEntriesDialog
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -651,7 +653,10 @@ class MainWindow(QMainWindow):
             if len(text) <= _MAX_REFUSAL_NOTICE and "<" not in text and ">" not in text:
                 QMessageBox.warning(self, tr("trash_confirm_title"), text)
                 return
-        dialog = SkippedEntriesDialog(skipped, self)
+        self._show_entry_report(SkippedEntriesDialog(skipped, self))
+
+    def _show_entry_report(self, dialog: EntryReportDialog) -> None:
+        """Own a complete read-only report until dismissal, serializing source actions."""
         self._path_dialogs.add(dialog)
         self._update_actions()
         try:
@@ -786,9 +791,7 @@ class MainWindow(QMainWindow):
                     and removed.now == outcome.now):
                 self.results.forget(moved, removed=removed)
         if failed:
-            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
-                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
-            QMessageBox.warning(self, tr("trash_confirm_title"), message + self._holder_lines(result))
+            self._show_failed(result)
         if result.skipped:
             self._show_skipped(result.skipped)
         if result.journal_errors:
@@ -801,6 +804,24 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(done + ("\n" + unavailable if unavailable else ""), _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
         QTimer.singleShot(0, self._rescan_after_trash)
+
+    def _show_failed(self, result: MoveResult) -> None:
+        """Keep brief warnings; retain all large/limited diagnostic details in a lazy report."""
+        failed = result.failed
+        if not failed:
+            return
+        reports = (result.holders.get(node) for node in failed)
+        brief = len(failed) <= _LISTED_NAMES and all(
+            report is None or (not report.error and len(report.holders) <= _LISTED_NAMES) for report in reports)
+        if brief:
+            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
+                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
+            text = message + self._holder_lines(result)
+            if len(text) <= _MAX_REFUSAL_NOTICE and "<" not in text and ">" not in text:
+                QMessageBox.warning(self, tr("trash_confirm_title"), text)
+                return
+        # 1k failures: the old 431k-character label took 2.10 s and omitted query errors.
+        self._show_entry_report(FailedEntriesDialog(failed, result.holders, self))
 
     def _report_copy_errors(self, result: MoveResult | None) -> None:
         if result is not None and result.copy_errors:

@@ -2,10 +2,12 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #99 (native SMB disconnect timeout), then #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #100 (mocked PowerShell 5 helper timeouts), then #99 (native SMB disconnect timeout), #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
+
+- **#100** (P1) Diagnose Windows PowerShell 5 helper-test timeouts in CI run 38922008928: Windows/Python 3.14 has six 20-second subprocess timeouts and 3.10 has one in `test_windows_share_script.py`. Capture bounded startup/import/parse/helper-phase outputs before choosing a fix. Native owned SMB passes and these mocked helper failures do not establish #99's native 30-second timeout cause; retain autoload isolation, exact ownership assertions and subprocess deadlines.
 
 - **#99** (P1) Obtain an instrumented native timeout trace and identify the wait in `tools/windows_share_probe.py::_disconnect`. Original CI run 38908715123 / job 116998797981 did not complete disconnect/source post-verification. Require the helper's step history, actual exit/timeout and bounded outputs from a reproduced 30-second wait before choosing a fix; preserve bounded execution and exact share/root/mapping ownership checks. Modeled timeouts and successful native retries cannot establish the cause.
 

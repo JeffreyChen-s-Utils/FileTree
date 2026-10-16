@@ -983,6 +983,14 @@ source actions; shutdown cancels pending capture. Returning during owner closing
 and dismissing the notice does not grant operation approval. No source reads, moves or result cap
 are added by this display path.
 
+`gui.failed_dialog.FailedModel` supplies the same report viewport with all failed Nodes in
+result order and their captured LockReports. It formats diagnostics only on request, keeps every
+observed name/PID, and distinguishes missing/incomplete visibility and raw query errors. These
+observations do not prove the native move failure cause. `_show_failed` preserves a brief notice
+only when count, process count, query-error state, text length and literal text permit it; other
+failures use the complete table. `_show_entry_report` centralizes modal ownership/capture cleanup
+for both report types. No diagnostic query, process action, move retry or authority is introduced.
+
 **Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
 and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
 and verified-copy proof restriction. Cleanup reasons are also narrowed to that reviewed selection;

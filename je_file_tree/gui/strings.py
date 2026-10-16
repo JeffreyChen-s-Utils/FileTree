@@ -11,6 +11,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "trash_failed_title": "Entries not moved",
+    "trash_failed_summary": "Failed entries: {count}. Review the full paths and diagnostic information.",
+    "trash_holders_error": "Open-file query error: {reason}",
     "trash_skipped_title": "Skipped entries",
     "trash_skipped_summary": "Skipped entries: {count}. Rescan their folders before trying again.",
     "trash_skipped_hint": "Select a row for its full path and reason. {shortcut} copies selected rows.",
@@ -1452,6 +1455,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "trash_failed_title": "未能移動的項目",
+    "trash_failed_summary": "有 {count} 個項目移動失敗。請檢視完整路徑與診斷資訊。",
+    "trash_holders_error": "開啟檔案的行程查詢錯誤：{reason}",
     "trash_skipped_title": "已略過的項目",
     "trash_skipped_summary": "已略過 {count} 個項目，請重新掃描其資料夾後再試。",
     "trash_skipped_hint": "選取一列可查看完整路徑與原因。使用 {shortcut} 複製選取的資料列。",
@@ -2760,6 +2766,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "trash_failed_title": "未能移动的项目",
+    "trash_failed_summary": "有 {count} 个项目移动失败。请查看完整路径与诊断信息。",
+    "trash_holders_error": "打开文件的进程查询错误：{reason}",
     "trash_skipped_title": "已跳过的项目",
     "trash_skipped_summary": "已跳过 {count} 个项目，请重新扫描其文件夹后再试。",
     "trash_skipped_hint": "选择一行可查看完整路径与原因。使用 {shortcut} 复制选中的行。",
@@ -4080,6 +4089,9 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "trash_failed_title": "移動できなかった項目",
+    "trash_failed_summary": "失敗した項目: {count}。完全なパスと診断情報を確認してください。",
+    "trash_holders_error": "ファイル使用プロセスの照会エラー: {reason}",
     "trash_skipped_title": "スキップした項目",
     "trash_skipped_summary": "{count} 件をスキップしました。再試行する前にフォルダーを再スキャンしてください。",
     "trash_skipped_hint": "行を選ぶと完全なパスと理由を表示します。{shortcut} で選択行をコピーします。",
@@ -5743,6 +5755,9 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "trash_failed_title": "이동하지 못한 항목",
+    "trash_failed_summary": "실패한 항목: {count}개. 전체 경로와 진단 정보를 확인하세요.",
+    "trash_holders_error": "파일 사용 프로세스 조회 오류: {reason}",
     "trash_skipped_title": "건너뛴 항목",
     "trash_skipped_summary": "{count}개 항목을 건너뛰었습니다. 다시 시도하기 전에 해당 폴더를 다시 스캔하세요.",
     "trash_skipped_hint": "행을 선택하면 전체 경로와 이유를 표시합니다. {shortcut}로 선택한 행을 복사합니다.",
