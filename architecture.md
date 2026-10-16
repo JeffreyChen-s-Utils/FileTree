@@ -1059,7 +1059,11 @@ The owned macOS image tool retries hdiutil detach exit 16 at most three times, r
 private image/device/mountpoint before each call. Other native failures and ownership changes refuse
 immediately; no force option or host unmount is used. Native image absence and unmounted fixture root
 must still be verified before cleanup. Failed APFS cleanup retains bounded native stdout/stderr and
-the disposable scratch path; retained fixtures never become a successful cleanup claim.
+the disposable scratch path; retained fixtures never become a successful cleanup claim. The phase
+JSON also keeps an ordered `detach_attempts` list (at most three attempts), distinguishing ownership
+refusal, native failure/success and final absence-verification failure. Each native failure retains
+its real code and capped stdout/stderr even if a later ownership check refuses before another call.
+Diagnostics add no native commands, retry authority or cleanup exception.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;

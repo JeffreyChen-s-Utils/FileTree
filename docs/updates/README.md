@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-08 | 2026-10-16 | Preserve each owned APFS detach attempt before later refusal | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |
 | U-20261016-07 | 2026-10-16 | Batch completed move updates without repeated tree layouts | #snapshot #fix #gui #cleanup #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-06 | 2026-10-16 | Batch tree selection remapping and reject obsolete row scopes | #fix #gui #performance #indexes | [2026-10-c](2026-10-c.md) |
 | U-20261016-05 | 2026-10-16 | Verify all fourteen jobs and native APFS cleanup on d0c2455 | #snapshot #ci #validation #macos | [2026-10-c](2026-10-c.md) |

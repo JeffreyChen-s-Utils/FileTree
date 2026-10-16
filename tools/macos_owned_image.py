@@ -18,6 +18,7 @@ _PLIST_LIMIT = 8 * 1024 * 1024
 _DEVICE = re.compile(r"/dev/disk[0-9]+\Z")
 _DETACH_ATTEMPTS = 3
 _DEVICE_BUSY = 16
+_NATIVE_ERROR_LIMIT = 65536
 
 
 def entities(value: dict) -> list[dict]:
@@ -59,6 +60,19 @@ def plist(arguments: list[str]) -> dict:
     return value
 
 
+def native_failure(error: subprocess.CalledProcessError) -> dict[str, object]:
+    """Retain bounded native failure output even when a later ownership check refuses cleanup."""
+    return {"returncode": error.returncode,
+            "stdout": (error.stdout or b"")[:_NATIVE_ERROR_LIMIT].decode("utf-8", errors="replace"),
+            "stderr": (error.stderr or b"")[:_NATIVE_ERROR_LIMIT].decode("utf-8", errors="replace")}
+
+
+def _detach_failure(record: dict[str, object], phase: str, error: Exception) -> None:
+    record.update(phase=phase, error=str(error)[:2048])
+    if isinstance(error, subprocess.CalledProcessError):
+        record["native_error"] = native_failure(error)
+
+
 def _mountpoint_diagnostic(entries: list[dict], allowed: set[Path]) -> str:
     observed = "; ".join(str(entry.get("dev-entry", "<missing>"))[:128] + " -> "
                          + str(entry.get("mount-point", "<unmounted>"))[:512] for entry in entries[:8])
@@ -84,6 +98,7 @@ class OwnedImage:
         self.device, self.volume_uuid = "", ""
         self.attached = False
         self.attach_attempted = False
+        self.detach_attempts: list[dict[str, object]] = []
 
     def create(self) -> None:
         """Refuse overwrite: no -ov, existing image, mountpoint or block-device selector is accepted."""
@@ -153,20 +168,40 @@ class OwnedImage:
         return info
 
     def detach(self) -> None:
-        """Bound busy retries to the rechecked owned image; uncertain detach retains it without force."""
+        """Bound checked busy retries; retain each attempt's native output and any later refusal."""
+        self.detach_attempts = []
         for attempt in range(_DETACH_ATTEMPTS):
-            self.check()
+            record: dict[str, object] = {"attempt": attempt + 1, "device": self.device, "phase": "checking"}
+            self.detach_attempts.append(record)
+            try:
+                self.check()
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+                _detach_failure(record, "ownership-refused", error)
+                raise
             try:
                 command(["/usr/bin/hdiutil", "detach", self.device])
             except subprocess.CalledProcessError as error:
+                _detach_failure(record, "native-refused", error)
                 if error.returncode != _DEVICE_BUSY or attempt == _DETACH_ATTEMPTS - 1:
                     raise
-                time.sleep(.5 * (attempt + 1))
+                delay = .5 * (attempt + 1)
+                record["retry_delay_seconds"] = delay
+                time.sleep(delay)
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+                _detach_failure(record, "native-refused", error)
+                raise
             else:
+                record["phase"] = "native-succeeded"
+                record["native_succeeded"] = True
                 break
-        info = plist(["/usr/bin/hdiutil", "info", "-plist"])
-        require(not any(entry.get("image-path") == str(self.image) for entry in info.get("images", []))
-                and not os.path.ismount(self.root), "Owned image detach was not verified")
+        try:
+            info = plist(["/usr/bin/hdiutil", "info", "-plist"])
+            require(not any(entry.get("image-path") == str(self.image) for entry in info.get("images", []))
+                    and not os.path.ismount(self.root), "Owned image detach was not verified")
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+            _detach_failure(record, "verification-refused", error)
+            raise
+        record["phase"] = "verified"
         self.attached = False
 
     def cleanup(self) -> None:

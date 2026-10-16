@@ -134,6 +134,9 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
     image.detach()
     assert not image.attached and calls[:2] == ["check", "detach"]
     assert calls[-2:] == ["check", "detach"] and calls.count("detach") == 2
+    assert image.detach_attempts[0]["native_error"]["returncode"] == 16
+    assert image.detach_attempts[1]["phase"] == "verified"
+    assert image.detach_attempts[1]["native_succeeded"] is True
 
 
 @pytest.mark.parametrize("code", [16, 5])
@@ -155,6 +158,8 @@ def test_failed_owned_detach_is_bounded_and_never_forced(tmp_path, monkeypatch, 
     assert error.value.stderr == b"owned detach refusal" and image.attached
     assert calls.count("detach") == (3 if code == 16 else 1)
     assert calls == ["check", "detach"] * calls.count("detach")
+    assert len(image.detach_attempts) == calls.count("detach")
+    assert all(attempt["native_error"]["returncode"] == code for attempt in image.detach_attempts)
 
 
 def test_owned_detach_retries_refuse_changed_device_before_another_native_call(tmp_path, monkeypatch):
@@ -177,6 +182,126 @@ def test_owned_detach_retries_refuse_changed_device_before_another_native_call(t
     with pytest.raises(RuntimeError, match="device changed"):
         image.detach()
     assert calls == ["check", "detach", "check"] and image.attached
+
+
+def test_busy_detach_preserves_native_failure_when_retry_loses_mountpoints(tmp_path, monkeypatch):
+    image = object.__new__(owned.OwnedImage)
+    image.image, image.root = tmp_path / "owned.sparseimage", tmp_path / "volume"
+    image.name, image.volume_uuid = "FileTree-owned", "owned-volume-uuid"
+    image.device, image.attached = "/dev/disk9", True
+    image._mountpoints = {image.root}
+    monkeypatch.setattr(image, "_image_check", lambda: None)
+    monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
+    entries = [{"dev-entry": image.device, "content-hint": "GUID_partition_scheme"},
+               {"dev-entry": "/dev/disk10s1", "mount-point": str(image.root)}]
+    calls = []
+
+    def information(args):
+        calls.append(args)
+        if args == ["/usr/bin/hdiutil", "info", "-plist"]:
+            return {"images": [{"image-path": str(image.image), "system-entities": entries}]}
+        assert args == ["/usr/sbin/diskutil", "info", "-plist", str(image.root)]
+        return {"FilesystemType": "apfs", "VolumeName": image.name, "VolumeUUID": image.volume_uuid,
+                "MountPoint": str(image.root)}
+
+    def detach(args):
+        calls.append(args)
+        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        del entries[1]["mount-point"]
+        raise subprocess.CalledProcessError(16, args, output=b"disk10s1 unmounted",
+                                            stderr=b"hdiutil: couldn't eject disk9 - Resource busy")
+
+    monkeypatch.setattr(owned, "plist", information)
+    monkeypatch.setattr(owned, "command", detach)
+    monkeypatch.setattr(owned.os.path, "ismount", lambda _path: "mount-point" in entries[1])
+    with pytest.raises(RuntimeError, match="<unmounted>"):
+        image.detach()
+    assert image.attached
+    assert calls == [["/usr/bin/hdiutil", "info", "-plist"],
+                     ["/usr/sbin/diskutil", "info", "-plist", str(image.root)],
+                     ["/usr/bin/hdiutil", "detach", image.device],
+                     ["/usr/bin/hdiutil", "info", "-plist"]]
+    assert image.detach_attempts[0]["native_error"] == {
+        "returncode": 16, "stdout": "disk10s1 unmounted",
+        "stderr": "hdiutil: couldn't eject disk9 - Resource busy"}
+    assert image.detach_attempts[1]["phase"] == "ownership-refused"
+    assert "<unmounted>" in image.detach_attempts[1]["error"]
+
+
+def test_native_ownership_query_error_never_becomes_a_detach_retry(tmp_path, monkeypatch):
+    image = object.__new__(owned.OwnedImage)
+    image.device, image.attached = "/dev/disk9", True
+
+    def refuse():
+        raise subprocess.CalledProcessError(16, ["/usr/bin/hdiutil", "info", "-plist"], stderr=b"metadata busy")
+
+    monkeypatch.setattr(image, "check", refuse)
+    monkeypatch.setattr(owned, "command", lambda _args: pytest.fail("An ownership refusal reached detach"))
+    with pytest.raises(subprocess.CalledProcessError):
+        image.detach()
+    assert image.attached and len(image.detach_attempts) == 1
+    assert image.detach_attempts[0]["phase"] == "ownership-refused"
+    assert image.detach_attempts[0]["native_error"]["stderr"] == "metadata busy"
+
+
+def test_failed_post_detach_verification_retains_native_success_but_never_grants_cleanup(tmp_path, monkeypatch):
+    image = object.__new__(owned.OwnedImage)
+    image.image, image.root = tmp_path / "owned.sparseimage", tmp_path / "volume"
+    image.device, image.attached = "/dev/disk9", True
+    monkeypatch.setattr(image, "check", lambda: None)
+    monkeypatch.setattr(owned, "command", lambda _args: b"")
+    monkeypatch.setattr(owned, "plist", lambda _args: {"images": [{"image-path": str(image.image)}]})
+    with pytest.raises(RuntimeError, match="not verified"):
+        image.detach()
+    assert image.attached
+    assert image.detach_attempts[0]["phase"] == "verification-refused"
+    assert image.detach_attempts[0]["native_succeeded"] is True
+
+
+def test_native_failure_output_is_capped_and_invalid_utf8_keeps_the_actual_code():
+    error = subprocess.CalledProcessError(16, ["/usr/bin/hdiutil", "detach", "/dev/disk9"],
+                                          output=b"\xff" * 70000, stderr=b"busy" * 20000)
+    record = owned.native_failure(error)
+    assert record["returncode"] == 16
+    assert len(record["stdout"]) == 65536 and record["stdout"].startswith("\ufffd")
+    assert record["stderr"] == "busy" * 16384
+
+
+@pytest.mark.parametrize("refused", [False, True])
+def test_phase_json_retains_attempt_history_on_both_verified_and_refused_cleanup(tmp_path, monkeypatch, refused):
+    import json
+    from tools import macos_apfs_peer
+
+    attempts = [{"attempt": 1, "phase": "ownership-refused" if refused else "verified"}]
+    image = SimpleNamespace(owned=tmp_path / "owned", device="/dev/disk9", volume_uuid="owned-uuid",
+                            attached=True, detach_attempts=attempts, create=lambda: None, attach=lambda: None)
+    image.owned.mkdir()
+
+    def detach():
+        if refused:
+            raise RuntimeError("private ownership refused")
+        image.attached = False
+
+    image.detach = detach
+    image.cleanup = lambda: not refused or pytest.fail("Uncertain attachment reached fixture cleanup")
+    monkeypatch.setattr(probe, "OwnedImage", lambda: image)
+    monkeypatch.setattr(probe.sys, "argv", ["probe", "--evidence", str(tmp_path / "evidence")])
+    monkeypatch.setattr(probe, "fixtures", lambda _image: {})
+    monkeypatch.setattr(probe, "ledger_proof", lambda *_args: {})
+    monkeypatch.setattr(probe, "recovery_proof", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(probe, "cross_volume_proof", lambda _image: {})
+    monkeypatch.setattr(macos_apfs_peer, "reservation_proof", lambda _image: {})
+    if refused:
+        with pytest.raises(RuntimeError, match="fixture retained"):
+            probe.main()
+    else:
+        assert probe.main() == 0
+    proof = json.loads((tmp_path / "evidence" / "proof.json").read_text(encoding="utf-8"))
+    assert proof["detach_attempts"] == attempts
+    assert proof["cleanup_verified"] is not refused
+    assert proof["phase"] == ("validated" if refused else "complete")
+    if refused:
+        assert proof["cleanup_error"] == "private ownership refused" and image.owned.is_dir()
 
 
 def _portable_record(path):
