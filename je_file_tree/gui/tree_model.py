@@ -90,6 +90,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._queried_parents: set[Node] = set()
+        self._size_order_changed: set[Node] = set()
         self._icons: dict[str, QIcon] = {}
         self._archives: dict[Node, list[VirtualEntry]] = {}
         self._archive_done: set[Node] = set()
@@ -145,6 +146,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._drive_total = None
         self._live = live and root is not None
         self._queried_parents.clear()
+        self._size_order_changed.clear()
         self._clear_caches()
         self.endResetModel()
 
@@ -228,11 +230,14 @@ class FolderTreeModel(QAbstractItemModel):
                   and self._visible(node)]
         if not chosen:
             return
+        parents = {node.parent for node in chosen if node.parent is not None}
 
         def change() -> None:
             self.invalidate_archives()
             self._drive_total = None
             detach_many(chosen)
+            for parent in parents:
+                self._invalidate_size_order(parent.parent)
         # 80 completed moves previously caused 80 full relayouts (2026-10-16).
         # General structural layout changes must not use the completed-sort hint.
         self._relayout(change)
@@ -389,7 +394,9 @@ class FolderTreeModel(QAbstractItemModel):
         """
         def change() -> None:
             self.invalidate_archives()
+            parent = old.parent
             old.replace_with(new)
+            self._invalidate_size_order(parent)
         self._relayout(change)
 
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
@@ -440,9 +447,22 @@ class FolderTreeModel(QAbstractItemModel):
     def _clear_caches(self) -> None:
         self._orders.clear()
         self._rows.clear()
+        for folder in tuple(self._size_order_changed):
+            if not self._visible(folder):
+                self._size_order_changed.discard(folder)
         for parent in tuple(self._queried_parents):
             if not self._visible(parent):
                 self._queried_parents.discard(parent)
+
+    def _invalidate_size_order(self, folder: Node | None) -> None:
+        """Mark parents of resized entries, without reading sibling or descendant collections."""
+        if folder is None or not self._visible(folder):
+            return
+        while folder is not None and folder not in self._size_order_changed:
+            self._size_order_changed.add(folder)
+            if folder is self._root:
+                break
+            folder = folder.parent
 
     def _repaint(self, columns: tuple[tuple[int, int], ...], roles: list[int]) -> None:
         """Notify queried sibling groups only; formatting never changes membership or frozen live orders."""
@@ -471,7 +491,8 @@ class FolderTreeModel(QAbstractItemModel):
         children = self._archives.get(folder, folder.children)
         if children:
             self._queried_parents.add(folder)
-        if not children or (self._is_default_order() and not self._live):
+        if not children or (self._is_default_order() and not self._live
+                            and folder not in self._size_order_changed):
             return children
         cached = self._orders.get(id(folder))
         if cached is None:

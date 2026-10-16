@@ -57,6 +57,13 @@ sixteen distinct entries, storing requested file rows only. Small selections kee
 unopened branches are not visited. Index lookup verifies the current model root and active virtual
 ancestors, so detached branches, foreign roots and obsolete nested archive members cannot be revived.
 An existing real or virtual subtree can remain the model root without changing its original parent.
+After a post-scan mutation, parents of resized entries and their ancestors retain a marker that
+invalidates only their default scanner-order shortcut. Removal starts above each changed direct
+parent, since its surviving children keep their relative sizes; replacement starts at the replaced
+entry's parent. The model sorts marked sibling groups only when queried, retains the marker across
+other column sorts, prunes detached markers and clears them on root reset. Untouched folders and
+direct sibling deletions retain the original list fast path; no descendant traversal or physical
+child-list rewrite is added.
 Only completed-tree `sort()` emits `VerticalSortHint` on both layout signals, following the
 [Qt same-parent, unchanged-membership contract](https://doc.qt.io/qtforpython-6.11/PySide6/QtCore/QAbstractItemModel.html).
 Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since their membership may change.

@@ -2,12 +2,10 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #97 (cleanup-result ordering), #95 (remaining UI hangs), then the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #95 (remaining UI hangs), then the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
-
-- **#97** (P1) Restore descending default size order of ancestors after completed moves and branch replacements. The model's scanner-order shortcut retains A (10 B) before B (80 B) after removing 90 B from initially larger A; verify unaffected selections, branch totals and lazy traversal when correcting this ordering.
 
 - **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt results for a reproduced busy/refusal sequence to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 

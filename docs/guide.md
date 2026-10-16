@@ -2,6 +2,9 @@
 
 [Project introduction and quick start](../README.md)
 
+After completed moves to Trash or a folder rescan, the default largest-first tree order follows
+updated folder sizes. Selections and expanded folders stay attached to entries that remain.
+
 Changing size units or refreshing volume shares keeps selections, expanded folders and the active
 filter. Only the displayed values change.
 
