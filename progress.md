@@ -2,10 +2,12 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #95 (remaining UI hangs), then the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #99 (native SMB disconnect timeout), then #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
+
+- **#99** (P1) Diagnose the 30-second native disconnect-helper timeout in `tools/windows_share_probe.py::_disconnect`. CI run 38908715123 / job 116998797981 completed UNC/mapped parity, denied coverage, exact ACL restoration and owned-fixture cleanup, but did not complete disconnect/source post-verification. Capture per-command native evidence to locate the wait before choosing a fix; preserve bounded execution and exact share/root/mapping ownership checks. A successful retry alone cannot establish the cause.
 
 - **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt results for a reproduced busy/refusal sequence to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 

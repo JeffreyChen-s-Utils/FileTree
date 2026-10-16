@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-17 | 2026-10-16 | Skip hidden member mappings for expanded archive previews | #snapshot #fix #gui #archives #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-16 | 2026-10-16 | Keep expander checks lazy and freeze empty live groups | #done #fix #gui #performance #live | [2026-10-c](2026-10-c.md) |
 | U-20261016-15 | 2026-10-16 | Read tree filter row identities without temporary Qt indexes | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-14 | 2026-10-16 | Reuse unchanged tree filter mappings | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |

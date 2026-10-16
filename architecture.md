@@ -82,8 +82,11 @@ accepted identities explicitly. Display-only updates forward data without reeval
 structural changes still trigger the existing worker refresh and persistent-index remapping.
 After validating a worker reply, the proxy stores its captured expanded-folder set as `searched`.
 For an unsearched parent, including a collapsed root, `hasChildren` skips child mapping and only
-preserves the source's lazy archive-fetch offer. Searched groups and the top-level root container
-retain Qt's normal filtered child check. `None` means no worker snapshot is available and keeps Qt's
+preserves the source's lazy archive-fetch offer. The same shortcut applies to a physical file with
+no scanned children even if its preview was expanded: virtual members never match the tree filter.
+Captured non-directory entries with actual children keep their normal filtered mapping. Searched
+directory groups and the top-level root container retain Qt's normal filtered child check.
+`None` means no worker snapshot is available and keeps Qt's
 default behavior for standalone proxies. Root reset drops captured references, retaining an empty
 snapshot only when one previously existed; clearing the filter restores `None` after unbinding.
 Its row predicate reads `FolderTreeModel.node_at(row, source_parent)` directly. This identity-only

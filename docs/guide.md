@@ -20,6 +20,10 @@ Checking a folder's expander does not sort, copy or freeze its unopened children
 the worker's expansion snapshot also prevents mappings for unsearched groups. Eligible archives keep
 their on-demand preview offer. Explicit row queries freeze live membership, including initially empty
 groups; arrivals become visible after the next scan refresh.
+An already expanded archive preview also skips hidden-member mapping during tree filtering. A
+physical file with no scanned children keeps only its on-demand preview offer; clearing the filter
+restores its open preview. Physical scan sizes/counts stay unchanged, and virtual members remain
+read-only and excluded from file actions.
 Visible items are restored together as a full-row selection. Changing tree filters drops display-only
 archive selections while keeping physical files and scan totals unchanged.
 
