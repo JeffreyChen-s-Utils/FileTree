@@ -1000,6 +1000,10 @@ choice and the protected question's explicit No, standard dismissal results and 
 retire each owned box after dismissal. The existing MainWindow approval/source rechecks remain in
 place. Flow tests inject explicit modeled replies; actual Qt presentation tests restore this presenter
 and verify literal single/bulk/protected text and button/keyboard/close parity with static questions.
+The isolated Linux desktop probe temporarily binds this presenter for one ordinary fixture approval,
+rejects unexpected protected/foreign/additional requests and restores it on every exit. A Qt timer
+declines unexpected modal dialogs during approval and result pumping; it never approves them or
+changes the global static question API. Native source/review/journal/receipt checks still run.
 
 **Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
 and confirmation gates, one set of final selected Node identities serves duplicate reason lookup

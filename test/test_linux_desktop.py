@@ -107,3 +107,53 @@ def test_fallback_refuses_an_external_target_before_native_dispatch(monkeypatch)
     monkeypatch.setattr(module, "reveal_in_file_manager", lambda *_args: pytest.fail("foreign target dispatched"))
     with pytest.raises(ValueError, match="private Linux container fixture"):
         module.main()
+
+
+def _trash_probe(monkeypatch):
+    monkeypatch.syspath_prepend(str(_ROOT / "tools/linux_desktop"))
+    spec = importlib.util.spec_from_file_location("desktop_trash_probe", _ROOT / "tools/linux_desktop/probe.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize("kind", ["ordinary", "protected", "foreign", "extra"])
+def test_private_trash_probe_binds_only_its_presenter_and_restores_on_failure(qapp, tmp_path, monkeypatch, kind):
+    module = _trash_probe(monkeypatch)
+    results = SimpleNamespace()
+    results.show_outcome = lambda outcome: setattr(results, "outcome", outcome)
+    window = SimpleNamespace(results=results, _trash_worker=None)
+    before = (module.main_window.confirm_entry_move, module.main_window.CleanupReview.exec, module.QMessageBox.question)
+
+    def move(nodes):
+        assert len(nodes) == 1 and nodes[0].path == str(tmp_path / "trash-source" / "垃圾桶 測試.txt")
+        assert module.main_window.confirm_entry_move is not before[0], "old question hook missed the presenter"
+        assert module.QMessageBox.question is before[2], "private approval changed unrelated static questions"
+        parent = object() if kind == "foreign" else window
+        reply = module.main_window.confirm_entry_move(parent, "Owned fixture", nodes[0].name,
+                                                      protected=kind == "protected")
+        assert reply == module.QMessageBox.StandardButton.Yes
+        if kind == "extra":
+            module.main_window.confirm_entry_move(window, "Unexpected second approval", nodes[0].name)
+        raise RuntimeError("controlled stop after explicit fixture approval")
+
+    window.move_to_trash = move
+    expected = "controlled stop" if kind == "ordinary" else "Unexpected"
+    with pytest.raises(RuntimeError, match=expected):
+        module.check_trash(qapp, window, tmp_path)
+    assert (module.main_window.confirm_entry_move, module.main_window.CleanupReview.exec,
+            module.QMessageBox.question) == before
+    assert (tmp_path / "trash-source" / "垃圾桶 測試.txt").read_text(encoding="utf-8") == "owned trash contents"
+
+
+def test_private_trash_probe_declines_unhandled_modal_without_touching_fixture(qapp, tmp_path, monkeypatch):
+    module = _trash_probe(monkeypatch)
+    results = SimpleNamespace()
+    results.show_outcome = lambda outcome: setattr(results, "outcome", outcome)
+    before = module.main_window.confirm_entry_move
+    window = SimpleNamespace(results=results, _trash_worker=None)
+    window.move_to_trash = lambda nodes: module.QMessageBox.question(None, "Unhandled approval", nodes[0].name)
+    with pytest.raises(RuntimeError, match="Unhandled entry-move confirmation"):
+        module.check_trash(qapp, window, tmp_path)
+    assert module.main_window.confirm_entry_move is before
+    assert (tmp_path / "trash-source" / "垃圾桶 測試.txt").read_text(encoding="utf-8") == "owned trash contents"
