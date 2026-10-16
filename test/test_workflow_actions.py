@@ -143,6 +143,18 @@ def _jobs(path: Path) -> list[tuple[str, str]]:
     return [(lines[i].strip().rstrip(":"), "\n".join(lines[i:end])) for i, end in zip(heads, ends, strict=True)]
 
 
+def test_windows_mocked_share_helper_evidence_survives_failed_tests():
+    jobs = dict(_jobs(_ROOT / ".github/workflows/test.yml"))
+    windows = jobs["windows"]
+    steps = re.split(r"^    - ", windows, flags=re.MULTILINE)
+    tests = next(step for step in steps if step.startswith("name: Run tests\n"))
+    upload = next(step for step in steps if step.startswith("name: Preserve mocked PowerShell helper evidence\n"))
+    assert "FILETREE_SHARE_SCRIPT_EVIDENCE: build/share-script-evidence" in tests
+    assert "if: always()" in upload and "uses: actions/upload-artifact@" in upload
+    assert "name: windows-mocked-share-script-${{ matrix.python-version }}" in upload
+    assert "path: build/share-script-evidence/" in upload and "retention-days: 7" in upload
+
+
 @pytest.mark.parametrize("workflow", _WORKFLOWS, ids=lambda p: p.name)
 def test_every_job_has_a_timeout(workflow):
     # Without timeout-minutes a hung job runs for GitHub's default six hours.

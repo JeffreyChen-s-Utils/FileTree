@@ -594,7 +594,8 @@ def test_system_and_program_folders_are_asked_about_twice(window: MainWindow, qa
 
 
 def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
-        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        window: MainWindow, qapp: QApplication, sample_tree: Path, monkeypatch: pytest.MonkeyPatch,
+        failed_move_diagnostics) -> None:
     _scanned(window, qapp, sample_tree)
     root = window.results.tree_model.root
     assert root is not None
@@ -619,7 +620,10 @@ def test_several_selected_entries_go_to_the_recycle_bin_after_one_question(
     assert questions[0].index("• big.bin (500 B)") < questions[0].index("• photos (250 B)")
     assert "a.jpg" not in questions[0]
     assert sorted(trashed) == sorted(str(sample_tree / name) for name in ("big.bin", "photos", "notes.txt"))
-    assert len(warnings) == 1 and "notes.txt" in warnings[0], "the refused entry is named"
+    report, captured = failed_move_diagnostics
+    notices = warnings + captured
+    assert len(notices) == 1 and "notes.txt" in notices[0], "the refused entry is named"
+    assert len(captured) == int(bool(report.error))
     assert root.size == 250
     assert {child.name for child in root.children} == {"code", "notes.txt"}
     assert {node.name for node in window.results.largest_model.rows()} == {"notes.txt", "main.py", "Makefile"}

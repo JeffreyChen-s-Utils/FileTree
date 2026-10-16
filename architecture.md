@@ -990,6 +990,9 @@ observations do not prove the native move failure cause. `_show_failed` preserve
 only when count, process count, query-error state, text length and literal text permit it; other
 failures use the complete table. `_show_entry_report` centralizes modal ownership/capture cleanup
 for both report types. No diagnostic query, process action, move retry or authority is introduced.
+GUI failure-flow fixtures model both complete and unsupported holder diagnostics and explicitly
+inspect the modal report. The unattended-test guard dismisses any unhandled failure report and
+fails fixture teardown, preventing a platform-specific dialog from silently awaiting a user.
 
 **Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
 and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
@@ -1172,6 +1175,12 @@ locally controls native-exit handling, saves that JSON before propagating failur
 authority or a retry. Mocked PowerShell helper tests disable module auto-loading and replace SMB
 commands; only disposable hosted CI runs real share operations. A native timeout with these step
 observations is still required to diagnose the original intermittent wait.
+The mocked helper tests retain separate `FILETREE_TEST_PHASE` startup/import/parse/extraction/case
+markers, runtime, process outcome and bounded outputs in uniquely named JSON files. The Windows
+matrix always uploads `windows-mocked-share-script-<python>` for seven days. Its subprocess still
+runs once with a 20-second deadline, explicit module imports and SMB-command mocks; complete markers
+cannot turn a timeout into success. A missing first marker only establishes that no harness-entry
+marker was captured. These records do not establish the cause of a native SMB disconnect wait.
 Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
 cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
 real share removal after six files were observed. The latter records 254 errors/incomplete coverage

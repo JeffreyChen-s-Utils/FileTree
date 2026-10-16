@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-26 | 2026-10-16 | Preserve mocked-helper wait phases and bound unattended failure-report tests | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
 | U-20261016-25 | 2026-10-16 | Retain complete failed-entry diagnostics in a lazy report | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-24 | 2026-10-16 | Share the complete read-only entry report viewport | #snapshot #refactor #gui | [2026-10-c](2026-10-c.md) |
 | U-20261016-23 | 2026-10-16 | Show complete large refusal batches in a lazy copyable table | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
