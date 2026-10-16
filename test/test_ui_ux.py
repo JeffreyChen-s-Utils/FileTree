@@ -4,7 +4,7 @@ import dataclasses
 
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QLabel, QPushButton
 import pytest
 
 from test_gui import _wait, window as window  # noqa: PLC0414 - shared pytest fixture
@@ -20,6 +20,12 @@ from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.themes import theme_controller
 from je_file_tree.gui.tree_model import SIZE
 from je_file_tree.gui.welcome import DriveSnapshot
+
+
+def test_result_legends_do_not_insert_invisible_font_fallback_controls(window, sample_tree):
+    results = window.results
+    results.show_outcome(analyse(scan(sample_tree)))
+    assert all("\u2060" not in label.text() for label in results.findChildren(QLabel))
 
 
 @pytest.mark.parametrize("language", i18n.LANGUAGES)

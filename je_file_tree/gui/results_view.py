@@ -69,6 +69,7 @@ from je_file_tree.gui.capacity_panel import CapacityPanel
 from je_file_tree.gui.age_colours import AGE_COLOURS, UNKNOWN_AGE_COLOUR
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
+from je_file_tree.gui.chart_legend import ChartLegend
 from je_file_tree.gui.delegates import ShareBarDelegate
 from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
@@ -175,7 +176,7 @@ class ResultsView(QWidget):
         self._build_chart_controls()
         self._treemap_up = QToolButton()
         self.breadcrumbs = Breadcrumbs()
-        self._legend = QLabel()
+        self._legend = ChartLegend()
         self._largest_filter = QLineEdit()
         self._focus_label = QLabel()
         self._show_all = QPushButton()
@@ -677,7 +678,6 @@ class ResultsView(QWidget):
         """The Chart tab: the path and view buttons, the treemap options, the charts and the legend."""
         self._treemap_up.clicked.connect(self.charts.zoom_out)
         self.breadcrumbs.navigate.connect(self.charts.set_view_root)
-        self._legend.setWordWrap(True)
         self.charts.node_clicked.connect(self._treemap_clicked)
         self.charts.view_root_changed.connect(self._treemap_root_changed)
         self.charts.context_menu_requested.connect(self._emit_menu)
@@ -858,7 +858,7 @@ class ResultsView(QWidget):
         by_folder = self.charts.mode == TREE or (self.charts.mode in (TREEMAP, SUNBURST)
                                                   and self.charts.treemap.colour_mode == BY_FOLDER)
         self._legend.setVisible(not by_folder)
-        self._legend.setText(self._legend_html())
+        self._legend.set_items(self._legend_items())
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
@@ -1081,7 +1081,7 @@ class ResultsView(QWidget):
         self.navigation.refresh()
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
-        self._legend.setText(self._legend_html())
+        self._legend.set_items(self._legend_items())
         self.summary.setText(self._summary_text())
         self._update_overview()
 
@@ -1133,13 +1133,11 @@ class ResultsView(QWidget):
         width = self.splitter.width()
         self.splitter.setSizes([round(width * .45), round(width * .55)])
 
-    def _legend_html(self) -> str:
+    def _legend_items(self) -> list[tuple[str, str]]:
         if self.charts.mode in (TREEMAP, SUNBURST) and self.charts.treemap.colour_mode == BY_AGE:
             self._legend.setToolTip(tr("age_colour_tip"))
-            return " &nbsp; ".join(f'<span style="color:{colour}">&#9632;</span> '
-                                   + _unbreakable(label) for colour, label in
-                                   [(AGE_COLOURS[age], tr(f"age_{age}")) for age in AGES]
-                                   + [(UNKNOWN_AGE_COLOUR, tr("age_colour_unknown"))])
+            return ([(AGE_COLOURS[age], tr(f"age_{age}")) for age in AGES]
+                    + [(UNKNOWN_AGE_COLOUR, tr("age_colour_unknown"))])
         self._legend.setToolTip("")
         sizes = {stat.category: stat.size for stat in self._categories}
         parts = []
@@ -1148,20 +1146,9 @@ class ResultsView(QWidget):
             if size is None:
                 continue
             colour = CATEGORY_COLOURS[category]
-            label = _unbreakable(f"\u00a0{tr(f'category_{category}')} ({format_size(size)})")
-            parts.append(f'<span style="color:{colour}">&#9632;</span>\u2060{label}')
-        return " &nbsp; ".join(parts)
-
-
-
-def _unbreakable(text: str) -> str:
-    """``text`` that a line break can never split.
-
-    Chinese may break between any two characters and Qt ignores ``<nobr>`` and
-    ``white-space: nowrap`` for that, so spaces become no-break spaces and a
-    word joiner (U+2060) goes between every two characters.
-    """
-    return "\u2060".join(text.replace(" ", "\u00a0"))
+            label = f"{tr(f'category_{category}')} ({format_size(size)})"
+            parts.append((colour, label))
+        return parts
 
 
 def _selected_in(view: QAbstractItemView) -> list[Node]:

@@ -32,6 +32,10 @@ waiting without inventing a completion percentage or implying that an incomplete
   minimum widths do not squeeze the chart's tree pane; the active page retains its control minimum.
   Selected-folder list scope stays above the views. A short hint explains when whole-scan analysis
   lists will become available.
+- **Chart legends:** keep each color marker and translated category/age label in one nonwrapping
+  label and flow complete entries onto new rows as the pane narrows. Inherit fonts and theme ink;
+  expose literal accessible names. Do not add invisible word joiners to labels: they trigger slow
+  first-use native Windows font fallback. Empty legends reserve no row height.
 - **Closing:** display a translated closing status, cancel pending readers and release paused scans,
   and keep ordinary Qt events running until native calls and exports finish. Retain each tab and all
   its workers until joined; peer scans remain independent. Report late source-operation failures

@@ -11,7 +11,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ## What you can do
 
-- **Find large files and folders**: see the biggest items first, with charts showing their share of the space.
+- **Find large files and folders**: see the biggest items first, with charts showing their share of the space. Legend labels stay together as they wrap to fit the window.
 - **Search and filter**: find files by name, type, size or last change.
 - **Review clean-up suggestions**: inspect caches, temporary files and duplicate files before acting.
 - **See what grew**: compare scans to find folders using more space than before.

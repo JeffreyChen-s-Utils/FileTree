@@ -61,6 +61,12 @@ returning partial totals. Active native capacity calls finish before the worker 
 workers suppress capacity and summary replies. Scope replies also require membership in the current
 scan tree, so detached branches cannot refill lists.
 
+`gui.chart_legend.ChartLegend` lays out each category/age label as an indivisible rich-text label
+and wraps only between entries using a small height-for-width layout. Labels retain literal
+accessible text, inherited fonts and palette-based text ink. The layout needs only the bounded
+category/age list; it never walks scan nodes. Ordinary labels replace inserted U+2060 word joiners,
+which triggered expensive first-use Windows font fallback during result-page size calculation.
+
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
 cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all

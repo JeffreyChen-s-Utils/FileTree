@@ -50,7 +50,7 @@ def test_columns_summary_charts_and_named_largest_sizes(window, tmp_path):
     assert len(outcome.largest) == 2 and all(node.size == 5120 for node in outcome.largest)
     assert sum(item.size for item in outcome.categories) == 10240
     assert sum(item.size for item in outcome.chart_categories) == 5120
-    legend = window.results._legend.text().replace("\u2060", "").replace("\xa0", " ")
+    legend = " ".join(label.accessibleName() for label in window.results._legend.labels())
     assert "5.0 KB" in legend and "10.0 KB" not in legend
     tiles = treemap.layout(root, treemap.Rect(0, 0, 500, 500), max_depth=4)
     assert all(tile.node is not alias for tile in tiles)
