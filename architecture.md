@@ -1259,6 +1259,17 @@ matrix always uploads `windows-mocked-share-script-<python>` for seven days. Its
 runs once with a 20-second deadline, explicit module imports and SMB-command mocks; complete markers
 cannot turn a timeout into success. A missing first marker only establishes that no harness-entry
 marker was captured. These records do not establish the cause of a native SMB disconnect wait.
+Both helpers now use `tools/observed_process.run_observed`: one captured child, unchanged 30/20-second
+deadlines and no retry. Only after five seconds of waiting on a still-live Windows child, start a
+separate fixed Python observer. Its Toolhelp parent check accepts only a sibling child of the same
+parent, whose original Popen handle is still retained. Read process CPU/creation times and at most
+16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
+querying, refusing recycled/foreign IDs. Use no cross-process traversal flags, object names,
+memory dumps, privilege changes, debugger attachment or target mutation. The observer emits each
+record immediately and has its own five-second kill timer, so a stalled native diagnostic cannot
+hold up helper termination. Retain partial/error/truncation status separately from actual helper
+exit, output and timeout; the second communicate uses only the original deadline's remainder.
+Access-denied, unsupported waits and missing observations remain unknown, never successful proof.
 Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
 cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
 real share removal after six files were observed. The latter records 254 errors/incomplete coverage

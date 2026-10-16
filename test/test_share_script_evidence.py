@@ -24,7 +24,7 @@ def test_success_saves_all_phases_without_changing_process_contract(tmp_path, mo
         seen.append((command, options))
         return subprocess.CompletedProcess(command, 0, b'{"result":true}',
                                            _phases() + b"\nFILETREE_TEST_RUNTIME 5.1.owned\n")
-    monkeypatch.setattr(harness.subprocess, "run", run)
+    monkeypatch.setattr(harness, "run_observed", run)
     evidence = _evidence(tmp_path)
     data, record = harness._run("owned-powershell", "'owned case'", evidence)
     assert data == {"result": True}
@@ -33,7 +33,7 @@ def test_success_saves_all_phases_without_changing_process_contract(tmp_path, mo
     assert record["outcome"] == "completed" and record["returncode"] == 0
     assert record["harness"]["trace_complete"] and len(record["harness"]["steps"]) == 9
     assert record["harness"]["runtime"] == "5.1.owned"
-    assert len(seen) == 1 and seen[0][1] == {"capture_output": True, "timeout": 20, "check": False}
+    assert len(seen) == 1 and seen[0][1] == {"timeout": 20, "check": False}
     assert seen[0][0][:5] == ["owned-powershell", "-NoLogo", "-NoProfile", "-NonInteractive", "-Command"]
     assert "$PSModuleAutoLoadingPreference = 'None'" in seen[0][0][-1]
 
@@ -43,16 +43,19 @@ def test_timeout_is_not_retried_or_converted_by_partial_or_complete_trace(tmp_pa
     calls = []
     stderr = b"x" * 70000 + b"\n" + _phases(9 if complete else 2)
     original = subprocess.TimeoutExpired("owned", 20, output=b"y" * 70000, stderr=stderr)
+    original.process_observation = {"status": "observed", "child_pid": 123,
+                                    "records": [{"event": "chain", "complete": False, "error": 5}]}
     def timeout(*_args, **_kwargs):
         calls.append(1)
         raise original
-    monkeypatch.setattr(harness.subprocess, "run", timeout)
+    monkeypatch.setattr(harness, "run_observed", timeout)
     evidence = _evidence(tmp_path)
     with pytest.raises(AssertionError, match="helper timeout; deadline=20s") as raised:
         harness._run("owned", "case", evidence)
     assert raised.value.__cause__ is original and calls == [1]
     record = json.loads(evidence[0].read_text(encoding="utf-8"))
     assert record["outcome"] == "timeout" and record["returncode"] is None
+    assert record["process_observation"] == original.process_observation
     assert record["stdout_truncated"] and record["stderr_truncated"]
     assert len(record["stdout"].encode()) <= 65536 and len(record["stderr"].encode()) <= 65536
     assert record["harness"]["trace_complete"] is complete
@@ -62,7 +65,7 @@ def test_timeout_is_not_retried_or_converted_by_partial_or_complete_trace(tmp_pa
 
 @pytest.mark.parametrize("status", [0, 7])
 def test_missing_trace_and_nonzero_exit_fail_after_saving_evidence(tmp_path, monkeypatch, status):
-    monkeypatch.setattr(harness.subprocess, "run", lambda *args, **kwargs:
+    monkeypatch.setattr(harness, "run_observed", lambda *args, **kwargs:
                         subprocess.CompletedProcess(args[0], status, b'{}', b'captured stderr'))
     evidence = _evidence(tmp_path)
     with pytest.raises(AssertionError, match="evidence="):
@@ -73,7 +76,7 @@ def test_missing_trace_and_nonzero_exit_fail_after_saving_evidence(tmp_path, mon
 
 
 def test_invalid_json_is_retained_with_its_actual_successful_exit(tmp_path, monkeypatch):
-    monkeypatch.setattr(harness.subprocess, "run", lambda *args, **kwargs:
+    monkeypatch.setattr(harness, "run_observed", lambda *args, **kwargs:
                         subprocess.CompletedProcess(args[0], 0, b'invalid JSON', _phases()))
     evidence = _evidence(tmp_path)
     with pytest.raises(AssertionError, match="validation=JSONDecodeError"):
@@ -87,7 +90,7 @@ def test_start_failure_and_evidence_write_failure_retain_their_causes(tmp_path, 
     original = FileNotFoundError("owned executable missing")
     def fail(*_args, **_kwargs):
         raise original
-    monkeypatch.setattr(harness.subprocess, "run", fail)
+    monkeypatch.setattr(harness, "run_observed", fail)
     evidence = _evidence(tmp_path)
     with pytest.raises(AssertionError, match="start-failed") as raised:
         harness._run("owned", "case", evidence)

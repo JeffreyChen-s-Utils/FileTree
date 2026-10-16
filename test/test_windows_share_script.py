@@ -14,6 +14,7 @@ import uuid
 import pytest
 
 from tools import windows_share_probe as probe
+from tools.observed_process import run_observed
 
 _SOURCE = Path(__file__).resolve().parents[1] / "tools/validate_windows_share.ps1"
 _PHASE_PREFIX = "FILETREE_TEST_PHASE "
@@ -121,7 +122,7 @@ def _run(shell, script, evidence):
     started = time.monotonic()
     failure = None
     try:
-        result = subprocess.run(command, capture_output=True, timeout=20, check=False)  # noqa: S603
+        result = run_observed(command, timeout=20, check=False)
     except (subprocess.TimeoutExpired, OSError) as error:
         result, failure = error, error
     record = probe._helper_record(result, started)

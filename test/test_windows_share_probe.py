@@ -75,7 +75,7 @@ def test_share_disconnect_pauses_new_reads_and_always_resumes(monkeypatch, tmp_p
 
     monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
     monkeypatch.setattr(probe, "scan", scanner)
-    monkeypatch.setattr(probe.subprocess, "run", disconnect)
+    monkeypatch.setattr(probe, "run_observed", disconnect)
     monkeypatch.setattr(probe, "_safe_failure", observed.append)
     if fails:
         with pytest.raises(probe.ShareDisconnectError) as caught:
@@ -117,7 +117,7 @@ def test_disconnect_helper_failure_keeps_the_actual_outcome_without_retry(monkey
 
     monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
     monkeypatch.setattr(probe, "scan", scanner)
-    monkeypatch.setattr(probe.subprocess, "run", fail)
+    monkeypatch.setattr(probe, "run_observed", fail)
     with pytest.raises(probe.ShareDisconnectError) as caught:
         probe._disconnect(tmp_path, SimpleNamespace(unc="owned"))
     assert len(observed) == 1 and caught.value.__cause__ is error
@@ -134,7 +134,7 @@ def test_post_disconnect_refusal_preserves_helper_success(monkeypatch, tmp_path)
 
     monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
     monkeypatch.setattr(probe, "scan", scanner)
-    monkeypatch.setattr(probe.subprocess, "run", lambda command, **_kwargs: subprocess.CompletedProcess(
+    monkeypatch.setattr(probe, "run_observed", lambda command, **_kwargs: subprocess.CompletedProcess(
         command, 0, stdout=b"", stderr=_steps(("helper-complete", "completed"))))
     with pytest.raises(probe.ShareDisconnectError) as caught:
         probe._disconnect(tmp_path, SimpleNamespace(unc="owned"))
@@ -188,7 +188,7 @@ def test_zero_exit_without_step_evidence_cannot_establish_a_disconnect(monkeypat
 
     monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
     monkeypatch.setattr(probe, "scan", scanner)
-    monkeypatch.setattr(probe.subprocess, "run", lambda command, **_kwargs: subprocess.CompletedProcess(
+    monkeypatch.setattr(probe, "run_observed", lambda command, **_kwargs: subprocess.CompletedProcess(
         command, 0, stdout=b"", stderr=b""))
     with pytest.raises(probe.ShareDisconnectError, match="step evidence") as caught:
         probe._disconnect(tmp_path, SimpleNamespace(unc="owned"))
@@ -210,7 +210,7 @@ def test_repeated_callbacks_never_retry_a_failed_native_helper(monkeypatch, tmp_
 
     monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
     monkeypatch.setattr(probe, "scan", scanner)
-    monkeypatch.setattr(probe.subprocess, "run", fail)
+    monkeypatch.setattr(probe, "run_observed", fail)
     with pytest.raises(probe.ShareDisconnectError) as caught:
         probe._disconnect(tmp_path, SimpleNamespace(unc="owned"))
     assert len(commands) == 1 and caught.value.proof["helper_attempted"]

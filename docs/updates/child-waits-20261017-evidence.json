@@ -1,0 +1,530 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "9885c4008fafad5fb613dad83b1c366637fcc360",
+  "sources": {
+    "tools/observed_process.py": {
+      "lf_sha256": "30ba763463203d3168109a6b864e4e0cfcf6d9a935e40e66063907890bbbebef",
+      "ast_sha256": "f7fd06575614a962ed4d7c3fafe55e2a669ebbc9ee3187bf3323a5f90b53cf18"
+    },
+    "tools/windows_child_observer.py": {
+      "lf_sha256": "4ffb66387586d8d9b6f21639060a03005da212488be8449eb40a98a03e323385",
+      "ast_sha256": "9425cae2068168d515b52ccb02860f804065ca6acc0f2a3c13d838f68443cadb"
+    },
+    "tools/windows_share_probe.py": {
+      "lf_sha256": "98d0ee88816ee3dd943e155cd9320add24abbedb9fea1f0a8ab9771dd95e731b",
+      "ast_sha256": "419ede67e6b9455256e7f25060f310246fdc029caaf867214c28d7e66fc4a9d2"
+    },
+    "test/test_windows_share_script.py": {
+      "lf_sha256": "04c0f8791ded551b04a49b1b7aa679f4fc4379b80332d19e5fb542f269b4ee0c",
+      "ast_sha256": "5b0fb99d60c3d1df1f0ea37e77523fb4aa1cfd8cc62a492054711b9cc5ebf48b"
+    },
+    "test/test_observed_process.py": {
+      "lf_sha256": "274c3362b42b108f088ef2a0f82f1e0cc079d973763f883303ed6f3952dc82f7",
+      "ast_sha256": "bf2e802a4ffb763dfa3ab3135b40d6f44463b265f5e03a82608583b9779dcdcb"
+    },
+    "test/test_windows_share_probe.py": {
+      "lf_sha256": "7d66a118c3b72c8708b47e5201aa16c9ace26c8a7c2aee48ed7875d580695292",
+      "ast_sha256": "8b1861e81000d0bda4cb42f09075579d57e9dd17e98330e63f93cb4ef59abd9c"
+    },
+    "test/test_share_script_evidence.py": {
+      "lf_sha256": "dcdca2ef1c3fb069ddd6ea3b2008ffc8b77f19ddfa982a7cb16c1d8698454d87",
+      "ast_sha256": "9fc2fd007959bbf4fb2d835de2ccdc6697761a2ae3626f2a68946c53ff8df933"
+    }
+  },
+  "native_timeout": {
+    "run": 38970418711,
+    "job": 117207131522,
+    "artifact_id": 12076771087,
+    "artifact_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/38970418711/artifacts/12076771087",
+    "raw": {
+      "path": "build/smb-38970418711/windows-share.json",
+      "sha256": "71c8fe0762581eeb360c06ff1cdb453457880388227dc07a4884f7fef9f5d45b",
+      "result": {
+        "phase": "failed",
+        "transport": "native SMB loopback",
+        "slow_remote_link_verified": false,
+        "prepare": {
+          "files": 1026,
+          "branches": 256
+        },
+        "compare": {
+          "cases": [
+            {
+              "transport": "UNC",
+              "workers": 1,
+              "seconds": 1.3590000000000373,
+              "allocation_unit": 4096,
+              "files": 1026,
+              "logical_bytes": 4327955,
+              "allocated_bytes": 8519704,
+              "equal": true
+            },
+            {
+              "transport": "UNC",
+              "workers": 4,
+              "seconds": 0.9690000000000509,
+              "allocation_unit": 4096,
+              "files": 1026,
+              "logical_bytes": 4327955,
+              "allocated_bytes": 8519704,
+              "equal": true
+            },
+            {
+              "transport": "mapped",
+              "workers": 1,
+              "seconds": 1.5470000000000255,
+              "allocation_unit": 4096,
+              "files": 1026,
+              "logical_bytes": 4327955,
+              "allocated_bytes": 8519704,
+              "equal": true
+            },
+            {
+              "transport": "mapped",
+              "workers": 4,
+              "seconds": 1.1409999999999627,
+              "allocation_unit": 4096,
+              "files": 1026,
+              "logical_bytes": 4327955,
+              "allocated_bytes": 8519704,
+              "equal": true
+            }
+          ],
+          "slow_remote_link_verified": false
+        },
+        "original_denied_descriptor": "O:BAG:S-1-5-21-4239583824-265399229-1323058055-513D:AI(A;;FA;;;BA)(A;OICIID;FA;;;BA)(A;OICIID;FA;;;SY)(A;OICIIOID;GA;;;CO)(A;OICIID;0x1200a9;;;BU)(A;CIID;LC;;;BU)(A;CIID;DC;;;BU)",
+        "denied": {
+          "cases": [
+            {
+              "transport": "UNC",
+              "workers": 1,
+              "access_denied": true,
+              "incomplete": true,
+              "empty_cleanup_proposals": 0
+            },
+            {
+              "transport": "UNC",
+              "workers": 4,
+              "access_denied": true,
+              "incomplete": true,
+              "empty_cleanup_proposals": 0
+            },
+            {
+              "transport": "mapped",
+              "workers": 1,
+              "access_denied": true,
+              "incomplete": true,
+              "empty_cleanup_proposals": 0
+            },
+            {
+              "transport": "mapped",
+              "workers": 4,
+              "access_denied": true,
+              "incomplete": true,
+              "empty_cleanup_proposals": 0
+            }
+          ]
+        },
+        "restored_denied_descriptor": "O:BAG:S-1-5-21-4239583824-265399229-1323058055-513D:AI(A;;FA;;;BA)(A;OICIID;FA;;;BA)(A;OICIID;FA;;;SY)(A;OICIIOID;GA;;;CO)(A;OICIID;0x1200a9;;;BU)(A;CIID;LC;;;BU)(A;CIID;DC;;;BU)",
+        "acl_restored": true,
+        "disconnect": {
+          "disconnected": false,
+          "helper_attempted": true,
+          "observed_files_before_disconnect": 10,
+          "helper": {
+            "outcome": "timeout",
+            "returncode": null,
+            "timeout_seconds": 30,
+            "elapsed_seconds": 30.406,
+            "stdout": "",
+            "stderr": "",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "steps": [],
+            "invalid_step_records": 0,
+            "trace_complete": false
+          },
+          "failure": {
+            "type": "TimeoutExpired",
+            "message": "Command '['C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-File', 'D:\\\\a\\\\FileTree\\\\FileTree\\\\tools\\\\validate_windows_share.ps1', '-DisposableRunner', '-DisconnectOnly', '-FixtureRoot', 'D:\\\\a\\\\_temp\\\\filetree-smb-a1f61442c7024f1aae69652934a94d22']' timed out after 30 seconds"
+          }
+        },
+        "error": "Native SMB disconnect validation failed.",
+        "owned_fixture_cleanup": true
+      }
+    },
+    "finding": "Timeout after 30.406 seconds and ten observed files; no helper entry/step/output captured. Cleanup reports success, but source post-verification was not reached. Startup versus helper wait remains unknown."
+  },
+  "observer": {
+    "design": "One original helper; unchanged 30/20-second deadline, remaining-time second wait, no retry. After five seconds launch one fixed sibling observer with a five-second kill timer. Parent identity checked before CPU/WCT reads. Up to 16 threads and 16 nodes, no WCT cross-process flags, object names, dumps, privilege changes, debugger attachment or target mutation.",
+    "native_owned_mutex": {
+      "path": "build/child-observer-native.json",
+      "sha256": "0bf2a9e775ccbe73aba5a6004c0fce25de86f6fe4466cb077c179678c3d7d0b1",
+      "result": {
+        "owned_child_exit": 0,
+        "native_mutex_chain_observed": true,
+        "records": [
+          {
+            "event": "identity",
+            "pid": 62984,
+            "parent_pid": 65508,
+            "cpu": {
+              "created_100ns": 134366610919992989,
+              "exited_100ns": 0,
+              "kernel_100ns": 468750,
+              "user_100ns": 156250
+            },
+            "reported_threads": 5
+          },
+          {
+            "event": "threads",
+            "count": 5,
+            "truncated": false
+          },
+          {
+            "event": "chain",
+            "tid": 33912,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 62984,
+                "tid": 33912,
+                "wait_time_raw": 16602136,
+                "switches": 9
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 68284,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 3,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 62984,
+                "tid": 68284,
+                "wait_time_raw": 16602136,
+                "switches": 2
+              },
+              {
+                "kind": 3,
+                "status": 6
+              },
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 62984,
+                "tid": 70188,
+                "wait_time_raw": 16602136,
+                "switches": 31
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 68552,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 62984,
+                "tid": 68552,
+                "wait_time_raw": 16602136,
+                "switches": 6
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 69612,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 62984,
+                "tid": 69612,
+                "wait_time_raw": 16602136,
+                "switches": 7
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 70188,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 62984,
+                "tid": 70188,
+                "wait_time_raw": 16602136,
+                "switches": 31
+              }
+            ]
+          },
+          {
+            "event": "complete",
+            "cpu": {
+              "created_100ns": 134366610919992989,
+              "exited_100ns": 0,
+              "kernel_100ns": 468750,
+              "user_100ns": 156250
+            }
+          }
+        ]
+      }
+    },
+    "boundary": "Owned unnamed-mutex observation proves local native wait-chain decoding, not a reproduced PowerShell timeout cause. Access denial, unsupported waits, missing entry or killed observer remain unknown. Supplemental failure cannot promote or replace the helper outcome."
+  },
+  "references": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/wct/nf-wct-getthreadwaitchain",
+    "https://learn.microsoft.com/en-us/windows/win32/api/wct/ns-wct-waitchain_node_info"
+  ],
+  "baseline_ci": {
+    "run": 38970418711,
+    "success_jobs": 12,
+    "failed_jobs": [
+      "Windows owned SMB loopback",
+      "macOS arm64 / Python 3.12"
+    ],
+    "apfs_evidence": "apfs-20261017-uuid-refusal.json"
+  },
+  "tree_experiment": {
+    "shipping_gui_changes": false,
+    "finding": "Ordinary-leaf flags removed per-leaf child-presence calls but did not establish overall improvement; prototype withdrawn. Host load uncontrolled; one concurrent sparse baseline ran alongside the initial wide baseline.",
+    "records": [
+      {
+        "path": "build/tree-leaf-100k-before.log",
+        "sha256": "98e46e2408bed28c06fcf85375446f2398a47057e384b10a94dff9f99fc859d8",
+        "result": {
+          "platform": "windows",
+          "files": 100000,
+          "selected": 100000,
+          "cycles": [
+            {
+              "cycle": 0,
+              "selection_models": 1,
+              "sort_ms": 37.17,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            },
+            {
+              "cycle": 1,
+              "selection_models": 1,
+              "sort_ms": 18.97,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            }
+          ],
+          "selection_mode": "all",
+          "before": false,
+          "sources_modified": false,
+          "switches": [
+            {
+              "filtered": true,
+              "selection_ranges": 1,
+              "ms": 1085.86,
+              "suppressed_sorts": []
+            },
+            {
+              "filtered": false,
+              "selection_ranges": 1,
+              "ms": 620.48,
+              "suppressed_sorts": []
+            }
+          ],
+          "updates": []
+        }
+      },
+      {
+        "path": "build/tree-leaf-100k-prototype.log",
+        "sha256": "2f0c9db07c3aa1c49a9e8cfe1ccd11e3090b8a1daddae09aa1f78b1c9532b519",
+        "result": {
+          "platform": "windows",
+          "files": 100000,
+          "selected": 100000,
+          "cycles": [
+            {
+              "cycle": 0,
+              "selection_models": 1,
+              "sort_ms": 39.08,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            },
+            {
+              "cycle": 1,
+              "selection_models": 1,
+              "sort_ms": 21.49,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            }
+          ],
+          "selection_mode": "all",
+          "before": false,
+          "sources_modified": false,
+          "switches": [
+            {
+              "filtered": true,
+              "selection_ranges": 1,
+              "ms": 975.67,
+              "suppressed_sorts": []
+            },
+            {
+              "filtered": false,
+              "selection_ranges": 1,
+              "ms": 793.96,
+              "suppressed_sorts": []
+            }
+          ],
+          "updates": []
+        }
+      },
+      {
+        "path": "build/tree-leaf-sparse-before.log",
+        "sha256": "7744fe69960d00c9a3b2924e8796bd52eadf70aaca72a40a2ff8c4432efdea11",
+        "result": {
+          "platform": "windows",
+          "files": 10000,
+          "selected": 100,
+          "cycles": [
+            {
+              "cycle": 0,
+              "selection_models": 1,
+              "sort_ms": 7.29,
+              "source_persistent_indexes": 201,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            },
+            {
+              "cycle": 1,
+              "selection_models": 1,
+              "sort_ms": 3.92,
+              "source_persistent_indexes": 201,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            }
+          ],
+          "selection_mode": "sparse",
+          "before": false,
+          "sources_modified": false,
+          "switches": [
+            {
+              "filtered": true,
+              "selection_ranges": 100,
+              "ms": 163.12,
+              "suppressed_sorts": []
+            },
+            {
+              "filtered": false,
+              "selection_ranges": 100,
+              "ms": 51.17,
+              "suppressed_sorts": []
+            }
+          ],
+          "updates": [
+            {
+              "query": "file-",
+              "ms": 456.07,
+              "gui_max_gap_ms": 264.89
+            },
+            {
+              "query": "FILE-",
+              "ms": 173.73,
+              "gui_max_gap_ms": 9.11
+            },
+            {
+              "query": "file-0",
+              "ms": 179.44,
+              "gui_max_gap_ms": 8.98
+            },
+            {
+              "query": "FILE-0",
+              "ms": 167.1,
+              "gui_max_gap_ms": 11.06
+            }
+          ]
+        }
+      }
+    ],
+    "prototype_patch_sha256": "92f4d5f2f5137a12b3bc2657a6bd848c3222c9505b5becbd96e47706f1981157"
+  },
+  "validation": {
+    "pytest": {
+      "passed": 2180,
+      "skipped": 54,
+      "junit_seconds": 304.613,
+      "console_seconds": 304.72,
+      "new_cases": [
+        "test_normal_and_failed_children_keep_exact_streams_and_status[0]",
+        "test_normal_and_failed_children_keep_exact_streams_and_status[7]",
+        "test_checked_failure_preserves_observation_and_actual_exit",
+        "test_timeout_keeps_all_output_once_reaps_child_and_does_not_retry",
+        "test_observation_error_does_not_replace_timeout",
+        "test_second_wait_uses_remaining_deadline_and_preserves_first_partial_output",
+        "test_interrupted_wait_reaps_only_its_captured_child_and_reraises[error0]",
+        "test_interrupted_wait_reaps_only_its_captured_child_and_reraises[error1]",
+        "test_observer_refuses_current_or_parent_process_without_native_queries",
+        "test_observer_refuses_non_sibling_before_wait_or_cpu_queries",
+        "test_thread_and_node_output_caps_and_native_errors_remain_visible",
+        "test_native_observer_reads_only_owned_live_child_and_balances_wait_session",
+        "test_observer_start_failure_keeps_helper_outcome",
+        "test_observer_output_caps_invalid_json_and_cancellation_do_not_invent_completion",
+        "test_reused_or_foreign_thread_id_is_refused_before_native_wait_query"
+      ]
+    },
+    "focused": "59 passed in 14.31 s in build/child-observer-final-focused.log",
+    "superseded_first_full": "2170 passed, 7 failed, 54 skipped in 309.76 s. Seven evidence-harness tests intercepted the previous subprocess.run entry point; update them to intercept run_observed while retaining outcome/deadline/stream/phase assertions. Final full also includes cancellation cleanup and thread-ID ownership checks added during that run.",
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ],
+    "logs": {
+      "build/child-observer-final-full.xml": "f27bac763fe837b71d3b40e4958278ed7217cc32735c6b21426bdfc915ab4e8e",
+      "build/child-observer-final-full-pytest.log": "930e80ecafc279cde9930342fa8149bfc786fd1dc5fe357ccfd21e8253539d68",
+      "build/child-observer-final-focused.log": "e45582cffb32945edd7448004cc6af95187a73d3d2acaa2b1e9c49ced0acdf39"
+    }
+  }
+}

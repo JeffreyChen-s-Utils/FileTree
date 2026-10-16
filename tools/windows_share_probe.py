@@ -21,6 +21,7 @@ from je_file_tree.core.cleanup import EMPTY_FOLDERS, find_cleanup  # noqa: E402
 from je_file_tree.core.coverage import coverage_of  # noqa: E402
 from je_file_tree.core.scanner import ACCESS_DENIED, ScanOptions, ScanResult, scan  # noqa: E402
 from tools.windows_owned_volume import require  # noqa: E402
+from tools.observed_process import run_observed  # noqa: E402
 
 _BRANCHES = 256
 _OPTIONS = ScanOptions(workers=1, file_times=True, exact_windows_allocation=True)
@@ -81,7 +82,8 @@ def _helper_record(result, started: float) -> dict:
     return {"outcome": outcome, "returncode": getattr(result, "returncode", None), "timeout_seconds": 30,
             "elapsed_seconds": round(time.monotonic()-started, 6), "stdout": stdout, "stderr": stderr,
             "stdout_truncated": out_truncated, "stderr_truncated": err_truncated,
-            "steps": steps, "invalid_step_records": invalid, "trace_complete": complete}
+            "steps": steps, "invalid_step_records": invalid, "trace_complete": complete,
+            "process_observation": getattr(result, "process_observation", {"status": "not-sampled"})}
 
 
 def _owned(args) -> Path:
@@ -188,10 +190,10 @@ def _disconnect(owned: Path, args) -> dict:
         pause.set()
         started = time.monotonic()
         try:
-            completed = subprocess.run(  # noqa: S603 - fixed native helper and receipt-checked owned fixture
+            completed = run_observed(
                 [str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),
                  "-DisposableRunner", "-DisconnectOnly", "-FixtureRoot", str(owned)],
-                check=True, timeout=30, capture_output=True, env=environment)
+                check=True, timeout=30, env=environment)
         except (subprocess.SubprocessError, OSError) as error:
             captured["helper"] = _helper_record(error, started)
             raise
