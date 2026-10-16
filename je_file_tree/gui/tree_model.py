@@ -111,12 +111,13 @@ class FolderTreeModel(QAbstractItemModel):
             ACCESSED: lambda node: format_time(node.accessed) if node.accessed is not None else tr("size_unknown"),
             CREATED: lambda node: format_time(node.created) if node.created is not None else tr("size_unknown"),
         }
+        self._node_role = lambda node, _column: node
         self._roles: dict[int, Callable[[Node, int], Any]] = {
             Qt.ItemDataRole.DisplayRole: self._display,
             Qt.ItemDataRole.TextAlignmentRole: lambda _node, column: _RIGHT if column in _NUMERIC_COLUMNS else None,
             Qt.ItemDataRole.DecorationRole: lambda node, column: self._icon(node) if column == NAME else None,
             Qt.ItemDataRole.ToolTipRole: self._column_tooltip,
-            NODE_ROLE: lambda node, _column: node,
+            NODE_ROLE: self._node_role,
             SHARE_ROLE: lambda node, column: (self._drive_share(node) if column == DRIVE_SHARE
                                               else node.share_of_parent()),
             Qt.ItemDataRole.ForegroundRole: lambda node, _column: _muted() if node.error == EXCLUDED else None,
@@ -206,6 +207,23 @@ class FolderTreeModel(QAbstractItemModel):
             children = self._ordered(folder) if folder is not None else []
             entry = children[row] if 0 <= row < len(children) else None
         return None if isinstance(entry, VirtualEntry) else entry
+
+    def plain_row_selection(self) -> bool:
+        """Whether complete selected ranges can use recorded identities without custom cell semantics."""
+        overrides = ("data", "entry_data", "flags", "_entry", "_virtual_data", "columnCount")
+        return (type(self) is FolderTreeModel and type(self).flags is QAbstractItemModel.flags
+                and not any(name in self.__dict__ for name in overrides)
+                and self._roles.get(NODE_ROLE) is self._node_role)
+
+    def row_nodes(self, first: int, last: int, parent: ModelIndex) -> list[Node]:
+        """Copy only real node references in one selected interval, without Qt indexes or descendants."""
+        if first < 0 or last < first or (parent.isValid() and (parent.model() is not self or parent.column() != 0)):
+            return []
+        folder = self._entry(parent)
+        if parent.isValid() and (folder is None or isinstance(folder, VirtualEntry)):
+            return []
+        rows = self.filesystem_rows(folder) if folder is not None else [self._root]
+        return [node for node in rows[first:last+1] if node is not None and not isinstance(node, VirtualEntry)]
 
     def filesystem_rows(self, parent: Node) -> list[Node] | tuple[()]:
         """Borrow current real-row candidates in source order; archive preview groups are wholly virtual."""

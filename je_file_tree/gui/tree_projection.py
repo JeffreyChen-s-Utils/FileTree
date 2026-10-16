@@ -201,6 +201,17 @@ class ExpandedTreeProxy(QAbstractProxyModel):
         """Qt: retain all source columns, including currently hidden ones."""
         return self._columns
 
+    def row_nodes(self, first: int, last: int, parent: ModelIndex) -> list[Node]:
+        """Copy real references from one visible selected interval in the current sibling mapping."""
+        if first < 0 or last < first or not self._accept_root():
+            return []
+        if not parent.isValid():
+            return [self._root] if first == 0 else []
+        node = self._entry(parent)
+        if node is None or parent.column() != 0:
+            return []
+        return self._group(node).nodes[first:last+1]
+
     def mapFromSource(self, index: ModelIndex) -> QModelIndex:
         """Qt: virtual preview entries and indexes from foreign models never become real rows."""
         source = self._source

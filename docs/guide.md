@@ -2,6 +2,8 @@
 
 [Project introduction and quick start](../README.md)
 
+Ordinary whole-row selections read their recorded node references directly from selected ranges before switching models. They avoid expanding every selected cell into Qt indexes, while still copying the selected references before callbacks can reorder or replace rows. Partial-cell selections, custom data/permissions and changed node-role handlers retain Qt row-selection checks. Virtual archive rows remain excluded; only selected sibling intervals are read, with no subtree traversal.
+
 When switching tree filters, adjacent selected rows within the same folder restore as one whole-column range. Gaps and folder boundaries stay separate; hidden and virtual entries remain excluded. This reduces range bookkeeping for large contiguous selections without reducing the selection.
 
 Ordinary Recycle Bin/Trash and protected-folder confirmation questions display the listed filenames

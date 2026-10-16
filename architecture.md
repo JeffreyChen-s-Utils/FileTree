@@ -138,8 +138,16 @@ then defer their destruction with `deleteLater`. Later caller-supplied models ar
 when parented to the tree; another view may still use them. Filter switching restores the current
 node, visible selection, expansion and header state before normal interaction resumes.
 
+For ordinary complete-column selections, `TreeFilter` captures node references directly from selected
+row intervals before rebinding. Source `plain_row_selection` requires the concrete standard model,
+unchanged instance data/flags/entry behavior and the original node-role handler. Custom models,
+proxy data/flags overrides and partial-column ranges retain Qt's `selectedRows` semantics. Source
+and projection `row_nodes` read only their current sibling order; virtual entries are excluded.
+Copy only selected node references before callbacks can sort or mutate the source, then use normal
+identity-based restoration. No per-cell Qt expansion, descendants or filesystem work is added.
+
 `FolderTreeModel.indexes_for` preserves input order and invalid positions while sharing the existing
-requested-sibling row lookup. Filter switching captures only real `NODE_ROLE` values, maps the batch
+requested-sibling row lookup. Filter switching captures only real filesystem nodes, maps the batch
 to visible indexes, groups them by parent and sorts their rows. Maximal adjacent runs become
 complete-column ranges in one `QItemSelection`; gaps and distinct parents never merge. The current index is restored
 separately without another selection update. Virtual archive rows expose no filesystem node and are

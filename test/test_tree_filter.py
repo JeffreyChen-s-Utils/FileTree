@@ -335,3 +335,40 @@ def test_switch_compacts_adjacent_rows_without_widening_selection(qapp, descendi
     finally:
         controller.shutdown()
         tree.close()
+
+
+@pytest.mark.parametrize("filtered", [False, True])
+def test_whole_row_switch_captures_nodes_without_per_cell_qt_expansion(qapp, monkeypatch, filtered):
+    from je_file_tree.gui.tree_filter import TreeFilter
+    from je_file_tree.gui.tree_model import FolderTreeModel
+
+    root = Node("root", True, children=[])
+    root.children.extend(Node(f"file-{row:04d}", False, size=500-row, parent=root) for row in range(500))
+    source = FolderTreeModel()
+    source.set_root(root)
+    tree = QTreeView()
+    tree.setModel(source)
+    controller = TreeFilter(tree, source, tree)
+    try:
+        tree.expand(source.index_for(root))
+        controller.proxy.allowed = frozenset(id(node) for node in root.children)
+        controller.proxy.setSourceModel(source)
+        if filtered:
+            controller._switch(True)
+        model = tree.model()
+        parent = controller.index_for(root)
+        picked = QItemSelection(model.index(20, 0, parent), model.index(479, model.columnCount()-1, parent))
+        selection = tree.selectionModel()
+        selection.select(picked, QItemSelectionModel.SelectionFlag.ClearAndSelect)
+        wanted = {index.data(NODE_ROLE) for index in selection.selectedRows()}
+
+        def expanded_rows(*_args):
+            raise AssertionError("whole-row capture expanded every selected cell through Qt")
+
+        monkeypatch.setattr(selection, "selectedRows", expanded_rows)
+        controller._switch(not filtered)
+        assert {index.data(NODE_ROLE) for index in tree.selectionModel().selectedRows()} == wanted
+        assert len(tree.selectionModel().selection()) == 1
+    finally:
+        controller.shutdown()
+        tree.close()
