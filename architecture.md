@@ -1302,7 +1302,10 @@ raw Qt size-boundary probing remains confined to fresh owned disposable fixtures
 it accepts no image/device/volume selector. Native partition-map entries identify the image disk,
 separately from the synthesized APFS container. Before each phase/detach it checks image and scratch
 identities, native image mapping, exact private mountpoint/name and volume UUID. No forced detach is
-used; uncertain attachments are retained and never recursively cleaned up. `validate_macos_volume.py`
+used; uncertain attachments are retained and never recursively cleaned up. Attachment-refusal errors
+include bounded observed device/mountpoint pairs and allowed private paths, retained in phase JSON.
+This diagnosis does not add an attach/detach attempt, retry, alternate mountpoint or cleanup permission.
+`validate_macos_volume.py`
 compares statvfs-bracketed capacity, ordinary file st_blocks, sparse/compressed/native clone fixtures,
 one/last/all hard-link recovery estimates and private current-uid bin logical versus allocated bytes.
 Actual free-space deltas retain deferred reclamation/metadata uncertainty; unknown shared/reserved

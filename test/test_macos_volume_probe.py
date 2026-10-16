@@ -69,7 +69,8 @@ def test_macos_savings_marks_unknown_shared_extents_without_a_positive_lower_bou
     assert value.recoverable_max == tree.children[0].allocated
 
 
-def test_attachment_foreign_mount_refuses_before_diskutil(tmp_path, monkeypatch):
+@pytest.mark.parametrize("mounted", [True, False])
+def test_attachment_refusal_records_observed_and_allowed_mounts_before_diskutil(tmp_path, monkeypatch, mounted):
     image = object.__new__(owned.OwnedImage)
     image.owned, image.root = tmp_path, tmp_path / "volume"
     image._mountpoints = {image.root}
@@ -78,9 +79,22 @@ def test_attachment_foreign_mount_refuses_before_diskutil(tmp_path, monkeypatch)
     metadata = {"images": [{"image-path": str(image.image), "system-entities": [
         {"dev-entry": "/dev/disk9", "content-hint": "GUID_partition_scheme"},
         {"dev-entry": "/dev/disk10s1", "mount-point": str(Path(tmp_path).parent)}]}]}
-    monkeypatch.setattr(owned, "plist", lambda args: metadata)
-    with pytest.raises(RuntimeError, match="escaped"):
+    if not mounted:
+        del metadata["images"][0]["system-entities"][1]["mount-point"]
+    calls = []
+
+    def information(args):
+        assert args == ["/usr/bin/hdiutil", "info", "-plist"]
+        calls.append(args)
+        return metadata
+
+    monkeypatch.setattr(owned, "plist", information)
+    with pytest.raises(RuntimeError, match="escaped") as error:
         image._attachment()
+    assert (str(tmp_path.parent) if mounted else "<unmounted>") in str(error.value)
+    assert str(image.root) in str(error.value)
+    assert "/dev/disk10s1" in str(error.value)
+    assert len(calls) == 1
 
 
 def test_detach_error_retains_attached_state_and_never_runs_cleanup(tmp_path, monkeypatch):

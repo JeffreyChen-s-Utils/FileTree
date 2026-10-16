@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#96** (P1) Resolve CI run 38886523231: Windows/Python 3.13 rejects the Git-error fixture's version-specific message, and the macOS APFS probe retained its owned fixture during cleanup. Inspect the retained native artifact and verify fixes in fresh CI; local Windows tests cannot establish native APFS cleanup.
+- **#96** (P1) Verify the malformed-Gitfile error fixture in fresh Windows CI; inspect native APFS attachment-refusal diagnostics and resolve the private-mountpoint cleanup failure from run 38886523231. Its APFS phases validated, but cleanup retained the fixture without recording observed mountpoints. Verify actual cleanup in fresh CI; local Windows tests cannot establish native APFS cleanup, and ownership refusals must remain enforced.
 
 - **#95** (P1) Audit remaining GUI-thread subtree statistics in `ResultsView.forget`, tree/model sorting, result-table completion and settings/shell/native GUI calls. Verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
 

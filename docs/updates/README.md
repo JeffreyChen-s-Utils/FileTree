@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-03 | 2026-10-16 | Stabilize invalid-Gitfile tests and retain APFS refusal details | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |
 | U-20261016-02 | 2026-10-16 | Remove slow font fallback from wrapping chart legends | #fix #gui #performance #accessibility | [2026-10-c](2026-10-c.md) |
 | U-20261016-01 | 2026-10-16 | Cancel obsolete folder summaries and reject stale replies | #fix #gui #threads #analysis | [2026-10-c](2026-10-c.md) |
 | U-20261010-01 | 2026-10-10 | Simplify project introductions across all five languages | #docs #readme | [2026-10-c](2026-10-c.md) |

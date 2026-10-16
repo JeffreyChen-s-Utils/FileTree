@@ -59,6 +59,14 @@ def plist(arguments: list[str]) -> dict:
     return value
 
 
+def _mountpoint_diagnostic(entries: list[dict], allowed: set[Path]) -> str:
+    observed = "; ".join(str(entry.get("dev-entry", "<missing>"))[:128] + " -> "
+                         + str(entry.get("mount-point", "<unmounted>"))[:512] for entry in entries[:8])
+    expected = "; ".join(str(path)[:512] for path in sorted(allowed)[:8])
+    return (f"Image escaped the private fixture mountpoint; observed [{observed}] "
+            f"({len(entries)} entities); allowed [{expected}] ({len(allowed)} paths)")
+
+
 class OwnedImage:
     """Only one freshly created private image/device; uncertain detach leaves the scratch directory intact."""
 
@@ -119,9 +127,9 @@ class OwnedImage:
         entries = entities(images[0])
         require(image_device(images[0]) == self.device, "Owned image device changed")
         points = [entry["mount-point"] for entry in entries if entry.get("mount-point")]
-        require(points and all(isinstance(point, str) and Path(point).resolve() in self._mountpoints
-                               for point in points),
-                "Image escaped the private fixture mountpoint")
+        if not points or not all(isinstance(point, str) and Path(point).resolve() in self._mountpoints
+                                 for point in points):
+            raise RuntimeError(_mountpoint_diagnostic(entries, self._mountpoints))
         return images[0]
 
     def new_mountpoint(self) -> Path:
