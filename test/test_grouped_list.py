@@ -173,3 +173,72 @@ def test_empty_group_labels_need_no_model_notification(qapp):
     model.dataChanged.connect(lambda *_: changed.append(True))
     model.set_group_labels([])
     assert model.rowCount() == 0 and not changed
+
+
+@pytest.mark.parametrize("initial", ["old", "none", "same", "outside"])
+def test_keeper_updates_only_matching_name_cells_without_replacing_members(qapp, initial):
+    model = GroupedListModel()
+    tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Fatal)
+    old, chosen, other = Node("old", False), Node("chosen", False), Node("other", False)
+    nodes = [old, chosen, other, chosen, old]
+    kept = {"old": old, "none": None, "same": chosen, "outside": Node("outsider", False)}[initial]
+    model.set_groups([("captured", nodes), ("untouched", [other])], "MB",
+                     tips=["tip", "other tip"], keepers=[kept, other])
+    captured = model._groups[0].nodes
+    parent = model.index(0, 0)
+    pinned = QPersistentModelIndex(model.index(3, 2, parent))
+    changes, resets = [], []
+    model.dataChanged.connect(lambda first, last, roles: changes.append((first, last, roles)))
+    model.modelReset.connect(lambda: resets.append(True))
+    model.set_group_keeper(0, chosen)
+    expected = [] if initial == "same" else ([0, 1, 3, 4] if initial == "old" else [1, 3])
+    assert [first.row() for first, _last, _roles in changes] == expected
+    for first, last, roles in changes:
+        assert first == last and first.parent() == parent and first.column() == 0
+        assert set(roles) == {Qt.DisplayRole, Qt.FontRole}
+    for row, node in enumerate(nodes):
+        index = model.index(row, 0, parent)
+        assert index.data(NODE_ROLE) is node
+        assert bool(index.data(Qt.FontRole)) == (node is chosen)
+        assert (index.data() != node.name) == (node is chosen)
+    assert pinned.isValid() and pinned.data(NODE_ROLE) is chosen and not resets
+    assert model._groups[0].nodes is captured and model._unit == "MB"
+    assert parent.data() == "captured" and parent.data(Qt.ToolTipRole) == "tip"
+    assert model.index(0, 0, model.index(1, 0)).data(Qt.FontRole).bold() and tester.model() is model
+
+
+@pytest.mark.parametrize("row", [-1, 1])
+def test_invalid_keeper_group_leaves_the_model_unchanged(qapp, row):
+    model = GroupedListModel()
+    node = Node("captured", False)
+    model.set_groups([("group", [node])], "auto")
+    with pytest.raises(IndexError, match="outside"):
+        model.set_group_keeper(row, node)
+    assert model.index(0, 0, model.index(0, 0)).data(Qt.FontRole) is None
+
+
+def test_foreign_keeper_is_refused_before_existing_roles_change(qapp):
+    model = GroupedListModel()
+    old = Node("old", False)
+    model.set_groups([("group", [old])], "auto", keepers=[old])
+    changes = []
+    model.dataChanged.connect(lambda *_: changes.append(True))
+    with pytest.raises(ValueError, match="belong"):
+        model.set_group_keeper(0, Node("old", False))
+    assert model.index(0, 0, model.index(0, 0)).data(Qt.FontRole).bold() and not changes
+
+
+def test_large_keeper_change_uses_captured_identities_without_formatting_members(qapp, monkeypatch):
+    model = GroupedListModel()
+    nodes = [Node(str(row), False) for row in range(20_000)]
+    old, chosen = nodes[0], nodes[-1]
+    model.set_groups([("group", nodes)], "auto", keepers=[old])
+    nodes.clear()
+    def unexpected(*_args):
+        pytest.fail("Keeper changes must not query file cells or sort member paths")
+    monkeypatch.setattr(model, "data", unexpected)
+    changes = []
+    model.dataChanged.connect(lambda first, _last, _roles: changes.append(first.row()))
+    model.set_group_keeper(0, chosen)
+    assert changes == [0, 19_999] and model.rowCount(model.index(0, 0)) == 20_000
+    assert model._groups[0].kept is chosen

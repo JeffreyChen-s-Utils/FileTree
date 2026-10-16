@@ -196,7 +196,9 @@ class DuplicatesPanel(QWidget):
             return
         self._groups[row] = replace(self._groups[row], kept=node)
         self._savings = None
-        self._rebuild()
+        # Native 100k-member choice: 811 ms rebuilding versus 15 ms in place (U-20261017-22).
+        self.model.set_group_keeper(row, node)
+        self._refresh_group_labels()
         self._start_estimate()
 
     def decisions_for(self, nodes: list[Node]) -> list[DuplicateGroup]:
@@ -407,9 +409,12 @@ class DuplicatesPanel(QWidget):
     def _show_savings(self, savings: DuplicateSavings) -> None:
         self._estimator = None
         self._savings = savings
+        self._refresh_group_labels()
+        self._update()
+
+    def _refresh_group_labels(self) -> None:
         titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]
         self.model.set_group_labels([(title, title) for title in titles])
-        self._update()
 
     def _savings_text(self, value: Savings) -> str:
         maximum = value.recoverable_max

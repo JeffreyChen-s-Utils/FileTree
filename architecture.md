@@ -1129,8 +1129,18 @@ selection, persistent/current indexes, collapsed groups, scroll and column geome
 Separate root notifications avoid Qt traversing intervening member rows in a broad root range.
 The existing worker-identity guard rejects late estimates after replacement or cancellation, and
 the updated savings/issues still gate extra-copy selection. `ListCapture` aborts on these data
-notifications, preventing mixed estimate labels in an in-progress export. Membership changes and
-other existing rebuild triggers retain their reset behavior.
+notifications, preventing mixed estimate labels in an in-progress export. Membership, language and
+unit changes retain their reset behavior.
+
+`DuplicatesPanel.choose_kept_copy` replaces only its current decision, clears all previous
+savings/checks, marks the captured member through `GroupedListModel.set_group_keeper`, refreshes
+bounded group labels and starts the existing estimate/check worker. The model validates group and
+member identity before mutation, retains every captured member tuple and notifies only old/new
+keeper first-column display/font cells, including repeated identities. It never reads file metadata
+or sorts members. Current/persistent indexes, selections, collapse and column state survive;
+ordinary viewport resizing can clamp scroll to the available range. The original search result is
+unchanged. Busy/late-worker guards, explicit-keeper bulk exclusions and operation review remain in
+place; units/language/membership still use their existing rebuilds.
 
 `GroupedListModel.extra_selection` scans only captured displayed members by identity and builds
 complete-column ranges around explicit keepers. Missing/foreign keepers contribute no ranges; every

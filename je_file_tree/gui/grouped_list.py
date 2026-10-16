@@ -86,6 +86,24 @@ class GroupedListModel(QAbstractItemModel):
                 index = self.index(row, 0)
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole])
 
+    def set_group_keeper(self, row: int, kept: Node) -> None:
+        """Mark a captured member as keeper, updating only old/new keeper name and font roles."""
+        if not 0 <= row < len(self._groups):
+            raise IndexError("Keeper group is outside the captured list")
+        group = self._groups[row]
+        positions = [position for position, node in enumerate(group.nodes) if node is kept or node is group.kept]
+        if not any(group.nodes[position] is kept for position in positions):
+            raise ValueError("Keeper must belong to the captured group")
+        if group.kept is kept:
+            return
+        updated = list(self._groups)
+        updated[row] = replace(group, kept=kept)
+        self._groups = tuple(updated)
+        parent = self.index(row, 0)
+        for position in positions:
+            index = self.index(position, 0, parent)
+            self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.FontRole])
+
     def index(self, row: int, column: int, parent: ModelIndex = QModelIndex()) -> QModelIndex:  # noqa: B008
         """Use zero for a group and its one-based group number for a child index ID."""
         if row < 0 or not 0 <= column < len(COLUMNS):
