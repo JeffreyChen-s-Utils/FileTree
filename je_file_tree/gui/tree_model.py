@@ -247,6 +247,35 @@ class FolderTreeModel(QAbstractItemModel):
         return self.createIndex(row, 0, node) if row >= 0 else QModelIndex()
 
     def selection_rows(self, nodes: Iterable[Node]) -> dict[QModelIndex, list[int]]:
+        """Resolve selected rows in temporary parent-local maps, keeping shared file caches bounded."""
+        # Native 100k selected files formerly retained 100k shared row entries (2026-10-17).
+        if (type(self)._row_of is not FolderTreeModel._row_of
+                or type(self)._prime_rows is not FolderTreeModel._prime_rows
+                or any(name in self.__dict__ for name in ("_row_of", "_prime_rows"))):
+            return self._cached_selection_rows(nodes)
+        groups: dict[Node | None, list[Node]] = {}
+        for node in nodes:
+            if not isinstance(node, VirtualEntry) and self._visible(node):
+                groups.setdefault(None if node is self._root else node.parent, []).append(node)
+        result = {}
+        for parent, entries in groups.items():
+            index = self.index_for(parent) if parent is not None else QModelIndex()
+            if parent is not None and not index.isValid():
+                continue
+            if parent is None:
+                result[index] = [0] * len(entries)
+                continue
+            wanted = set(entries)
+            if len(wanted) < _BATCHED_ROW_MINIMUM:
+                positions = {node: self._row_of(node) for node in wanted}
+            else:
+                positions = {node: row for row, node in enumerate(self._ordered(parent)) if node in wanted}
+            rows = [row for node in entries if (row := positions.get(node, -1)) >= 0]
+            if rows:
+                result[index] = rows
+        return result
+
+    def _cached_selection_rows(self, nodes: Iterable[Node]) -> dict[QModelIndex, list[int]]:
         """Resolve selected real nodes to parent/row groups, creating only parent indexes."""
         entries = [node for node in nodes if not isinstance(node, VirtualEntry) and self._visible(node)]
         self._prime_rows([(node, 0) for node in entries if node is not self._root])

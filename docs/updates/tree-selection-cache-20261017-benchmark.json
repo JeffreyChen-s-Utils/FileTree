@@ -1,0 +1,765 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "fda513b27d13ee1575c5b34d22020e2a58f0e999",
+  "baseline_model_lf_sha256": "914db2a3275ac3ff54061a867afd9777ade1be792b9432f1e45e39446111d5be",
+  "prepare_baseline": {
+    "git_ref": "fda513b27d13ee1575c5b34d22020e2a58f0e999",
+    "source_path": "je_file_tree/gui/tree_model.py",
+    "destination": "build/tree_model_selection_groups_baseline.py",
+    "method": "Write exact UTF-8 bytes returned by git show; avoid shell encoding conversion."
+  },
+  "commands": [
+    "py -3 build/measure_selection_row_groups.py 100000 1 --baseline-rows",
+    "py -3 build/measure_selection_row_groups.py 100000 1",
+    "Add --map-stats for separate retained-cache observations, --profile for separate CPU profiles.",
+    "Sparse: replace count with 10000 and add --sparse --updates."
+  ],
+  "runtime": {
+    "python": "3.14.4",
+    "pyside": "6.11.2",
+    "platform": "Windows-11-10.0.26300-SP0"
+  },
+  "sources": {
+    "je_file_tree/gui/tree_model.py": {
+      "lf_sha256": "38fed69e644440b863f5e8d7b3a2d1d9c7ca0e3e5e6527185e1abe1be6b3fe8e",
+      "ast_sha256": "3a6c498c0d1bd5a9cd71572239664eb1128e6d2a1e2a912da7cfe81bd954b8c2"
+    },
+    "je_file_tree/gui/tree_filter.py": {
+      "lf_sha256": "c7e675a5a1133d16392ff91617cbb1fd44367e91e5dd3749c7b8eec1cc18d888",
+      "ast_sha256": "a875d22102eb93c5daeea7b9f5ae7cdba2e6445e1ad6c31b70a6cdde1a89f7ea"
+    },
+    "je_file_tree/gui/tree_projection.py": {
+      "lf_sha256": "03daff18826889dd3a2705b51d4a3881b0920002eec7281e2aa56b410726c11a",
+      "ast_sha256": "41c3d280df922e63bbbcbb5dabab7ea555f996f707ed329a222c5fb04e251aff"
+    }
+  },
+  "method": [
+    "Separate hidden native Windows QApplication processes, 100000 synthetic sibling nodes/all selected, no filesystem scan or source operation. Each checks exact selected identities, current order, one selection model and shared header ownership.",
+    "Three alternating before/after pairs use the exact published baseline selection_rows function extracted by AST versus final product selection_rows. Every other existing model method and both controller/projection modules remain unchanged. The old body is retained exactly as _cached_selection_rows for private lookup/priming overrides.",
+    "The harness legacy 'before' result boolean belongs to an unused older TreeFilter option. This record's variant/label plus --baseline-rows select the measured row-mapping implementation.",
+    "Source remained unchanged during measurement; final LF/AST digests are captured. Cache-instrumented, sparse and profiled processes are separate from the six unprofiled timing samples.",
+    "Host load is uncontrolled. Per-direction medians improve, but individual cases regress, including final 100k filtered 1643.59 versus paired baseline 977.46 ms. Combined-cycle medians 2133.44 versus 2028.97 ms do not establish a fixed or uniform acceleration. Sparse directions are mixed. Qt selection/view-layout pauses remain.",
+    "The reliable cache result is 100000 shared file rows retained by baseline versus zero newly retained by final dense mapping. Existing cache entries remain valid; only the ordinary selection path changes. Generic indexes_for, persistent priming, threshold 16 and custom lookup fallback retain existing behavior."
+  ],
+  "summary": {
+    "before": {
+      "filter_median_ms": 1123.63,
+      "clear_median_ms": 1127.35,
+      "combined_median_ms": 2133.44,
+      "samples_ms": [
+        [
+          1221.4,
+          1127.35
+        ],
+        [
+          1123.63,
+          669.08
+        ],
+        [
+          977.46,
+          1155.98
+        ]
+      ]
+    },
+    "after": {
+      "filter_median_ms": 969.61,
+      "clear_median_ms": 573.39,
+      "combined_median_ms": 2028.97,
+      "samples_ms": [
+        [
+          936.62,
+          573.39
+        ],
+        [
+          969.61,
+          1059.36
+        ],
+        [
+          1643.59,
+          514.32
+        ]
+      ]
+    }
+  },
+  "runs": [
+    {
+      "label": "100k-1-before",
+      "variant": "before",
+      "raw_log": "build/selection-cache-100k-1-before.log",
+      "sha256": "aa2a7439ddfc5b1926e42b074bfa00f0a4b19f5d95f7676ee97bb2509cdd577b",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 32.25,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 35.31,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 1221.4,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 1127.35,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-1-after",
+      "variant": "after",
+      "raw_log": "build/selection-cache-100k-1-after.log",
+      "sha256": "79a399b8eb3f9d161dbe6534d3f349a4c1a40bdf21cd6df67cd3b67190f6301e",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 38.07,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 20.73,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 936.62,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 573.39,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-2-after",
+      "variant": "after",
+      "raw_log": "build/selection-cache-100k-2-after.log",
+      "sha256": "1be8312a46c10f768eeea87b7154cb85bd5c7b978cbdb982252790e547c2a26c",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 34.18,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 46.74,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 969.61,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 1059.36,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-2-before",
+      "variant": "before",
+      "raw_log": "build/selection-cache-100k-2-before.log",
+      "sha256": "79c17401efd61cfac79060cbce116ddaa4673ed506307138fe1ce8e225ed661b",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 36.13,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 19.35,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 1123.63,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 669.08,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-3-before",
+      "variant": "before",
+      "raw_log": "build/selection-cache-100k-3-before.log",
+      "sha256": "ef8ab86cf4eb36708eda9ad369d13642ada36b9d0f3f44e0140a87fbe9eefb67",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 35.05,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 38.71,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 977.46,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 1155.98,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-3-after",
+      "variant": "after",
+      "raw_log": "build/selection-cache-100k-3-after.log",
+      "sha256": "22b87704b74a007941192f347c69f9cbba1498b00bd9b82d68281155d6006a96",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 78.87,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 17.93,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 1643.59,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 514.32,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    }
+  ],
+  "cache_observations": {
+    "before": {
+      "raw_log": "build/selection-cache-final-cache-before.log",
+      "sha256": "e1c874541c8c87b8c27288705fe507c74711468e8cd6bbaf4348bf24714bdedc",
+      "result": [
+        {
+          "platform": "windows",
+          "files": 100000,
+          "selected": 100000,
+          "cycles": [
+            {
+              "cycle": 0,
+              "selection_models": 1,
+              "sort_ms": 34.69,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            },
+            {
+              "cycle": 1,
+              "selection_models": 1,
+              "sort_ms": 20.29,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            }
+          ],
+          "selection_mode": "all",
+          "before": false,
+          "sources_modified": false,
+          "switches": [
+            {
+              "filtered": true,
+              "selection_ranges": 1,
+              "ms": 941.33,
+              "suppressed_sorts": []
+            },
+            {
+              "filtered": false,
+              "selection_ranges": 1,
+              "ms": 602.74,
+              "suppressed_sorts": []
+            }
+          ],
+          "updates": []
+        },
+        {
+          "mapping_records": [
+            {
+              "cache_before": 0,
+              "cache_after": 100000,
+              "mapped_positions": 100000
+            },
+            {
+              "cache_before": 100000,
+              "cache_after": 100000,
+              "mapped_positions": 100000
+            }
+          ]
+        }
+      ]
+    },
+    "after": {
+      "raw_log": "build/selection-cache-final-cache-after.log",
+      "sha256": "1f300266e1406f8b98bd9688a75efe2de561424e055a8312a0e61e5dc97f1890",
+      "result": [
+        {
+          "platform": "windows",
+          "files": 100000,
+          "selected": 100000,
+          "cycles": [
+            {
+              "cycle": 0,
+              "selection_models": 1,
+              "sort_ms": 36.41,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            },
+            {
+              "cycle": 1,
+              "selection_models": 1,
+              "sort_ms": 20.23,
+              "source_persistent_indexes": 4,
+              "selection_owners": {
+                "QTreeView": 1,
+                "QHeaderView": 0
+              },
+              "header_shares_active_selection": true
+            }
+          ],
+          "selection_mode": "all",
+          "before": false,
+          "sources_modified": false,
+          "switches": [
+            {
+              "filtered": true,
+              "selection_ranges": 1,
+              "ms": 857.11,
+              "suppressed_sorts": []
+            },
+            {
+              "filtered": false,
+              "selection_ranges": 1,
+              "ms": 493.98,
+              "suppressed_sorts": []
+            }
+          ],
+          "updates": []
+        },
+        {
+          "mapping_records": [
+            {
+              "cache_before": 0,
+              "cache_after": 0,
+              "mapped_positions": 100000
+            },
+            {
+              "cache_before": 0,
+              "cache_after": 0,
+              "mapped_positions": 100000
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "sparse": {
+    "before": {
+      "raw_log": "build/selection-cache-sparse-before.log",
+      "sha256": "019976497e38152fb7e84c6774feb13f942564c27601572fd6874c2dc5462c2b",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 100,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 7.33,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 6.75,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "sparse",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 100,
+            "ms": 78.9,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 100,
+            "ms": 111.21,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 302.34,
+            "gui_max_gap_ms": 84.41
+          },
+          {
+            "query": "FILE-",
+            "ms": 166.69,
+            "gui_max_gap_ms": 8.66
+          },
+          {
+            "query": "file-0",
+            "ms": 163.77,
+            "gui_max_gap_ms": 9.36
+          },
+          {
+            "query": "FILE-0",
+            "ms": 215.0,
+            "gui_max_gap_ms": 33.68
+          }
+        ]
+      }
+    },
+    "after": {
+      "raw_log": "build/selection-cache-sparse-after.log",
+      "sha256": "5183c3d7ec04f946aa53e7feda82cea6a1f36826d1fcfd03d3a8f14be6279e21",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 100,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 20.04,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 3.84,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "sparse",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 100,
+            "ms": 109.75,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 100,
+            "ms": 53.46,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 360.16,
+            "gui_max_gap_ms": 170.22
+          },
+          {
+            "query": "FILE-",
+            "ms": 179.23,
+            "gui_max_gap_ms": 14.13
+          },
+          {
+            "query": "file-0",
+            "ms": 182.74,
+            "gui_max_gap_ms": 8.81
+          },
+          {
+            "query": "FILE-0",
+            "ms": 176.45,
+            "gui_max_gap_ms": 12.1
+          }
+        ]
+      }
+    }
+  },
+  "profiles": {
+    "before": {
+      "raw_log": "build/selection-cache-profile-before.log",
+      "sha256": "2be63063f9f7a5f274810abfb216d85862e488e4ba2cb32713b84d54f64474bc",
+      "mapping_line": "        2    0.405    0.202    1.157    0.578 D:\\Codes\\FileTree\\build\\tree_model_selection_groups_baseline.py:249(selection_rows)",
+      "mapping_seconds": 1.157,
+      "function_calls": 8903703,
+      "switch_seconds": 5.067
+    },
+    "after": {
+      "raw_log": "build/selection-cache-profile-after.log",
+      "sha256": "be607b937447bffb7a4d08fae517ca7bf2f3d63d83298dbec5da69980c3f8521",
+      "mapping_line": "        2    0.222    0.111    0.368    0.184 D:\\Codes\\FileTree\\je_file_tree\\gui\\tree_model.py:249(selection_rows)",
+      "mapping_seconds": 0.368,
+      "function_calls": 7303705,
+      "switch_seconds": 2.749
+    }
+  },
+  "regressions": {
+    "red": "Two retained-cache failures after exact mapping/one-pass assertions already succeed; twenty other new semantic cases pass before source correction.",
+    "focused": "113 passed in 16.87s",
+    "log_sha256": "1e901c6e241383f1693a7d37d22d15432228424f092f5d0ab2d730e9d6368b4d",
+    "red_log_sha256": "50dd14082cb696f9326cb2c9f1b293a1fcb45aebbc065a12050263a12d84c308"
+  },
+  "harness": {
+    "build/measure_selection_row_groups.py": {
+      "lf_sha256": "39b91f05d3d2bfa312c70c0c053bcfdc2e5b3e790f8fb32f7d50952b07150df4",
+      "source": "\"\"\"Evaluate temporary selected-row grouping without changing product source.\"\"\"\nfrom __future__ import annotations\n\nimport ast\nfrom pathlib import Path\nimport runpy\nimport sys\n\nroot = Path(__file__).resolve().parents[1]\nsys.path.insert(0, str(root))\nfrom PySide6.QtCore import QModelIndex\nfrom je_file_tree.core.archives import VirtualEntry\nfrom je_file_tree.gui.tree_model import FolderTreeModel, _BATCHED_ROW_MINIMUM\n\nif '--baseline-rows' in sys.argv:\n    sys.argv.remove('--baseline-rows')\n    path = root / 'build/tree_model_selection_groups_baseline.py'\n    tree = ast.parse(path.read_text(encoding='utf-8'))\n    source_class = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'FolderTreeModel')\n    function = next(node for node in source_class.body if isinstance(node, ast.FunctionDef) and node.name == 'selection_rows')\n    namespace = dict(globals())\n    exec(compile(ast.Module(body=[function], type_ignores=[]), str(path), 'exec'), namespace)\n    FolderTreeModel.selection_rows = namespace['selection_rows']\n\ndef grouped_rows(self, nodes):\n    groups = {}\n    for node in nodes:\n        if not isinstance(node, VirtualEntry) and self._visible(node):\n            groups.setdefault(None if node is self._root else node.parent, []).append(node)\n    result = {}\n    for parent, entries in groups.items():\n        index = self.index_for(parent) if parent is not None else QModelIndex()\n        if parent is not None and not index.isValid():\n            continue\n        if parent is None:\n            result[index] = [0] * len(entries)\n            continue\n        wanted = set(entries)\n        if len(wanted) < _BATCHED_ROW_MINIMUM:\n            positions = {node: self._row_of(node) for node in wanted}\n        else:\n            positions = {node: row for row, node in enumerate(self._ordered(parent)) if node in wanted}\n        rows = [row for node in entries if (row := positions.get(node, -1)) >= 0]\n        if rows:\n            result[index] = rows\n    return result\n\nif '--group-rows' in sys.argv:\n    sys.argv.remove('--group-rows')\n    FolderTreeModel.selection_rows = grouped_rows\nmapping_records = []\nif '--map-stats' in sys.argv:\n    sys.argv.remove('--map-stats')\n    original = FolderTreeModel.selection_rows\n    def mapping(self, nodes):\n        before = len(self._rows)\n        result = original(self, nodes)\n        mapping_records.append({'cache_before': before, 'cache_after': len(self._rows),\n                                'mapped_positions': sum(map(len, result.values()))})\n        return result\n    FolderTreeModel.selection_rows = mapping\nif '--verify' in sys.argv:\n    sys.argv.remove('--verify')\n    import pytest\n    raise SystemExit(pytest.main(sys.argv[1:]))\nrunpy.run_path(str(root / 'build/measure_filter_endpoints.py'), run_name='__main__')\nif mapping_records:\n    import json\n    print(json.dumps({'mapping_records': mapping_records}))\n"
+    },
+    "build/measure_filter_endpoints.py": {
+      "lf_sha256": "106e8ef7d8a3f16bf5e98d604a41c1002a840bc42c989bc080638b9ee6edb772",
+      "source": "\"\"\"Synthetic native filter cycling; no source operations or filesystem traversal.\"\"\"\nimport json\nimport sys\nimport time\nimport cProfile\nimport pstats\nfrom contextlib import nullcontext\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1]))\nfrom PySide6.QtCore import QCoreApplication, QEvent, QItemSelection, QItemSelectionModel, Qt, QTimer\nfrom PySide6.QtWidgets import QApplication\nfrom je_file_tree.core.analysis import category_stats, summarise\nfrom je_file_tree.core.node import Node\nfrom je_file_tree.core.scanner import ScanResult\nfrom je_file_tree.gui.i18n import set_language\nfrom je_file_tree.gui.results_view import ResultsView\nfrom je_file_tree.gui.scan_worker import ScanOutcome\nfrom je_file_tree.gui.tree_model import NAME, NODE_ROLE\nfrom je_file_tree.gui.tree_filter import ExpandedTreeProxy\nfrom je_file_tree.gui.tree_model import FolderTreeModel\n\nif '--before' in sys.argv:\n    import importlib.util\n    import je_file_tree.gui.results_view as results_module\n    spec = importlib.util.spec_from_file_location('selection_baseline', Path(__file__).with_name('tree_filter_endpoint_baseline.py'))\n    baseline = importlib.util.module_from_spec(spec)\n    sys.modules[spec.name] = baseline\n    spec.loader.exec_module(baseline)\n    results_module.TreeFilter = baseline.TreeFilter\n\nif '--legacy-predicate' in sys.argv:\n    def legacy_predicate(self, row, parent):\n        source = self.sourceModel()\n        if source is None:\n            return False\n        node = source.index(row, 0, parent).data(NODE_ROLE)\n        return node is source.root or node is not None and id(node) in self.allowed\n    ExpandedTreeProxy.filterAcceptsRow = legacy_predicate\n\nif '--leaf-flags' in sys.argv:\n    def leaf_flags(self, index):\n        flags = super(FolderTreeModel, self).flags(index)\n        node = self._entry(index)\n        if (node is not None and not node.is_dir and not node.children\n                and node not in self._archives and not node.name.lower().endswith(('.zip', '.7z', '.rar'))):\n            flags |= Qt.ItemFlag.ItemNeverHasChildren\n        return flags\n    FolderTreeModel.flags = leaf_flags\n\nif '--direct-predicate' in sys.argv:\n    def direct_predicate(self, row, parent):\n        source = self.sourceModel()\n        if source is None:\n            return False\n        if not parent.isValid():\n            node = source.root if row == 0 else None\n        else:\n            children = source._ordered(source._entry(parent))\n            node = children[row] if 0 <= row < len(children) else None\n        return node is source.root or node is not None and id(node) in self.allowed\n    ExpandedTreeProxy.filterAcceptsRow = direct_predicate\n\nif '--proxy-flags' in sys.argv:\n    def proxy_flags(self, index):\n        return (Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable\n                if index.isValid() else Qt.ItemFlag.NoItemFlags)\n    ExpandedTreeProxy.flags = proxy_flags\n\nif '--cached-leaf-flags' in sys.argv:\n    BASE_FLAGS = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable\n    LEAF_FLAGS = BASE_FLAGS | Qt.ItemFlag.ItemNeverHasChildren\n    def cached_leaf_flags(self, index):\n        node = self._entry(index)\n        if node is None:\n            return Qt.ItemFlag.NoItemFlags\n        if (not node.is_dir and not node.children and node not in self._archives\n                and not self._orders.get(id(node))\n                and not node.name.lower().endswith(('.zip', '.7z', '.rar'))):\n            return LEAF_FLAGS\n        return BASE_FLAGS\n    FolderTreeModel.flags = cached_leaf_flags\n\nif '--defer-repaint' in sys.argv:\n    from je_file_tree.gui.tree_filter import TreeFilter\n    original_switch = TreeFilter._switch\n    def deferred_switch(self, filtered):\n        enabled = self.tree.updatesEnabled()\n        self.tree.setUpdatesEnabled(False)\n        try:\n            return original_switch(self, filtered)\n        finally:\n            self.tree.setUpdatesEnabled(enabled)\n    TreeFilter._switch = deferred_switch\n\napp = QApplication([])\nset_language('en')\nheartbeat = QTimer(app)\nheartbeat.setInterval(5)\nlast_tick = time.perf_counter()\ngaps = []\ndef tick():\n    global last_tick\n    now = time.perf_counter()\n    gaps.append((now-last_tick)*1000)\n    last_tick = now\nheartbeat.timeout.connect(tick)\nheartbeat.start()\ncount = int(sys.argv[1]) if len(sys.argv) > 1 else 20000\ncycles = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 5\nroot = Node('filter-lifetime-records', True, children=[], file_count=count)\nroot.children.extend(Node(f'file-{n:06d}.bin', False, size=count-n, file_count=1, parent=root)\n                     for n in range(count))\nroot.size = sum(node.size for node in root.children)\nsummary = summarise(root, now=1800000000)\nview = ResultsView()\nview.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)\nview.resize(1200, 800)\nview.show_outcome(ScanOutcome(ScanResult(root, [], 0), summary.largest, summary.extensions,\n                              category_stats(summary.extensions), summary.ages, summary.now))\nview.show()\napp.processEvents()\nparent = view.tree_model.index(0, 0)\npicked = QItemSelection()\nmode = 'sparse' if '--sparse' in sys.argv else 'all'\nwanted = set(root.children[::100] if mode == 'sparse' else root.children)\nif mode == 'sparse':\n    for row in range(0, count, 100):\n        index = view.tree_model.index(row, NAME, parent)\n        picked.select(index, index)\nelse:\n    picked.select(view.tree_model.index(0, NAME, parent), view.tree_model.index(count-1, NAME, parent))\nview.tree.selectionModel().select(picked, QItemSelectionModel.SelectionFlag.ClearAndSelect\n                                 | QItemSelectionModel.SelectionFlag.Rows)\nswitches = []\nswitch = view.tree_filter._switch\nprofiler = cProfile.Profile() if '--profile' in sys.argv else None\ndef measured_switch(filtered):\n    started = time.perf_counter()\n    original_sort = view.tree_model.sort\n    original_preserve = view.tree_model.preserve_sort\n    if '--force-rebind-sort' in sys.argv:\n        view.tree_model.preserve_sort = nullcontext\n    requested_sorts = []\n    if '--skip-rebind-sort' in sys.argv:\n        def same_sort(column, order):\n            assert (column, order) == (view.tree_model._sort_column, view.tree_model._sort_order)\n            requested_sorts.append((column, str(order)))\n        view.tree_model.sort = same_sort\n    if profiler:\n        profiler.enable()\n    try:\n        return switch(filtered)\n    finally:\n        view.tree_model.sort = original_sort\n        view.tree_model.preserve_sort = original_preserve\n        if profiler:\n            profiler.disable()\n        switches.append({'filtered': filtered, 'selection_ranges': len(view.tree.selectionModel().selection()), 'ms': round((time.perf_counter()-started)*1000, 2),\n                         'suppressed_sorts': requested_sorts})\nview.tree_filter._switch = measured_switch\nready = view.tree_filter._ready\nif '--skip-unchanged' in sys.argv:\n    def changed_ready(worker, allowed):\n        controller = view.tree_filter\n        if (not controller._closed and worker is controller._current and not worker.cancel.is_set()\n                and worker.root is controller.source.root and controller.proxy.allowed == allowed\n                and controller.proxy.sourceModel() is controller.source and controller.tree.model() is controller.proxy):\n            return\n        ready(worker, allowed)\n    view.tree_filter._ready = changed_ready\n\ndef settle():\n    deadline = time.monotonic() + 30\n    while view.tree_filter.timer.isActive() or view.tree_filter._workers:\n        assert time.monotonic() < deadline\n        app.processEvents()\n        time.sleep(.005)\n    app.processEvents()\n    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)\n\ndef observe(cycle):\n    started = time.perf_counter()\n    view.tree.sortByColumn(NAME, Qt.SortOrder.DescendingOrder)\n    elapsed = (time.perf_counter()-started)*1000\n    settle()\n    assert {index.data(NODE_ROLE) for index in view.tree.selectionModel().selectedRows()} == wanted\n    return {'cycle': cycle, 'selection_models': len(view.tree.findChildren(QItemSelectionModel)),\n            'sort_ms': round(elapsed, 2), 'source_persistent_indexes': len(view.tree_model.persistentIndexList()),\n            'selection_owners': {type(owner).__name__: len(owner.findChildren(\n                QItemSelectionModel, options=Qt.FindChildOption.FindDirectChildrenOnly))\n                for owner in (view.tree, view.tree.header())},\n            'header_shares_active_selection': view.tree.header().selectionModel() is view.tree.selectionModel()}\n\ntry:\n    results = [observe(0)]\n    updates = []\n    if '--updates' in sys.argv:\n        for query in ('file-', 'FILE-', 'file-0', 'FILE-0'):\n            started = time.perf_counter()\n            gaps.clear()\n            last_tick = started\n            view.tree_filter.line.setText(query)\n            settle()\n            ended = time.perf_counter()\n            elapsed = (ended-started)*1000\n            max_gap = max([*gaps, (ended-last_tick)*1000])\n            assert view.tree.model() is view.tree_filter.proxy\n            assert view.tree_filter.proxy.rowCount(view.tree_filter.index_for(root)) == count\n            assert {index.data(NODE_ROLE) for index in view.tree.selectionModel().selectedRows()} == wanted\n            updates.append({'query': query, 'ms': round(elapsed, 2), 'gui_max_gap_ms': round(max_gap, 2)})\n    for cycle in range(1, cycles + 1):\n        view.tree_filter.line.setText('file-')\n        settle()\n        assert view.tree.model() is view.tree_filter.proxy\n        view.tree_filter.line.clear()\n        settle()\n        assert view.tree.model() is view.tree_model\n        results.append(observe(cycle))\n    print(json.dumps({'platform': app.platformName(), 'files': count, 'selected': len(wanted),\n                      'cycles': results, 'selection_mode': mode, 'before': '--before' in sys.argv, 'sources_modified': False, 'switches': switches, 'updates': updates}))\n    if profiler:\n        pstats.Stats(profiler).sort_stats('cumulative').print_stats(24)\nfinally:\n    view.tree_filter.shutdown()\n    for panel in (view.search, view.duplicates, view.cleanup, view.users, view.changes, view.details):\n        panel.stop(wait=True)\n    view.wait_for_lists()\n    view.close()\n"
+    }
+  },
+  "baseline_ci": {
+    "run": 38974152846,
+    "all_14_jobs": "success",
+    "macos_artifact_id": 12078527672,
+    "three_apfs_samples": "All cleanup verified with one ordinary detach. New unmounted recovery branch not executed; #96 remains open."
+  },
+  "boundary": "Partial #95. No appearance change; all five product PNGs remain unchanged. Actual owner hanging paths, native UAC and #96/#99/#100 remain unverified. This change awaits its own hosted run.",
+  "validation": {
+    "passed": 2242,
+    "skipped": 54,
+    "junit_seconds": 388.105,
+    "console_seconds": 388.22,
+    "new_cases": [
+      "test_bulk_selection_does_not_grow_the_shared_file_row_cache[1]",
+      "test_bulk_selection_does_not_grow_the_shared_file_row_cache[8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-0-False-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-0-False-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-0-True-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-0-True-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-1-False-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-1-False-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-1-True-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[False-1-True-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-0-False-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-0-False-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-0-True-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-0-True-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-1-False-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-1-False-40]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-1-True-8]",
+      "test_groups_preserve_input_order_duplicates_scope_and_frozen_membership[True-1-True-40]",
+      "test_custom_row_lookup_keeps_its_existing_mapping_semantics[False-_row_of]",
+      "test_custom_row_lookup_keeps_its_existing_mapping_semantics[False-_prime_rows]",
+      "test_custom_row_lookup_keeps_its_existing_mapping_semantics[True-_row_of]",
+      "test_custom_row_lookup_keeps_its_existing_mapping_semantics[True-_prime_rows]"
+    ],
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ],
+    "logs": {
+      "build/selection-cache-full.xml": "e6a6674360e3e487e947b20319f6bba685900d9cb111fc8ee3c9d0d5aed2f333",
+      "build/selection-cache-full-pytest.log": "559bf67e464c63644cb7d9427efbf0106f1d2dcf4fc7d20917b31640c63c2484"
+    }
+  }
+}

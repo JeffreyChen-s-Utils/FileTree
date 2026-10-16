@@ -146,9 +146,14 @@ and projection `row_nodes` read only their current sibling order; virtual entrie
 Copy only selected node references before callbacks can sort or mutate the source, then use normal
 identity-based restoration. No per-cell Qt expansion, descendants or filesystem work is added.
 
-`FolderTreeModel.selection_rows` resolves selected real nodes to parent/row groups with the existing
-requested-row priming threshold and cache. Create only parent indexes; exclude missing, virtual and
-out-of-scope entries. `ExpandedTreeProxy.map_selection_rows` validates mapped parents/ancestors,
+`FolderTreeModel.selection_rows` groups selected references by parent and resolves each group in a
+temporary position map. At least sixteen distinct entries use one sibling pass; smaller groups
+retain existing row lookup. Preserve input order/duplicates and existing caches without filling the
+shared file-row cache with every selected file. Resolve only requested parents and their current
+sorted/frozen rows; exclude missing, virtual and out-of-scope entries. Instance/subclass overrides
+of `_row_of` or `_prime_rows` keep the prior `_cached_selection_rows` implementation. Generic
+`indexes_for`, persistent-index priming and invalidation remain unchanged. Create only parent indexes.
+`ExpandedTreeProxy.map_selection_rows` validates mapped parents/ancestors,
 then projects coordinates through each group's increasing source-row buffer. The controller sorts
 and merges adjacent row positions, constructing full-column selection indexes only at range endpoints.
 Distinct parents and gaps never merge. One `QItemSelection` update restores the result; the current
