@@ -12,9 +12,10 @@ requested rows, rather than repeatedly searching the same wide folder.
 
 While a scan is still running (``live``), worker threads keep appending
 children and growing sizes. The model then shows, for each folder, a sorted
-copy of its children taken the first time the folder is asked for, and keeps
+copy of its children taken the first time its rows are asked for, and keeps
 using that copy until ``refresh()``: the view never sees a list change under
-it, and each refresh re-sorts by the sizes reached so far.
+it, including initially empty groups. Expander checks only inspect child presence;
+they do not sort, copy or freeze unopened groups.
 """
 
 from __future__ import annotations
@@ -293,11 +294,17 @@ class FolderTreeModel(QAbstractItemModel):
         return len(COLUMN_KEYS)
 
     def hasChildren(self, parent: ModelIndex = QModelIndex()) -> bool:  # noqa: B008
-        """Qt: whether ``parent`` can be expanded (cheaper than counting rows)."""
+        """Qt: inspect existing/frozen child presence without sorting or copying unopened rows."""
         if not parent.isValid():
             return self._root is not None
         node = self._entry(parent)
-        return parent.column() == 0 and node is not None and (bool(self._ordered(node)) or self.canFetchMore(parent))
+        if parent.column() != 0 or node is None:
+            return False
+        children = self._orders.get(id(node))
+        if children is None:
+            children = self._archives.get(node, node.children)
+        # Ten unopened folders: the old check sorted/copied 200k rows (101.82 ms, 2026-10-16).
+        return bool(children) or self.canFetchMore(parent)
 
     def canFetchMore(self, parent: ModelIndex) -> bool:
         """Offer archive expansion only for completed, recorded regular-file entries."""
@@ -517,8 +524,8 @@ class FolderTreeModel(QAbstractItemModel):
         children = self._archives.get(folder, folder.children)
         if children:
             self._queried_parents.add(folder)
-        if not children or (self._is_default_order() and not self._live
-                            and folder not in self._size_order_changed):
+        if not self._live and (not children or (self._is_default_order()
+                                               and folder not in self._size_order_changed)):
             return children
         cached = self._orders.get(id(folder))
         if cached is None:

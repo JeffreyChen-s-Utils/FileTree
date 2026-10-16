@@ -67,6 +67,9 @@ child-list rewrite is added.
 Only completed-tree `sort()` emits `VerticalSortHint` on both layout signals, following the
 [Qt same-parent, unchanged-membership contract](https://doc.qt.io/qtforpython-6.11/PySide6/QtCore/QAbstractItemModel.html).
 Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since their membership may change.
+`hasChildren` reads an existing order snapshot or raw/archive child presence without creating a sort,
+copy or presentation-group registration. Explicit live row queries freeze even initially empty groups
+until refresh; merely checking the expander does not freeze an unqueried group.
 
 Unit/capacity changes instead emit column- and role-specific
 [same-parent `dataChanged` ranges](https://doc.qt.io/qtforpython-6/PySide6/QtCore/QAbstractItemModel.html#PySide6.QtCore.QAbstractItemModel.dataChanged)
@@ -77,6 +80,12 @@ them on root reset. Formatting retains frozen live orders and skips unchanged va
 the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
 accepted identities explicitly. Display-only updates forward data without reevaluating every name;
 structural changes still trigger the existing worker refresh and persistent-index remapping.
+After validating a worker reply, the proxy stores its captured expanded-folder set as `searched`.
+For an unsearched parent, including a collapsed root, `hasChildren` skips child mapping and only
+preserves the source's lazy archive-fetch offer. Searched groups and the top-level root container
+retain Qt's normal filtered child check. `None` means no worker snapshot is available and keeps Qt's
+default behavior for standalone proxies. Root reset drops captured references, retaining an empty
+snapshot only when one previously existed; clearing the filter restores `None` after unbinding.
 Its row predicate reads `FolderTreeModel.node_at(row, source_parent)` directly. This identity-only
 lookup uses the same lazy `_ordered` cache and row bounds as Qt indexes, retaining frozen live rows
 without allocating a temporary index or dispatching `NODE_ROLE` for each candidate. It returns no

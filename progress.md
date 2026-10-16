@@ -2,12 +2,10 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #98 (unopened-child sorting), then #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #95 (remaining UI hangs), then the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
-
-- **#98** (P1) Keep `FolderTreeModel.hasChildren` from sorting or materializing unopened descendant groups merely to test for an expander. Verify cheap child-presence checks against frozen live rows, archive previews and actual view expansion; keep row membership stable until explicit refresh where already queried. The current `_ordered` call can copy and sort unopened children on the GUI thread.
 
 - **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt results for a reproduced busy/refusal sequence to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 

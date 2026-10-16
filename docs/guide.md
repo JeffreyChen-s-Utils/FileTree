@@ -16,6 +16,10 @@ matches still update normally, even when the number of matches stays the same. S
 the scan does not trigger a second tree rebuild when the background query returns unchanged matches.
 Tree-filter membership reads current sorted or frozen row identities directly, avoiding temporary Qt
 indexes and data-role dispatch for each row. Virtual previews and an empty scan remain excluded.
+Checking a folder's expander does not sort, copy or freeze its unopened children. During filtering,
+the worker's expansion snapshot also prevents mappings for unsearched groups. Eligible archives keep
+their on-demand preview offer. Explicit row queries freeze live membership, including initially empty
+groups; arrivals become visible after the next scan refresh.
 Visible items are restored together as a full-row selection. Changing tree filters drops display-only
 archive selections while keeping physical files and scan totals unchanged.
 
