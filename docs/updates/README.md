@@ -67,6 +67,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-03 | 2026-10-17 | Verify corrected macOS GUI tests and retain native APFS busy-refusal evidence | #done #ci #test #apfs | [2026-10-c](2026-10-c.md) |
+| U-20261017-02 | 2026-10-17 | Record literal-name rendering in cleanup approval prompts | #snapshot #gui #test | [2026-10-c](2026-10-c.md) |
 | U-20261017-01 | 2026-10-17 | Synchronize held Undo completion with explicit fixture ownership | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
 | U-20261016-27 | 2026-10-16 | Inspect failed replacement moves while expiring Undo offers | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
 | U-20261016-26 | 2026-10-16 | Preserve mocked-helper wait phases and bound unattended failure-report tests | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
