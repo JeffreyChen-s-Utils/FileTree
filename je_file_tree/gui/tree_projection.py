@@ -212,6 +212,27 @@ class ExpandedTreeProxy(QAbstractProxyModel):
             return []
         return self._group(node).nodes[first:last+1]
 
+    def map_selection_rows(self, groups: dict[QModelIndex, list[int]]) -> dict[QModelIndex, list[int]]:
+        """Project source row groups using numeric coordinates; hidden ancestors cannot create roots."""
+        if self._source is None or not self._accept_root():
+            return {}
+        result = {}
+        for parent, positions in groups.items():
+            if not parent.isValid():
+                if 0 in positions:
+                    result[QModelIndex()] = [0]
+                continue
+            if parent.model() is not self._source or parent.column() != 0:
+                continue
+            mapped = self.mapFromSource(parent)
+            if not mapped.isValid():
+                continue
+            group = self._group(self._source.node(parent))
+            rows = [row for position in positions if (row := group.position(position)) is not None]
+            if rows:
+                result[mapped] = rows
+        return result
+
     def mapFromSource(self, index: ModelIndex) -> QModelIndex:
         """Qt: virtual preview entries and indexes from foreign models never become real rows."""
         source = self._source

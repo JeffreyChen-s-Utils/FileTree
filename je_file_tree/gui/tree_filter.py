@@ -206,6 +206,34 @@ class TreeFilter(QObject):
         return [node for index in selection.selectedRows() if isinstance(node := index.data(NODE_ROLE), Node)]
 
     def _selection(self, nodes: list[Node], filtered: bool) -> QItemSelection:
+        """Use numeric row groups for standard mapping, retaining custom index delegation."""
+        # Native 100k whole rows: filter/clear 3.19/1.69 s -> 1.34/0.94 s (2026-10-17).
+        source_overrides = ("index", "parent", "index_for", "indexes_for")
+        proxy_overrides = ("index", "parent", "mapFromSource")
+        plain = (self.source.plain_row_selection()
+                 and not any(name in self.source.__dict__ for name in source_overrides)
+                 and (not filtered or (type(self.proxy) is ExpandedTreeProxy
+                                       and not any(name in self.proxy.__dict__ for name in proxy_overrides))))
+        if not plain:
+            return self._index_selection(nodes, filtered)
+        groups = self.source.selection_rows(nodes)
+        if filtered:
+            groups = self.proxy.map_selection_rows(groups)
+        picked = QItemSelection()
+        model = self.tree.model()
+        last_column = model.columnCount()-1
+        for parent, positions in groups.items():
+            rows = sorted(set(positions))
+            first = last = rows[0]
+            for row in rows[1:]:
+                if row != last+1:
+                    picked.select(model.index(first, 0, parent), model.index(last, last_column, parent))
+                    first = row
+                last = row
+            picked.select(model.index(first, 0, parent), model.index(last, last_column, parent))
+        return picked
+
+    def _index_selection(self, nodes: list[Node], filtered: bool) -> QItemSelection:
         """Restore whole selected rows in maximal adjacent ranges within each visible parent."""
         # Native Windows, 2026-10-17: 10k selected rows restored as 10k ranges took
         # 3.21 s filtered / 6.11 s clear, versus 0.60 / 1.36 s with one adjacent range.

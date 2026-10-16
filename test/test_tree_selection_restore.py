@@ -192,3 +192,41 @@ def test_switch_with_selected_virtual_preview_never_treats_it_as_a_filesystem_en
     assert virtual not in root.children and virtual.is_dir is False
 
 
+
+
+@pytest.mark.parametrize("filtered", [False, True])
+def test_restoring_contiguous_rows_creates_only_range_endpoint_indexes(qapp, monkeypatch, filtered):
+    from PySide6.QtWidgets import QTreeView
+    from je_file_tree.gui.tree_filter import TreeFilter
+
+    root = _outcome(1000).result.root
+    source = FolderTreeModel()
+    source.set_root(root)
+    tree = QTreeView()
+    tree.setModel(source)
+    controller = TreeFilter(tree, source, tree)
+    try:
+        tree.expand(source.index_for(root))
+        controller.proxy.allowed = frozenset(id(node) for node in root.children)
+        controller.proxy.setSourceModel(source)
+        if filtered:
+            controller._switch(True)
+        created = []
+        with monkeypatch.context() as patch:
+            for model in (source, controller.proxy):
+                original = model.createIndex
+
+                def create_index(*args, original=original):
+                    created.append(True)
+                    return original(*args)
+
+                patch.setattr(model, "createIndex", create_index)
+            picked = controller._selection([root, *reversed(root.children)], filtered)
+            assert len(created) < 40, "selection restoration allocated an index for each selected file"
+        assert len(picked) == 2
+        indexes = picked.indexes()
+        assert {index.data(NODE_ROLE) for index in indexes} == {root, *root.children}
+        assert len(indexes) == (len(root.children)+1) * source.columnCount()
+    finally:
+        controller.shutdown()
+        tree.close()

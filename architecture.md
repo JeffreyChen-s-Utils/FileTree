@@ -146,12 +146,17 @@ and projection `row_nodes` read only their current sibling order; virtual entrie
 Copy only selected node references before callbacks can sort or mutate the source, then use normal
 identity-based restoration. No per-cell Qt expansion, descendants or filesystem work is added.
 
-`FolderTreeModel.indexes_for` preserves input order and invalid positions while sharing the existing
-requested-sibling row lookup. Filter switching captures only real filesystem nodes, maps the batch
-to visible indexes, groups them by parent and sorts their rows. Maximal adjacent runs become
-complete-column ranges in one `QItemSelection`; gaps and distinct parents never merge. The current index is restored
-separately without another selection update. Virtual archive rows expose no filesystem node and are
-excluded before mapping, preventing the old `None.is_in` failure without authorizing file actions.
+`FolderTreeModel.selection_rows` resolves selected real nodes to parent/row groups with the existing
+requested-row priming threshold and cache. Create only parent indexes; exclude missing, virtual and
+out-of-scope entries. `ExpandedTreeProxy.map_selection_rows` validates mapped parents/ancestors,
+then projects coordinates through each group's increasing source-row buffer. The controller sorts
+and merges adjacent row positions, constructing full-column selection indexes only at range endpoints.
+Distinct parents and gaps never merge. One `QItemSelection` update restores the result; the current
+index is restored separately. Source instance overrides of `index`, `parent`, `index_for` or
+`indexes_for`, and proxy overrides of `index`, `parent` or `mapFromSource`, retain the index-based
+mapping path alongside custom model/data/permission fallback. `FolderTreeModel.indexes_for` still
+preserves input order and invalid positions for these callers. Virtual archive entries never authorize
+file actions and remain excluded before either mapping path. No whole-tree or filesystem walk is added.
 
 Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
 scope, starting/replacing a result or closing invalidates the active reply before retiring its

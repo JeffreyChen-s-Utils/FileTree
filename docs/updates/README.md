@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-14 | 2026-10-17 | Restore selected row groups using only range endpoint indexes | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-13 | 2026-10-17 | Capture complete selected rows from recorded node ranges | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-12 | 2026-10-17 | Compact adjacent selected rows when switching tree filters | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-11 | 2026-10-17 | Map filtered sibling groups directly while preserving source semantics | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |

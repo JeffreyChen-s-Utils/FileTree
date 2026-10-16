@@ -2,6 +2,8 @@
 
 [Project introduction and quick start](../README.md)
 
+Restoring ordinary tree selections groups the recorded nodes by parent, resolves their row positions and projects only numeric coordinates into filtered groups. Qt indexes are created for adjacent-range endpoints rather than every selected entry. Hidden ancestors, virtual members and gaps remain excluded; custom index mappings retain their existing delegation. Current items, whole-row selection, expansion and header state are preserved.
+
 Ordinary whole-row selections read their recorded node references directly from selected ranges before switching models. They avoid expanding every selected cell into Qt indexes, while still copying the selected references before callbacks can reorder or replace rows. Partial-cell selections, custom data/permissions and changed node-role handlers retain Qt row-selection checks. Virtual archive rows remain excluded; only selected sibling intervals are read, with no subtree traversal.
 
 When switching tree filters, adjacent selected rows within the same folder restore as one whole-column range. Gaps and folder boundaries stay separate; hidden and virtual entries remain excluded. This reduces range bookkeeping for large contiguous selections without reducing the selection.

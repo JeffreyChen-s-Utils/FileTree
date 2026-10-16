@@ -246,6 +246,22 @@ class FolderTreeModel(QAbstractItemModel):
         row = self._row_of(node)
         return self.createIndex(row, 0, node) if row >= 0 else QModelIndex()
 
+    def selection_rows(self, nodes: Iterable[Node]) -> dict[QModelIndex, list[int]]:
+        """Resolve selected real nodes to parent/row groups, creating only parent indexes."""
+        entries = [node for node in nodes if not isinstance(node, VirtualEntry) and self._visible(node)]
+        self._prime_rows([(node, 0) for node in entries if node is not self._root])
+        groups: dict[Node | None, list[int]] = {}
+        for node in entries:
+            row = 0 if node is self._root else self._row_of(node)
+            if row >= 0:
+                groups.setdefault(None if node is self._root else node.parent, []).append(row)
+        result = {}
+        for parent, rows in groups.items():
+            index = self.index_for(parent) if parent is not None else QModelIndex()
+            if parent is None or index.isValid():
+                result[index] = rows
+        return result
+
     def indexes_for(self, nodes: Iterable[Node]) -> list[QModelIndex]:
         """Find column-zero indexes in input order, batching wide sibling searches and keeping invalid slots."""
         entries = list(nodes)
