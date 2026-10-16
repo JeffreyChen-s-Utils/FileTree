@@ -12,6 +12,7 @@ from je_file_tree.gui.i18n import tr
 
 from test_elevation import window as window  # noqa: PLC0414 - isolated settings and teardown
 from je_file_tree.gui import elevation
+from je_file_tree.gui.startup_state import WorkspaceState, workspace_state
 
 
 def test_relaunch_wait_keeps_the_gui_timer_live(window, qapp, monkeypatch):
@@ -75,7 +76,8 @@ def test_close_waits_for_launch_and_success_still_closes_the_original(window, qa
     try:
         window.restart_as_admin()
         assert observations == [(True, True, False)]
-        assert calls == [["captured folder"]]
+        assert len(calls) == 1
+        assert workspace_state(calls[0]) == WorkspaceState(("captured folder",), options=(window._scan_options(),))
         assert bool(closed) is started
         assert not closed or closed == [threading.get_ident()]
         assert not window._settings_dialogs and window._actions["elevate"].isEnabled()

@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-17 | 2026-10-17 | Retain per-tab scan choices through administrator restart | #snapshot #fix #gui #settings | [2026-10-d](2026-10-d.md) |
 | U-20261017-16 | 2026-10-17 | Preserve workspace scan scopes across administrator restart | #snapshot #fix #gui #startup | [2026-10-d](2026-10-d.md) |
 | U-20261017-15 | 2026-10-17 | Keep administrator relaunch responsive through native approval | #snapshot #fix #gui #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-14 | 2026-10-17 | Restore selected row groups using only range endpoint indexes | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |

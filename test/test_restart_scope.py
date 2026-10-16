@@ -13,7 +13,7 @@ def test_combined_scan_restart_does_not_lose_its_roots(window, monkeypatch, tmp_
     monkeypatch.setattr(elevation, "relaunch_elevated", lambda arguments: requested.append(list(arguments)) or False)
     window.restart_as_admin()
     assert requested and requested[0], "combined-root restart discarded its entire scan scope"
-    assert workspace_state(requested[0]) == WorkspaceState((roots,))
+    assert workspace_state(requested[0]) == WorkspaceState((roots,), options=(window._scan_options(),))
 
 
 def test_restart_captures_visual_tab_order_and_active_combined_scope(workspace, monkeypatch, tmp_path):
@@ -26,7 +26,9 @@ def test_restart_captures_visual_tab_order_and_active_combined_scope(workspace, 
     requested = []
     monkeypatch.setattr(elevation, "relaunch_elevated", lambda arguments: requested.append(list(arguments)) or False)
     second.restart_as_admin()
-    assert workspace_state(requested[0]) == WorkspaceState((None, first._last_path, second._last_roots), 2)
+    assert workspace_state(requested[0]) == WorkspaceState((None, first._last_path, second._last_roots), 2,
+                                                                (empty._scan_options(), first._scan_options(),
+                                                                 second._scan_options()))
     assert workspace.tabs.widget(0) is empty and not workspace._closing
 
 
@@ -36,7 +38,8 @@ def test_closing_tabs_are_excluded_from_restart(workspace):
     closing._last_roots, closing._closing = ("closing root",), True
     workspace.tabs.setCurrentWidget(first)
     try:
-        assert workspace.restart_arguments() == ["retained"]
+        assert workspace_state(workspace.restart_arguments()) == WorkspaceState(
+            ("retained",), options=(first._scan_options(),))
     finally:
         closing._closing = False
 

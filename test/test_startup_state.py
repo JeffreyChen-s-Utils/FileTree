@@ -14,6 +14,7 @@ from test_gui import _wait
 from test_workspace_gui import workspace as workspace  # noqa: PLC0414 - owned lifecycle
 from je_file_tree.gui import app
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState, workspace_state
+from je_file_tree.core.scanner import ScanOptions
 
 
 def _argument(value):
@@ -157,8 +158,11 @@ def test_owned_roots_rescan_without_becoming_mutation_approval(workspace, qapp, 
 @pytest.mark.skipif(sys.platform != "win32", reason="native Windows command-line decoding")
 @pytest.mark.parametrize("prefix", [["C:/Program Files/FileTree.exe"],
                                    ["C:/Program Files/Python/pythonw.exe", "-m", "je_file_tree"]])
-def test_windows_command_line_preserves_workspace_metadata_verbatim(prefix):
-    state = WorkspaceState((None, ("D:/資料 & spaces", 'E:/quoted"name\\tail'), "C:/single"), 1)
+@pytest.mark.parametrize("with_options", [False, True])
+def test_windows_command_line_preserves_workspace_metadata_verbatim(prefix, with_options):
+    options = tuple(ScanOptions(file_times=bool(index % 2), workers=3, exclude=("cache",))
+                    for index in range(3)) if with_options else None
+    state = WorkspaceState((None, ("D:/資料 & spaces", 'E:/quoted"name\\tail'), "C:/single"), 1, options)
     arguments = state.arguments()
     parse = ctypes.windll.shell32.CommandLineToArgvW
     parse.argtypes, parse.restype = [ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_int)], ctypes.POINTER(ctypes.c_wchar_p)

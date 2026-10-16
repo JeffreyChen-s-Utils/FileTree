@@ -15,6 +15,7 @@ import je_file_tree
 from je_file_tree.core import scanner
 from je_file_tree.gui import app, elevation, i18n
 from je_file_tree.gui.app import create_window, wants_admin_prompt
+from je_file_tree.gui.startup_state import WorkspaceState, workspace_state
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow
 from je_file_tree.gui.qt_translation import apply_qt_translation
 
@@ -116,7 +117,8 @@ def test_restarting_passes_the_folder_and_a_declined_prompt_keeps_this_copy(
     monkeypatch.setattr(elevation, "relaunch_elevated", lambda arguments: asked.append(arguments) or False)
     window._last_path = str(tmp_path)
     window.restart_as_admin()
-    assert asked == [[str(tmp_path)]]
+    assert len(asked) == 1
+    assert workspace_state(asked[0]) == WorkspaceState((str(tmp_path),), options=(window._scan_options(),))
     assert window.statusBar().currentMessage() == "FileTree is still running without administrator rights."
     closed: list[bool] = []
     monkeypatch.setattr(window, "close", lambda: closed.append(True))
@@ -151,4 +153,5 @@ def test_denied_folders_bring_the_offer_to_the_problems_tab(window: MainWindow, 
     window.results.elevate_requested.connect(lambda: requested.append(True))
     window.results._elevate_button.click()
     assert requested == [True]
-    assert asked == [[str(sample_tree)]], "the button restarts FileTree on the same folder"
+    assert len(asked) == 1
+    assert workspace_state(asked[0]) == WorkspaceState((str(sample_tree),), options=(window._scan_options(),))

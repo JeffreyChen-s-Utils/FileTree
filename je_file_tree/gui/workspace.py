@@ -15,6 +15,8 @@ from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
 from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
+from je_file_tree.gui.scan_preferences import ScanDefaults
+from je_file_tree.core.scanner import ScanOptions
 
 
 class ScanWorkspace(QMainWindow):
@@ -25,6 +27,7 @@ class ScanWorkspace(QMainWindow):
         self._language_base_font = self.font()
         self.settings = settings
         self.operations = OperationGroup()
+        self._scan_defaults: ScanDefaults | None = None
         self.tabs = QTabWidget(self)
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(True)
@@ -60,6 +63,7 @@ class ScanWorkspace(QMainWindow):
 
     def _insert(self, window: MainWindow) -> None:
         window._operations = self.operations
+        window._scan_defaults = self._scan_defaults
         window._close_all = self.quit_application
         window._restart_arguments = self.restart_arguments
         window._background_settings = self.background.configure_dialog
@@ -77,13 +81,19 @@ class ScanWorkspace(QMainWindow):
         self.new_button.setEnabled(self.tabs.count() < MAX_TABS)
         self.operations.refresh(window)
 
+    def restore_scan_preferences(self, options: tuple[ScanOptions, ...]) -> None:
+        """Share imported process defaults while retaining each tab's independent checked flags."""
+        self._scan_defaults = ScanDefaults(options[0].workers, options[0].exclude)
+        for index, preferences in enumerate(options):
+            self.tabs.widget(index).restore_scan_preferences(preferences, self._scan_defaults)
+
     def restart_arguments(self) -> list[str]:
         """Capture live tabs in visual order; restart performs fresh scans of their explicit roots."""
         windows = [self.tabs.widget(index) for index in range(self.tabs.count())
                    if not self.tabs.widget(index)._closing]
         scopes = tuple(window._last_roots or window._last_path or None for window in windows)
         active = windows.index(self.current) if self.current in windows else 0
-        return WorkspaceState(scopes, active).arguments()
+        return WorkspaceState(scopes, active, tuple(window._scan_options() for window in windows)).arguments()
 
     def add_tab(self, folder: str | None = None) -> MainWindow | None:
         """Create a separate result/worker owner, bounded to sixteen simultaneous tabs."""

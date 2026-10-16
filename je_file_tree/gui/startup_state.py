@@ -8,11 +8,14 @@ import json
 from typing import TYPE_CHECKING
 
 from je_file_tree.core.multi_scan import MAX_ROOTS
+from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.gui.scan_preferences import (decode_scan_preferences, encode_scan_preferences, valid_scan_preferences)
 
 if TYPE_CHECKING:
     from je_file_tree.gui.workspace import ScanWorkspace
 
 MAX_TABS = 16
+_OPTIONS_VERSION = 2
 _PREFIX = "--restore-workspace="
 _MAX_PAYLOAD = 1024 * 1024
 ScanScope = str | tuple[str, ...] | None
@@ -47,23 +50,28 @@ class WorkspaceState:
 
     tabs: tuple[ScanScope, ...]
     active: int = 0
+    options: tuple[ScanOptions, ...] | None = None
 
     def __post_init__(self) -> None:
         if (type(self.tabs) is not tuple or not 1 <= len(self.tabs) <= MAX_TABS
                 or not all(_valid_scope(scope) for scope in self.tabs)
                 or type(self.active) is not int or not 0 <= self.active < len(self.tabs)):
             raise ValueError("Invalid workspace restart scope or active tab")
+        if self.options is not None and not valid_scan_preferences(self.options, len(self.tabs)):
+            raise ValueError("Invalid workspace restart scan preferences")
 
     def arguments(self) -> list[str]:
         """Use the existing single-folder command when it preserves the complete scope."""
-        if len(self.tabs) == 1:
+        if self.options is None and len(self.tabs) == 1:
             scope = self.tabs[0]
             if scope is None:
                 return []
             if isinstance(scope, str) and not scope.startswith("-"):
                 return [scope]
-        payload = json.dumps({"version": 1, "tabs": self.tabs, "active": self.active},
-                             ensure_ascii=False, separators=(",", ":"))
+        value = {"version": 1 if self.options is None else _OPTIONS_VERSION, "tabs": self.tabs, "active": self.active}
+        if self.options is not None:
+            value.update(encode_scan_preferences(self.options))
+        payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
         if len(payload) > _MAX_PAYLOAD:
             raise ValueError("Workspace restart data is too large")
         return [_PREFIX + payload]
@@ -78,6 +86,8 @@ class WorkspaceState:
             if window is None:
                 raise ValueError("Workspace tab could not be restored")
             windows.append(window)
+        if self.options is not None:
+            workspace.restore_scan_preferences(self.options)
         for window, scope in zip(windows, self.tabs, strict=True):
             if isinstance(scope, str):
                 window.start_scan(scope)
@@ -101,8 +111,18 @@ def workspace_state(arguments: Sequence[str]) -> WorkspaceState | None:
         value = json.loads(values[0], object_pairs_hook=_fields)
     except (ValueError, RecursionError) as error:
         raise ValueError("Invalid workspace restart data") from error
-    if (not isinstance(value, dict) or set(value) != {"version", "tabs", "active"}
-            or type(value["version"]) is not int or value["version"] != 1
-            or not isinstance(value["tabs"], list)):
+    return _decode_state(value)
+
+
+def _decode_state(value: object) -> WorkspaceState:
+    if (not isinstance(value, dict) or type(value.get("version")) is not int
+            or value["version"] not in (1, _OPTIONS_VERSION)):
         raise ValueError("Unsupported workspace restart data")
-    return WorkspaceState(tuple(_scope(scope) for scope in value["tabs"]), value["active"])
+    fields = {"version", "tabs", "active"}
+    if value["version"] == _OPTIONS_VERSION:
+        fields |= {"defaults", "options"}
+    if set(value) != fields or not isinstance(value["tabs"], list):
+        raise ValueError("Unsupported workspace restart data")
+    options = (decode_scan_preferences(value["defaults"], value["options"])
+               if value["version"] == _OPTIONS_VERSION else None)
+    return WorkspaceState(tuple(_scope(scope) for scope in value["tabs"]), value["active"], options)

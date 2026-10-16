@@ -41,6 +41,7 @@ from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.elevation_dialog import ElevationDialog
 from je_file_tree.gui.startup_state import WorkspaceState
+from je_file_tree.gui.scan_preferences import MAX_SCAN_WORKERS as _MAX_SCAN_WORKERS, SCAN_FLAGS, ScanDefaults
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
@@ -100,7 +101,6 @@ EXCLUSIONS_KEY = "exclusions"
 SEARCHES_KEY = "saved_searches"
 CLEANUP_POLICY_KEY = "cleanup_policy"
 SCAN_WORKERS_KEY = "scan_workers"
-_MAX_SCAN_WORKERS = 32
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
@@ -182,6 +182,7 @@ class MainWindow(QMainWindow):
 
     def _init_scan_state(self) -> None:
         self._restart_arguments: Callable[[], list[str]] | None = None
+        self._scan_defaults: ScanDefaults | None = None
         self._worker: ScanWorker | None = None
         self._scan_workers: set[ScanWorker] = set()
         self._pending_scan: ScanWorker | None = None
@@ -1213,7 +1214,8 @@ class MainWindow(QMainWindow):
             wait_for(worker)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
-        self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
+        if self._scan_defaults is None:
+            self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
 
     # --- drag and drop ----------------------------------------------------
 
@@ -1636,7 +1638,8 @@ class MainWindow(QMainWindow):
             return
         try:
             arguments = (self._restart_arguments() if self._restart_arguments is not None
-                         else WorkspaceState((self._last_roots or self._last_path or None,)).arguments())
+                         else WorkspaceState((self._last_roots or self._last_path or None,),
+                                             options=(self._scan_options(),)).arguments())
         except ValueError as error:
             self.statusBar().showMessage(tr("elevate_failed", reason=str(error)), _STATUS_TIMEOUT_MS)
             return
@@ -1665,6 +1668,8 @@ class MainWindow(QMainWindow):
         dialog = ExclusionsDialog(self.exclusions(), self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
+        if self._scan_defaults is not None:
+            self._scan_defaults.exclude = tuple(dialog.patterns())
         self.settings.setValue(EXCLUSIONS_KEY, dialog.patterns())
         self.statusBar().showMessage(tr("exclusions_saved", count=format_count(len(dialog.patterns()))),
                                      _STATUS_TIMEOUT_MS)
@@ -1764,14 +1769,25 @@ class MainWindow(QMainWindow):
 
     def exclusions(self) -> list[str]:
         """The folder name patterns and folder paths that scans skip (the ``exclusions`` setting)."""
+        if self._scan_defaults is not None:
+            return list(self._scan_defaults.exclude)
         value = self.settings.value(EXCLUSIONS_KEY, [])
         if isinstance(value, str):  # an INI file keeps a one-item list as a plain string
             return [value] if value else []
         return [str(pattern) for pattern in value or []]
 
+    def restore_scan_preferences(self, options: ScanOptions, defaults: ScanDefaults) -> None:
+        """Apply captured choices without emitting preference writes or starting any operation."""
+        self._scan_defaults = defaults
+        for action, field in SCAN_FLAGS:
+            with QSignalBlocker(self._actions[action]):
+                self._actions[action].setChecked(getattr(options, field))
+
     def _scan_options(self, *, exact_allocation: bool = False) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
-                           gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
+                           gentle=self._actions["gentle"].isChecked(),
+                           workers=(self._scan_defaults.workers if self._scan_defaults is not None
+                                    else read_workers(self.settings)),
                            file_times=self._actions["capture_file_times"].isChecked(),
                            windows_owners=self._actions["capture_owners"].isChecked(),
                            exact_windows_allocation=exact_allocation or self._actions["exact_allocation"].isChecked(),
@@ -1781,8 +1797,10 @@ class MainWindow(QMainWindow):
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""
         value, accepted = QInputDialog.getInt(self, tr("action_scan_workers"),
                                              tr("workers_prompt", default=DEFAULT_WORKERS),
-                                             read_workers(self.settings), 1, _MAX_SCAN_WORKERS, 1)
+                                             self._scan_options().workers, 1, _MAX_SCAN_WORKERS, 1)
         if accepted:
+            if self._scan_defaults is not None:
+                self._scan_defaults.workers = value
             self.settings.setValue(SCAN_WORKERS_KEY, value)
 
     def choose_saved_scan(self) -> None:

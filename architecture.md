@@ -1183,7 +1183,14 @@ combined-scan bound. Ordinary one-tab/one-folder launches retain their command; 
 versioned internal JSON arguments with strict types, unique fields and a 1 MiB payload bound.
 `app.main` validates before approval, then restores a fresh workspace and dispatches normal read-only
 scan workers after all tabs exist. Invalid input gets a literal, locale-font-aware startup error.
-No result tree, mutation approval or execution receipt is transferred; new scans use saved preferences.
+Version 2 adds immutable `ScanOptions` snapshots: six flags per tab and shared exclusion/worker
+defaults encoded once. `scan_preferences` validates exact booleans, the existing 1–32 worker bound,
+pattern strings and consistent workspace defaults; experimental backends/unknown authority fields
+are refused. Version 1 remains readable and uses saved preferences. Apply all flags through signal
+blockers before scan dispatch. A shared transient `ScanDefaults` serves current/new tabs; explicit
+exclusion/concurrency edits update it and saved settings. Imported flags do not cause preference
+writes on restore/closing. Worker options stay immutable when runtime defaults change.
+No result tree, mutation approval or execution receipt is transferred.
 UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
 execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
 Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.

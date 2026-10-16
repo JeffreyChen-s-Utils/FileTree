@@ -1,0 +1,225 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "de0a8081b6f31b6eba471203878dd2f28a7be601",
+  "scope": "Retain six per-tab next-scan flags and shared workspace exclusions/concurrency through administrator restart.",
+  "sources": {
+    "je_file_tree/gui/startup_state.py": {
+      "lf_sha256": "2f1fe7a70c2ede623fc750bf271f589dc82885415813a958c596784986d169b0",
+      "ast_sha256": "326f28594e5cdb1676f536d6e00caae99345e369791503ad0715ce23786474a4"
+    },
+    "je_file_tree/gui/scan_preferences.py": {
+      "lf_sha256": "aa300f3b60d59c5a30a612420ab8c4a16827e2d7a26a5551353e8d52c64945a3",
+      "ast_sha256": "97d1d5b7311f67718a3c7c8ea50246ed9934b4f9f7c6a1a895657844c471265f"
+    },
+    "je_file_tree/gui/main_window.py": {
+      "lf_sha256": "e18dc992c91c29e81a95184eff339a1bd9d68ad96b095f9fd983fbfb2989c86c",
+      "ast_sha256": "ad2ef3066c352f5ce12bf27d90e53808faf01900fc5a11b286517859ac0f4901"
+    },
+    "je_file_tree/gui/workspace.py": {
+      "lf_sha256": "d12aa4453a0f419640e11a2b776be861def964599f591b2c1b5d0ef93b0a7132",
+      "ast_sha256": "c5470e1d4f1e213ef3e9c5587f079c43006048b9f4b9cfb5f67d5959c06a028c"
+    }
+  },
+  "protocol": "Strict version 2 options/defaults; original scope limits and 1 MiB bound remain. Version 1 uses saved defaults. No private backend, mutation approval or execution receipt is restored.",
+  "settings": "Signal-blocked import and closing leave saved scan preferences unchanged; shared runtime defaults also serve new tabs. Explicit exclusion/concurrency edits update runtime and saved preferences. Workers receive immutable snapshots.",
+  "artifacts": {
+    "build/restart-options-red.log": {
+      "sha256": "20eb94c54c04d1807dc10c4856a3aff5b03a0a30a573a9c4f413b5a2bd3c4fc7"
+    },
+    "build/restart-options-final-focused.log": {
+      "sha256": "07a519066e9b0aa5a64fb17be9863c1b97206e20371fcceb264408a460f245fc"
+    },
+    "build/restart-options-full-pytest.log": {
+      "sha256": "2bf12f37a9b510147b2438fe5e43133960568a5b76aec67693420b0a0bcb895f"
+    },
+    "build/restart-options-full.xml": {
+      "sha256": "51592a10cf7c8831df52ac1d7edc7698aa143d8526e1dabf623aa424bbc04d44"
+    },
+    "build/restart-options-bootstrap.json": {
+      "sha256": "d3b7ce0d275b22aecf39aaac11effea53b50f9f14945b23dc600a31d26ecba15"
+    },
+    "build/probe_restart_bootstrap.py": {
+      "sha256": "afdd9a425a7e7f2ee062cc94d8b93c45eceeb7b07a608e45be855b0ebff324cb"
+    }
+  },
+  "regressions": {
+    "red": "Original two-tab integration reproduces choices replaced by different saved settings.",
+    "focused": "98 passed in 12.82 s",
+    "new_preference_cases": [
+      "test_restart_does_not_replace_distinct_tab_choices_with_saved_values",
+      "test_all_tab_flags_roundtrip_and_shared_defaults_are_encoded_once",
+      "test_handoff_refuses_misaligned_counts_or_disagreeing_workspace_defaults",
+      "test_captured_choices_are_independent_of_later_ui_changes",
+      "test_invalid_or_private_options_are_never_exported[workers-0]",
+      "test_invalid_or_private_options_are_never_exported[workers-33]",
+      "test_invalid_or_private_options_are_never_exported[workers-True]",
+      "test_invalid_or_private_options_are_never_exported[workers-3]",
+      "test_invalid_or_private_options_are_never_exported[exclude-value4]",
+      "test_invalid_or_private_options_are_never_exported[exclude-value5]",
+      "test_invalid_or_private_options_are_never_exported[exclude-value6]",
+      "test_invalid_or_private_options_are_never_exported[include_hidden-1]",
+      "test_invalid_or_private_options_are_never_exported[gentle-true]",
+      "test_invalid_or_private_options_are_never_exported[file_times-None]",
+      "test_invalid_or_private_options_are_never_exported[windows_owners-0]",
+      "test_invalid_or_private_options_are_never_exported[exact_windows_allocation-false]",
+      "test_invalid_or_private_options_are_never_exported[count_hard_links-value12]",
+      "test_invalid_or_private_options_are_never_exported[experimental_mft-True]",
+      "test_invalid_option_metadata_is_refused_before_use[count]",
+      "test_invalid_option_metadata_is_refused_before_use[defaults_extra]",
+      "test_invalid_option_metadata_is_refused_before_use[workers]",
+      "test_invalid_option_metadata_is_refused_before_use[exclude]",
+      "test_invalid_option_metadata_is_refused_before_use[flag_type]",
+      "test_invalid_option_metadata_is_refused_before_use[flag_missing]",
+      "test_invalid_option_metadata_is_refused_before_use[private_backend]",
+      "test_invalid_option_metadata_is_refused_before_use[approval]",
+      "test_invalid_option_metadata_is_refused_before_use[default_conflict]",
+      "test_restore_is_transient_and_explicit_edits_update_shared_runtime_defaults",
+      "test_restored_workers_receive_immutable_options_with_owned_source_coverage"
+    ],
+    "native_argument_cases": [
+      "test_windows_command_line_preserves_workspace_metadata_verbatim[False-prefix0]",
+      "test_windows_command_line_preserves_workspace_metadata_verbatim[False-prefix1]",
+      "test_windows_command_line_preserves_workspace_metadata_verbatim[True-prefix0]",
+      "test_windows_command_line_preserves_workspace_metadata_verbatim[True-prefix1]"
+    ],
+    "net_added_cases": 31
+  },
+  "bootstrap": {
+    "result": {
+      "native_uac_invoked": false,
+      "elevation_attempted": false,
+      "fresh_application": true,
+      "scopes": [
+        "D:\\Codes\\tests\\filetree-restart-bootstrap-ohs7tsbb\\scope-one",
+        [
+          "D:\\Codes\\tests\\filetree-restart-bootstrap-ohs7tsbb\\scope-two",
+          "D:\\Codes\\tests\\filetree-restart-bootstrap-ohs7tsbb\\scope-three"
+        ],
+        null
+      ],
+      "active": 1,
+      "options": [
+        {
+          "include_hidden": false,
+          "workers": 2,
+          "exclude": [
+            "cache"
+          ],
+          "gentle": true,
+          "file_times": true,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": true,
+          "experimental_mft": false
+        },
+        {
+          "include_hidden": true,
+          "workers": 2,
+          "exclude": [
+            "cache"
+          ],
+          "gentle": false,
+          "file_times": false,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": true,
+          "experimental_mft": false
+        },
+        {
+          "include_hidden": false,
+          "workers": 2,
+          "exclude": [
+            "cache"
+          ],
+          "gentle": true,
+          "file_times": true,
+          "windows_owners": false,
+          "exact_windows_allocation": false,
+          "count_hard_links": true,
+          "experimental_mft": false
+        }
+      ],
+      "defaults_shared": true,
+      "physical_root": "D:\\Codes\\tests\\filetree-restart-bootstrap-ohs7tsbb\\scope-one",
+      "combined_root": null,
+      "blank": true,
+      "hashes_unchanged": true,
+      "exit_code": 0,
+      "saved_preferences_unchanged": true
+    },
+    "boundary": "Fresh hidden native QApplication with owned disposable roots and actual scanning. Elevation disabled and guarded; actual UAC/elevated child remains unverified."
+  },
+  "visual_qa": {
+    "command": "py -3 tools/make_screenshots.py",
+    "images": [
+      {
+        "path": "docs/images/main_window_en.png",
+        "before_sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+        "after_sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+        "pixel_diff_bbox": null
+      },
+      {
+        "path": "docs/images/main_window_zh-TW.png",
+        "before_sha256": "f4c63a05de1acd96b9e58c8126a96c9be9b22af0d373c3740e4dcfcf5522c37b",
+        "after_sha256": "8dc5de33bed5ed8186d2203e75c76277d8f872e70dd3e601f4fdd23ff17d3db5",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_zh-CN.png",
+        "before_sha256": "b35014edbd73f199638de9a9b92ef47a858381d0804482019c7ed200faf2e34d",
+        "after_sha256": "e10dd6ac6b37b158889b5aaea3a502878c5f890e628ed6ebefeb431eb76c50db",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ja.png",
+        "before_sha256": "eeb9b7bb3a103d13204715bcd84b051c6bc594a1f08649abca6d298bc8194aa3",
+        "after_sha256": "1b9d89e156fdb0e702c30df6b6a5e7e02f50f3f4f4b267198322074fe5731b32",
+        "pixel_diff_bbox": [
+          983,
+          88,
+          990,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ko.png",
+        "before_sha256": "bbde87e7246658a075e3e8a861ea01e01315dcb92e1adb3d1fe595c682fcb454",
+        "after_sha256": "c4d291661e88ac607ba7ba7f056eac341c5d2dc9ef3decf8fb35541586814ba3",
+        "pixel_diff_bbox": [
+          1021,
+          88,
+          1028,
+          94
+        ]
+      }
+    ],
+    "inspection": "All five 1200x800 native product images inspected. Existing layout retained; clear-icon-only pixel differences."
+  },
+  "validation": {
+    "pytest": {
+      "passed": 2165,
+      "skipped": 54,
+      "seconds": 288.14,
+      "skip_boundary": "Existing native platform/privilege and owned-fixture 8.3 limitations."
+    },
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ],
+    "baseline_ci": {
+      "run": 38968047350,
+      "all_14_jobs": "success"
+    },
+    "boundary": "This stage awaits its own hosted run. Remaining #95 and earlier #96/#99/#100 incidents are not resolved by these checks."
+  }
+}
