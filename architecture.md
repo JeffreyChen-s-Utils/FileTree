@@ -70,6 +70,9 @@ Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since thei
 `hasChildren` reads an existing order snapshot or raw/archive child presence without creating a sort,
 copy or presentation-group registration. Explicit live row queries freeze even initially empty groups
 until refresh; merely checking the expander does not freeze an unqueried group.
+Repeated row reads return an existing sorted/frozen sibling order before consulting raw/archive
+children or sort metadata. Cache misses retain the lazy scanner-order shortcut. Existing root,
+layout/structure and archive-preview notifications invalidate orders, including empty live snapshots.
 
 Unit/capacity changes instead emit column- and role-specific
 [same-parent `dataChanged` ranges](https://doc.qt.io/qtforpython-6/PySide6/QtCore/QAbstractItemModel.html#PySide6.QtCore.QAbstractItemModel.dataChanged)
