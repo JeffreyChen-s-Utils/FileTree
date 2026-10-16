@@ -87,6 +87,7 @@ from je_file_tree.gui.tables import (
     FileTypesModel,
     LargestFilesModel,
     ProblemsModel,
+    TableProxy,
 )
 from je_file_tree.gui.tree_model import (
     ALLOCATED,
@@ -121,7 +122,7 @@ USERS_TAB = 8
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
-class _FileTypesProxy(QSortFilterProxyModel):
+class _FileTypesProxy(TableProxy):
     """Filters the file-type rows to one group."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -630,7 +631,7 @@ class ResultsView(QWidget):
 
     def _build_table(self, model: LargestFilesModel | ProblemsModel | ChangesModel,
                      size_column: int) -> tuple[QTableView, QSortFilterProxyModel]:
-        proxy = QSortFilterProxyModel(self)
+        proxy = TableProxy(self)
         proxy.setSourceModel(model)
         proxy.setSortRole(SORT_ROLE)
         proxy.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -642,7 +643,7 @@ class ResultsView(QWidget):
         return table, proxy
 
     def _build_age_table(self) -> QTableView:
-        proxy = QSortFilterProxyModel(self)
+        proxy = TableProxy(self)
         proxy.setSourceModel(self.age_model)
         proxy.setSortRole(SORT_ROLE)
         table = _table(proxy)

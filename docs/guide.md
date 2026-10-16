@@ -213,6 +213,8 @@ On Windows, **Options → Explorer integration…** adds or removes **Scan with 
 - Links and junctions are listed but never followed, so nothing is counted twice and a link loop cannot
   trap a scan. Folders that cannot be read are listed under *Problems* instead of stopping the scan.
 
+Result tables (including Problems, Search, Largest files, Changes, file types and age groups) calculate each row's sort value once per sort instead of repeatedly reading cells for comparisons. Sorting retains visible selections, filters and column indicators; replacing results reapplies the chosen column and direction. Names keep Qt's UTF-16 ordering, numeric columns use raw values, and equal values retain their previous row order. This sorts captured records only and performs no source filesystem operations.
+
 ## Install
 
 FileTree runs on Windows, macOS and Linux.

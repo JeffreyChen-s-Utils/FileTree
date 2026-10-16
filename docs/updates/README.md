@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-19 | 2026-10-16 | Sort captured result rows with one key evaluation each | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-18 | 2026-10-16 | Preserve ordered native SMB disconnect diagnostics | #snapshot #diagnostics #network #tests | [2026-10-c](2026-10-c.md) |
 | U-20261016-17 | 2026-10-16 | Skip hidden member mappings for expanded archive previews | #snapshot #fix #gui #archives #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-16 | 2026-10-16 | Keep expander checks lazy and freeze empty live groups | #done #fix #gui #performance #live | [2026-10-c](2026-10-c.md) |

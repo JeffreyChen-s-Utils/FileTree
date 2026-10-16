@@ -7,7 +7,10 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, QPersistentModelIndex, Qt
+from PySide6.QtCore import (
+    QAbstractTableModel, QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex,
+    QSortFilterProxyModel, Qt,
+)
 
 from je_file_tree.core.analysis import AGES, AgeStat, ExtensionStat
 from je_file_tree.core.compare import FolderChange
@@ -26,6 +29,7 @@ from je_file_tree.gui.tree_model import NODE_ROLE, SHARE_ROLE
 
 SORT_ROLE = Qt.ItemDataRole.UserRole + 10
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+_LAYOUT_SIGNATURE = ("QList<QPersistentModelIndex>", "QAbstractItemModel::LayoutChangeHint")
 
 Row = TypeVar("Row")
 
@@ -46,6 +50,9 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._rows: list[Row] = []
+        self._order: Sequence[int] = range(0)
+        self._sort_column = -1
+        self._sort_order = Qt.SortOrder.AscendingOrder
         self.unit = AUTO_UNIT
         self._columns = self.build_columns()
 
@@ -61,18 +68,56 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
         """Replace the rows."""
         self.beginResetModel()
         self._rows = list(rows)
+        self._order = self._sorted_order(self._sort_column, self._sort_order, range(len(self._rows)))
         self.endResetModel()
 
     def rows(self) -> list[Row]:
         """A copy of the rows, in model order."""
-        return list(self._rows)
+        return [self._rows[row] for row in self._order]
 
     def row_at(self, row: int) -> Row | None:
         """The row object at ``row`` (None when out of range)."""
-        return self._rows[row] if 0 <= row < len(self._rows) else None
+        return self._rows[self._order[row]] if 0 <= row < len(self._rows) else None
+
+    def _sorted_order(self, column: int, order: Qt.SortOrder, rows: Sequence[int]) -> Sequence[int]:
+        if column < 0:
+            return range(len(self._rows))
+        value = self._columns[column].sort_value
+        def key(row: int) -> Any:
+            result = value(self._rows[row])
+            # QString compares UTF-16 units, including supplementary filename characters.
+            return result.encode("utf-16-be", "surrogatepass") if isinstance(result, str) else result
+        return sorted(rows, key=key, reverse=order == Qt.SortOrder.DescendingOrder)
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
+        """Order captured rows with one key evaluation each, retaining persistent cells.
+
+        Native Windows: Qt sorting 20,000 problem rows took 1.75 s. Keep Qt's filtering,
+        but avoid its repeated Python data calls for every comparison (U-20261016-19).
+        """
+        if not -1 <= column < len(self._columns):
+            return
+        self._sort_column, self._sort_order = column, order
+        replacement = self._sorted_order(column, order, self._order)
+        if list(replacement) == list(self._order):
+            return
+        hint = QAbstractItemModel.LayoutChangeHint.VerticalSortHint
+        self.layoutAboutToBeChanged[_LAYOUT_SIGNATURE].emit([], hint)
+        persistent = self.persistentIndexList()
+        ordinals = [self._order[index.row()] for index in persistent]
+        wanted = set(ordinals)
+        positions = {ordinal: row for row, ordinal in enumerate(replacement) if ordinal in wanted}
+        self._order = replacement
+        self.changePersistentIndexList(persistent, [
+            self.index(positions[ordinal], index.column())
+            for index, ordinal in zip(persistent, ordinals, strict=True)
+        ])
+        self.layoutChanged[_LAYOUT_SIGNATURE].emit([], hint)
 
     def refresh(self) -> None:
         """Repaint every cell and header (after a unit or language change)."""
+        if self._sort_column >= 0:
+            self.sort(self._sort_column, self._sort_order)
         if self._rows:
             self.dataChanged.emit(self.index(0, 0), self.index(len(self._rows) - 1, self.columnCount() - 1))
         self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, self.columnCount() - 1)
@@ -114,6 +159,18 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
     def extra_data(self, row: Row, role: int) -> Any:
         """Other roles a table supports (tooltips, the node behind a row...)."""
         return None
+
+
+class TableProxy(QSortFilterProxyModel):
+    """Filter a captured result table while its source owns stable row sorting."""
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
+        """Delegate result sorting without Qt comparing Python cell values repeatedly."""
+        model = self.sourceModel()
+        if isinstance(model, _TableModel):
+            model.sort(column, order)
+        else:
+            super().sort(column, order)
 
 
 class LargestFilesModel(_TableModel[Node]):

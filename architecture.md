@@ -104,6 +104,14 @@ During the synchronous `setModel` and header-state restoration, a nested, except
 relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,
 selection and current indexes; explicit refresh and ordinary repeated sorts retain live-snapshot semantics.
 
+Result-table `TableProxy` retains Qt filtering but delegates sorting to `_TableModel`. A separate
+row-ordinal permutation leaves captured records intact and evaluates each sort key once; strings
+use UTF-16 code units to match QString, numbers retain raw values, and ties retain prior display order.
+Replacement resets the permutation and reapplies the active column/direction. Sorting emits vertical
+layout hints and remaps persistent cells by original ordinal (including duplicate row references),
+so current/selected rows follow their records. Refresh rechecks active keys before repainting. Other
+flat dialogs retain their existing Qt comparison proxies. No tree traversal or source I/O is added.
+
 The controller records the freshly initialized tree/header's generated selection models and only
 new models created during its own `setModel` calls. Qt deliberately retains replaced selection models
 ([ownership contract](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QAbstractItemView.html#PySide6.QtWidgets.QAbstractItemView.setModel)).
