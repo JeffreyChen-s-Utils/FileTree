@@ -215,6 +215,8 @@ On Windows, **Options → Explorer integration…** adds or removes **Scan with 
 
 Cleanup suggestions and duplicate groups retain all listed members in their original order. Cell text is supplied when the view requests it, rather than creating four Qt items and formatting every file in advance. Groups still open together, and selection, context menus and activation use the original recorded Nodes. Explicit keeper labels remain bold and similar-photo previews retain their thumbnails. Captured membership stays fixed until results are replaced; this display work performs no source filesystem operations.
 
+Select extra copies applies one complete row selection across eligible displayed duplicate groups. It preserves the current row, excludes every occurrence of each explicit keeper and skips blocked or missing check results. A missing keeper, or one outside the captured displayed group, cannot select the entire group. Existing manual selections are replaced together; running or unfinished estimates leave selection untouched. This changes selection only; the normal review and pre-operation checks still apply.
+
 Result tables (including Problems, Search, Largest files, Changes, file types and age groups) calculate each row's sort value once per sort instead of repeatedly reading cells for comparisons. Sorting retains visible selections, filters and column indicators; replacing results reapplies the chosen column and direction. Names keep Qt's UTF-16 ordering, numeric columns use raw values, and equal values retain their previous row order. This sorts captured records only and performs no source filesystem operations.
 
 ## Install

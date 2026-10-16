@@ -1035,6 +1035,13 @@ Qt's necessary wide-layout index checks from repeatedly constructing enum values
 retain their existing oldest-first order and explicit keeper labels; similar photos retain the
 existing member bound, thumbnail display and separate authority from exact duplicate decisions.
 
+`GroupedListModel.extra_selection` scans only captured displayed members by identity and builds
+complete-column ranges around explicit keepers. Missing/foreign keepers contribute no ranges; every
+repeated keeper reference is excluded. `DuplicatesPanel.select_extra_copies` admits only completed
+issue-free displayed groups and replaces selection once with `ClearAndSelect`, retaining the current
+index. Normal groups need at most two ranges rather than one Qt selection and signal per extra file.
+Busy or absent estimates leave existing selection intact; file operations retain their normal checks.
+
 Before matching, `coverage_of` checks excluded, unread and inaccessible folders and propagates unknown
 coverage to ancestors. Folder nodes start with `NOT_SCANNED`; successful reads clear it, hidden omissions
 and failed entry stats leave the parent incomplete. A matching incomplete folder is never proposed whole;

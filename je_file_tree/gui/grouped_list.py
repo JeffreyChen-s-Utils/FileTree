@@ -161,6 +161,32 @@ class GroupedListModel(QAbstractItemModel):
             return os.path.dirname(node.path)
         return format_time(node.modified)
 
+    def extra_selection(self, keepers: Mapping[int, Node | None]) -> QItemSelection:
+        """Full-row ranges excluding every keeper occurrence in eligible captured groups.
+
+        Missing keepers are refused, including keepers outside the displayed snapshot.
+        Read Node identities once, without querying Qt data roles for each entry.
+        """
+        selection = QItemSelection()
+        for row, kept in keepers.items():
+            if kept is None or not 0 <= row < len(self._groups):
+                continue
+            nodes = self._groups[row].nodes
+            parent = self.index(row, 0)
+            start = 0
+            found = False
+            for position, node in enumerate(nodes):
+                if node is kept:
+                    found = True
+                    if start < position:
+                        selection.select(self.index(start, 0, parent),
+                                         self.index(position - 1, len(COLUMNS) - 1, parent))
+                    start = position + 1
+            if found and start < len(nodes):
+                selection.select(self.index(start, 0, parent),
+                                 self.index(len(nodes) - 1, len(COLUMNS) - 1, parent))
+        return selection
+
 
 def build_view(model: GroupedListModel) -> QTreeView:
     """A tree view over ``model`` in which several entry lines can be selected."""
