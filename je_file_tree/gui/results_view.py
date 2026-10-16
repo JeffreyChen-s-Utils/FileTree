@@ -223,6 +223,9 @@ class ResultsView(QWidget):
 
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
+        self._stop_scope()
+        self._scope = None
+        self._scope_button.setChecked(False)
         self._outcome = None
         self.breadcrumbs.set_root(None)
         self.details.set_node(None)
@@ -282,6 +285,7 @@ class ResultsView(QWidget):
 
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
+        self._stop_scope()
         self._outcome = outcome
         self.charts.set_age_reference(outcome.now)
         root = outcome.result.root
@@ -891,7 +895,10 @@ class ResultsView(QWidget):
 
     def wait_for_lists(self, *, wait: bool = True) -> None:
         """Wait for list computations still running (before the window closes)."""
+        self._stop_scope()
         self._stop_focused()
+        for worker in self._list_workers.copy():
+            worker.stop()
         self.tree_filter.shutdown(wait=wait)
         self.archives.shutdown(wait=wait)
         if wait:
@@ -927,8 +934,7 @@ class ResultsView(QWidget):
             self._rescope(force=True)
             return
         self._scope = None
-        self._scope_worker = None
-        self._scope_timer.stop()
+        self._stop_scope()
         if self._outcome is not None:
             self._show_lists(self._outcome.largest, self._outcome.extensions, self._outcome.ages)
 
@@ -941,6 +947,7 @@ class ResultsView(QWidget):
         folder = self._selected_folder() or outcome.result.root
         if folder is self._scope and not force:
             return
+        self._stop_scope()
         self._scope = folder
         worker = AnalyseWorker(folder, self)
         worker.done.connect(lambda summary: worker is self._scope_worker and self._scope_ready(folder, summary))
@@ -953,8 +960,17 @@ class ResultsView(QWidget):
 
     def _scope_ready(self, folder: Node, summary: Summary) -> None:
         self._scope_worker = None
-        if folder is self._scope:
+        outcome = self._outcome
+        if (outcome is not None and self._scope_button.isChecked() and folder is self._scope
+                and folder.is_in(outcome.result.root)):
             self._show_lists(summary.largest, summary.extensions, summary.ages)
+
+    def _stop_scope(self) -> None:
+        """Discard pending folder replies and timers without joining the retained worker."""
+        self._scope_timer.stop()
+        if self._scope_worker is not None:
+            self._scope_worker.stop()
+        self._scope_worker = None
 
     def _update_scope_button(self) -> None:
         """Shown on the three list tabs once there is a scan; names the folder while it is on."""

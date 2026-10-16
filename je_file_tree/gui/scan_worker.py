@@ -14,7 +14,9 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
-from je_file_tree.core.analysis import AgeStat, CategoryStat, ExtensionStat, Summary, category_stats, summarise
+from je_file_tree.core.analysis import (
+    AgeStat, AnalysisCancelledError, CategoryStat, ExtensionStat, Summary, category_stats, summarise,
+)
 from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
@@ -82,7 +84,7 @@ def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
 
 
 class AnalyseWorker(QThread):
-    """Recomputes the largest files and the per-type and per-age totals of a whole tree; emits ``done(Summary)``."""
+    """Recompute tree totals; emit ``done(Summary)`` unless canceled, retaining ownership until joined."""
 
     done = Signal(object)
     capacity_ready = Signal(object)
@@ -93,13 +95,26 @@ class AnalyseWorker(QThread):
         self._root = root
         self._partial = partial
         self._with_capacity = with_capacity
+        self._cancel = threading.Event()
+
+    def stop(self) -> None:
+        """Cancel summary passes and suppress replies; an active native capacity query still finishes."""
+        self._cancel.set()
 
     def run(self) -> None:
         """Thread body."""
-        summary: Summary = summarise(self._root, LARGEST_FILES_LIMIT)
+        try:
+            summary: Summary = summarise(self._root, LARGEST_FILES_LIMIT, cancel=self._cancel)
+        except AnalysisCancelledError:
+            return
+        if self._cancel.is_set():
+            return
         if self._with_capacity:
-            self.capacity_ready.emit(capacity_ledger(self._root, partial=self._partial))
-        self.done.emit(summary)
+            capacity = capacity_ledger(self._root, partial=self._partial)
+            if not self._cancel.is_set():
+                self.capacity_ready.emit(capacity)
+        if not self._cancel.is_set():
+            self.done.emit(summary)
 
 
 class SearchWorker(QThread):

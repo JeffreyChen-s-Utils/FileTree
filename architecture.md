@@ -52,6 +52,15 @@ and uses captured data; source operations, worker ownership and §6 factory cont
 it explicitly. Nonblocking retirement must not let background traversal compete with an active GUI
 event. Normal dispatcher idle transitions still release workers between events.
 
+Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
+scope, starting/replacing a result or closing invalidates the active reply before retiring its
+worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker
+set until finished and are joined by the normal closing fence. `core.analysis.summarise` accepts an
+optional cancellation event, checking traversal, largest-file selection and age counting without
+returning partial totals. Active native capacity calls finish before the worker retires; canceled
+workers suppress capacity and summary replies. Scope replies also require membership in the current
+scan tree, so detached branches cannot refill lists.
+
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
 cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all

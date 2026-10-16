@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#95** (P1) Audit remaining tree/model work and settings/shell/native GUI calls (`je_file_tree/gui/results_view.py:267`); verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
+- **#95** (P1) Profile native Windows initial result-page layout (`AnalysisTabs.minimumSizeHint` in `je_file_tree/gui/result_navigation.py`); audit GUI-thread subtree statistics in `ResultsView.forget`, tree/model sorting and settings/shell/native GUI calls. Verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
 
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 

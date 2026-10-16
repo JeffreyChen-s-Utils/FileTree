@@ -354,6 +354,8 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
   *View → Ask for administrator rights at start*.
 - *Largest files*, *File types* and *Age* cover the whole scan; *Selected folder only*, at the top right of
   those tabs, makes them follow the folder selected in the tree.
+  Changing scope, starting a new scan or closing cancels pending list calculations and discards stale
+  replies. Closing keeps any active native capacity query owned until it finishes.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
 - Clean-up shows known bytes and counts of skipped, inaccessible and unread folders; omitted bytes are
   unknown. An incomplete branch is never suggested as a whole or as empty. *Select all* is disabled for
