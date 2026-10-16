@@ -7,6 +7,9 @@ largest first; any other order is kept per folder in this model and computed
 the first time that folder is shown, so changing the sort column costs nothing
 up front either.
 
+Large persistent selections share one sibling lookup pass and cache only their
+requested rows, rather than repeatedly searching the same wide folder.
+
 While a scan is still running (``live``), worker threads keep appending
 children and growing sizes. The model then shows, for each folder, a sorted
 copy of its children taken the first time the folder is asked for, and keeps
@@ -43,6 +46,10 @@ SHARE_ROLE = Qt.ItemDataRole.UserRole + 2
 
 _NUMERIC_COLUMNS = (SIZE, ALLOCATED, SHARE, DRIVE_SHARE, FILES, FOLDERS, ACCOUNTED_SIZE, ACCOUNTED_ALLOCATED)
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+# 100k siblings: 8 individual lookups 3.64 ms vs batch 5.50 ms; 16 take 7.03 vs 5.69 ms.
+# At 1,000 requested files: 408.98 vs 6.28 ms (2026-10-16). Keep small selections on the C list search.
+_BATCHED_ROW_MINIMUM = 16
+_LAYOUT_CHANGE_SIGNATURE = ("QList<QPersistentModelIndex>", "QAbstractItemModel::LayoutChangeHint")
 
 ModelIndex = QModelIndex | QPersistentModelIndex
 
@@ -185,7 +192,7 @@ class FolderTreeModel(QAbstractItemModel):
 
     def index_for(self, node: Node) -> QModelIndex:
         """The index of ``node`` in column 0 (invalid when it is not in this tree)."""
-        if self._root is None:
+        if not self._visible(node):
             return QModelIndex()
         if node is self._root:
             return self.createIndex(0, 0, node)
@@ -335,22 +342,29 @@ class FolderTreeModel(QAbstractItemModel):
         def change() -> None:
             self._sort_column = column
             self._sort_order = order
-        self._relayout(change)
+        # Only completed sorts preserve every row and parent; live scans may have appended children.
+        # Windows QTreeView, 100k rows / 1k selected: 2.009 s -> 0.094–0.170 s with this hint (2026-10-16).
+        hint = (QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint if self._live
+                else QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
+        self._relayout(change, hint=hint)
 
-    def _relayout(self, change: Callable[[], None]) -> None:
+    def _relayout(self, change: Callable[[], None], *,
+                  hint: QAbstractItemModel.LayoutChangeHint = QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint
+                  ) -> None:
         """Apply ``change``, drop the cached orders and move every persistent index to its node's new row.
 
         The view keeps its expanded folders, selection and current item as
         persistent indexes, so they all follow their nodes.
         """
-        self.layoutAboutToBeChanged.emit()
+        self.layoutAboutToBeChanged[_LAYOUT_CHANGE_SIGNATURE].emit([], hint)
         persistent = self.persistentIndexList()
         nodes = [(self._entry(index), index.column()) for index in persistent]
         change()
         self._clear_caches()
+        self._prime_rows(nodes)
         replacements = [self._index_at(node, column_number) for node, column_number in nodes]
         self.changePersistentIndexList(persistent, replacements)
-        self.layoutChanged.emit()
+        self.layoutChanged[_LAYOUT_CHANGE_SIGNATURE].emit([], hint)
 
     # --- helpers -----------------------------------------------------------
 
@@ -366,10 +380,49 @@ class FolderTreeModel(QAbstractItemModel):
         self._relayout(change)
 
     def _index_at(self, node: Node | None, column: int) -> QModelIndex:
-        if node is None or self._root is None or not node.is_in(self._root):
+        if node is None:
             return QModelIndex()
         index = self.index_for(node)
         return index.siblingAtColumn(column) if index.isValid() else index
+
+    def _visible(self, node: Node) -> bool:
+        root = self._root
+        if root is None:
+            return False
+        ancestor: Node | None = node
+        while ancestor is not None and ancestor is not root:
+            ancestor = ancestor.parent
+        if ancestor is None:
+            return False
+        if not isinstance(node, VirtualEntry):
+            return True
+        if node is root:
+            return True
+        ancestors = []
+        parent = node.parent
+        while isinstance(parent, VirtualEntry) and parent is not root:
+            ancestors.append(parent)
+            parent = parent.parent
+        return ((parent is root or parent in self._archives)
+                and all(self._row_of(entry) >= 0 for entry in reversed(ancestors)))
+
+    def _prime_rows(self, nodes: list[tuple[Node | None, int]]) -> None:
+        """Locate large persistent selections once per visible parent, retaining only requested rows."""
+        parents: dict[Node, set[Node]] = {}
+        for node, _column in nodes:
+            if node is not None and node.parent is not None and self._visible(node):
+                parents.setdefault(node.parent, set()).add(node)
+        for parent, wanted in parents.items():
+            if len(wanted) < _BATCHED_ROW_MINIMUM:
+                continue
+            for row, child in enumerate(self._ordered(parent)):
+                if child in wanted:
+                    self._rows[id(child)] = row
+                    wanted.remove(child)
+                    if not wanted:
+                        break
+            for missing in wanted:
+                self._rows[id(missing)] = -1
 
     def _clear_caches(self) -> None:
         self._orders.clear()

@@ -2,6 +2,11 @@
 
 [Project introduction and quick start](../README.md)
 
+Large selections stay attached to their files when the folder tree is sorted. Rescans and archive
+preview refreshes discard selections whose entries are no longer in the current tree or preview,
+including nested archive entries. Archive previews remain read-only and never count as filesystem
+entries for file actions or scan totals.
+
 After approved moves to Trash, file-type and age totals update in the background. Stop retains completed
 moves and finishes their statistics. Closing can cancel those calculations; completed moves and
 operation errors still follow the normal completion handling.

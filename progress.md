@@ -9,7 +9,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 - **#96** (P2) Reproduce the intermittent APFS attachment-refusal before cleanup from run 38886523231 and inspect actual observed/allowed mountpoints if it recurs. A fresh passing run alone does not identify the prior refusal's cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 
-- **#95** (P1) Audit remaining tree/model sorting, result-table completion and settings/shell/native GUI calls. Verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
+- **#95** (P1) Audit remaining wide-folder sorting, live layout updates, result-table completion and settings/shell/native GUI calls. Verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
 
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 

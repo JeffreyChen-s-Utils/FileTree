@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-06 | 2026-10-16 | Batch tree selection remapping and reject obsolete row scopes | #fix #gui #performance #indexes | [2026-10-c](2026-10-c.md) |
 | U-20261016-05 | 2026-10-16 | Verify all fourteen jobs and native APFS cleanup on d0c2455 | #snapshot #ci #validation #macos | [2026-10-c](2026-10-c.md) |
 | U-20261016-04 | 2026-10-16 | Prepare removed-file statistics on the owned Trash worker | #fix #gui #threads #cleanup | [2026-10-c](2026-10-c.md) |
 | U-20261016-03 | 2026-10-16 | Stabilize invalid-Gitfile tests and retain APFS refusal details | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |

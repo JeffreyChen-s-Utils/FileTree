@@ -52,6 +52,15 @@ and uses captured data; source operations, worker ownership and §6 factory cont
 it explicitly. Nonblocking retirement must not let background traversal compete with an active GUI
 event. Normal dispatcher idle transitions still release workers between events.
 
+`FolderTreeModel` batches persistent-index row lookup by visible parent for selections of at least
+sixteen distinct entries, storing requested file rows only. Small selections keep C list searches;
+unopened branches are not visited. Index lookup verifies the current model root and active virtual
+ancestors, so detached branches, foreign roots and obsolete nested archive members cannot be revived.
+An existing real or virtual subtree can remain the model root without changing its original parent.
+Only completed-tree `sort()` emits `VerticalSortHint` on both layout signals, following the
+[Qt same-parent, unchanged-membership contract](https://doc.qt.io/qtforpython-6.11/PySide6/QtCore/QAbstractItemModel.html).
+Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since their membership may change.
+
 Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
 scope, starting/replacing a result or closing invalidates the active reply before retiring its
 worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker
