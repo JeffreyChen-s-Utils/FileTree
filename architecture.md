@@ -994,6 +994,13 @@ GUI failure-flow fixtures model both complete and unsupported holder diagnostics
 inspect the modal report. The unattended-test guard dismisses any unhandled failure report and
 fails fixture teardown, preventing a platform-specific dialog from silently awaiting a user.
 
+`gui.entry_move_prompt.confirm_entry_move` presents ordinary Trash and protected-folder Yes/No
+questions with PlainText set before assigning captured names/paths. Preserve Qt's ordinary default
+choice and the protected question's explicit No, standard dismissal results and application modality;
+retire each owned box after dismissal. The existing MainWindow approval/source rechecks remain in
+place. Flow tests inject explicit modeled replies; actual Qt presentation tests restore this presenter
+and verify literal single/bulk/protected text and button/keyboard/close parity with static questions.
+
 **Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
 and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
 and verified-copy proof restriction. Cleanup reasons are also narrowed to that reviewed selection;

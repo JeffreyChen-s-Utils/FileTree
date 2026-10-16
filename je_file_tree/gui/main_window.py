@@ -59,6 +59,7 @@ from je_file_tree.gui.report_dialog import ReportDialog
 from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
 from je_file_tree.gui.entry_report import EntryReportDialog
 from je_file_tree.gui.failed_dialog import FailedEntriesDialog
+from je_file_tree.gui.entry_move_prompt import confirm_entry_move
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -700,7 +701,7 @@ class MainWindow(QMainWindow):
         approvals = {node: protection_of(node.path, self._protected) for node in chosen}
         if not self._confirm_protected(chosen):
             return
-        answer = self._confirm_copy_trash(chosen, copies) if copies is not None else QMessageBox.question(
+        answer = self._confirm_copy_trash(chosen, copies) if copies is not None else confirm_entry_move(
             self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes or proposal is not None and not self._proposal_current(proposal):
             return
@@ -865,9 +866,7 @@ class MainWindow(QMainWindow):
         if len(guarded) > _LISTED_NAMES:
             lines.append(tr("trash_more", count=format_count(len(guarded) - _LISTED_NAMES)))
         question = tr("protected_question", count=format_count(len(guarded)), names="\n".join(lines))
-        answer = QMessageBox.warning(self, tr("protected_title"), question,
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                                     QMessageBox.StandardButton.No)
+        answer = confirm_entry_move(self, tr("protected_title"), question, protected=True)
         return answer == QMessageBox.StandardButton.Yes
 
     def _trash_question(self, nodes: list[Node]) -> str:

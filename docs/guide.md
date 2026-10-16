@@ -2,6 +2,11 @@
 
 [Project introduction and quick start](../README.md)
 
+Ordinary Recycle Bin/Trash and protected-folder confirmation questions display the listed filenames
+and paths as plain text. Markup-like names and ampersands remain literal; tabs and line breaks are
+preserved. Yes/No, Enter, Escape and window-close behavior stay the same, including the protected
+question's default No. Declining the final confirmation starts no move.
+
 After completed moves to Trash or a folder rescan, the default largest-first tree order follows
 updated folder sizes. Selections and expanded folders stay attached to entries that remain.
 

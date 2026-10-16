@@ -2,12 +2,10 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #102 (literal cleanup approval names), #96 (native APFS cleanup gate), #100 (mocked PowerShell 5 helper timeouts), then #99 (native SMB disconnect timeout), #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #96 (native APFS cleanup gate), #100 (mocked PowerShell 5 helper timeouts), then #99 (native SMB disconnect timeout), #95 (remaining UI hangs), the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
-
-- **#102** (P1) Make ordinary Trash and protected-folder approval prompts display literal captured names/paths, preserving explicit approvals and default-button semantics. Their static QMessageBox calls use AutoText; a hidden native preview of `_trash_question` with POSIX-valid `<b>literal.txt` drops the tag characters and changes formatting/line breaks. Add an approval-presentation regression and cover single/bulk/protected cases without touching source-operation guards; verify the corrected native rendering and update all user-facing docs/screenshots with the behavior change.
 
 - **#100** (P1) Diagnose Windows PowerShell 5 helper-test timeouts in CI run 38922008928: Windows/Python 3.14 has six 20-second subprocess timeouts and 3.10 has one in `test_windows_share_script.py`. Obtain a reproduced timeout's bounded phase trace from `windows-mocked-share-script-<python>` before choosing a fix; absent entry markers establish only that none was captured. Native owned SMB passes and these mocked helper failures do not establish #99's native 30-second timeout cause; retain autoload isolation, exact ownership assertions and subprocess deadlines.
 

@@ -44,7 +44,7 @@ For running from source or building a standalone app, see the [detailed guide](d
 
 1. **Choose a folder or drive**, or drag a folder into the window.
 2. **Wait for the scan**, then browse the largest folders and files. Bigger chart blocks mean more space used.
-3. **Review anything you want to remove**, then right-click → **Move to Recycle Bin**. FileTree asks for confirmation.
+3. **Review anything you want to remove**, then right-click → **Move to Recycle Bin**. FileTree asks for confirmation, displaying filenames and paths as written.
 
 You can stop a scan at any time; the results collected so far stay visible and are marked incomplete.
 Starting a new scan cancels pending folder-list calculations and discards their old results.

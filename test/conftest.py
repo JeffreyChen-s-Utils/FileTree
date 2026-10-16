@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import inspect
 from pathlib import Path
 
 import pytest
@@ -109,6 +110,28 @@ def _modeled_gui_recycling(request, monkeypatch):
         from je_file_tree.gui import trash_worker
 
         monkeypatch.setattr(trash_worker, "recycle_reason", lambda _node, _cancel: None)
+
+
+@pytest.fixture(autouse=True)
+def _modeled_entry_move_prompts(request, monkeypatch):
+    """Flow tests supply explicit answers; presentation tests restore the real literal presenter."""
+    unhandled = []
+    if "qapp" in request.fixturenames:
+        from PySide6.QtWidgets import QMessageBox
+        from je_file_tree.gui import main_window
+
+        def answer(parent, title, text, *, protected=False):
+            callback = QMessageBox.warning if protected else QMessageBox.question
+            if inspect.isbuiltin(callback):
+                unhandled.append(title)
+                return QMessageBox.StandardButton.No
+            if protected:
+                return callback(parent, title, text, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                QMessageBox.StandardButton.No)
+            return callback(parent, title, text)
+        monkeypatch.setattr(main_window, "confirm_entry_move", answer)
+    yield
+    assert not unhandled, f"a flow test did not supply an entry-move approval answer: {unhandled}"
 
 
 @pytest.fixture(params=("complete", "unsupported"))
