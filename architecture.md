@@ -77,6 +77,11 @@ them on root reset. Formatting retains frozen live orders and skips unchanged va
 the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
 accepted identities explicitly. Display-only updates forward data without reevaluating every name;
 structural changes still trigger the existing worker refresh and persistent-index remapping.
+Its row predicate reads `FolderTreeModel.node_at(row, source_parent)` directly. This identity-only
+lookup uses the same lazy `_ordered` cache and row bounds as Qt indexes, retaining frozen live rows
+without allocating a temporary index or dispatching `NODE_ROLE` for each candidate. It returns no
+filesystem node for virtual preview rows, virtual roots or missing rows. An empty source cannot be
+accepted through a `None`-root identity comparison. Qt's ordinary per-cell index path stays inline.
 After the stale-worker/root/cancellation guards, `TreeFilter._ready` compares the full accepted-identity
 sets. A bound proxy is invalidated only when those identities change; equal counts with different
 identities still invalidate. Source sort/layout/reset/row notifications still rebuild source

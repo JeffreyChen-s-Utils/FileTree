@@ -194,6 +194,18 @@ class FolderTreeModel(QAbstractItemModel):
         entry = self._entry(index)
         return None if isinstance(entry, VirtualEntry) else entry
 
+    def node_at(self, row: int, parent: ModelIndex) -> Node | None:
+        """Read a real source row in view order without a Qt index; virtual preview rows return None."""
+        if self._root is None:
+            return None
+        if not parent.isValid():
+            entry = self._root if row == 0 else None
+        else:
+            folder = self._entry(parent)
+            children = self._ordered(folder) if folder is not None else []
+            entry = children[row] if 0 <= row < len(children) else None
+        return None if isinstance(entry, VirtualEntry) else entry
+
     def _entry(self, index: ModelIndex) -> Node | None:
         if not index.isValid():
             return None

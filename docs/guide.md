@@ -14,6 +14,8 @@ Live scans still refresh normally, and changing the sort column or direction sti
 When a new query matches the same entries, the tree retains its existing view and selection. Changed
 matches still update normally, even when the number of matches stays the same. Sorting or refreshing
 the scan does not trigger a second tree rebuild when the background query returns unchanged matches.
+Tree-filter membership reads current sorted or frozen row identities directly, avoiding temporary Qt
+indexes and data-role dispatch for each row. Virtual previews and an empty scan remain excluded.
 Visible items are restored together as a full-row selection. Changing tree filters drops display-only
 archive selections while keeping physical files and scan totals unchanged.
 
