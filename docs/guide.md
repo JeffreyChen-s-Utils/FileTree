@@ -189,6 +189,8 @@ NTFS named-stream research is available separately on Windows with `python tools
 
 On Windows, **Options → Explorer integration…** adds or removes **Scan with FileTree** in your account's Explorer folder menu (Windows 11: **Show more options**). It is off until you save it, requires no administrator rights, and refuses to overwrite or remove an unowned registration. Register again after relocating the executable or source checkout. The entry uses an absolute, quoted launcher, so a source copy works from Explorer's working directory too. FileTree's entry context menu also offers the native **Properties** dialog on Windows.
 
+Explorer integration settings read and save in the background. Save and the checkbox stay disabled while the current request runs. Opening the dialog or canceling before Save makes no changes. Once Save starts, closing waits for it to finish and does not undo it; the window keeps processing events. Read failures leave Save disabled. Save failures remain visible in the dialog and allow another explicit Save.
+
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
 - **Parallel, and live**: several folders are read at once; a two-million-entry Windows system drive
   took about 208 seconds with file-identity snapshots and two workers. The tree fills in while the scan runs,

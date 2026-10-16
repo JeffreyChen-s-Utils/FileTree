@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-09 | 2026-10-17 | Keep Explorer registration settings responsive during native calls | #snapshot #fix #gui #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-08 | 2026-10-17 | Collect independent APFS samples without masking failures | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-07 | 2026-10-17 | Verify private desktop approvals on native X11 | #done #ci #desktop | [2026-10-d](2026-10-d.md) |
 | U-20261017-06 | 2026-10-17 | Capture post-busy owned APFS image and volume identity observations | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |

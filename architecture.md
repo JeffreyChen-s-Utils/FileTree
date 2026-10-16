@@ -424,6 +424,15 @@ Native registry creation disposition prevents claiming an existing unowned key; 
 checks limit updates/removal to this verb. Commands quote the executable and absolute `launcher.py`
 entry, whose source path bootstrap works independently of Explorer's working directory; Nuitka starts
 its original executable. Native Properties uses ShellExecuteExW with a fixed verb and item path.
+`ShellIntegrationDialog` owns one native settings worker at a time. Initial registry reads and an
+explicit Save's captured enabled state/translated label run off the GUI thread. Controls stay disabled
+until the read completes or the current write joins; failures remain literal inline text. Cancel before
+Save never writes. Closing during a native call invalidates replies and retains the dialog/owning
+window ownership through `WorkerDialog` and zero-time joins; a started Save continues and is never terminated
+or rolled back by closing. Only a joined successful Save accepts the dialog. Registry ownership/schema
+checks and explicit current-user opt-in remain in the unchanged native helper.
+The window tracks settings dialogs independently from source-operation reviews, preserving existing
+scan/live-monitor readers while settings are open; shutdown retains both kinds until their workers join.
 
 `themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
 palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice

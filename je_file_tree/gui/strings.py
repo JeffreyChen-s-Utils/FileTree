@@ -11,6 +11,9 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "shell_reading": "Reading Explorer registration…",
+    "shell_saving": "Saving Explorer registration…",
+    "shell_waiting": "Waiting for the current Explorer settings request to finish… A started Save continues.",
     "trash_failed_title": "Entries not moved",
     "trash_failed_summary": "Failed entries: {count}. Review the full paths and diagnostic information.",
     "trash_holders_error": "Open-file query error: {reason}",
@@ -775,7 +778,8 @@ EN: dict[str, str] = {
     "shell_scan": "Scan with FileTree",
     "shell_hint": ("Save changes only your account's folder menu; no administrator rights are needed. "
                    "On Windows 11, look under Show more options. Turn this off here to remove the entry. "
-                   "Register again after moving the executable or source checkout."),
+                   "Register again after moving the executable or source checkout. "
+                   "A started Save finishes before closing."),
     "shell_failed": "Explorer integration could not be changed.\n{reason}",
     "menu_properties": "Properties",
     "properties_failed": "Windows could not open Properties for:\n{path}",
@@ -1455,6 +1459,9 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "shell_reading": "正在讀取檔案總管登錄…",
+    "shell_saving": "正在儲存檔案總管登錄…",
+    "shell_waiting": "正在等待目前的檔案總管設定作業完成…已開始的儲存會繼續執行。",
     "trash_failed_title": "未能移動的項目",
     "trash_failed_summary": "有 {count} 個項目移動失敗。請檢視完整路徑與診斷資訊。",
     "trash_holders_error": "開啟檔案的行程查詢錯誤：{reason}",
@@ -2156,7 +2163,7 @@ ZH_TW: dict[str, str] = {
     "shell_scan": "使用 FileTree 掃描",
     "shell_hint": ("儲存只會變更您帳號的資料夾選單，不需要系統管理員權限。"
                    "Windows 11 請查看「顯示其他選項」。在此取消勾選即可移除。"
-                   "移動執行檔或原始碼資料夾後，請重新登錄。"),
+                   "移動執行檔或原始碼資料夾後，請重新登錄。已開始的儲存完成後才會關閉視窗。"),
     "shell_failed": "無法變更檔案總管整合。\n{reason}",
     "menu_properties": "內容",
     "properties_failed": "Windows 無法開啟此項目的內容：\n{path}",
@@ -2766,6 +2773,9 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "shell_reading": "正在读取资源管理器注册项…",
+    "shell_saving": "正在保存资源管理器注册项…",
+    "shell_waiting": "正在等待当前资源管理器设置操作完成…已开始的保存会继续执行。",
     "trash_failed_title": "未能移动的项目",
     "trash_failed_summary": "有 {count} 个项目移动失败。请查看完整路径与诊断信息。",
     "trash_holders_error": "打开文件的进程查询错误：{reason}",
@@ -3468,7 +3478,7 @@ ZH_CN: dict[str, str] = {
     "shell_scan": "使用 FileTree 扫描",
     "shell_hint": ("保存只会更改您账户的文件夹菜单，不需要管理员权限。"
                    "Windows 11 请查看“显示更多选项”。在此取消勾选即可移除。"
-                   "移动可执行文件或源码文件夹后，请重新注册。"),
+                   "移动可执行文件或源码文件夹后，请重新注册。已开始的保存完成后才会关闭窗口。"),
     "shell_failed": "无法更改资源管理器集成。\n{reason}",
     "menu_properties": "属性",
     "properties_failed": "Windows 无法打开此项目的属性：\n{path}",
@@ -4089,6 +4099,9 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "shell_reading": "エクスプローラーの登録を読み取り中…",
+    "shell_saving": "エクスプローラーの登録を保存中…",
+    "shell_waiting": "現在のエクスプローラー設定の処理が終わるまで待機中…開始済みの保存は続行します。",
     "trash_failed_title": "移動できなかった項目",
     "trash_failed_summary": "失敗した項目: {count}。完全なパスと診断情報を確認してください。",
     "trash_holders_error": "ファイル使用プロセスの照会エラー: {reason}",
@@ -4956,7 +4969,7 @@ JA: dict[str, str] = {
     'shell_hint': (
         '変更を保存するのは、アカウントのフォルダー メニューのみです。管理者権限は必要ありません。 Windows 11'
         ' で、[その他のオプションを表示] を確認します。エントリを削除するには、ここでこれをオフにします。実行'
-        '可能ファイルまたはソース チェックアウトを移動した後、再度登録します。'
+        '可能ファイルまたはソース チェックアウトを移動した後、再度登録します。開始済みの保存が完了してから閉じます。'
     ),
     'shell_failed': 'Explorer の統合を変更できませんでした。\n{reason}',
     'menu_properties': 'プロパティ',
@@ -5755,6 +5768,9 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "shell_reading": "탐색기 등록을 읽는 중…",
+    "shell_saving": "탐색기 등록을 저장하는 중…",
+    "shell_waiting": "현재 탐색기 설정 요청이 끝날 때까지 기다리는 중…이미 시작한 저장은 계속됩니다.",
     "trash_failed_title": "이동하지 못한 항목",
     "trash_failed_summary": "실패한 항목: {count}개. 전체 경로와 진단 정보를 확인하세요.",
     "trash_holders_error": "파일 사용 프로세스 조회 오류: {reason}",
@@ -6557,7 +6573,7 @@ KO: dict[str, str] = {
     'shell_hint': (
         '변경 사항은 계정의 폴더 메뉴에만 저장하세요. 관리자 권한이 필요하지 않습니다. Windows 11에서 추가 옵'
         '션 표시 아래를 살펴보세요. 항목을 제거하려면 여기에서 이 기능을 끄세요. 실행 파일 이동 또는 소스 체'
-        '크아웃 후 다시 등록하세요.'
+        '크아웃 후 다시 등록하세요. 이미 시작한 저장을 마친 후 닫힙니다.'
     ),
     'shell_failed': 'Explorer 통합을 변경할 수 없습니다.\n{reason}',
     'menu_properties': '속성',

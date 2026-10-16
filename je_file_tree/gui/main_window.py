@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._init_scan_state()
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs: set[QDialog] = set()
+        self._path_dialogs, self._settings_dialogs = set[QDialog](), set[ShellIntegrationDialog]()
         self._trash_rescans: list[Node] = []
         self._closing, self._close_waiting, self._close_ready = False, False, False
         self._analyser: AnalyseWorker | None = None
@@ -1176,7 +1176,7 @@ class MainWindow(QMainWindow):
         self._follow.shutdown(wait=wait)
         self._updates.shutdown(wait=wait)
         self._undo.shutdown(wait=wait)
-        for dialog in self._path_dialogs.copy():
+        for dialog in (*self._path_dialogs, *self._settings_dialogs):
             dialog.shutdown(wait=wait)
             if wait:
                 dialog.reject()
@@ -1658,10 +1658,17 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def edit_shell_integration(self) -> None:
-        """Open explicit Explorer settings; cancel leaves the registry untouched."""
-        if shell_integration.supported():
-            dialog = ShellIntegrationDialog(self)
+        """Keep the native settings worker and modal guard owned until every request joins."""
+        if (self._closing or self._settings_dialogs or self.operation_busy
+                or not shell_integration.supported()):
+            return
+        dialog = ShellIntegrationDialog(self)
+        self._settings_dialogs.add(dialog)
+        try:
             dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
             dialog.deleteLater()
 
     def show_special_files(self) -> None:
