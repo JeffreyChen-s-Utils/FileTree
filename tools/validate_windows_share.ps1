@@ -5,49 +5,79 @@ param(
     [string]$Output = 'windows-share.json'
 )
 $ErrorActionPreference = 'Stop'
+$script:DisconnectSequence = 0
+if ($DisconnectOnly) { $script:DisconnectClock = [Diagnostics.Stopwatch]::StartNew() }
+function Write-DisconnectStep([string]$step, [string]$event) {
+    if (-not $DisconnectOnly) { return }
+    $script:DisconnectSequence += 1
+    $line = 'FILETREE_SMB_STEP {{"sequence":{0},"step":"{1}","event":"{2}","elapsed_ms":{3}}}' -f (
+        $script:DisconnectSequence, $step, $event, $script:DisconnectClock.ElapsedMilliseconds)
+    [Console]::Error.WriteLine($line)
+}
+Write-DisconnectStep 'runner-guard' 'started'
 if (-not $DisposableRunner -or $env:GITHUB_ACTIONS -ne 'true' -or
     $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows') {
     throw 'SMB validation requires an explicit disposable hosted Windows runner.'
 }
+Write-DisconnectStep 'runner-guard' 'completed'
+Write-DisconnectStep 'identity-check' 'started'
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = [Security.Principal.WindowsPrincipal]::new($identity)
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     throw 'Administrator fixture runner required; no elevation is requested.'
 }
+Write-DisconnectStep 'identity-check' 'completed'
 function Confirm-OwnedRoot([string]$root) {
+    Write-DisconnectStep 'root-scope' 'started'
     $resolved = [IO.Path]::GetFullPath($root)
     $parent = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\')
     if ([IO.Path]::GetDirectoryName($resolved) -ne $parent -or
         [IO.Path]::GetFileName($resolved) -notmatch '^filetree-smb-[0-9a-f]{32}$') {
         throw 'Refusing an unowned SMB fixture root.'
     }
+    Write-DisconnectStep 'root-scope' 'completed'
+    $entryNumber = 0
     foreach ($path in @($parent, $resolved, (Join-Path $resolved 'owner.json'), (Join-Path $resolved 'sources'))) {
+        $entryNumber += 1
+        Write-DisconnectStep ('owned-entry-' + $entryNumber) 'started'
         $entry = Get-Item -LiteralPath $path -Force
         if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Redirected SMB fixture refused.' }
+        Write-DisconnectStep ('owned-entry-' + $entryNumber) 'completed'
     }
+    Write-DisconnectStep 'owner-receipt' 'started'
     $receipt = Get-Content -LiteralPath (Join-Path $resolved 'owner.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($receipt.root -ne $resolved -or $receipt.sid -ne $identity.User.Value -or
         $receipt.share -ne ('ftscan-' + [IO.Path]::GetFileName($resolved).Substring(13))) {
         throw 'SMB fixture receipt differs.'
     }
+    Write-DisconnectStep 'owner-receipt' 'completed'
     return $receipt
 }
 function Remove-OwnedShare([string]$root) {
     $receipt = Confirm-OwnedRoot $root
+    Write-DisconnectStep 'owned-share-lookup' 'started'
     $share = Get-SmbShare -Name $receipt.share -ErrorAction SilentlyContinue
+    Write-DisconnectStep 'owned-share-lookup' 'completed'
     if ($null -ne $share) {
+        Write-DisconnectStep 'share-ownership' 'started'
         if ($share.Path -ne (Join-Path $receipt.root 'sources') -or $share.Special) {
             throw 'SMB share ownership changed; refusing removal.'
         }
+        Write-DisconnectStep 'share-ownership' 'completed'
+        Write-DisconnectStep 'remove-owned-share' 'started'
         Remove-SmbShare -Name $receipt.share -Force -Confirm:$false
+        Write-DisconnectStep 'remove-owned-share' 'completed'
     }
 }
 if ($DisconnectOnly) {
     $receipt = Confirm-OwnedRoot $FixtureRoot
+    Write-DisconnectStep 'share-presence' 'started'
     if ($null -eq (Get-SmbShare -Name $receipt.share -ErrorAction SilentlyContinue)) {
         throw 'Disconnect fixture share is already absent.'
     }
+    Write-DisconnectStep 'share-presence' 'completed'
     Remove-OwnedShare $FixtureRoot
+    Write-DisconnectStep 'helper-complete' 'completed'
     exit 0
 }
 if ($FixtureRoot) { throw 'Existing fixture roots are not accepted for setup.' }
@@ -74,11 +104,17 @@ function Save-Proof {
     $proof | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $Output -Encoding UTF8
 }
 function Invoke-Probe([string]$mode) {
+    # Collect partial JSON before propagating a native probe's nonzero exit.
+    $PSNativeCommandUseErrorActionPreference = $false
     $result = & python tools/windows_share_probe.py --mode $mode --owned $scratch --unc $unc --mapped ($mapping + '\')
-    if ($LASTEXITCODE -ne 0) { throw "Native SMB $mode validation failed." }
-    $proof[$mode] = ($result | ConvertFrom-Json)
-    $proof.phase = $mode
-    Save-Proof
+    $probeExit = $LASTEXITCODE
+    if ($result) {
+        $proof[$mode] = ($result | ConvertFrom-Json)
+        $proof.phase = if ($probeExit -eq 0) { $mode } else { 'failed' }
+        Save-Proof
+    }
+    if ($probeExit -ne 0) { throw "Native SMB $mode validation failed." }
+    if (-not $result) { throw "Native SMB $mode validation returned no proof." }
 }
 Save-Proof
 try {

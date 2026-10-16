@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -23,6 +24,64 @@ from tools.windows_owned_volume import require  # noqa: E402
 
 _BRANCHES = 256
 _OPTIONS = ScanOptions(workers=1, file_times=True, exact_windows_allocation=True)
+_OUTPUT_LIMIT = 65536
+_STEP_PREFIX = "FILETREE_SMB_STEP "
+_STEP_NAMES = {"runner-guard", "identity-check", "root-scope", "owner-receipt", "share-presence",
+               "owned-share-lookup", "share-ownership", "remove-owned-share", "helper-complete",
+               *(f"owned-entry-{number}" for number in range(1, 5))}
+
+
+class ShareDisconnectError(RuntimeError):
+    """A failed disconnect proof with bounded native observations retained for the outer fixture."""
+
+    def __init__(self, proof: dict, error: Exception) -> None:
+        self.proof = {**proof, "failure": {"type": type(error).__name__, "message": _output(str(error))[0]}}
+        super().__init__(f"Native SMB disconnect proof failed: {error}")
+
+
+def _output(value: str | bytes | None) -> tuple[str, bool]:
+    raw = value.encode("utf-8", errors="replace") if isinstance(value, str) else value or b""
+    return raw[-_OUTPUT_LIMIT:].decode("utf-8", errors="replace"), len(raw) > _OUTPUT_LIMIT
+
+
+def _steps(stderr: str) -> tuple[list[dict], int]:
+    records, invalid = [], 0
+    for line in stderr.splitlines():
+        _before, prefix, payload = line.rpartition(_STEP_PREFIX)
+        if not prefix:
+            continue
+        try:
+            item = json.loads(payload)
+        except (json.JSONDecodeError, RecursionError):
+            invalid += 1
+            continue
+        if (not isinstance(item, dict) or set(item) != {"sequence", "step", "event", "elapsed_ms"}
+                or type(item["sequence"]) is not int or item["sequence"] <= 0
+                or type(item["step"]) is not str or item["step"] not in _STEP_NAMES
+                or item["event"] not in ("started", "completed")
+                or type(item["elapsed_ms"]) is not int or item["elapsed_ms"] < 0):
+            invalid += 1
+            continue
+        records.append(item)
+    return records[-64:], invalid
+
+
+def _helper_record(result, started: float) -> dict:
+    stdout, out_truncated = _output(getattr(result, "stdout", None))
+    stderr, err_truncated = _output(getattr(result, "stderr", None))
+    steps, invalid = _steps(stderr)
+    complete = bool(steps and [step["sequence"] for step in steps] == list(range(1, len(steps)+1))
+                    and steps[-1]["step"] == "helper-complete" and steps[-1]["event"] == "completed" and not invalid)
+    if isinstance(result, subprocess.TimeoutExpired):
+        outcome = "timeout"
+    elif isinstance(result, OSError):
+        outcome = "start-failed"
+    else:
+        outcome = "completed" if getattr(result, "returncode", None) == 0 else "failed"
+    return {"outcome": outcome, "returncode": getattr(result, "returncode", None), "timeout_seconds": 30,
+            "elapsed_seconds": round(time.monotonic()-started, 6), "stdout": stdout, "stderr": stderr,
+            "stdout_truncated": out_truncated, "stderr_truncated": err_truncated,
+            "steps": steps, "invalid_step_records": invalid, "trace_complete": complete}
 
 
 def _owned(args) -> Path:
@@ -117,7 +176,7 @@ def _disconnect(owned: Path, args) -> dict:
     pause = threading.Event()
 
     def progress(current) -> None:
-        if captured["disconnected"] or not current.files:
+        if captured.get("helper_attempted") or not current.files:
             return
         # A final callback must never be misreported as a mid-scan disconnect.
         require(current.files < _BRANCHES * 4, "Share scan completed before disconnect; no proof")
@@ -125,18 +184,30 @@ def _disconnect(owned: Path, args) -> dict:
         script = Path(__file__).with_name("validate_windows_share.ps1").resolve(strict=True)
         environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
         environment["PSModulePath"] = str(program.parent / "Modules")
+        captured.update(helper_attempted=True, observed_files_before_disconnect=current.files)
         pause.set()
+        started = time.monotonic()
         try:
-            subprocess.run([str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),  # noqa: S603
-                            "-DisposableRunner", "-DisconnectOnly", "-FixtureRoot", str(owned)],
-                           check=True, timeout=30, capture_output=True, env=environment)
+            completed = subprocess.run(  # noqa: S603 - fixed native helper and receipt-checked owned fixture
+                [str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),
+                 "-DisposableRunner", "-DisconnectOnly", "-FixtureRoot", str(owned)],
+                check=True, timeout=30, capture_output=True, env=environment)
+        except (subprocess.SubprocessError, OSError) as error:
+            captured["helper"] = _helper_record(error, started)
+            raise
+        else:
+            captured["helper"] = _helper_record(completed, started)
         finally:
             pause.clear()
-        captured.update(disconnected=True, observed_files_before_disconnect=current.files)
+        require(captured["helper"]["trace_complete"], "Native SMB helper step evidence is incomplete")
+        captured["disconnected"] = True
 
-    result = scan(args.unc, options=_OPTIONS, progress=progress, progress_interval=.001, pause=pause)
-    require(captured["disconnected"], "Native mid-scan share disconnect was not exercised")
-    _safe_failure(result)
+    try:
+        result = scan(args.unc, options=_OPTIONS, progress=progress, progress_interval=.001, pause=pause)
+        require(captured["disconnected"], "Native mid-scan share disconnect was not exercised")
+        _safe_failure(result)
+    except (subprocess.SubprocessError, OSError, RuntimeError) as error:
+        raise ShareDisconnectError(captured, error) from error
     return {**captured, "incomplete": True, "errors": len(result.errors), "files": result.root.file_count,
             "empty_cleanup_proposals": 0}
 
@@ -157,7 +228,11 @@ def main() -> None:
     elif args.mode == "denied":
         proof = _denied(args)
     elif args.mode == "disconnect":
-        proof = _disconnect(owned, args)
+        try:
+            proof = _disconnect(owned, args)
+        except ShareDisconnectError as error:
+            sys.stdout.write(json.dumps(error.proof) + "\n")
+            raise SystemExit(1) from None
     else:
         expected = json.loads((owned / "inventory.json").read_text(encoding="utf-8"))
         require(_inventory(owned / "sources") == expected, "SMB fixture source identity/content changed")

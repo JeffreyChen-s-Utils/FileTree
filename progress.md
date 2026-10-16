@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#99** (P1) Diagnose the 30-second native disconnect-helper timeout in `tools/windows_share_probe.py::_disconnect`. CI run 38908715123 / job 116998797981 completed UNC/mapped parity, denied coverage, exact ACL restoration and owned-fixture cleanup, but did not complete disconnect/source post-verification. Capture per-command native evidence to locate the wait before choosing a fix; preserve bounded execution and exact share/root/mapping ownership checks. A successful retry alone cannot establish the cause.
+- **#99** (P1) Obtain an instrumented native timeout trace and identify the wait in `tools/windows_share_probe.py::_disconnect`. Original CI run 38908715123 / job 116998797981 did not complete disconnect/source post-verification. Require the helper's step history, actual exit/timeout and bounded outputs from a reproduced 30-second wait before choosing a fix; preserve bounded execution and exact share/root/mapping ownership checks. Modeled timeouts and successful native retries cannot establish the cause.
 
 - **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt results for a reproduced busy/refusal sequence to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 

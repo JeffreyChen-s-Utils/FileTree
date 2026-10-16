@@ -1105,6 +1105,20 @@ performance, and source preservation does not establish complete coverage after 
 Only the fresh denied-directory fixture's DACL is initialized before capturing the native denial
 baseline; original/restored descriptors are retained and exact equality is required. Set-Acl's
 legacy-to-automatic inheritance conversion must not be counted as successful restoration.
+The disconnect helper emits ordered ASCII `FILETREE_SMB_STEP` JSON records on stderr around runner,
+identity, owned-root/receipt/entry checks, share queries, share ownership and removal. The same native
+commands and 30-second deadline remain in place. `windows_share_probe` retains outcome, actual exit
+code, elapsed time, the last 64 KiB of each output stream, truncation flags and up to 64 parsed steps.
+Malformed step records do not replace the native error. A zero exit without a final complete trace
+is refused; even a completion marker cannot turn a process timeout into success. Each scan attempts
+the helper at most once and always resumes paused reads. Later scan-verification refusal retains
+helper success separately from the failed proof.
+The Python helper emits partial JSON with a nonzero exit on disconnect failure. `Invoke-Probe`
+locally controls native-exit handling, saves that JSON before propagating failure, and leaves it in
+`windows-share.json` through outer cleanup. Failed diagnostics never grant source/share cleanup
+authority or a retry. Mocked PowerShell helper tests disable module auto-loading and replace SMB
+commands; only disposable hosted CI runs real share operations. A native timeout with these step
+observations is still required to diagnose the original intermittent wait.
 Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
 cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
 real share removal after six files were observed. The latter records 254 errors/incomplete coverage
