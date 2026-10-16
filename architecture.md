@@ -77,6 +77,11 @@ them on root reset. Formatting retains frozen live orders and skips unchanged va
 the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
 accepted identities explicitly. Display-only updates forward data without reevaluating every name;
 structural changes still trigger the existing worker refresh and persistent-index remapping.
+After the stale-worker/root/cancellation guards, `TreeFilter._ready` compares the full accepted-identity
+sets. A bound proxy is invalidated only when those identities change; equal counts with different
+identities still invalidate. Source sort/layout/reset/row notifications still rebuild source
+mappings as needed; an unchanged worker reply does not repeat that work. An unbound proxy still binds
+and restores the filtered view even when its retained identity set matches the new reply.
 During the synchronous `setModel` and header-state restoration, a nested, exception-safe
 `FolderTreeModel.preserve_sort` scope ignores identical sort requests, avoiding Qt's two redundant
 relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,

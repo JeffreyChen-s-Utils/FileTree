@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-14 | 2026-10-16 | Reuse unchanged tree filter mappings | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-13 | 2026-10-16 | Keep tree order while rebinding filter views | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-12 | 2026-10-16 | Restore size ordering of ancestors after tree mutations | #done #fix #gui #sorting | [2026-10-c](2026-10-c.md) |
 | U-20261016-11 | 2026-10-16 | Restore filtered row selections in one scoped batch | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |

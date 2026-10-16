@@ -89,6 +89,88 @@ def test_filtered_selection_sorting_and_persistent_indices(window, qapp, tmp_pat
     assert results.selected_node() is target
 
 
+@pytest.mark.parametrize("query", ["NEEDLE", "needle 檔案"])
+def test_equivalent_filter_results_keep_mapping_selection_and_expansion(window, qapp, tmp_path, query):
+    results, root, alpha, _beta = _setup(window, qapp, tmp_path)
+    target = _child(alpha, "NEEDLE 檔案.txt")
+    _filter(results, qapp, "needle")
+    results.select_node(target)
+    proxy, controller = results.tree_filter.proxy, results.tree_filter
+    persistent = QPersistentModelIndex(controller.index_for(target))
+    first_worker, first_allowed = controller._current, proxy.allowed
+    layouts = []
+    proxy.layoutChanged.connect(lambda *_args: layouts.append(True))
+    _filter(results, qapp, query)
+    assert controller._current is not first_worker and proxy.allowed == first_allowed
+    assert not layouts, "equal accepted identities must not rebuild the proxy mapping"
+    assert persistent.data(NODE_ROLE) is target
+    assert results.selected_node() is target and results.selected_nodes() == [target]
+    assert results.tree.isExpanded(controller.index_for(root))
+    assert results.tree.isExpanded(controller.index_for(alpha))
+    assert proxy.rowCount(controller.index_for(alpha)) == 1
+
+
+def test_filter_worker_does_not_repeat_mapping_after_a_source_sort(window, qapp, tmp_path):
+    results, _root, alpha, _beta = _setup(window, qapp, tmp_path)
+    _filter(results, qapp, "needle")
+    target = _child(alpha, "NEEDLE 檔案.txt")
+    results.select_node(target)
+    controller, proxy = results.tree_filter, results.tree_filter.proxy
+    persistent = QPersistentModelIndex(controller.index_for(target))
+    layouts = []
+    proxy.layoutChanged.connect(lambda *_args: layouts.append(True))
+    results.tree.sortByColumn(NAME, Qt.SortOrder.AscendingOrder)
+    assert layouts, "the source sort still remaps the proxy normally"
+    layouts.clear()
+    _wait(qapp, lambda: not controller.timer.isActive() and not controller._workers)
+    assert not layouts, "the worker must not repeat an already-applied source sort"
+    assert persistent.data(NODE_ROLE) is target and results.selected_node() is target
+
+
+def test_different_filter_identities_remap_even_with_the_same_match_count(window, qapp, tmp_path):
+    results, _root, alpha, _beta = _setup(window, qapp, tmp_path)
+    _filter(results, qapp, "needle")
+    target, other = _child(alpha, "NEEDLE 檔案.txt"), _child(alpha, "other.txt")
+    results.select_node(target)
+    controller, proxy = results.tree_filter, results.tree_filter.proxy
+    before = proxy.allowed
+    persistent = QPersistentModelIndex(controller.index_for(target))
+    layouts = []
+    proxy.layoutChanged.connect(lambda *_args: layouts.append(True))
+    _filter(results, qapp, "other")
+    assert len(proxy.allowed) == len(before) and proxy.allowed != before and layouts
+    assert not persistent.isValid() and not controller.index_for(target).isValid()
+    assert target not in results.selected_nodes()
+    assert proxy.index(0, 0, controller.index_for(alpha)).data(NODE_ROLE) is other
+
+
+def test_live_refresh_with_unchanged_matches_keeps_updated_source_mapping(window, qapp, tmp_path):
+    results, root, alpha, _beta = _setup(window, qapp, tmp_path)
+    results.show_live_root(root)
+    results.tree.expand(results.tree_model.index_for(alpha))
+    _filter(results, qapp, "needle")
+    target = _child(alpha, "NEEDLE 檔案.txt")
+    results.select_node(target)
+    controller, proxy, source = results.tree_filter, results.tree_filter.proxy, results.tree_model
+    persistent = QPersistentModelIndex(controller.index_for(target))
+    before = proxy.allowed
+    # The appended row changes source membership and pushes the selected match to a different row.
+    leaf = Node("unmatched arrival.txt", False, size=100, parent=alpha)
+    alpha.children.append(leaf)
+    layouts = []
+    proxy.layoutChanged.connect(lambda *_args: layouts.append(True))
+    source.refresh()
+    assert layouts, "the source refresh must still rebuild changed source rows"
+    layouts.clear()
+    _wait(qapp, lambda: not controller.timer.isActive() and not controller._workers)
+    assert proxy.allowed == before and not layouts
+    assert source.rowCount(source.index_for(alpha)) == 3
+    assert proxy.rowCount(controller.index_for(alpha)) == 1 and not controller.index_for(leaf).isValid()
+    assert persistent.data(NODE_ROLE) is target and results.selected_node() is target
+    mapped = proxy.mapToSource(persistent)
+    assert mapped.row() == source.index_for(target).row() == 1
+
+
 def test_cross_view_hidden_target_clears_filter_and_new_query_has_fresh_mapping(window, qapp, tmp_path):
     results, _root, _alpha, beta = _setup(window, qapp, tmp_path)
     _filter(results, qapp, "needle")
