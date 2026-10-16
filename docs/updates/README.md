@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-12 | 2026-10-17 | Compact adjacent selected rows when switching tree filters | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-11 | 2026-10-17 | Map filtered sibling groups directly while preserving source semantics | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-10 | 2026-10-17 | Reuse sorted sibling rows before repeated model bookkeeping | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-09 | 2026-10-17 | Keep Explorer registration settings responsive during native calls | #snapshot #fix #gui #windows | [2026-10-d](2026-10-d.md) |

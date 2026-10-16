@@ -2,7 +2,9 @@
 
 import time
 
-from PySide6.QtCore import QCoreApplication, QEvent, QItemSelectionModel, QObject, QPersistentModelIndex, Qt
+from PySide6.QtCore import (
+    QCoreApplication, QEvent, QItemSelection, QItemSelectionModel, QObject, QPersistentModelIndex, Qt,
+)
 from PySide6.QtWidgets import QTreeView
 import pytest
 
@@ -280,3 +282,56 @@ def test_switching_keeps_borrowed_selection_model_used_by_another_view(window, q
         shared.deleteLater()
         other.deleteLater()
         owner.deleteLater()
+
+
+@pytest.mark.parametrize("descending", [False, True])
+@pytest.mark.parametrize("sparse", [False, True])
+def test_switch_compacts_adjacent_rows_without_widening_selection(qapp, descending, sparse):
+    from je_file_tree.gui.tree_filter import TreeFilter
+    from je_file_tree.gui.tree_model import FolderTreeModel
+
+    root = Node("root", True, children=[])
+    branches = [Node(name, True, children=[], parent=root) for name in ("alpha", "beta")]
+    root.children.extend(branches)
+    for branch in branches:
+        branch.children.extend(Node(f"{row:02d}-{'omit' if row % 3 == 0 else 'keep'}", False,
+                                    size=row, parent=branch) for row in range(12))
+    source = FolderTreeModel()
+    source.set_root(root)
+    source.sort(NAME, Qt.SortOrder.DescendingOrder if descending else Qt.SortOrder.AscendingOrder)
+    tree = QTreeView()
+    tree.setModel(source)
+    controller = TreeFilter(tree, source, tree)
+    try:
+        for node in [root, *branches]:
+            tree.expand(source.index_for(node))
+        wanted = {root, branches[0], *(node for branch in branches for row, node in enumerate(branch.children)
+                                      if not sparse or row % 4 != 0)}
+        picked = QItemSelection()
+        for node in reversed(list(wanted)):
+            index = source.index_for(node)
+            picked.select(index, index.siblingAtColumn(source.columnCount() - 1))
+        tree.selectionModel().select(picked, QItemSelectionModel.SelectionFlag.ClearAndSelect)
+        current = branches[1]
+        tree.selectionModel().setCurrentIndex(source.index_for(current), QItemSelectionModel.SelectionFlag.NoUpdate)
+        controller.line.setText("keep")
+        _wait(qapp, lambda: not controller.timer.isActive() and not controller._workers)
+        wanted = {node for node in wanted if controller.index_for(node).isValid()}
+        for filtered in (True, False):
+            if not filtered:
+                controller.line.clear()
+            selection = tree.selectionModel()
+            indexes = selection.selectedRows()
+            assert {index.data(NODE_ROLE) for index in indexes} == wanted
+            assert len(selection.selectedIndexes()) == len(wanted) * tree.model().columnCount()
+            assert tree.currentIndex().data(NODE_ROLE) is current
+            rows = {}
+            for index in indexes:
+                rows.setdefault(index.parent(), set()).add(index.row())
+            runs = sum(sum(row - 1 not in group for row in group) for group in rows.values())
+            assert len(selection.selection()) == runs
+            assert all(part.left() == 0 and part.right() == source.columnCount() - 1
+                       for part in selection.selection())
+    finally:
+        controller.shutdown()
+        tree.close()

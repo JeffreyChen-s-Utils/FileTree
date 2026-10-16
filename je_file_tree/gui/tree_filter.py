@@ -180,13 +180,7 @@ class TreeFilter(QObject):
                 if index.isValid():
                     self.tree.expand(index)
             selection = self.tree.selectionModel()
-            picked = QItemSelection()
-            last_column = self.tree.model().columnCount() - 1
-            for source in self.source.indexes_for(selected):
-                index = self.proxy.mapFromSource(source) if filtered else source
-                if index.isValid():
-                    picked.select(index, index.siblingAtColumn(last_column))
-            # 100k records / 1k selected took 3.6–4.2 s with individual lookup/selection (2026-10-16).
+            picked = self._selection(selected, filtered)
             if not picked.isEmpty():
                 selection.select(picked, selection.SelectionFlag.Select)
             if current is not None:
@@ -196,6 +190,28 @@ class TreeFilter(QObject):
                 self.proxy.searched = None
         finally:
             self._switching = False
+
+    def _selection(self, nodes: list[Node], filtered: bool) -> QItemSelection:
+        """Restore whole selected rows in maximal adjacent ranges within each visible parent."""
+        # Native Windows, 2026-10-17: 10k selected rows restored as 10k ranges took
+        # 3.21 s filtered / 6.11 s clear, versus 0.60 / 1.36 s with one adjacent range.
+        groups: dict[QModelIndex, list[QModelIndex]] = {}
+        for source in self.source.indexes_for(nodes):
+            index = self.proxy.mapFromSource(source) if filtered else source
+            if index.isValid():
+                groups.setdefault(index.parent(), []).append(index)
+        picked = QItemSelection()
+        last_column = self.tree.model().columnCount() - 1
+        for indexes in groups.values():
+            indexes.sort(key=QModelIndex.row)
+            first = last = indexes[0]
+            for index in indexes[1:]:
+                if index.row() != last.row() + 1:
+                    picked.select(first, last.siblingAtColumn(last_column))
+                    first = index
+                last = index
+            picked.select(first, last.siblingAtColumn(last_column))
+        return picked
 
     def _view_selections(self) -> set[QItemSelectionModel]:
         return {selection for owner in (self.tree, self.tree.header())

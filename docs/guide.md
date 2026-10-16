@@ -2,6 +2,8 @@
 
 [Project introduction and quick start](../README.md)
 
+When switching tree filters, adjacent selected rows within the same folder restore as one whole-column range. Gaps and folder boundaries stay separate; hidden and virtual entries remain excluded. This reduces range bookkeeping for large contiguous selections without reducing the selection.
+
 Ordinary Recycle Bin/Trash and protected-folder confirmation questions display the listed filenames
 and paths as plain text. Markup-like names and ampersands remain literal; tabs and line breaks are
 preserved. Yes/No, Enter, Escape and window-close behavior stay the same, including the protected

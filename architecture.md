@@ -140,7 +140,8 @@ node, visible selection, expansion and header state before normal interaction re
 
 `FolderTreeModel.indexes_for` preserves input order and invalid positions while sharing the existing
 requested-sibling row lookup. Filter switching captures only real `NODE_ROLE` values, maps the batch
-to visible indexes and applies one complete-column `QItemSelection`; the current index is restored
+to visible indexes, groups them by parent and sorts their rows. Maximal adjacent runs become
+complete-column ranges in one `QItemSelection`; gaps and distinct parents never merge. The current index is restored
 separately without another selection update. Virtual archive rows expose no filesystem node and are
 excluded before mapping, preventing the old `None.is_in` failure without authorizing file actions.
 
