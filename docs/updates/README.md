@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-24 | 2026-10-16 | Share the complete read-only entry report viewport | #snapshot #refactor #gui | [2026-10-c](2026-10-c.md) |
 | U-20261016-23 | 2026-10-16 | Show complete large refusal batches in a lazy copyable table | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-22 | 2026-10-16 | Prepare reviewed batches with selected identity membership | #snapshot #fix #gui #performance #audit | [2026-10-c](2026-10-c.md) |
 | U-20261016-21 | 2026-10-16 | Batch eligible duplicate-copy selections around explicit keepers | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |

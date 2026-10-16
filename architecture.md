@@ -973,8 +973,9 @@ identity check, so it does not provide an OS guarantee against concurrent malici
 `MainWindow._without_managed` partitions recorded Nodes once instead of searching a refused list
 for every survivor. `_show_skipped` retains existing notices for at most eight entries with at most
 1,024 characters and no markup-like text; other preflight, invalidated-root and worker-skip batches
-go to `gui.skipped_dialog`. Its lazy
-`SkippedModel` exposes all captured pairs in original order, formats only requested paths/reasons
+go to `gui.skipped_dialog`. The shared `gui.entry_report.EntryReportDialog` owns the read-only
+viewport, literal tooltip encoding, full-row details and cancelable clipboard lifecycle; report
+subclasses supply models and translated title/summary text. The refusal `SkippedModel` exposes all captured pairs in original order, formats only requested paths/reasons
 and has no file-operation Node roles. Escape tooltip payloads for Qt rich text while preserving
 literal markup, tabs and newlines; details and clipboard use raw plain text. The modal table uses
 the existing yielding, quoted TSV clipboard capture. Register it in `_path_dialogs` to serialize
