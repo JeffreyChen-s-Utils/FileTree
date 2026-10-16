@@ -207,6 +207,10 @@ class FolderTreeModel(QAbstractItemModel):
             entry = children[row] if 0 <= row < len(children) else None
         return None if isinstance(entry, VirtualEntry) else entry
 
+    def filesystem_rows(self, parent: Node) -> list[Node] | tuple[()]:
+        """Borrow current real-row candidates in source order; archive preview groups are wholly virtual."""
+        return () if parent in self._archives else self._ordered(parent)
+
     def _entry(self, index: ModelIndex) -> Node | None:
         if not index.isValid():
             return None
@@ -300,16 +304,23 @@ class FolderTreeModel(QAbstractItemModel):
         node = self._entry(parent)
         if parent.column() != 0 or node is None:
             return False
+        return self.has_entry_children(node)
+
+    def has_entry_children(self, node: Node | VirtualEntry) -> bool:
+        """Inspect cached/raw child presence and preview eligibility without creating rows or sorting."""
         children = self._orders.get(id(node))
         if children is None:
             children = self._archives.get(node, node.children)
         # Ten unopened folders: the old check sorted/copied 200k rows (101.82 ms, 2026-10-16).
-        return bool(children) or self.canFetchMore(parent)
+        return bool(children) or self.can_preview(node)
 
     def canFetchMore(self, parent: ModelIndex) -> bool:
         """Offer archive expansion only for completed, recorded regular-file entries."""
-        node = self.node(parent)
-        return bool(parent.column() == 0 and not self._live and node is not None
+        return parent.column() == 0 and self.can_preview(self.node(parent))
+
+    def can_preview(self, node: Node | VirtualEntry | None) -> bool:
+        """Check the existing archive offer on this GUI thread without constructing a source index."""
+        return bool(not self._live and node is not None and not isinstance(node, VirtualEntry)
                     and not node.is_dir and not node.is_link and node.error is None and node.snapshot is not None
                     and node not in self._archives and node not in self._archive_done
                     and node.name.lower().endswith((".zip", ".7z", ".rar")))
@@ -365,13 +376,16 @@ class FolderTreeModel(QAbstractItemModel):
 
     def data(self, index: ModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
         """Qt: what a cell shows."""
-        node = self._entry(index)
+        return self.entry_data(self._entry(index), index.column(), role)
+
+    def entry_data(self, node: Node | VirtualEntry | None, column: int, role: int) -> Any:
+        """Format one recorded entry without allocating a Qt index; virtual rows remain read-only."""
         handler = self._roles.get(role)
         if node is None or handler is None:
             return None
         if isinstance(node, VirtualEntry):
-            return self._virtual_data(node, index.column(), role)
-        return handler(node, index.column())
+            return self._virtual_data(node, column, role)
+        return handler(node, column)
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
         """Qt: order every folder's children by ``column``; folders are re-sorted when next shown."""

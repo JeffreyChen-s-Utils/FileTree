@@ -80,23 +80,38 @@ for the root row and previously queried nonempty sibling groups. The model recor
 without indexing every file, prunes obsolete groups with structural cache invalidation and clears
 them on root reset. Formatting retains frozen live orders and skips unchanged values.
 `TreeFilter` connects its proxy source only while filtering is active; clearing the query releases
-the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
-accepted identities explicitly. Display-only updates forward data without reevaluating every name;
-structural changes still trigger the existing worker refresh and persistent-index remapping.
+the mapping and owned source signal connections. `tree_projection.ExpandedTreeProxy` uses
+`QAbstractProxyModel` with lazy per-parent lists of borrowed real nodes and their source row numbers.
+The worker still decides membership over expanded subtrees; the GUI maps only explicitly queried
+sibling groups from `FolderTreeModel.filesystem_rows`, preserving its sorted/frozen order. Whole
+virtual archive groups return no real candidates without reading their members. No Node tree is copied.
+Default cells use `entry_data`, and expansion reads `has_entry_children` / `can_preview` without
+allocating source indexes for each displayed leaf. Native read-only flags are reused only for the
+unmodified source implementation; source data/flag overrides and custom row predicates still delegate.
+Cached source parents/row numbers make reverse mapping independent of a file's sibling position.
+Row coordinates use compact 64-bit buffers. Forward mapping binary-searches those coordinates;
+persistent-node remapping batches only its requested source positions with `indexes_for`, avoiding
+a Python position dictionary for every visible file. Group buffers hold references, not cloned nodes.
+Filtered-out ancestors and foreign/detached/virtual entries cannot become alternate roots.
+Source layout/row changes remap surviving persistent nodes/columns with the source's layout hint;
+membership invalidation uses `NoLayoutChangeHint`. Reset/destruction clears references and disconnecting
+an inactive proxy drops all groups. Formatting forwards only materialized groups: binary searches
+translate affected source row ranges to visible rows while preserving column/role bounds. Formatting
+never reevaluates name predicates. The existing controller still cancels/requeries structural changes.
 After validating a worker reply, the proxy stores its captured expanded-folder set as `searched`.
 For an unsearched parent, including a collapsed root, `hasChildren` skips child mapping and only
 preserves the source's lazy archive-fetch offer. The same shortcut applies to a physical file with
 no scanned children even if its preview was expanded: virtual members never match the tree filter.
 Captured non-directory entries with actual children keep their normal filtered mapping. Searched
-directory groups and the top-level root container retain Qt's normal filtered child check.
+directory groups and the top-level root container check their lazy filtered rows.
 `None` means no worker snapshot is available and keeps Qt's
-default behavior for standalone proxies. Root reset drops captured references, retaining an empty
+ordinary child-presence behavior for standalone proxies. Root reset drops captured references, retaining an empty
 snapshot only when one previously existed; clearing the filter restores `None` after unbinding.
 Its row predicate reads `FolderTreeModel.node_at(row, source_parent)` directly. This identity-only
 lookup uses the same lazy `_ordered` cache and row bounds as Qt indexes, retaining frozen live rows
 without allocating a temporary index or dispatching `NODE_ROLE` for each candidate. It returns no
 filesystem node for virtual preview rows, virtual roots or missing rows. An empty source cannot be
-accepted through a `None`-root identity comparison. Qt's ordinary per-cell index path stays inline.
+accepted through a `None`-root identity comparison. The compatibility predicate remains available to explicit callers and custom overrides.
 After the stale-worker/root/cancellation guards, `TreeFilter._ready` compares the full accepted-identity
 sets. A bound proxy is invalidated only when those identities change; equal counts with different
 identities still invalidate. Source sort/layout/reset/row notifications still rebuild source

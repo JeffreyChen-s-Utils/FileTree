@@ -5,7 +5,7 @@ from __future__ import annotations
 import threading
 
 from PySide6.QtCore import (
-    QItemSelection, QItemSelectionModel, QModelIndex, QObject, QSortFilterProxyModel, QThread, QTimer, Qt, Signal,
+    QItemSelection, QItemSelectionModel, QModelIndex, QObject, QThread, QTimer, Qt, Signal,
 )
 from PySide6.QtWidgets import QLineEdit, QTreeView
 
@@ -14,6 +14,7 @@ from je_file_tree.core.pacing import give_way
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.tree_model import NODE_ROLE, FolderTreeModel
+from je_file_tree.gui.tree_projection import ExpandedTreeProxy
 
 
 class ExpandedFilterWorker(QThread):
@@ -44,49 +45,6 @@ class ExpandedFilterWorker(QThread):
                 stack.extend(node.children)
         if not self.cancel.is_set():
             self.ready.emit(frozenset(accepted))
-
-
-class ExpandedTreeProxy(QSortFilterProxyModel):
-    """Constant-time membership filtering over the lazy source model; never recursive filtering."""
-
-    def __init__(self, source: FolderTreeModel | None, parent: QObject) -> None:
-        super().__init__(parent)
-        self.allowed: frozenset[int] = frozenset()
-        self.searched: frozenset[Node] | None = None
-        # Membership comes from the owned worker; display-only changes must not recheck every row.
-        self.setDynamicSortFilter(False)
-        self.setSourceModel(source)
-
-    def filterAcceptsRow(self, row: int, parent: QModelIndex) -> bool:
-        """Keep the root and worker-approved nodes without fetching descendants."""
-        source = self.sourceModel()
-        if source is None:
-            return False
-        # Native 100k-row entry: 1.93 s -> 1.65–1.76 s without per-row Qt index/data dispatch (2026-10-16).
-        node = source.node_at(row, parent)
-        return node is not None and (node is source.root or id(node) in self.allowed)
-
-    def hasChildren(self, parent: QModelIndex = QModelIndex()) -> bool:  # noqa: B008
-        """Avoid mapping unsearched groups and physical files whose only children are virtual previews."""
-        source = self.sourceModel()
-        if source is None:
-            return False
-        if self.searched is not None and parent.isValid():
-            index = self.mapToSource(parent)
-            node = source.node(index)
-            if node is None:
-                return False
-            # An expanded archive still has no scanned children; preview members never match.
-            # Native 100k-member query: 403–411 ms -> 173–185 ms without their mapping (2026-10-16).
-            if node not in self.searched or (not node.is_dir and not node.children):
-                return source.canFetchMore(index)
-        return super().hasChildren(parent)
-
-    def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
-        """Delegate numeric/name sorting to FolderTreeModel's persistent-index relayout."""
-        source = self.sourceModel()
-        if source is not None:
-            source.sort(column, order)
 
 
 class TreeFilter(QObject):

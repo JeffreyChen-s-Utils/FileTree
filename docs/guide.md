@@ -21,6 +21,8 @@ matches still update normally, even when the number of matches stays the same. S
 the scan does not trigger a second tree rebuild when the background query returns unchanged matches.
 Repeated browsing and filter mapping read an existing sorted or frozen sibling order directly. Scan refreshes, new sort columns/directions, completed moves/rescans and archive preview updates rebuild the relevant order through their existing model notifications. Live groups, including empty ones, keep the same frozen rows until the next model refresh.
 
+The filtered tree maps each queried sibling group once from the source model's current sorted or frozen rows. It borrows real nodes, formats normal cells directly and caches source row positions for reverse mapping. Sorts, source updates and membership changes preserve surviving selections and current items; formatting updates forward only the affected visible rows and columns. Custom source data, permissions and filter predicates still delegate. Explicit archive row counts skip wholly virtual previews.
+
 Tree-filter membership reads current sorted or frozen row identities directly, avoiding temporary Qt
 indexes and data-role dispatch for each row. Virtual previews and an empty scan remain excluded.
 Checking a folder's expander does not sort, copy or freeze its unopened children. During filtering,
