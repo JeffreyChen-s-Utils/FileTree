@@ -970,7 +970,13 @@ and model changes are blocked during the batch; Stop cancels remaining entries a
 These are immediate no-follow checks; Qt's path-based Trash call is not an atomic transaction with the
 identity check, so it does not provide an OS guarantee against concurrent malicious path substitution.
 
-**Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. `TrashWorker`
+**Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
+and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
+and verified-copy proof restriction. Cleanup reasons are also narrowed to that reviewed selection;
+unchecked entries leave the audit map. Chosen execution order and original frozen proof order remain
+unchanged; full duplicate groups remain available to the worker for complete pre-operation checks.
+The verified-copy confirmation uses its own selected-identity set to filter frozen path details,
+retaining the existing default-No/plain-text question and all matching receipt paths. `TrashWorker`
 writes all approved events before acting and appends each platform result immediately, preserving Qt's
 optional destination in `MoveReceipt`/`MoveResult.destinations`; skipped entries are appended too.
 A failed approval write prevents moves, while a failed result write preserves the observed success,

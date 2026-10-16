@@ -67,6 +67,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261016-22 | 2026-10-16 | Prepare reviewed batches with selected identity membership | #snapshot #fix #gui #performance #audit | [2026-10-c](2026-10-c.md) |
 | U-20261016-21 | 2026-10-16 | Batch eligible duplicate-copy selections around explicit keepers | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-20 | 2026-10-16 | Format grouped cleanup cells only when requested | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
 | U-20261016-19 | 2026-10-16 | Sort captured result rows with one key evaluation each | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |

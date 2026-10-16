@@ -682,8 +682,10 @@ class MainWindow(QMainWindow):
         if self.results.duplicates.running:
             self.results.duplicates.stop()
         decisions = self.results.duplicates.decisions_for(chosen)
-        explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items()}
-        explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
+        # 20k captured duplicate members: repeated selected-list searches took 1.55 s.
+        selected = set(chosen)
+        explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items() if node in selected}
+        explanations.update((node, "duplicates") for group in decisions for node in group.files if node in selected)
         audit = JournalApproval(self._journal, explanations)
         worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
         if self.results.outcome is not None:
@@ -691,7 +693,7 @@ class MainWindow(QMainWindow):
         worker.proposal_context = proposal.report.context if proposal is not None else None
         worker.proposal_check = (lambda: proposal.store.status(proposal.report)) if proposal is not None else None
         if copies is not None:
-            worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in chosen),
+            worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in selected),
                                                 copies.redirect)
         self._undo.expire()
         worker.allow_undo = True
@@ -717,13 +719,14 @@ class MainWindow(QMainWindow):
         return False
 
     def _confirm_copy_trash(self, nodes: list[Node], copies: CopyApproval) -> QMessageBox.StandardButton:
+        selected = set(nodes)
         question = QMessageBox(QMessageBox.Icon.Question, tr("trash_confirm_title"), "",
                               QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(self._trash_question(nodes) + "\n\n" + tr("copy_trash_confirm")
                          + ("\n\n" + tr("copy_redirect") if copies.redirect else ""))
         question.setDetailedText("\n\n".join(f"{proof.item.source}\n→ {proof.item.destination}"
-                                            for proof in copies.proofs if proof.item.node in nodes))
+                                            for proof in copies.proofs if proof.item.node in selected))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         return question.exec()
 

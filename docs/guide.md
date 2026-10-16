@@ -217,6 +217,8 @@ Cleanup suggestions and duplicate groups retain all listed members in their orig
 
 Select extra copies applies one complete row selection across eligible displayed duplicate groups. It preserves the current row, excludes every occurrence of each explicit keeper and skips blocked or missing check results. A missing keeper, or one outside the captured displayed group, cannot select the entire group. Existing manual selections are replaced together; running or unfinished estimates leave selection untouched. This changes selection only; the normal review and pre-operation checks still apply.
 
+After review, batch preparation builds one identity set from the final checked selection. Cleanup and duplicate audit reasons and verified-copy receipts retain only those selected identities. Operation order and the original frozen receipt order are preserved. Unchecked entries leave the audit reason map; review rejection or unrelated copy proofs cannot queue a batch. Review, protected-folder questions, the default-No verified-copy Trash confirmation and source rechecks still apply.
+
 Result tables (including Problems, Search, Largest files, Changes, file types and age groups) calculate each row's sort value once per sort instead of repeatedly reading cells for comparisons. Sorting retains visible selections, filters and column indicators; replacing results reapplies the chosen column and direction. Names keep Qt's UTF-16 ordering, numeric columns use raw values, and equal values retain their previous row order. This sorts captured records only and performs no source filesystem operations.
 
 ## Install
