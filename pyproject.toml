@@ -72,5 +72,7 @@ max-args = 7
 # Tests assert, use magic numbers for expected values, and import inside tests
 # to keep Qt out of the pure-core test modules.
 "test/*" = ["S101", "PLR2004", "PLC0415"]
+# Execute the checked-in workflow shell with a stubbed native validator in private test scratch.
+"test/test_apfs_workflow_samples.py" = ["S603"]
 # Qt's virtual methods keep Qt's camelCase names.
 "je_file_tree/gui/*" = ["N802"]

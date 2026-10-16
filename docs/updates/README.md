@@ -58,6 +58,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10-d](2026-10-d.md) | 2026-10 |
 | [2026-10-c](2026-10-c.md) | 2026-10 |
 | [2026-10-b](2026-10-b.md) | 2026-10 |
 | [2026-10](2026-10.md) | 2026-10 |
@@ -67,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-08 | 2026-10-17 | Collect independent APFS samples without masking failures | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-07 | 2026-10-17 | Verify private desktop approvals on native X11 | #done #ci #desktop | [2026-10-d](2026-10-d.md) |
 | U-20261017-06 | 2026-10-17 | Capture post-busy owned APFS image and volume identity observations | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-05 | 2026-10-17 | Bind the owned desktop probe to the literal approval presenter | #snapshot #fix #ci | [2026-10-c](2026-10-c.md) |

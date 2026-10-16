@@ -1497,6 +1497,10 @@ bytes stay null. It additionally exercises production cross-volume fcopyfile/res
 between its own host scratch and image. No Finder automation, real user bin or cloud provider is used.
 Each completed phase/failure and verified cleanup are atomically retained by native macOS CI; local
 refusal tests alone do not establish native APFS behavior. macOS savings explicitly retain uncertainty.
+The hosted APFS step runs three independent fresh-image processes and preserves all outcomes; a
+failure in any sample fails the step. The first proof remains under `macos-evidence/apfs`, with the
+other proofs under `sample-2` and `sample-3` and exit codes/paths in `apfs/samples.tsv`. Subsequent
+samples never reopen or recover a retained image; each creates its own private image and directory.
 Recovery retains each completed case before the next one. An all-name hard-link batch rechecks full
 payload/identity metadata and subtracts only its own preceding removals from expected link counts.
 The APFS diagnostic runs after the existing cocoa/background probes so its failure preserves their
