@@ -56,7 +56,7 @@ Starting a new scan cancels pending folder-list calculations and discards their 
 - Clean-up suggestions need your review. Background monitoring is off by default and does not clean up automatically.
 - Folders that cannot be read appear under **Problems**; their contents are missing from the totals.
 - Scans do not follow symbolic links or junctions. File size and space used on disk can differ.
-- Windows may ask for administrator rights at startup. You can decline and scan accessible folders.
+- Windows may ask for administrator rights at startup. You can decline and scan accessible folders. A restart requested from the window waits in the background; complete or dismiss the Windows prompt to finish.
 - Advanced actions such as emptying Trash or linking duplicate copies have separate confirmations and consequences; read the [detailed guide](docs/guide.md) first.
 
 ## Keyboard shortcuts

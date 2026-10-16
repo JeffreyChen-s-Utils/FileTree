@@ -1165,6 +1165,17 @@ to start a second copy through the "runas" verb (the UAC prompt) unless the `ask
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
 continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
 the scanned folder as its argument. A built program restarts itself; from Python it is `-m je_file_tree`.
+Open-window requests use `ElevationDialog`/`ElevationWorker`: capture arguments on the GUI thread,
+run exactly one native request off-thread, and retain modal settings ownership until a zero-time
+join completes. Close/Escape cannot cancel an issued Windows request. Read the joined worker's
+launch result even after dialog rejection, so a successfully started copy still retires the original
+workspace. Decline/failure keeps it running; errors remain plain text. Duplicate requests and source
+mutation conflicts are refused, and parent closing suppresses late UI callbacks while retaining the worker.
+`native_shell` shares one Unicode Shell structure with Properties. Administrator launch initializes
+STA COM with OLE1 DDE disabled, balances both S_OK/S_FALSE, and uses ShellExecuteExW/runas with
+SEE_MASK_NOASYNC. It joins launch completion without waiting for the new process to exit or requesting
+a process handle. Failed COM initialization never invokes the Shell. Startup remains pre-workspace;
+Properties retains its existing native verb/lifetime and is not moved to a short-lived thread.
 UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
 execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
 Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.

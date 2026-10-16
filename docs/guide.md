@@ -2,6 +2,8 @@
 
 [Project introduction and quick start](../README.md)
 
+From an open window, Restart as administrator captures the current restart arguments and opens a waiting dialog. One owned worker waits for Windows while Qt events continue. Complete or dismiss the Windows prompt; closing the waiting dialog or pressing Escape waits for that request to finish. A successful launch still closes the original window/workspace even if its waiting dialog was closed; a failed or declined launch keeps the original copy running. Errors remain literal text, with no automatic retry. Repeated requests and active source-operation conflicts are blocked. Application closing retains the worker until it joins and suppresses late status updates. The optional startup prompt still runs before the workspace exists.
+
 Restoring ordinary tree selections groups the recorded nodes by parent, resolves their row positions and projects only numeric coordinates into filtered groups. Qt indexes are created for adjacent-range endpoints rather than every selected entry. Hidden ancestors, virtual members and gaps remain excluded; custom index mappings retain their existing delegation. Current items, whole-row selection, expansion and header state are preserved.
 
 Ordinary whole-row selections read their recorded node references directly from selected ranges before switching models. They avoid expanding every selected cell into Qt indexes, while still copying the selected references before callbacks can reorder or replace rows. Partial-cell selections, custom data/permissions and changed node-role handlers retain Qt row-selection checks. Virtual archive rows remain excluded; only selected sibling intervals are read, with no subtree traversal.

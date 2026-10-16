@@ -39,6 +39,7 @@ from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
+from je_file_tree.gui.elevation_dialog import ElevationDialog
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
@@ -77,7 +78,7 @@ from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
-from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.folder_validation import FolderDrops
 from je_file_tree.gui.themes import ThemeMenu
@@ -137,7 +138,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._init_scan_state()
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs, self._settings_dialogs = set[QDialog](), set[ShellIntegrationDialog]()
+        self._path_dialogs, self._settings_dialogs = set[QDialog](), set[WorkerDialog]()
         self._trash_rescans: list[Node] = []
         self._closing, self._close_waiting, self._close_ready = False, False, False
         self._analyser: AnalyseWorker | None = None
@@ -1450,6 +1451,8 @@ class MainWindow(QMainWindow):
             self.pending_source_workers()
         if self._operations is not None:
             self._operations.refresh(self)
+        self._actions["elevate"].setEnabled(
+            not self._closing and not self.operation_busy and not self._settings_dialogs)
         scanning = self._worker is not None or self.operation_busy
         self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
@@ -1627,11 +1630,28 @@ class MainWindow(QMainWindow):
 
         When the prompt is declined, this copy keeps running and says so.
         """
-        arguments = [self._last_path] if self._last_path else []
-        if elevation.relaunch_elevated(arguments):
-            self.quit_application()
+        if self._closing or self._settings_dialogs or self.operation_busy:
             return
-        self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
+        arguments = [self._last_path] if self._last_path else []
+        dialog = ElevationDialog(arguments, self)
+        self._settings_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
+            dialog.deleteLater()
+            if not self._closing:
+                self._update_actions()
+        if self._closing:
+            return
+        if dialog.worker.started_copy:
+            self.quit_application()
+        else:
+            message = (tr("elevate_failed", reason=dialog.worker.error) if dialog.worker.error is not None
+                       else tr("elevate_declined"))
+            self.statusBar().showMessage(message, _STATUS_TIMEOUT_MS)
 
     def edit_exclusions(self) -> None:
         """Edit the folders to skip while scanning; they apply from the next scan."""
