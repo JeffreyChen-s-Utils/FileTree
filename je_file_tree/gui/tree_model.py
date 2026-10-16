@@ -19,7 +19,7 @@ it, and each refresh re-sorts by the sizes reached so far.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt, Signal
@@ -28,7 +28,7 @@ from PySide6.QtWidgets import QApplication, QStyle
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size, format_time
 from je_file_tree.core.archives import VirtualEntry
-from je_file_tree.core.node import Node
+from je_file_tree.core.node import Node, detach_many
 from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.scanner import EXCLUDED, NOT_SCANNED
 from je_file_tree.core.snapshot import unpack_snapshot
@@ -204,25 +204,27 @@ class FolderTreeModel(QAbstractItemModel):
 
     def remove(self, node: Node) -> None:
         """Take ``node`` out of the tree after it was deleted from disk, updating every total above it."""
-        parent = node.parent
-        if parent is None:
+        self.remove_many((node,))
+
+    def remove_many(self, nodes: Iterable[Node]) -> None:
+        """Apply completed real-entry moves in one layout, retaining unaffected persistent indexes.
+
+        Only this model's captured non-root filesystem entries are eligible. Virtual previews never
+        authorize mutations. Sibling filtering preserves the scanner's order without subtree walks.
+        Invalidate the old drive-capacity metadata in the same layout as the completed moves.
+        """
+        chosen = [node for node in nodes if node is not self._root and not isinstance(node, VirtualEntry)
+                  and self._visible(node)]
+        if not chosen:
             return
-        parent_index = self.index_for(parent)
-        row = self._row_of(node)
-        if row < 0:
-            return
-        self._relayout(self.invalidate_archives)
-        self.beginRemoveRows(parent_index, row, row)
-        node.detach()
-        self._orders.pop(id(parent), None)
-        self._rows.clear()
-        self.endRemoveRows()
-        ancestor: Node | None = parent
-        while ancestor is not None:
-            self._refresh_children(ancestor)
-            ancestor = ancestor.parent
-        if self._root is not None:
-            self.dataChanged.emit(self.index(0, SIZE), self.index(0, MODIFIED))
+
+        def change() -> None:
+            self.invalidate_archives()
+            self._drive_total = None
+            detach_many(chosen)
+        # 80 completed moves previously caused 80 full relayouts (2026-10-16).
+        # General structural layout changes must not use the completed-sort hint.
+        self._relayout(change)
 
     # --- QAbstractItemModel ------------------------------------------------
 
@@ -461,14 +463,6 @@ class FolderTreeModel(QAbstractItemModel):
             return siblings.index(node)
         except ValueError:
             return -1
-
-    def _refresh_children(self, folder: Node) -> None:
-        """Repaint the numbers of every child of ``folder`` (their share of it changed)."""
-        count = len(self._ordered(folder))
-        parent_index = self.index_for(folder)
-        if count and parent_index.isValid():
-            self.dataChanged.emit(self.index(0, SIZE, parent_index),
-                                  self.index(count - 1, MODIFIED, parent_index))
 
     def _display(self, node: Node, column: int) -> str:
         text = self._texts.get(column)

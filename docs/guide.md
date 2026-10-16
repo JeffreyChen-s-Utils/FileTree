@@ -8,7 +8,9 @@ including nested archive entries. Archive previews remain read-only and never co
 entries for file actions or scan totals.
 
 After approved moves to Trash, file-type and age totals update in the background. Stop retains completed
-moves and finishes their statistics. Closing can cancel those calculations; completed moves and
+moves and finishes their statistics. Completed entries update the tree together, keeping selections
+outside the removed entries. Failed moves remain visible, and affected folders are still rescanned.
+Closing can cancel those calculations; completed moves and
 operation errors still follow the normal completion handling.
 
 Chart legends wrap between complete entries as the pane narrows. Each category or age label keeps

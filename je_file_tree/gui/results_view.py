@@ -484,12 +484,10 @@ class ResultsView(QWidget):
             raise ValueError("Removed statistics use a different scan age reference")
         self._stop_focused()
         self.capacity.set_ledger(None)
-        self.tree_model.set_drive_total(None)
         view_root = self.charts.view_root
         extensions = subtract_stats(outcome.extensions, removed.extensions)
         ages = subtract_ages(outcome.ages, removed.ages)
-        for node in nodes:
-            self.tree_model.remove(node)
+        self.tree_model.remove_many(nodes)
         root = outcome.result.root
         self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,
                                             categories=category_stats(extensions),

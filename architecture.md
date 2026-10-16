@@ -869,7 +869,14 @@ place decides, temporary folders are free) → one confirmation → background v
 → affected-parent rescans. The tree and the largest-files
 list allow several rows to be selected; the entries acted
 on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
-it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the
+it). `FolderTreeModel.remove_many` applies all completed moves and invalidates stale drive capacity
+in one general structural layout change, remapping persistent indexes with no sorting hint. The
+[Qt structural-update protocol](https://doc.qt.io/qtforpython-6.10/overviews/qtwidgets-model-view-programming.html)
+explicitly supports a single layout change for discontiguous removals. `core.node.detach_many`
+deduplicates outermost entries and filters each affected parent's captured child list once, preserving
+its list identity and survivor order. It subtracts each parent's combined named totals from ancestors
+without traversing removed or unrelated descendants. Foreign, root and virtual preview entries are
+excluded by the model. The single-entry `remove` delegates to the same path. The
 largest files, per-type and per-age totals and treemap are updated once before the rescans. Entries the system
 refuses stay and are named in a warning.
 
