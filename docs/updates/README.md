@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-21 | 2026-10-17 | Preserve duplicate selections when background estimates finish | #snapshot #fix #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-20 | 2026-10-17 | Map tree selections without retaining selected file rows | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-19 | 2026-10-17 | Recheck complete APFS identity before an unmounted detach retry | #snapshot #fix #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-18 | 2026-10-17 | Capture native CI refusals and observe owned helper waits | #snapshot #diagnostics #windows #apfs | [2026-10-d](2026-10-d.md) |

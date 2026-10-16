@@ -69,6 +69,31 @@ def test_grouped_capture_preserves_headers_children_and_proxy_sorting(qapp) -> N
     view.deleteLater()
 
 
+def test_group_label_refresh_aborts_mixed_capture_and_new_capture_uses_current_labels(qapp) -> None:
+    from je_file_tree.core.node import Node
+    from je_file_tree.gui.grouped_list import GroupedListModel, build_view
+
+    model = GroupedListModel()
+    model.set_groups([('pending estimate', [Node(str(row), False) for row in range(200)])], 'auto')
+    view = build_view(model)
+    capture, errors, ready = ListCapture(view, view), [], []
+    capture.failed.connect(errors.append)
+    capture.ready.connect(lambda *_: ready.append(True))
+    capture.start()
+    capture._timer.stop()
+    capture._chunk()
+    assert 0 < len(capture.rows) <= 128
+    model.set_group_labels([('current estimate', 'current tip')])
+    assert len(errors) == 1 and not ready and not capture._active and not capture.rows
+    fresh, rows = ListCapture(view, view), []
+    fresh.ready.connect(lambda _header, captured: rows.extend(captured))
+    fresh.start()
+    _wait(qapp, lambda: not fresh._active)
+    assert len(rows) == 201 and rows[0] == ['current estimate', '', '', '']
+    assert [row[0] for row in rows[1:]] == [str(row) for row in range(200)]
+    view.deleteLater()
+
+
 def test_ctrl_c_copies_only_selected_rows_in_model_order(qapp) -> None:
     view, model = _view(4)
     install_copy(view)

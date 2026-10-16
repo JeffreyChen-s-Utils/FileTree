@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import weakref
 
+import pytest
 from PySide6.QtCore import QPersistentModelIndex, Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtTest import QAbstractItemModelTester
@@ -122,3 +123,53 @@ def test_wide_view_formats_visible_cells_only_and_releases_old_rows(qapp, monkey
     assert oldest() is None
     view.setModel(None)
     view.close()
+
+
+def test_group_labels_preserve_captured_rows_roles_and_persistent_indexes(qapp, monkeypatch):
+    model = GroupedListModel()
+    tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Fatal)
+    nodes = [Node(str(row), False, size=row) for row in range(20_000)]
+    icon = QIcon(QPixmap(8, 8))
+    model.set_groups([("first", nodes), ("empty", []), ("last", [nodes[-1]])], "MB",
+                     tips=["old tip", "empty tip", "last tip"], keepers=[nodes[0], None, None],
+                     icons={nodes[-1]: icon})
+    captured = model._groups[0].nodes
+    pinned = QPersistentModelIndex(model.index(19_999, 2, model.index(0, 0)))
+    notifications, resets = [], []
+    model.dataChanged.connect(lambda first, last, roles: notifications.append((first, last, roles)))
+    model.modelReset.connect(lambda: resets.append(True))
+    monkeypatch.setattr(grouped_list, "format_size", lambda *_: pytest.fail("labels must not format file cells"))
+    model.set_group_labels([("new title", "new tip"), ("empty", "empty tip"), ("last", None)])
+    assert not resets and pinned.isValid() and pinned.data(NODE_ROLE) is nodes[-1]
+    assert model._groups[0].nodes is captured and model.rowCount(model.index(0, 0)) == 20_000
+    assert model.index(0, 0).data() == "new title" and model.index(0, 0).data(Qt.ToolTipRole) == "new tip"
+    assert model.index(2, 0).data(Qt.ToolTipRole) is None
+    assert model.index(0, 0).data(NODE_ROLE) is None
+    assert model.index(0, 0, model.index(0, 0)).data(Qt.FontRole).bold()
+    assert model.index(19_999, 0, model.index(0, 0)).data(Qt.DecorationRole).cacheKey() == icon.cacheKey()
+    assert len(notifications) == 2
+    for row, (first, last, roles) in zip((0, 2), notifications, strict=True):
+        assert first == last == model.index(row, 0)
+        assert set(roles) == {Qt.DisplayRole, Qt.ToolTipRole}
+    model.set_group_labels([("new title", "new tip"), ("empty", "empty tip"), ("last", None)])
+    assert len(notifications) == 2 and tester.model() is model
+
+
+@pytest.mark.parametrize("labels", [[], [("one", None), ("extra", None)]])
+def test_wrong_group_label_count_leaves_existing_data_intact(qapp, labels):
+    model = GroupedListModel()
+    model.set_groups([("original", [])], "auto", tips=["tip"])
+    changed = []
+    model.dataChanged.connect(lambda *_: changed.append(True))
+    with pytest.raises(ValueError, match="group count"):
+        model.set_group_labels(labels)
+    assert model.index(0, 0).data() == "original" and model.index(0, 0).data(Qt.ToolTipRole) == "tip"
+    assert not changed
+
+
+def test_empty_group_labels_need_no_model_notification(qapp):
+    model = GroupedListModel()
+    changed = []
+    model.dataChanged.connect(lambda *_: changed.append(True))
+    model.set_group_labels([])
+    assert model.rowCount() == 0 and not changed

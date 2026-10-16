@@ -407,7 +407,8 @@ class DuplicatesPanel(QWidget):
     def _show_savings(self, savings: DuplicateSavings) -> None:
         self._estimator = None
         self._savings = savings
-        self._rebuild()
+        titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]
+        self.model.set_group_labels([(title, title) for title in titles])
         self._update()
 
     def _savings_text(self, value: Savings) -> str:

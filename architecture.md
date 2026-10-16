@@ -1122,6 +1122,16 @@ Qt's necessary wide-layout index checks from repeatedly constructing enum values
 retain their existing oldest-first order and explicit keeper labels; similar photos retain the
 existing member bound, thumbnail display and separate authority from exact duplicate decisions.
 
+Completed duplicate estimates call `GroupedListModel.set_group_labels` for only the displayed
+groups. It validates the group count, retains captured member tuples, keepers, icons and units, and
+notifies only each changed root title/tooltip cell. It performs no member sorting or model reset;
+selection, persistent/current indexes, collapsed groups, scroll and column geometry remain intact.
+Separate root notifications avoid Qt traversing intervening member rows in a broad root range.
+The existing worker-identity guard rejects late estimates after replacement or cancellation, and
+the updated savings/issues still gate extra-copy selection. `ListCapture` aborts on these data
+notifications, preventing mixed estimate labels in an in-progress export. Membership changes and
+other existing rebuild triggers retain their reset behavior.
+
 `GroupedListModel.extra_selection` scans only captured displayed members by identity and builds
 complete-column ranges around explicit keepers. Missing/foreign keepers contribute no ranges; every
 repeated keeper reference is excluded. `DuplicatesPanel.select_extra_copies` admits only completed

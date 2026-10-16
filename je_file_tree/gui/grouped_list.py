@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from PySide6.QtCore import (
@@ -67,6 +67,24 @@ class GroupedListModel(QAbstractItemModel):
         self._unit = unit
         self._icons = dict(icons) if icons is not None else {}
         self.endResetModel()
+
+    def set_group_labels(self, labels: Sequence[tuple[str, str | None]]) -> None:
+        """Update group titles/tooltips without replacing captured rows or resetting view state."""
+        if len(labels) != len(self._groups):
+            raise ValueError("Group labels must match the captured group count")
+        updated, changed = [], []
+        for row, (group, (title, tip)) in enumerate(zip(self._groups, labels, strict=True)):
+            updated_group = group
+            if group.title != title or group.tip != tip:
+                updated_group = replace(group, title=title, tip=tip)
+                changed.append(row)
+            updated.append(updated_group)
+        if changed:
+            self._groups = tuple(updated)
+            # Native 100k-entry probe: broad root ranges revisit intervening files (U-20261017-21).
+            for row in changed:
+                index = self.index(row, 0)
+                self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole])
 
     def index(self, row: int, column: int, parent: ModelIndex = QModelIndex()) -> QModelIndex:  # noqa: B008
         """Use zero for a group and its one-based group number for a child index ID."""
