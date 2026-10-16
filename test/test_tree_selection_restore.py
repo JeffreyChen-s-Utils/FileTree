@@ -1,7 +1,7 @@
 """Restore large visible selections once, excluding display-only archive rows."""
 
 import pytest
-from PySide6.QtCore import QItemSelection, QItemSelectionModel
+from PySide6.QtCore import QItemSelection, QItemSelectionModel, Qt
 from test_gui import _wait, window as window  # noqa: PLC0414 - shared fixture
 
 from je_file_tree.core.analysis import category_stats, summarise
@@ -9,7 +9,7 @@ from je_file_tree.core.archives import VirtualEntry
 from je_file_tree.core.node import Node
 from je_file_tree.core.scanner import ScanResult
 from je_file_tree.gui.scan_worker import ScanOutcome
-from je_file_tree.gui.tree_model import NODE_ROLE, FolderTreeModel
+from je_file_tree.gui.tree_model import NAME, NODE_ROLE, SIZE, FolderTreeModel
 
 
 class _ProbedRows(list):
@@ -84,6 +84,86 @@ def test_filter_switch_applies_one_selection_change_for_the_whole_visible_batch(
     controller.line.clear()
     assert len(changes) == 1 and set(results.selected_nodes()) == set(chosen)
     assert results.selected_node() is chosen[0]
+
+
+@pytest.mark.parametrize("live", [False, True])
+@pytest.mark.parametrize("column", [NAME, SIZE])
+def test_filter_rebinding_keeps_existing_order_without_relayout(window, live, column):
+    results = window.results
+    outcome = _outcome(40)
+    results.show_outcome(outcome)
+    root, source = outcome.result.root, results.tree_model
+    if live:
+        source.set_root(root, live=True)
+    results.tree.sortByColumn(column, Qt.SortOrder.DescendingOrder)
+    root_index = source.index_for(root)
+    results.tree.expand(root_index)
+    chosen = root.children[5]
+    results.select_node(chosen)
+    source.rowCount(root_index)
+    cached_order = source._orders.get(id(root))
+    results.tree.setColumnWidth(0, 333)
+    results.tree.setColumnHidden(6, True)
+    controller = results.tree_filter
+    controller.proxy.allowed = frozenset(id(node) for node in root.iter_nodes())
+    controller.proxy.setSourceModel(source)
+    layouts = []
+    source.layoutChanged.connect(lambda *_args: layouts.append(True))
+    for filtered in (True, False):
+        controller._switch(filtered)
+        assert not layouts, "rebinding the view must not repeat an unchanged sort"
+        assert source._orders.get(id(root)) is cached_order
+        assert results.selected_node() is chosen and results.selected_nodes() == [chosen]
+        assert results.tree.isExpanded(controller.index_for(root))
+        assert results.tree.columnWidth(0) == 333 and results.tree.isColumnHidden(6)
+        header = results.tree.header()
+        assert header.sortIndicatorSection() == column
+        assert header.sortIndicatorOrder() == Qt.SortOrder.DescendingOrder
+
+
+def test_sort_preservation_keeps_live_rows_frozen_but_allows_new_keys_and_explicit_refresh(qapp):
+    root = _outcome(3).result.root
+    source = FolderTreeModel()
+    source.set_root(root, live=True)
+    parent = source.index_for(root)
+    assert source.rowCount(parent) == 3
+    leaf = Node("a new file", False, size=100, parent=root)
+    root.children.append(leaf)
+    layouts = []
+    source.layoutChanged.connect(lambda *_args: layouts.append(True))
+    with source.preserve_sort():
+        source.sort(SIZE, Qt.SortOrder.DescendingOrder)
+        assert source.rowCount(parent) == 3 and not layouts
+        source.refresh()
+        assert source.rowCount(parent) == 4 and len(layouts) == 1
+        assert source.index(0, 0, parent).data(NODE_ROLE) is leaf
+        source.sort(NAME, Qt.SortOrder.AscendingOrder)
+        assert len(layouts) == 2 and source.index(0, 0, parent).data(NODE_ROLE) is leaf
+        source.sort(NAME, Qt.SortOrder.AscendingOrder)
+        assert len(layouts) == 2
+    # An ordinary repeated header sort still refreshes a running scan's snapshot.
+    another = Node("0 newer file", False, size=200, parent=root)
+    root.children.append(another)
+    source.sort(NAME, Qt.SortOrder.AscendingOrder)
+    assert source.rowCount(parent) == 5 and len(layouts) == 3
+    assert source.index(0, 0, parent).data(NODE_ROLE) is another
+    source.deleteLater()
+
+
+def test_sort_preservation_restores_nested_and_exceptional_scopes(qapp):
+    source = FolderTreeModel()
+    source.set_root(_outcome(3).result.root)
+    layouts = []
+    source.layoutChanged.connect(lambda *_args: layouts.append(True))
+    with pytest.raises(RuntimeError, match="outer"), source.preserve_sort():
+        with pytest.raises(RuntimeError, match="inner"), source.preserve_sort():
+            raise RuntimeError("inner")
+        source.sort(SIZE, Qt.SortOrder.DescendingOrder)
+        assert not layouts
+        raise RuntimeError("outer")
+    source.sort(SIZE, Qt.SortOrder.DescendingOrder)
+    assert len(layouts) == 1
+    source.deleteLater()
 
 
 @pytest.mark.parametrize("with_file", [False, True])

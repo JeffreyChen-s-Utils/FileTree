@@ -19,7 +19,8 @@ it, and each refresh re-sorts by the sizes reached so far.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt, Signal
@@ -87,6 +88,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._drive_total: int | None = None
         self._sort_column = SIZE
         self._sort_order = Qt.SortOrder.DescendingOrder
+        self._preserving_sort = False
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._queried_parents: set[Node] = set()
@@ -356,6 +358,8 @@ class FolderTreeModel(QAbstractItemModel):
         """Qt: order every folder's children by ``column``; folders are re-sorted when next shown."""
         if not 0 <= column < len(COLUMN_KEYS):
             return
+        if self._preserving_sort and (column, order) == (self._sort_column, self._sort_order):
+            return
 
         def change() -> None:
             self._sort_column = column
@@ -365,6 +369,16 @@ class FolderTreeModel(QAbstractItemModel):
         hint = (QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint if self._live
                 else QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
         self._relayout(change, hint=hint)
+
+    @contextmanager
+    def preserve_sort(self) -> Iterator[None]:
+        """Skip identical sort requests during view rebinding; changed keys and explicit refresh still apply."""
+        previous = self._preserving_sort
+        self._preserving_sort = True
+        try:
+            yield
+        finally:
+            self._preserving_sort = previous
 
     def _relayout(self, change: Callable[[], None], *,
                   hint: QAbstractItemModel.LayoutChangeHint = QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint

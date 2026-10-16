@@ -12,7 +12,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 ## What you can do
 
 - **Find large files and folders**: see the biggest items first, including after cleaning or rescanning a folder. Charts show their share of the space.
-- **Search and filter**: find files by name, type, size or last change, while keeping multiple visible items selected when sorting, changing units or reapplying filters.
+- **Search and filter**: find files by name, type, size or last change, while keeping multiple visible items selected when sorting, changing units or reapplying filters. Tree filters clear faster while keeping the current order.
 - **Review clean-up suggestions**: inspect caches, temporary files and duplicate files before acting. Cleanup statistics are prepared in the background, and completed moves update the tree together.
 - **See what grew**: compare scans to find folders using more space than before.
 - **Save reports**: export results to CSV, JSON or Excel.

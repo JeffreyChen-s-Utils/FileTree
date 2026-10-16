@@ -9,6 +9,8 @@ Changing size units or refreshing volume shares keeps selections, expanded folde
 filter. Only the displayed values change.
 
 Clearing and reapplying tree filters retains visible selections and expanded folders.
+Switching between the filtered and full tree keeps the current row order without redundant sorting.
+Live scans still refresh normally, and changing the sort column or direction still applies immediately.
 Visible items are restored together as a full-row selection. Changing tree filters drops display-only
 archive selections while keeping physical files and scan totals unchanged.
 

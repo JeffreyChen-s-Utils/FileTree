@@ -77,6 +77,10 @@ them on root reset. Formatting retains frozen live orders and skips unchanged va
 the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
 accepted identities explicitly. Display-only updates forward data without reevaluating every name;
 structural changes still trigger the existing worker refresh and persistent-index remapping.
+During the synchronous `setModel` and header-state restoration, a nested, exception-safe
+`FolderTreeModel.preserve_sort` scope ignores identical sort requests, avoiding Qt's two redundant
+relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,
+selection and current indexes; explicit refresh and ordinary repeated sorts retain live-snapshot semantics.
 
 The controller records the freshly initialized tree/header's generated selection models and only
 new models created during its own `setModel` calls. Qt deliberately retains replaced selection models
