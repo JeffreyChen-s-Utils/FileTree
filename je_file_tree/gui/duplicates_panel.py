@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from PySide6.QtCore import QItemSelectionModel, QSize, Signal
 
-from PySide6.QtGui import QIcon, QImage, QPixmap, QStandardItemModel
+from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -49,7 +49,7 @@ class DuplicatesPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.unit = AUTO_UNIT
-        self.model = QStandardItemModel(self)
+        self.model = grouped_list.GroupedListModel(self)
         self.folder_matches = QListWidget()
         self.folder_matches.setMaximumHeight(110)
         self.folder_matches.setVisible(False)
@@ -298,16 +298,8 @@ class DuplicatesPanel(QWidget):
         groups = [(self._group_title(position, group),
                    sorted(group.files, key=lambda file: (file.modified, file.path)))
                   for position, group in enumerate(self._groups[:LISTED_GROUPS])]
-        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups])
-        for row, (_title, files) in enumerate(groups):
-            kept = self._groups[row].kept
-            for index, node in enumerate(files):
-                if node is kept:
-                    item = self.model.item(row).child(index, 0)
-                    item.setText(tr("duplicates_kept_name", name=node.name))
-                    font = item.font()
-                    font.setBold(True)
-                    item.setFont(font)
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups],
+                          keepers=[group.kept for group in self._groups[:LISTED_GROUPS]])
         self._folder_lines()
 
     def _rebuild_photos(self) -> None:
@@ -321,15 +313,16 @@ class DuplicatesPanel(QWidget):
                 title = tr("photos_group", count=format_count(len(group.files)), distance=photos.distance)
                 groups.append((title, files))
                 remaining -= len(files)
-        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr("photos_hint")] * len(groups))
+        icons = {}
+        if photos is not None:
+            for _title, files in groups:
+                for node in files:
+                    if data := photos.thumbnails.get(node):
+                        icons[node] = QIcon(QPixmap.fromImage(QImage.fromData(data)))
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr("photos_hint")] * len(groups),
+                          icons=icons)
         self.view.setUniformRowHeights(False)
         self.view.setIconSize(QSize(64, 64))
-        if photos is not None:
-            for row, (_title, files) in enumerate(groups):
-                for index, node in enumerate(files):
-                    data = photos.thumbnails.get(node)
-                    if data:
-                        self.model.item(row).child(index, 0).setIcon(QIcon(QPixmap.fromImage(QImage.fromData(data))))
         self.folder_matches.clear()
         self.folder_matches.hide()
 

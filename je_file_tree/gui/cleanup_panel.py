@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from je_file_tree.core.cleanup import CleanupGroup
@@ -33,7 +32,7 @@ class CleanupPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.unit = AUTO_UNIT
-        self.model = QStandardItemModel(self)
+        self.model = grouped_list.GroupedListModel(self)
         self.view = grouped_list.build_view(self.model)
         self.status = QLabel()
         self.status.setWordWrap(True)

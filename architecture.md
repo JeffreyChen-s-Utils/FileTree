@@ -1024,6 +1024,17 @@ folder whole without looking inside it, then adds `empty_folders` (only folders 
 outermost); it runs again after a move to the Recycle Bin or a folder rescan. The rules are data
 (`cleanup.RULES`). *Duplicates* is the page below; both list their groups with `grouped_list`.
 
+`grouped_list.GroupedListModel` captures each group's membership as a tuple of original Node
+references, with optional explicit keeper and bounded photo-icon roles. Group indexes use ID zero;
+entry indexes use their one-based group number, avoiding per-cell Qt objects and row wrappers.
+Only requested display/tooltip roles format sizes, dates and paths. Every captured row is immediately
+addressable; group headers have no Node role, and entries remain selectable read-only leaves even
+when their Nodes represent folders. Resets discard prior groups/icons and clear stale selections.
+`fill` configures column geometry before expanding group roots only. Precomputed leaf flags keep
+Qt's necessary wide-layout index checks from repeatedly constructing enum values. Exact duplicates
+retain their existing oldest-first order and explicit keeper labels; similar photos retain the
+existing member bound, thumbnail display and separate authority from exact duplicate decisions.
+
 Before matching, `coverage_of` checks excluded, unread and inaccessible folders and propagates unknown
 coverage to ancestors. Folder nodes start with `NOT_SCANNED`; successful reads clear it, hidden omissions
 and failed entry stats leave the parent incomplete. A matching incomplete folder is never proposed whole;
