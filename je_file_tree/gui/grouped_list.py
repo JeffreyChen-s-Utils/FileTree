@@ -104,6 +104,29 @@ class GroupedListModel(QAbstractItemModel):
             index = self.index(position, 0, parent)
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.FontRole])
 
+    def set_unit(self, unit: str) -> None:
+        """Refresh only captured size cells, preserving members, indexes and view state."""
+        format_size(0, unit)
+        if self._unit == unit:
+            return
+        self._unit = unit
+        for row, group in enumerate(self._groups):
+            if group.nodes:
+                parent = self.index(row, 0)
+                self.dataChanged.emit(self.index(0, 1, parent), self.index(len(group.nodes) - 1, 1, parent),
+                                      [Qt.ItemDataRole.DisplayRole])
+
+    def retranslate(self) -> None:
+        """Refresh translated headings and keeper names without rebuilding captured groups."""
+        self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, len(COLUMNS) - 1)
+        for row, group in enumerate(self._groups):
+            if group.kept is not None:
+                parent = self.index(row, 0)
+                for position, node in enumerate(group.nodes):
+                    if node is group.kept:
+                        index = self.index(position, 0, parent)
+                        self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+
     def index(self, row: int, column: int, parent: ModelIndex = QModelIndex()) -> QModelIndex:  # noqa: B008
         """Use zero for a group and its one-based group number for a child index ID."""
         if row < 0 or not 0 <= column < len(COLUMNS):
@@ -224,9 +247,22 @@ class GroupedListModel(QAbstractItemModel):
         return selection
 
 
+class _LegacyGroupedView(QTreeView):
+    """Coalesce Qt 6.8's costly range visibility checks into its ordinary delayed layout."""
+
+    def dataChanged(self, first: QModelIndex, last: QModelIndex, roles: list[int] | None = None) -> None:
+        """Retain Qt's full update handling while deferring only uniform-height size ranges."""
+        changed_roles = roles or []
+        if (self.uniformRowHeights() and first.parent() == last.parent()
+                and first.column() == last.column() == 1 and first.row() < last.row()
+                and changed_roles == [Qt.ItemDataRole.DisplayRole]):
+            self.scheduleDelayedItemsLayout()
+        super().dataChanged(first, last, changed_roles)
+
+
 def build_view(model: GroupedListModel) -> QTreeView:
     """A tree view over ``model`` in which several entry lines can be selected."""
-    view = QTreeView()
+    view = QTreeView() if hasattr(QTreeView, "setUpdateThreshold") else _LegacyGroupedView()
     view.setModel(model)
     view.setUniformRowHeights(True)
     view.setAlternatingRowColors(True)
@@ -236,6 +272,9 @@ def build_view(model: GroupedListModel) -> QTreeView:
     view.setTextElideMode(Qt.TextElideMode.ElideMiddle)
     view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     view.header().setStretchLastSection(False)
+    # Qt 6.9+: repaint the bounded viewport instead of inspecting every changed row (U-20261017-23).
+    if set_threshold := getattr(view, "setUpdateThreshold", None):
+        set_threshold(0)
     return view
 
 

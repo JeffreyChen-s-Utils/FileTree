@@ -220,8 +220,11 @@ class DuplicatesPanel(QWidget):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
+        format_size(0, unit)
         self.unit = unit
-        self._rebuild()
+        self.model.set_unit(unit)
+        self._refresh_group_labels()
+        self._folder_lines()
         self._update()
 
     def retranslate(self) -> None:
@@ -252,7 +255,9 @@ class DuplicatesPanel(QWidget):
         self.keep_selected.setText(tr("duplicates_keep_selected"))
         self.link_extra.setText(tr("link_title"))
         self.link_extra.setToolTip(tr("link_hint"))
-        self._rebuild()
+        self.model.retranslate()
+        self._refresh_group_labels()
+        self._folder_lines()
         self._update()
 
     # --- building ---------------------------------------------------------
@@ -302,15 +307,7 @@ class DuplicatesPanel(QWidget):
 
     def _rebuild_photos(self) -> None:
         photos = self._photos
-        groups, remaining = [], LISTED_GROUPS
-        if photos is not None:
-            for group in photos.groups[:LISTED_GROUPS]:
-                files = group.files[:remaining]
-                if not files:
-                    break
-                title = tr("photos_group", count=format_count(len(group.files)), distance=photos.distance)
-                groups.append((title, files))
-                remaining -= len(files)
+        groups = self._photo_groups()
         icons = {}
         if photos is not None:
             for _title, files in groups:
@@ -323,6 +320,19 @@ class DuplicatesPanel(QWidget):
         self.view.setIconSize(QSize(64, 64))
         self.folder_matches.clear()
         self.folder_matches.hide()
+
+    def _photo_groups(self) -> list[tuple[str, list[Node]]]:
+        photos = self._photos
+        groups, remaining = [], LISTED_GROUPS
+        if photos is not None:
+            for group in photos.groups[:LISTED_GROUPS]:
+                files = group.files[:remaining]
+                if not files:
+                    break
+                title = tr("photos_group", count=format_count(len(group.files)), distance=photos.distance)
+                groups.append((title, files))
+                remaining -= len(files)
+        return groups
 
     def _folder_lines(self) -> None:
         self.folder_matches.clear()
@@ -413,8 +423,12 @@ class DuplicatesPanel(QWidget):
         self._update()
 
     def _refresh_group_labels(self) -> None:
-        titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]
-        self.model.set_group_labels([(title, title) for title in titles])
+        if self.kind.currentData() == "photos":
+            labels = [(title, tr("photos_hint")) for title, _files in self._photo_groups()]
+        else:
+            titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]
+            labels = [(title, title) for title in titles]
+        self.model.set_group_labels(labels)
 
     def _savings_text(self, value: Savings) -> str:
         maximum = value.recoverable_max

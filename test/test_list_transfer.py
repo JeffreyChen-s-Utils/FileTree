@@ -94,6 +94,44 @@ def test_group_label_refresh_aborts_mixed_capture_and_new_capture_uses_current_l
     view.deleteLater()
 
 
+@pytest.mark.parametrize("change", ["unit", "language"])
+def test_grouped_display_change_aborts_mixed_capture_and_refreshes_exported_cells(qapp, change) -> None:
+    from je_file_tree.core.node import Node
+    from je_file_tree.gui import i18n
+    from je_file_tree.gui.grouped_list import GroupedListModel, build_view
+
+    language = i18n.current_language()
+    i18n.set_language("en")
+    model = GroupedListModel()
+    model.set_groups([('fixed title', [Node(str(row), False, size=1536) for row in range(200)])], 'auto')
+    view = build_view(model)
+    capture, errors, ready = ListCapture(view, view), [], []
+    capture.failed.connect(errors.append)
+    capture.ready.connect(lambda *_: ready.append(True))
+    try:
+        capture.start()
+        capture._timer.stop()
+        capture._chunk()
+        assert 0 < len(capture.rows) <= 128
+        if change == 'unit':
+            model.set_unit('B')
+        else:
+            i18n.set_language('ko')
+            model.retranslate()
+        assert len(errors) == 1 and not ready and not capture._active and not capture.rows
+        fresh, result = ListCapture(view, view), []
+        fresh.ready.connect(lambda header, rows: result.append((header, rows)))
+        fresh.start()
+        _wait(qapp, lambda: bool(result))
+        header, rows = result[0]
+        assert header[0] == i18n.tr('column_name') and len(rows) == 201
+        assert rows[0] == ['fixed title', '', '', '']
+        assert all(row[1] == ('1,536 B' if change == 'unit' else '1.5 KB') for row in rows[1:])
+    finally:
+        i18n.set_language(language)
+        view.deleteLater()
+
+
 def test_ctrl_c_copies_only_selected_rows_in_model_order(qapp) -> None:
     view, model = _view(4)
     install_copy(view)

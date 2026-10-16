@@ -242,3 +242,68 @@ def test_large_keeper_change_uses_captured_identities_without_formatting_members
     model.set_group_keeper(0, chosen)
     assert changes == [0, 19_999] and model.rowCount(model.index(0, 0)) == 20_000
     assert model._groups[0].kept is chosen
+
+
+def test_unit_change_notifies_size_cells_and_retains_empty_groups_and_persistent_indexes(qapp):
+    model = GroupedListModel()
+    tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Fatal)
+    nodes = [Node(str(row), False, size=1536) for row in range(3)]
+    model.set_groups([("first", nodes[:2]), ("empty", []), ("last", nodes[2:])], "auto", keepers=[nodes[0], None, None])
+    pinned = QPersistentModelIndex(model.index(1, 2, model.index(0, 0)))
+    changes, resets = [], []
+    model.dataChanged.connect(lambda first, last, roles: changes.append((first, last, roles)))
+    model.modelReset.connect(lambda: resets.append(True))
+    model.set_unit("B")
+    assert not resets and pinned.isValid() and pinned.data(NODE_ROLE) is nodes[1]
+    assert len(changes) == 2
+    for (first, last, roles), row, count in zip(changes, (0, 2), (2, 1), strict=True):
+        assert first.parent() == last.parent() == model.index(row, 0)
+        assert first.row() == 0 and last.row() == count - 1 and first.column() == last.column() == 1
+        assert roles == [Qt.DisplayRole] and first.data() == "1,536 B"
+    assert model.index(0, 0, model.index(0, 0)).data(Qt.FontRole).bold()
+    assert model.rowCount(model.index(1, 0)) == 0 and tester.model() is model
+
+
+def test_unit_change_is_lazy_and_invalid_or_unchanged_units_leave_captured_state(qapp, monkeypatch):
+    model = GroupedListModel()
+    nodes = [Node(str(row), False, size=row) for row in range(20_000)]
+    model.set_groups([("all", nodes)], "auto")
+    captured = model._groups[0].nodes
+    nodes.clear()
+    calls, changes = [], []
+    original = grouped_list.format_size
+    monkeypatch.setattr(grouped_list, "format_size", lambda size, unit: calls.append(size) or original(size, unit))
+    model.dataChanged.connect(lambda *_: changes.append(True))
+    model.set_unit("MB")
+    assert calls == [0] and len(changes) == 1 and model._groups[0].nodes is captured
+    model.set_unit("MB")
+    with pytest.raises(ValueError, match="unknown size unit"):
+        model.set_unit("invalid")
+    assert len(changes) == 1 and model._unit == "MB"
+    assert model.index(19_999, 1, model.index(0, 0)).data() == original(19_999, "MB")
+    assert calls[-1] == 19_999
+
+
+def test_retranslation_notifies_headers_and_every_repeated_keeper_name_only(qapp):
+    from je_file_tree.gui import i18n
+
+    language = i18n.current_language()
+    model = GroupedListModel()
+    kept, extra = Node("kept", False), Node("extra", False)
+    model.set_groups([("group", [kept, extra, kept]), ("empty", [])], "B", keepers=[kept, None])
+    changes, headers, resets = [], [], []
+    model.dataChanged.connect(lambda first, last, roles: changes.append((first, last, roles)))
+    model.headerDataChanged.connect(lambda *args: headers.append(args))
+    model.modelReset.connect(lambda: resets.append(True))
+    try:
+        i18n.set_language("ko")
+        model.retranslate()
+        assert headers == [(Qt.Horizontal, 0, 3)] and not resets
+        assert [first.row() for first, _last, _roles in changes] == [0, 2]
+        for first, last, roles in changes:
+            assert first == last and first.column() == 0 and roles == [Qt.DisplayRole]
+            assert first.data() == i18n.tr("duplicates_kept_name", name=kept.name)
+        assert model.headerData(0, Qt.Horizontal) == i18n.tr("column_name")
+        assert model.index(1, 0, model.index(0, 0)).data() == extra.name
+    finally:
+        i18n.set_language(language)

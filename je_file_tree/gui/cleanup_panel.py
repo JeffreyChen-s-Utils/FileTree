@@ -78,6 +78,7 @@ class CleanupPanel(QWidget):
         layout.addLayout(bin_bar)
         layout.addWidget(self.view, 1)
         self.retranslate()
+        self._rebuild()
 
     @property
     def groups(self) -> list[CleanupGroup]:
@@ -163,9 +164,12 @@ class CleanupPanel(QWidget):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
+        format_size(0, unit)
         self.unit = unit
         self.set_bin_metadata(self._bin_root, self._bin_usage)
-        self._rebuild()
+        self.model.set_unit(unit)
+        self.model.set_group_labels(self._group_labels())
+        self._update_status()
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
@@ -176,7 +180,9 @@ class CleanupPanel(QWidget):
         self.bin_refresh.setToolTip(tr("bin_labels_hint"))
         self.bin_totals.setToolTip(tr("bin_labels_hint"))
         self.set_bin_metadata(self._bin_root, self._bin_usage)
-        self._rebuild()
+        self.model.retranslate()
+        self.model.set_group_labels(self._group_labels())
+        self._update_status()
 
     def _show(self, worker: CleanupWorker, groups: list[CleanupGroup], coverage: Coverage) -> None:
         if worker is not self._current:
@@ -187,11 +193,15 @@ class CleanupPanel(QWidget):
         self._rebuild()
 
     def _rebuild(self) -> None:
-        titles = [(tr("cleanup_group", title=tr(f"cleanup_{group.key}"), count=format_count(len(group.nodes)),
-                      size=format_size(group.size, self.unit)), group.nodes) for group in self._groups]
-        grouped_list.fill(self.model, self.view, titles, self.unit,
-                          tips=[explanation(group.key, group.details) for group in self._groups])
+        labels = self._group_labels()
+        groups = [(title, group.nodes) for group, (title, _tip) in zip(self._groups, labels, strict=True)]
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tip for _title, tip in labels])
         self._update_status()
+
+    def _group_labels(self) -> list[tuple[str, str]]:
+        return [(tr("cleanup_group", title=tr(f"cleanup_{group.key}"), count=format_count(len(group.nodes)),
+                    size=format_size(group.size, self.unit)), explanation(group.key, group.details))
+                for group in self._groups]
 
     def _update_status(self) -> None:
         has_entries = (bool(self._groups) and self._current is None and self._root is not None
