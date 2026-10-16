@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#101** (P1) Verify the corrected macOS CI job after inspecting failed replacement moves in the Undo-offer fixture. Require a complete hosted test suite and subsequent native metadata/background/APFS validation before closing this gate. Keep complete query-error reports, retained Undo payload/receipt and source-operation assertions; local modeled cases cannot establish hosted success.
+- **#101** (P1) Verify macOS CI with deterministic Undo-close synchronization after replacing the fixture's 40 ms worker sleep with an explicit release event. Require a complete hosted test suite and subsequent native metadata/background/APFS validation before closing this gate. Keep complete query-error reports, retained Undo payload/receipt, late partial-result reporting and source-operation assertions; local modeled cases cannot establish hosted success.
 
 - **#100** (P1) Diagnose Windows PowerShell 5 helper-test timeouts in CI run 38922008928: Windows/Python 3.14 has six 20-second subprocess timeouts and 3.10 has one in `test_windows_share_script.py`. Obtain a reproduced timeout's bounded phase trace from `windows-mocked-share-script-<python>` before choosing a fix; absent entry markers establish only that none was captured. Native owned SMB passes and these mocked helper failures do not establish #99's native 30-second timeout cause; retain autoload isolation, exact ownership assertions and subprocess deadlines.
 

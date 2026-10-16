@@ -184,32 +184,43 @@ def test_inverse_approval_failure_performs_no_restore_and_reports_audit_error(wi
     assert "audit unavailable <error>&" in questions[0][1] and questions[0][0] == Qt.TextFormat.PlainText
 
 
-def test_close_joins_native_inverse_and_reports_late_partial_truth(window, qapp, tmp_path, monkeypatch):
+@pytest.mark.parametrize("gui_delay", [0, 0.12])
+def test_close_joins_native_inverse_and_reports_late_partial_truth(window, qapp, tmp_path, monkeypatch, gui_delay):
     source, payload, receipt, _, calls, questions = _fixture(window, qapp, tmp_path, monkeypatch)
-    entered = threading.Event()
+    entered, release = threading.Event(), threading.Event()
 
     def partial(plan, **_kwargs):
         entered.set()
-        time.sleep(0.04)
+        assert release.wait(5), "held inverse did not receive its test-owned release"
         os.rename(payload, source)
         calls.append("restore")
         return RestoreResult(True, plan.origin.path, plan.trashed, "owned late receipt error <error>&", True)
 
     monkeypatch.setattr(undo_worker, "restore_windows", partial)
-    window._undo.undo()
-    worker = window._undo.worker
-    _wait(qapp, entered.is_set)
-    assert window.operation_busy and not window._actions["open"].isEnabled()
-    window.start_scan(str(source.parent))
-    assert window._worker is None, "scan cannot overlap an active inverse operation"
-    window.close()
-    _wait(qapp, lambda: window._close_ready)
-    assert window._undo.worker is None
-    assert worker.result.results[0].restored
-    assert (source / "file").exists() and not payload.exists() and receipt.exists() and calls == ["trash", "restore"]
-    assert "late receipt error <error>&" in questions[-1][1] and questions[-1][0] == Qt.TextFormat.PlainText
-    qapp.processEvents()
-    assert window._worker is None, "late completion never starts a rescan after close"
+    try:
+        window._undo.undo()
+        worker = window._undo.worker
+        _wait(qapp, entered.is_set)
+        # Model a delayed GUI observer; native work stays held until the test releases it.
+        time.sleep(gui_delay)
+        qapp.processEvents()
+        assert window.operation_busy and not window._actions["open"].isEnabled()
+        window.start_scan(str(source.parent))
+        assert window._worker is None, "scan cannot overlap an active inverse operation"
+        window.close()
+        assert window._closing and not window._close_ready and worker.isRunning()
+        assert not source.exists() and payload.exists() and receipt.exists()
+        QTimer.singleShot(20, release.set)
+        _wait(qapp, lambda: window._close_ready)
+        assert window._undo.worker is None
+        assert worker.result.results[0].restored
+        assert (source / "file").exists() and not payload.exists() and receipt.exists()
+        assert calls == ["trash", "restore"]
+        assert "late receipt error <error>&" in questions[-1][1] and questions[-1][0] == Qt.TextFormat.PlainText
+        qapp.processEvents()
+        assert window._worker is None, "late completion never starts a rescan after close"
+    finally:
+        release.set()
 
 
 def test_redirect_is_an_occupied_original_and_never_grants_undo(tmp_path):
