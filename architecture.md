@@ -1290,12 +1290,23 @@ validated primary-volume metadata. Only after a native busy result and subsequen
 fresh, wholly unmounted, same-image/device registration may the tool read `diskutil info -plist`
 once for the previously validated primary volume still uniquely present in that registration.
 The read is joined with the existing 60-second command bound; retain UUID match/mismatch/unknown,
-device/container/physical-store observations and bounded read failures. It never grants another
-detach or cleanup, even when the UUID matches. Changed, missing, duplicate or foreign mappings skip
-the query. Evidence caps are 64 entities, eight physical stores, 512-character scalar fields and
-128-character device arguments, with explicit truncation/unknown states. Original refusal and native
-busy output survive a supplementary query failure; mutation commands, retry counts and cleanup
-checks remain unchanged. A reproduced native post-busy trace is still required under #96.
+device/container/physical-store observations and bounded read failures. A UUID observation alone
+never grants another detach. `macos_detach_identity` separately validates the raw metadata into a
+frozen complete binding: canonical nonzero UUID, exact name/filesystem/primary node, matching
+container/parent and unique physical stores belonging to the owned image. Snapshot every unique
+device/hint while mounted (64 maximum, eight stores); missing, malformed or oversized topology
+cannot authorize recovery. After an actual preceding detach exit 16 only, the wholly unmounted
+candidate must equal that complete binding. Re-read the full image registration after the volume
+query, require the same devices/hints with no mounts, and recheck image/scratch identity and every
+owned mountpoint before continuing the existing normal detach loop. No extra attempt, force flag,
+attach or host unmount is added. Unexpected first-attempt unmounts still refuse. Changed, missing,
+duplicate or foreign primary/image mappings skip the query; any topology change refuses recovery.
+Diagnostic fields stay capped at 512
+characters and device arguments at 128, with explicit unknown/truncation states; clipped JSON is
+never used as authority. Retain the original busy error and mounted-check refusal alongside the
+fresh registration. Native image absence and normal cleanup guards remain mandatory after success.
+The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery still requires
+its own native cleanup evidence under #96.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;

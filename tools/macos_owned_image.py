@@ -14,6 +14,8 @@ import tempfile
 import time
 import uuid
 
+from tools.macos_detach_identity import VolumeBinding, registration, volume_binding
+
 _PLIST_LIMIT = 8 * 1024 * 1024
 _DEVICE = re.compile(r"/dev/disk[0-9]+\Z")
 _DETACH_ATTEMPTS = 3
@@ -160,6 +162,10 @@ class OwnedImage:
         self._attachment_evidence: dict | None = None
         self._checked_volume_evidence: dict | None = None
         self._unmounted_volume_device: str | None = None
+        self._detach_binding: VolumeBinding | None = None
+        self._unmounted_binding: VolumeBinding | None = None
+        self._registered_entities: tuple[tuple[str, str], ...] | None = None
+        self._wholly_unmounted = False
 
     def create(self) -> None:
         """Refuse overwrite: no -ov, existing image, mountpoint or block-device selector is accepted."""
@@ -194,9 +200,12 @@ class OwnedImage:
         info = self.check()
         self.volume_uuid = info["VolumeUUID"]
 
-    def _attachment(self) -> dict:
+    def _registered_attachment(self) -> dict:
         self._attachment_evidence = None
         self._unmounted_volume_device = None
+        self._registered_entities = None
+        self._unmounted_binding = None
+        self._wholly_unmounted = False
         self._image_check()
         info = plist(["/usr/bin/hdiutil", "info", "-plist"])
         images = [entry for entry in info.get("images", []) if isinstance(entry, dict)
@@ -207,6 +216,15 @@ class OwnedImage:
         self._attachment_evidence.update(captured_image_identity=_identity_evidence(getattr(self, "identity", None)),
                                          captured_scratch_identity=_identity_evidence(getattr(self, "anchor", None)))
         require(image_device(images[0]) == self.device, "Owned image device changed")
+        self._registered_entities = registration(entries)
+        self._wholly_unmounted = all(entry.get("mount-point") is None
+                                    or type(entry.get("mount-point")) is str and entry["mount-point"] == ""
+                                    for entry in entries)
+        return images[0]
+
+    def _attachment(self) -> dict:
+        image = self._registered_attachment()
+        entries = entities(image)
         points = [entry["mount-point"] for entry in entries if entry.get("mount-point")]
         captured = getattr(self, "_volume_device", "")
         if (not points and isinstance(captured, str) and len(captured) <= _DEVICE_NAME_LIMIT
@@ -216,7 +234,7 @@ class OwnedImage:
         if not points or not all(isinstance(point, str) and Path(point).resolve() in self._mountpoints
                                  for point in points):
             raise RuntimeError(_mountpoint_diagnostic(entries, self._mountpoints))
-        return images[0]
+        return image
 
     def new_mountpoint(self) -> Path:
         """Register only a fresh private sibling for this image's additional owned APFS volume."""
@@ -237,6 +255,7 @@ class OwnedImage:
                 "Private APFS volume identity is unavailable")
         require(not self.volume_uuid or info["VolumeUUID"] == self.volume_uuid, "Private APFS volume was replaced")
         self._checked_volume_evidence = _volume_evidence(info)
+        self._detach_binding = volume_binding(info, self._registered_entities, self.name, self.device)
         identifier = info.get("DeviceIdentifier")
         candidate = "/dev/" + identifier if isinstance(identifier, str) else ""
         if (not getattr(self, "_volume_device", "") and len(candidate) <= _DEVICE_NAME_LIMIT
@@ -277,6 +296,10 @@ class OwnedImage:
             observed = info.get("VolumeUUID")
             matches = observed == expected if isinstance(observed, str) and observed else None
             result.update(status="read", info=_volume_evidence(info), uuid_matches=matches)
+            if (getattr(self, "_wholly_unmounted", False)
+                    and info.get("MountPoint") in (None, "")
+                    and (info.get("Mounted") is None or info.get("Mounted") is False)):
+                self._unmounted_binding = volume_binding(info, self._registered_entities, self.name, self.device)
         return result
 
     def _record_detach_observations(self, record: dict, *, post_busy: bool = False) -> None:
@@ -285,6 +308,26 @@ class OwnedImage:
         if post_busy:
             record["post_busy_volume"] = self._post_busy_volume_evidence()
 
+    def _check_detach(self, record: dict, previous_busy: bool) -> None:
+        expected = getattr(self, "_detach_binding", None)
+        try:
+            self.check()
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+            self._record_detach_observations(record, post_busy=previous_busy)
+            if (not previous_busy or expected is None or self._unmounted_binding != expected
+                    or self._unmounted_volume_device != expected.volume):
+                raise
+            self._registered_attachment()
+            require(self._wholly_unmounted and self._registered_entities == expected.registration,
+                    "Owned image registration changed during detach recovery")
+            self._image_check()
+            require(not any(os.path.ismount(point) for point in self._mountpoints),
+                    "Owned mountpoint became mounted during detach recovery")
+            record.update(mounted_check_error=str(error)[:2048], unmounted_identity_rechecked=True,
+                          rechecked_attachment=self._attachment_evidence)
+        else:
+            self._record_detach_observations(record)
+
     def detach(self) -> None:
         """Bound checked busy retries; retain each attempt's native output and any later refusal."""
         self.detach_attempts = []
@@ -292,15 +335,14 @@ class OwnedImage:
             record: dict[str, object] = {"attempt": attempt + 1, "device": self.device, "phase": "checking"}
             self.detach_attempts.append(record)
             self._attachment_evidence = self._checked_volume_evidence = self._unmounted_volume_device = None
+            self._unmounted_binding = None
+            previous_busy = bool(attempt and self.detach_attempts[-2].get("native_error", {})
+                                 .get("returncode") == _DEVICE_BUSY)
             try:
-                self.check()
+                self._check_detach(record, previous_busy)
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
                 _detach_failure(record, "ownership-refused", error)
-                previous_busy = bool(attempt and self.detach_attempts[-2].get("native_error", {})
-                                     .get("returncode") == _DEVICE_BUSY)
-                self._record_detach_observations(record, post_busy=previous_busy)
                 raise
-            self._record_detach_observations(record)
             try:
                 command(["/usr/bin/hdiutil", "detach", self.device])
             except subprocess.CalledProcessError as error:
