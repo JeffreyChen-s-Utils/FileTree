@@ -133,7 +133,8 @@ def test_collision_preserves_arrival_and_payload_with_plaintext_actual_paths(win
 
 
 @pytest.mark.parametrize("stale", ["expiry", "root", "scan", "new_trash"])
-def test_expired_or_replaced_offer_never_starts_inverse_operation(window, qapp, tmp_path, monkeypatch, stale):
+def test_expired_or_replaced_offer_never_starts_inverse_operation(
+        window, qapp, tmp_path, monkeypatch, stale, failed_move_diagnostics):
     source, payload, receipt, _, calls, _ = _fixture(window, qapp, tmp_path, monkeypatch)
     if stale == "expiry":
         window._undo.deadline = time.monotonic() - 1
@@ -156,6 +157,8 @@ def test_expired_or_replaced_offer_never_starts_inverse_operation(window, qapp, 
     window._undo.undo()
     assert calls == ["trash"] and window._undo.worker is None
     assert not source.exists() and payload.exists() and receipt.exists()
+    report, captured = failed_move_diagnostics
+    assert len(captured) == int(stale == "new_trash" and bool(report.error))
 
 
 def test_worker_rechecks_deadline_before_journaling_or_native_restore(window, qapp, tmp_path, monkeypatch):
