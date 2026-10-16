@@ -47,20 +47,26 @@ class ExpandedFilterWorker(QThread):
 class ExpandedTreeProxy(QSortFilterProxyModel):
     """Constant-time membership filtering over the lazy source model; never recursive filtering."""
 
-    def __init__(self, source: FolderTreeModel, parent: QObject) -> None:
+    def __init__(self, source: FolderTreeModel | None, parent: QObject) -> None:
         super().__init__(parent)
         self.allowed: frozenset[int] = frozenset()
+        # Membership comes from the owned worker; display-only changes must not recheck every row.
+        self.setDynamicSortFilter(False)
         self.setSourceModel(source)
 
     def filterAcceptsRow(self, row: int, parent: QModelIndex) -> bool:
         """Keep the root and worker-approved nodes without fetching descendants."""
         source = self.sourceModel()
+        if source is None:
+            return False
         node = source.index(row, 0, parent).data(NODE_ROLE)
         return node is source.root or node is not None and id(node) in self.allowed
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
         """Delegate numeric/name sorting to FolderTreeModel's persistent-index relayout."""
-        self.sourceModel().sort(column, order)
+        source = self.sourceModel()
+        if source is not None:
+            source.sort(column, order)
 
 
 class TreeFilter(QObject):
@@ -73,7 +79,7 @@ class TreeFilter(QObject):
         self.tree, self.source = tree, source
         self.line = QLineEdit()
         self.line.setClearButtonEnabled(True)
-        self.proxy = ExpandedTreeProxy(source, self)
+        self.proxy = ExpandedTreeProxy(None, self)
         self.expanded: set[Node] = set()
         self._workers: set[ExpandedFilterWorker] = set()
         self._current: ExpandedFilterWorker | None = None
@@ -160,7 +166,10 @@ class TreeFilter(QObject):
         if self._closed or worker is not self._current or worker.cancel.is_set() or worker.root is not self.source.root:
             return
         self.proxy.allowed = allowed
-        self.proxy.invalidate()
+        if self.proxy.sourceModel() is None:
+            self.proxy.setSourceModel(self.source)
+        else:
+            self.proxy.invalidate()
         if self.tree.model() is not self.proxy:
             self._switch(True)
 
@@ -184,6 +193,8 @@ class TreeFilter(QObject):
                     selection.select(index, selection.SelectionFlag.Select | selection.SelectionFlag.Rows)
             if current is not None:
                 selection.setCurrentIndex(self.index_for(current), selection.SelectionFlag.NoUpdate)
+            if not filtered:
+                self.proxy.setSourceModel(None)
         finally:
             self._switching = False
 

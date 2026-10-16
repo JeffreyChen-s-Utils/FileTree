@@ -42,11 +42,13 @@ def _filter(results, app, text):
 
 def test_only_expanded_contents_are_searched_and_totals_are_unchanged(window, qapp, tmp_path):
     results, root, alpha, beta = _setup(window, qapp, tmp_path)
+    assert results.tree_filter.proxy.sourceModel() is None
     total = root.size
     results.tree.setColumnHidden(6, True)
     results.tree.setColumnWidth(0, 333)
     _filter(results, qapp, "needle")
     proxy = results.tree_filter.proxy
+    assert proxy.sourceModel() is results.tree_model
     root_index = results.tree_filter.index_for(root)
     assert proxy.rowCount(root_index) == 1
     assert proxy.index(0, 0, root_index).data(NODE_ROLE) is alpha
@@ -54,10 +56,16 @@ def test_only_expanded_contents_are_searched_and_totals_are_unchanged(window, qa
     assert proxy.rowCount(alpha_index) == 1
     assert "NEEDLE" in proxy.index(0, 0, alpha_index).data()
     assert not results.tree_filter.index_for(beta).isValid()
+    worker = results.tree_filter._current
+    results.tree_model.set_unit("KB")
+    results.tree_model.set_drive_total(10000)
+    assert results.tree_filter._current is worker and not results.tree_filter.timer.isActive()
+    assert proxy.rowCount(root_index) == 1
     assert root.size == total and results.outcome.result.root is root
     assert results.tree.isColumnHidden(6) and results.tree.columnWidth(0) == 333
     results.tree_filter.line.clear()
     assert results.tree.model() is results.tree_model
+    assert proxy.sourceModel() is None
     assert results.tree.isExpanded(results.tree_model.index_for(alpha))
     assert results.tree_model.rowCount(results.tree_model.index_for(beta)) == 2
 

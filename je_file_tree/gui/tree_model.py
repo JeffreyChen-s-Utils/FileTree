@@ -89,6 +89,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._sort_order = Qt.SortOrder.DescendingOrder
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
+        self._queried_parents: set[Node] = set()
         self._icons: dict[str, QIcon] = {}
         self._archives: dict[Node, list[VirtualEntry]] = {}
         self._archive_done: set[Node] = set()
@@ -143,6 +144,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._root = root
         self._drive_total = None
         self._live = live and root is not None
+        self._queried_parents.clear()
         self._clear_caches()
         self.endResetModel()
 
@@ -158,15 +160,18 @@ class FolderTreeModel(QAbstractItemModel):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit`` (``"auto"`` or one of ``SIZE_UNITS``)."""
+        if unit == self._unit:
+            return
         self._unit = unit
-        self.layoutAboutToBeChanged.emit()
-        self.layoutChanged.emit()
+        self._repaint(((SIZE, ALLOCATED), (ACCOUNTED_SIZE, ACCOUNTED_ALLOCATED)), [Qt.ItemDataRole.DisplayRole])
 
     def set_drive_total(self, total: int | None) -> None:
         """Set worker-measured volume capacity; unknown/stale capacity never displays as zero."""
-        self._drive_total = total if total is not None and total > 0 else None
-        self.layoutAboutToBeChanged.emit()
-        self.layoutChanged.emit()
+        normalized = total if total is not None and total > 0 else None
+        if normalized == self._drive_total:
+            return
+        self._drive_total = normalized
+        self._repaint(((DRIVE_SHARE, DRIVE_SHARE),), [Qt.ItemDataRole.DisplayRole, SHARE_ROLE])
 
     def _drive_share(self, node: Node) -> float | None:
         root = self._root
@@ -429,6 +434,28 @@ class FolderTreeModel(QAbstractItemModel):
     def _clear_caches(self) -> None:
         self._orders.clear()
         self._rows.clear()
+        for parent in tuple(self._queried_parents):
+            if not self._visible(parent):
+                self._queried_parents.discard(parent)
+
+    def _repaint(self, columns: tuple[tuple[int, int], ...], roles: list[int]) -> None:
+        """Notify queried sibling groups only; formatting never changes membership or frozen live orders."""
+        if self._root is None:
+            return
+        groups = [(QModelIndex(), 1)]
+        for parent in tuple(self._queried_parents):
+            index = self.index_for(parent)
+            if not index.isValid():
+                self._queried_parents.discard(parent)
+                continue
+            count = len(self._ordered(parent))
+            if count:
+                groups.append((index, count))
+        # Windows 100k rows / 1k selected: old full layout cost 455–504 ms for text/capacity (2026-10-16).
+        for parent_index, count in groups:
+            for first, last in columns:
+                self.dataChanged.emit(self.index(0, first, parent_index),
+                                      self.index(count - 1, last, parent_index), roles)
 
     def _is_default_order(self) -> bool:
         return self._sort_column in (SIZE, SHARE, DRIVE_SHARE) and self._sort_order == Qt.SortOrder.DescendingOrder
@@ -436,6 +463,8 @@ class FolderTreeModel(QAbstractItemModel):
     def _ordered(self, folder: Node) -> list[Node] | tuple[()]:
         """``folder``'s children in the current sort order (a frozen copy while the scan is live)."""
         children = self._archives.get(folder, folder.children)
+        if children:
+            self._queried_parents.add(folder)
         if not children or (self._is_default_order() and not self._live):
             return children
         cached = self._orders.get(id(folder))

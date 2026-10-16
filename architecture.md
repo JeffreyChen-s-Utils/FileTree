@@ -61,6 +61,16 @@ Only completed-tree `sort()` emits `VerticalSortHint` on both layout signals, fo
 [Qt same-parent, unchanged-membership contract](https://doc.qt.io/qtforpython-6.11/PySide6/QtCore/QAbstractItemModel.html).
 Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since their membership may change.
 
+Unit/capacity changes instead emit column- and role-specific
+[same-parent `dataChanged` ranges](https://doc.qt.io/qtforpython-6/PySide6/QtCore/QAbstractItemModel.html#PySide6.QtCore.QAbstractItemModel.dataChanged)
+for the root row and previously queried nonempty sibling groups. The model records those parents
+without indexing every file, prunes obsolete groups with structural cache invalidation and clears
+them on root reset. Formatting retains frozen live orders and skips unchanged values.
+`TreeFilter` connects its proxy source only while filtering is active; clearing the query releases
+the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the owned worker supplies
+accepted identities explicitly. Display-only updates forward data without reevaluating every name;
+structural changes still trigger the existing worker refresh and persistent-index remapping.
+
 Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
 scope, starting/replacing a result or closing invalidates the active reply before retiring its
 worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker

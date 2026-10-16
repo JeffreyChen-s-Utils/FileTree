@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt detach results to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
+- **#96** (P2) Diagnose repeated APFS attachment-refusal before cleanup. Run 38894958709 records five captured-image entities, all unmounted, versus one allowed private mountpoint; obtain native per-attempt results for a reproduced busy/refusal sequence to establish whether a busy command precedes the refusal, then determine how captured device/UUID ownership must be established before any cleanup. The original run 38886523231 lacks these observations. A modeled busy/unmount sequence does not prove the native cause. Preserve ownership checks and require native cleanup evidence for any subsequent change.
 
 - **#95** (P1) Audit remaining wide-folder sorting, live layout updates, large-batch completion, result-table completion and settings/shell/native GUI calls. Verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
 
