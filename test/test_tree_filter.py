@@ -2,7 +2,9 @@
 
 import time
 
-from PySide6.QtCore import QPersistentModelIndex, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QItemSelectionModel, QObject, QPersistentModelIndex, Qt
+from PySide6.QtWidgets import QTreeView
+import pytest
 
 from test_gui import window as window, _child, _scanned  # noqa: PLC0414 - explicit pytest fixture re-export
 from je_file_tree.core.node import Node
@@ -132,3 +134,67 @@ def test_close_joins_query_workers_and_rejects_queued_results(window, qapp, tmp_
     controller._ready(worker, frozenset())
     assert worker.cancel.is_set() and not worker.isRunning()
     assert results.tree.model() is results.tree_model
+
+
+def test_repeated_filter_switches_retire_unused_tree_and_header_selection_models(window, qapp, tmp_path):
+    results, _root, alpha, _beta = _setup(window, qapp, tmp_path)
+    target = _child(alpha, "NEEDLE 檔案.txt")
+    results.select_node(target)
+    retired, destroyed = results.tree.selectionModel(), []
+    retired.destroyed.connect(lambda: destroyed.append(True))
+    for _cycle in range(5):
+        _filter(results, qapp, "needle")
+        assert results.selected_node() is target
+        results.tree_filter.line.clear()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        assert results.selected_node() is target
+        assert results.tree.header().selectionModel() is results.tree.selectionModel()
+        assert len(results.tree.findChildren(QItemSelectionModel)) == 1
+    assert destroyed == [True]
+    assert (tmp_path / "tree" / "alpha" / "NEEDLE 檔案.txt").read_bytes() == b"payload"
+
+
+def test_replaced_selection_detaches_and_suppresses_obsolete_callbacks_before_deferred_delete(window, qapp, tmp_path):
+    results, root, alpha, _beta = _setup(window, qapp, tmp_path)
+    results.select_node(_child(alpha, "NEEDLE 檔案.txt"))
+    old = results.tree.selectionModel()
+    notices, destroyed = [], []
+    old.currentChanged.connect(lambda *_args: notices.append(True))
+    old.selectionChanged.connect(lambda *_args: notices.append(True))
+    old.destroyed.connect(lambda: destroyed.append(True))
+    controller = results.tree_filter
+    controller.proxy.allowed = frozenset(id(node) for node in root.iter_nodes())
+    controller.proxy.setSourceModel(results.tree_model)
+    controller._switch(True)
+    assert old.model() is None and not notices and not destroyed
+    results.tree_model.sort(NAME, Qt.SortOrder.AscendingOrder)
+    assert not notices
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    assert destroyed == [True] and results.selected_node().name == "NEEDLE 檔案.txt"
+
+
+@pytest.mark.parametrize("parented_to_tree", [False, True])
+def test_switching_keeps_borrowed_selection_model_used_by_another_view(window, qapp, tmp_path, parented_to_tree):
+    results, root, alpha, _beta = _setup(window, qapp, tmp_path)
+    owner = QObject(window)
+    shared = QItemSelectionModel(results.tree_model, results.tree if parented_to_tree else owner)
+    other = QTreeView(window)
+    other.setModel(results.tree_model)
+    other.setSelectionModel(shared)
+    results.tree.setSelectionModel(shared)
+    target = _child(alpha, "NEEDLE 檔案.txt")
+    shared.setCurrentIndex(results.tree_model.index_for(target), shared.SelectionFlag.ClearAndSelect
+                           | shared.SelectionFlag.Rows)
+    try:
+        _filter(results, qapp, "needle")
+        results.tree_filter.line.clear()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        assert shared.model() is results.tree_model and other.selectionModel() is shared
+        assert shared.currentIndex().data(NODE_ROLE) is target
+        assert shared.selectedRows()[0].data(NODE_ROLE) is target and target.is_in(root)
+    finally:
+        other.setModel(None)
+        shared.setModel(None)
+        shared.deleteLater()
+        other.deleteLater()
+        owner.deleteLater()

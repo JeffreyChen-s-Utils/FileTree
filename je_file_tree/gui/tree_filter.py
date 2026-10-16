@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import threading
 
-from PySide6.QtCore import QModelIndex, QObject, QSortFilterProxyModel, QThread, QTimer, Qt, Signal
+from PySide6.QtCore import QItemSelectionModel, QModelIndex, QObject, QSortFilterProxyModel, QThread, QTimer, Qt, Signal
 from PySide6.QtWidgets import QLineEdit, QTreeView
 
 from je_file_tree.core.node import Node
@@ -77,6 +77,7 @@ class TreeFilter(QObject):
     def __init__(self, tree: QTreeView, source: FolderTreeModel, parent: QObject) -> None:
         super().__init__(parent)
         self.tree, self.source = tree, source
+        self._owned_selections = self._view_selections()
         self.line = QLineEdit()
         self.line.setClearButtonEnabled(True)
         self.proxy = ExpandedTreeProxy(None, self)
@@ -96,6 +97,7 @@ class TreeFilter(QObject):
         source.rowsRemoved.connect(self._request)
         source.rowsInserted.connect(self._request)
         self.retranslate()
+        self._release_selections()
 
     def retranslate(self) -> None:
         """Translate the query's placeholder, tooltip and accessible name."""
@@ -179,7 +181,10 @@ class TreeFilter(QObject):
         state = self.tree.header().saveState()
         self._switching = True
         try:
+            before = self._view_selections()
             self.tree.setModel(self.proxy if filtered else self.source)
+            self._owned_selections.update(self._view_selections() - before)
+            self._release_selections()
             self.tree.header().restoreState(state)
             self.selection_model_changed.emit()
             for node in self.expanded:
@@ -197,6 +202,22 @@ class TreeFilter(QObject):
                 self.proxy.setSourceModel(None)
         finally:
             self._switching = False
+
+    def _view_selections(self) -> set[QItemSelectionModel]:
+        return {selection for owner in (self.tree, self.tree.header())
+                for selection in owner.findChildren(QItemSelectionModel,
+                                                    options=Qt.FindChildOption.FindDirectChildrenOnly)}
+
+    def _release_selections(self) -> None:
+        """Retire only our replaced view/header models; borrowed and active shared selections stay alive."""
+        active = {self.tree.selectionModel(), self.tree.header().selectionModel()}
+        # Native cycling: 2 -> 22 models after five filter/clear cycles (2026-10-16).
+        # Qt retains replaced models; detach retired listeners now, delete after their event returns.
+        for selection in self._owned_selections - active:
+            self._owned_selections.remove(selection)
+            selection.blockSignals(True)
+            selection.setModel(None)
+            selection.deleteLater()
 
     def shutdown(self, *, wait: bool = True) -> None:
         """Invalidate late replies and join all workers before the main window closes."""

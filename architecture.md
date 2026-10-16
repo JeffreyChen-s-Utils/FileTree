@@ -71,6 +71,14 @@ the source mapping. `ExpandedTreeProxy` disables dynamic filtering because the o
 accepted identities explicitly. Display-only updates forward data without reevaluating every name;
 structural changes still trigger the existing worker refresh and persistent-index remapping.
 
+The controller records the freshly initialized tree/header's generated selection models and only
+new models created during its own `setModel` calls. Qt deliberately retains replaced selection models
+([ownership contract](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QAbstractItemView.html#PySide6.QtWidgets.QAbstractItemView.setModel)).
+Keep the tree/header's active shared selection, immediately block and detach retired owned listeners,
+then defer their destruction with `deleteLater`. Later caller-supplied models are not adopted, even
+when parented to the tree; another view may still use them. Filter switching restores the current
+node, visible selection, expansion and header state before normal interaction resumes.
+
 Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
 scope, starting/replacing a result or closing invalidates the active reply before retiring its
 worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker

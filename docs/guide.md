@@ -5,6 +5,8 @@
 Changing size units or refreshing volume shares keeps selections, expanded folders and the active
 filter. Only the displayed values change.
 
+Clearing and reapplying tree filters retains visible selections and expanded folders.
+
 Large selections stay attached to their files when the folder tree is sorted. Rescans and archive
 preview refreshes discard selections whose entries are no longer in the current tree or preview,
 including nested archive entries. Archive previews remain read-only and never count as filesystem
