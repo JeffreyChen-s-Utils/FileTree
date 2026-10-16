@@ -200,9 +200,13 @@ def test_busy_detach_preserves_native_failure_when_retry_loses_mountpoints(tmp_p
         calls.append(args)
         if args == ["/usr/bin/hdiutil", "info", "-plist"]:
             return {"images": [{"image-path": str(image.image), "system-entities": entries}]}
+        if args == ["/usr/sbin/diskutil", "info", "-plist", "/dev/disk10s1"]:
+            return {"DeviceIdentifier": "disk10s1", "VolumeUUID": image.volume_uuid,
+                    "VolumeName": image.name, "FilesystemType": "apfs", "Mounted": False,
+                    "APFSPhysicalStores": [{"APFSPhysicalStore": "disk9s1"}]}
         assert args == ["/usr/sbin/diskutil", "info", "-plist", str(image.root)]
         return {"FilesystemType": "apfs", "VolumeName": image.name, "VolumeUUID": image.volume_uuid,
-                "MountPoint": str(image.root)}
+                "MountPoint": str(image.root), "DeviceIdentifier": "disk10s1"}
 
     def detach(args):
         calls.append(args)
@@ -220,12 +224,20 @@ def test_busy_detach_preserves_native_failure_when_retry_loses_mountpoints(tmp_p
     assert calls == [["/usr/bin/hdiutil", "info", "-plist"],
                      ["/usr/sbin/diskutil", "info", "-plist", str(image.root)],
                      ["/usr/bin/hdiutil", "detach", image.device],
-                     ["/usr/bin/hdiutil", "info", "-plist"]]
+                     ["/usr/bin/hdiutil", "info", "-plist"],
+                     ["/usr/sbin/diskutil", "info", "-plist", "/dev/disk10s1"]]
     assert image.detach_attempts[0]["native_error"] == {
         "returncode": 16, "stdout": "disk10s1 unmounted",
         "stderr": "hdiutil: couldn't eject disk9 - Resource busy"}
     assert image.detach_attempts[1]["phase"] == "ownership-refused"
     assert "<unmounted>" in image.detach_attempts[1]["error"]
+    assert image.detach_attempts[0]["attachment"]["entities"][1]["mount-point"] == str(image.root)
+    assert "mount-point" not in image.detach_attempts[1]["attachment"]["entities"][1]
+    assert image.detach_attempts[0]["checked_volume"]["VolumeUUID"] == image.volume_uuid
+    observed = image.detach_attempts[1]["post_busy_volume"]
+    assert observed["status"] == "read" and observed["uuid_matches"] is True
+    assert observed["device"] == "/dev/disk10s1" and observed["info"]["Mounted"] is False
+    assert observed["info"]["APFSPhysicalStores"] == [{"APFSPhysicalStore": "disk9s1"}]
 
 
 def test_native_ownership_query_error_never_becomes_a_detach_retry(tmp_path, monkeypatch):

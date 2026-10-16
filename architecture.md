@@ -1207,7 +1207,17 @@ the disposable scratch path; retained fixtures never become a successful cleanup
 JSON also keeps an ordered `detach_attempts` list (at most three attempts), distinguishing ownership
 refusal, native failure/success and final absence-verification failure. Each native failure retains
 its real code and capped stdout/stderr even if a later ownership check refuses before another call.
-Diagnostics add no native commands, retry authority or cleanup exception.
+Attempt observations retain checked image/scratch identities, capped image entities and the last
+validated primary-volume metadata. Only after a native busy result and subsequent refusal with a
+fresh, wholly unmounted, same-image/device registration may the tool read `diskutil info -plist`
+once for the previously validated primary volume still uniquely present in that registration.
+The read is joined with the existing 60-second command bound; retain UUID match/mismatch/unknown,
+device/container/physical-store observations and bounded read failures. It never grants another
+detach or cleanup, even when the UUID matches. Changed, missing, duplicate or foreign mappings skip
+the query. Evidence caps are 64 entities, eight physical stores, 512-character scalar fields and
+128-character device arguments, with explicit truncation/unknown states. Original refusal and native
+busy output survive a supplementary query failure; mutation commands, retry counts and cleanup
+checks remain unchanged. A reproduced native post-busy trace is still required under #96.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
