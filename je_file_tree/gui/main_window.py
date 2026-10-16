@@ -40,6 +40,7 @@ from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.elevation_dialog import ElevationDialog
+from je_file_tree.gui.startup_state import WorkspaceState
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
@@ -180,6 +181,7 @@ class MainWindow(QMainWindow):
         self._restore_cleanup_policy()
 
     def _init_scan_state(self) -> None:
+        self._restart_arguments: Callable[[], list[str]] | None = None
         self._worker: ScanWorker | None = None
         self._scan_workers: set[ScanWorker] = set()
         self._pending_scan: ScanWorker | None = None
@@ -1632,7 +1634,12 @@ class MainWindow(QMainWindow):
         """
         if self._closing or self._settings_dialogs or self.operation_busy:
             return
-        arguments = [self._last_path] if self._last_path else []
+        try:
+            arguments = (self._restart_arguments() if self._restart_arguments is not None
+                         else WorkspaceState((self._last_roots or self._last_path or None,)).arguments())
+        except ValueError as error:
+            self.statusBar().showMessage(tr("elevate_failed", reason=str(error)), _STATUS_TIMEOUT_MS)
+            return
         dialog = ElevationDialog(arguments, self)
         self._settings_dialogs.add(dialog)
         self._update_actions()

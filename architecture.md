@@ -1176,6 +1176,14 @@ STA COM with OLE1 DDE disabled, balances both S_OK/S_FALSE, and uses ShellExecut
 SEE_MASK_NOASYNC. It joins launch completion without waiting for the new process to exit or requesting
 a process handle. Failed COM initialization never invokes the Shell. Startup remains pre-workspace;
 Properties retains its existing native verb/lifetime and is not moved to a short-lived thread.
+`ScanWorkspace.restart_arguments` captures nonclosing tabs in visual order and the active tab.
+`startup_state.WorkspaceState` distinguishes blank, single-folder and combined scopes, including a
+one-root combined scan. It shares the 16-tab bound with the workspace and the existing 256-root
+combined-scan bound. Ordinary one-tab/one-folder launches retain their command; other scopes use
+versioned internal JSON arguments with strict types, unique fields and a 1 MiB payload bound.
+`app.main` validates before approval, then restores a fresh workspace and dispatches normal read-only
+scan workers after all tabs exist. Invalid input gets a literal, locale-font-aware startup error.
+No result tree, mutation approval or execution receipt is transferred; new scans use saved preferences.
 UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
 execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
 Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.

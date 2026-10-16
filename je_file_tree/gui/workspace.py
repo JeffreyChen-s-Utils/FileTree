@@ -14,8 +14,7 @@ from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
 from je_file_tree.gui.worker_lifecycle import after_threads
-
-MAX_TABS = 16
+from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
 
 
 class ScanWorkspace(QMainWindow):
@@ -62,6 +61,7 @@ class ScanWorkspace(QMainWindow):
     def _insert(self, window: MainWindow) -> None:
         window._operations = self.operations
         window._close_all = self.quit_application
+        window._restart_arguments = self.restart_arguments
         window._background_settings = self.background.configure_dialog
         window._background_pause = self.background.quiesce
         window._recurring_show = self.background.show_proposals
@@ -76,6 +76,14 @@ class ScanWorkspace(QMainWindow):
         self._label(window)
         self.new_button.setEnabled(self.tabs.count() < MAX_TABS)
         self.operations.refresh(window)
+
+    def restart_arguments(self) -> list[str]:
+        """Capture live tabs in visual order; restart performs fresh scans of their explicit roots."""
+        windows = [self.tabs.widget(index) for index in range(self.tabs.count())
+                   if not self.tabs.widget(index)._closing]
+        scopes = tuple(window._last_roots or window._last_path or None for window in windows)
+        active = windows.index(self.current) if self.current in windows else 0
+        return WorkspaceState(scopes, active).arguments()
 
     def add_tab(self, folder: str | None = None) -> MainWindow | None:
         """Create a separate result/worker owner, bounded to sixteen simultaneous tabs."""
