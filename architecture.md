@@ -856,12 +856,22 @@ outlines it in the treemap.
 **Free space.** Context menu or Delete → a first question when system or program folders are among the entries
 (`protected.protection_of` against `protected_places()`, read once from the environment; the most specific
 place decides, temporary folders are free) → one confirmation → background validation and
-`QFile.moveToTrash` per entry → `ResultsView.forget` → affected-parent rescans. The tree and the largest-files
+`QFile.moveToTrash` per entry → worker-prepared removed-entry statistics → `ResultsView.forget`
+→ affected-parent rescans. The tree and the largest-files
 list allow several rows to be selected; the entries acted
 on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
 it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the
 largest files, per-type and per-age totals and treemap are updated once before the rescans. Entries the system
 refuses stay and are named in a warning.
+
+`TrashWorker` prepares one named `Summary` over only successful moved subtrees, using the displayed
+outcome's frozen age reference. A synthetic root borrows their node references without reparenting or
+reading source paths. `ResultsView.forget(nodes, removed=summary)` applies those deltas and scalar
+ancestor updates without statistical subtree traversal; a mismatched age reference is refused before
+model changes, and the window retains its normal affected-parent rescan path instead of applying it.
+Counted hard-link scopes retain whole-root rebuilding. Stop cancels further moves but finishes totals
+for completed moves. Explicit closing uses `cancel(discard_results=True)` to cancel statistics through
+a separate event while preserving `MoveResult`, journal/copy errors and native worker ownership.
 
 For platform failures, `TrashWorker` calls the read-only `core.lock_holders` diagnostics: Windows
 Restart Manager registers up to 256 scanned files; Linux compares `/proc/*/fd` identities. Warnings

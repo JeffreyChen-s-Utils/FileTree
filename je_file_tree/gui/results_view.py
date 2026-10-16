@@ -48,11 +48,8 @@ from je_file_tree.core.analysis import (
     ExtensionStat,
     Summary,
     age_of,
-    age_stats,
     category_stats,
     extension_of,
-    extension_stats,
-    files_beneath,
     subtract_ages,
     subtract_stats,
 )
@@ -474,20 +471,24 @@ class ResultsView(QWidget):
             index, QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows)
         self.tree.scrollTo(index)
 
-    def forget(self, nodes: Sequence[Node]) -> None:
-        """Update every view after ``nodes`` were deleted from disk (none of them inside another)."""
+    def forget(self, nodes: Sequence[Node], *, removed: Summary) -> None:
+        """Apply worker-prepared named totals instead of recomputing removed-subtree statistics.
+
+        Nodes must be disjoint; ``removed`` must use this outcome's frozen age reference. A mismatched
+        reference is refused before any view changes; the operation owner must refresh from a rescan.
+        """
         outcome = self._outcome
         if outcome is None:
             return
+        if removed.now != outcome.now:
+            raise ValueError("Removed statistics use a different scan age reference")
         self._stop_focused()
         self.capacity.set_ledger(None)
         self.tree_model.set_drive_total(None)
         view_root = self.charts.view_root
-        extensions = outcome.extensions
-        ages = outcome.ages
+        extensions = subtract_stats(outcome.extensions, removed.extensions)
+        ages = subtract_ages(outcome.ages, removed.ages)
         for node in nodes:
-            extensions = subtract_stats(extensions, extension_stats(node))
-            ages = subtract_ages(ages, age_stats(files_beneath(node), outcome.now))
             self.tree_model.remove(node)
         root = outcome.result.root
         self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,

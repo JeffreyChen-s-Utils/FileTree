@@ -686,6 +686,8 @@ class MainWindow(QMainWindow):
         explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
         audit = JournalApproval(self._journal, explanations)
         worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
+        if self.results.outcome is not None:
+            worker.summary_now = self.results.outcome.now
         worker.proposal_context = proposal.report.context if proposal is not None else None
         worker.proposal_check = (lambda: proposal.store.status(proposal.report)) if proposal is not None else None
         if copies is not None:
@@ -752,8 +754,11 @@ class MainWindow(QMainWindow):
         moved_size = format_size(sum(node.size for node in moved), self._unit)
         if moved:
             self._analyser = None
-            if self.results.outcome is None or self.results.outcome.result.hard_links is None:
-                self.results.forget(moved)
+            outcome = self.results.outcome
+            removed = worker.removed_summary if worker is not None else None
+            if (outcome is not None and outcome.result.hard_links is None and removed is not None
+                    and removed.now == outcome.now):
+                self.results.forget(moved, removed=removed)
         if failed:
             message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
                        tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
@@ -1133,7 +1138,7 @@ class MainWindow(QMainWindow):
         self._bin_labels.shutdown(wait=wait)
         if self._trash_worker is not None:
             worker = self._trash_worker
-            worker.cancel()
+            worker.cancel(discard_results=True)
             if wait:
                 wait_for(worker)
                 self._trash_worker = None

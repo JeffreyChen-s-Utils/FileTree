@@ -2,6 +2,10 @@
 
 [Project introduction and quick start](../README.md)
 
+After approved moves to Trash, file-type and age totals update in the background. Stop retains completed
+moves and finishes their statistics. Closing can cancel those calculations; completed moves and
+operation errors still follow the normal completion handling.
+
 Chart legends wrap between complete entries as the pane narrows. Each category or age label keeps
 its color marker and text together, including Chinese, Japanese and Korean; labels follow the current
 font and language. Changing the chart or color mode updates the entries and their accessible names.

@@ -10,6 +10,7 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QLabel
 
 from je_file_tree.core.scanner import scan
+from je_file_tree.core.analysis import summarise
 from je_file_tree.gui import i18n
 from je_file_tree.gui.capacity_panel import CapacityPanel
 from je_file_tree.gui.results_view import ResultsView
@@ -58,7 +59,7 @@ def test_capacity_snapshot_is_invalidated_by_moves_and_branch_rescans(qapp: QApp
         assert view.capacity.ledger is None and view.outcome.capacity is None
         view.show_outcome(analyse(scan(tmp_path)))
         file = view.outcome.result.root.children[0].children[0]
-        view.forget([file])
+        view.forget([file], removed=summarise(file, limit=0, now=view.outcome.now))
         assert view.capacity.ledger is None and view.outcome.capacity is None
         view.begin_scan()
         assert view.capacity.isHidden()
