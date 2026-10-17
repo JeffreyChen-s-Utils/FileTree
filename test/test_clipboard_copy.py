@@ -153,6 +153,8 @@ def test_pending_copy_cancellation_keeps_existing_clipboard_and_closes_buffer(qa
         owner.show()
         qapp.processEvents()
     monkeypatch.setattr(transfer, '_CHUNK_ROWS', 7)
+    # A slow runner can spend the real 4 ms budget on the group heading alone, leaving no row yet.
+    monkeypatch.setattr(transfer, '_CHUNK_SECONDS', 10)
     capture = _start(view)
     capture._chunk()
     capture._timer.stop()
