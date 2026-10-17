@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-43 | 2026-10-17 | Gate native clipboard measurements in a fresh private station | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-42 | 2026-10-17 | Observe later slow-child phases within the original deadline | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-41 | 2026-10-17 | Encode clipboard rows during yielding capture | #done #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-40 | 2026-10-17 | Yield while preparing large selected-list copies | #done #performance #gui | [2026-10-d](2026-10-d.md) |

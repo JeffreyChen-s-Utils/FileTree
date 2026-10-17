@@ -264,3 +264,41 @@ when a notification is observed, without a claim about undelivered OS changes. T
 and returns false to preserve normal event delivery. Native probes measure the actual shortcut and
 capture with a recording sink; they exclude native clipboard conversion/ownership and OS interaction.
 Retain all callback durations, runtime/source hashes, validated row counts and complete text digests.
+
+## Private native Windows clipboard
+
+The `Windows private clipboard` job runs `python -m tools.measure_clipboard_tail` for 100,000
+synthetic rows with 80/512-character folder suffixes, using the existing pinned/hash-checked Qt
+requirements and native Windows backend. It creates only new station/desktop objects in a fresh
+helper before importing Qt; its protected DACL grants the owner and System access. No scan,
+source operation, elevation, desktop switch for user input, or existing-station fallback is used.
+[Window stations contain their own clipboard](https://learn.microsoft.com/en-us/windows/win32/winstation/window-stations),
+and only WinSta0 is interactive. Exact private station/desktop names and a noninteractive flag are
+required before clipboard calls. [CreateWindowStation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowstationw)
+uses CWF_CREATE_ONLY, refusing any existing name. Local named creation returns access denied and
+generated-name creation returns already-exists; neither exploratory call reaches Qt or a clipboard.
+Do not replace this gate with an interactive clipboard save/restore or reuse an unknown station.
+
+The actual view shortcut and incremental capture publish through a timed proxy over the real
+private QClipboard. A separate native reader, launched on that exact desktop with the base Python
+executable, receives only the new station/desktop handles through the supported STARTUPINFO handle
+list with close_fds enabled. It verifies their names/noninteractive flag and actual parent, then
+explicitly joins those handles before fetching CF_UNICODETEXT (at most 128 MiB). The unsupported
+Python lpDesktop attribute is not used. A desktop-metadata-only local probe verifies handle transport
+under both Python runtimes; it calls no clipboard API and is not private clipboard readback proof.
+Compare the complete text hash after Windows CRLF normalization and decode/check every quoted,
+formula-safe Unicode row against the capture. Preserve source identities/selection and all rows.
+Record every capture callback and 5 ms heartbeat interval, final StringIO extraction, native Qt
+setText call, consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
+reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
+deadline apply only to the probe and do not change production copy behavior. Keep partial output,
+return codes and cleanup failures; nonempty diagnostic stderr alone is not failure.
+
+Stop/join only the retained reader, clear only the guarded private clipboard, destroy Qt while the
+private scope still matches, then restore/verify the original context and close only created handles.
+If scope cannot be verified before Qt destruction, the fresh helper reports failure and exits without
+Qt finalization or station switching; the outer driver retains that nonzero result. Reserving a new
+report path prevents overwriting old evidence. The always-run artifact step retains JSON/logs even
+on native failure; the job/step bounds remain 10/3 minutes. Native proof is pending #111 until the
+hosted artifacts establish all these assertions. Modeled boundary tests and offscreen recording
+tests are not native proof, interactive clipboard-manager contention, settled frames, or input latency.

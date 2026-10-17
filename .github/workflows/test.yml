@@ -11,6 +11,41 @@ permissions:
   contents: read
 
 jobs:
+  windows-clipboard:
+    runs-on: windows-latest
+    name: Windows private clipboard
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: "3.12"
+    - name: Install pinned native Qt dependencies
+      run: python -m pip install --require-hashes --only-binary :all: -r .github/requirements/test.txt
+    - name: Measure only new private clipboard stations
+      timeout-minutes: 3
+      env:
+        QT_QPA_PLATFORM: windows
+        PYTHONIOENCODING: utf-8
+        PYTHONFAULTHANDLER: "1"
+        QT_FORCE_STDERR_LOGGING: "1"
+      run: |
+        python -m tools.measure_clipboard_tail --rows 100000 --width 80 --output windows-clipboard-80.json *> windows-clipboard-80.log
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        python -m tools.measure_clipboard_tail --rows 100000 --width 512 --output windows-clipboard-512.json *> windows-clipboard-512.log
+        exit $LASTEXITCODE
+    - name: Preserve private clipboard proof including refusals
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-private-clipboard
+        path: |
+          windows-clipboard-*.json
+          windows-clipboard-*.log
+        if-no-files-found: warn
+        retention-days: 7
   windows-msi:
     runs-on: windows-latest
     name: Windows owned MSI installation

@@ -517,6 +517,20 @@ close their text buffers. The public synchronous `copy_table` helper retains its
 Final string extraction and native clipboard access remain synchronous and cannot be preempted;
 yielding preparation does not establish that the whole operation or custom callbacks are pause-free.
 
+Native clipboard measurement is isolated in `tools.measure_clipboard_tail` and
+`tools.windows_private_clipboard`, gated to disposable hosted Windows runners. A fresh helper
+creates a named create-only noninteractive station and desktop before importing Qt, with a
+protected owner/System DACL. Exact names and noninteractive flags gate clipboard access. The real
+copy shortcut/capture publishes to that private station; a separate base-interpreter child on the
+same desktop validates and joins only the explicitly inherited private handles before reading
+bounded CF_UNICODETEXT. Retain every capture/heartbeat sample, string-extraction
+and setter durations, native readback hash, runtime/source identity, raw output and cleanup result.
+Reader/GUI/helper bounds are 30/45/60 seconds; no interactive/existing-station fallback or elevation.
+Destroy Qt only after a scope recheck and before restoring original handles; an uncertain shutdown
+scope ends only the owned helper without Qt finalization. Validate creation/cleanup before drawing
+native performance conclusions; local modeled checks do not establish the hosted native path.
+
+
 `details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
 Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`
 keeps bounded category/age totals in a cancellable iterative pass, giving way per folder and separating
