@@ -51,7 +51,11 @@ $testScratch = 'D:/Codes/tests/filetree-' + [guid]::NewGuid().ToString('N')
 py -3 -m tools.run_pytest --evidence build/pytest-context-local -- -v --tb=short --basetemp $testScratch
 ```
 
-Choose another evidence directory for each run; an existing directory is refused. The regular
+Choose another evidence directory for each run; an existing directory is refused, and so is one
+that resolves outside the directory the wrapper was started from. Forwarded pytest arguments may
+contain letters, digits, spaces and the punctuation of options, paths and `-k`/`-m` expressions;
+quotes, control characters and shell metacharacters are refused, and `-p` may only disable a plugin
+(`-p no:<name>`), never load one. The regular
 `py -3 -m pytest` command still works and does not load the phase plugin. The wrapper runs the same
 interpreter once, forwards pytest arguments, waits for its actual exit and retains:
 

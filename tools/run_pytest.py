@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,12 +15,48 @@ from pathlib import Path
 from tools.pytest_context import write_record
 
 _MAX_PORTABLE_EXIT = 255
+# One argv element each, never a shell: letters, digits, spaces and the punctuation of pytest options,
+# paths and -k/-m expressions. Quotes, control characters and shell metacharacters are refused.
+_SAFE_ARGUMENT = re.compile(r"[\w .,:=@+~/\\()\[\]-]+")
+_PLUGIN_OPTION = "-p"
+_DISABLE_PLUGIN = "no:"
+
+
+def evidence_folder(path: Path) -> Path:
+    """Resolve a new evidence folder, refusing one outside the directory the runner was started from."""
+    resolved = os.path.realpath(path)
+    base = os.path.realpath(os.getcwd())
+    if not resolved.startswith(base + os.sep):
+        raise ValueError(f"evidence folder {str(path)!r} must be inside {base!r}")
+    return Path(resolved)
+
+
+def pytest_arguments(arguments: list[str]) -> list[str]:
+    """Validate forwarded pytest arguments; ``-p`` may only disable plugins, never load one."""
+    checked, expects_plugin = [], False
+    for argument in arguments:
+        if not _SAFE_ARGUMENT.fullmatch(argument):
+            raise ValueError(f"unsupported pytest argument {argument!r}")
+        if expects_plugin:
+            plugin = argument  # the value of a separate "-p"
+        elif argument.startswith(_PLUGIN_OPTION) and argument != _PLUGIN_OPTION:
+            plugin = argument[len(_PLUGIN_OPTION):]  # the joined form "-pno:name"
+        else:
+            plugin = None
+        if plugin is not None and not plugin.startswith(_DISABLE_PLUGIN):
+            raise ValueError(f"-p may only disable plugins: {argument!r}")
+        expects_plugin = not expects_plugin and argument == _PLUGIN_OPTION
+        checked.append(argument)
+    if expects_plugin:
+        raise ValueError("-p needs a no:<plugin> value")
+    return checked
 
 
 def run_tests(folder: Path, arguments: list[str]) -> int:
     """Use a fresh evidence directory and preserve every nonzero child outcome."""
+    folder = evidence_folder(folder)
+    arguments = pytest_arguments(arguments)
     folder.mkdir(parents=True, exist_ok=False)
-    folder = folder.resolve()
     environment = dict(os.environ, FILETREE_PYTEST_CONTEXT=str(folder), PYTHONFAULTHANDLER="1",
                        PYTHONUNBUFFERED="1", QT_FORCE_STDERR_LOGGING="1")
     command = [sys.executable, "-m", "pytest", *arguments, "-p", "tools.pytest_context",

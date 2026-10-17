@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-55 | 2026-10-17 | Bound the pytest wrapper's evidence path and forwarded arguments | #snapshot #security #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-54 | 2026-10-17 | Name the loaded modules in each slow-child sample | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-53 | 2026-10-17 | Native private-station clipboard tail verified on hosted Windows | #done #clipboard #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261017-52 | 2026-10-17 | Make the WINFUNCTYPE import test portable | #incident #tests #ci | [2026-10-d](2026-10-d.md) |

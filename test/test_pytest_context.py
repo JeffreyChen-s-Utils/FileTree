@@ -41,11 +41,12 @@ def _run(tmp_path: Path, source: str) -> tuple[subprocess.CompletedProcess, Path
     target = tmp_path / "test_owned.py"
     target.write_text(_PREFIX + source, encoding="utf-8")
     evidence = tmp_path / "evidence"
-    command = [sys.executable, "-m", "tools.run_pytest", "--evidence", str(evidence), "--",
+    command = [sys.executable, "-m", "tools.run_pytest", "--evidence", "evidence", "--",
                "-c", str(_ROOT / "pyproject.toml"), "--confcutdir", str(tmp_path), str(target), "-q"]
+    # Started inside the scratch folder, which must contain the evidence; the package comes from PYTHONPATH.
     # A fixed interpreter runs only the fixture created above; no user process is targeted.
-    result = subprocess.run(command, cwd=_ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  # noqa: S603
-                            env=dict(os.environ, PYTEST_DISABLE_PLUGIN_AUTOLOAD="1"),
+    result = subprocess.run(command, cwd=tmp_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  # noqa: S603
+                            env=dict(os.environ, PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", PYTHONPATH=str(_ROOT)),
                             timeout=45, check=False)
     return result, evidence
 
@@ -121,14 +122,48 @@ def test_owned():
     assert context["phase"] == "call"
 
 
-def test_existing_evidence_is_never_overwritten(tmp_path):
+def test_existing_evidence_is_never_overwritten(tmp_path, monkeypatch):
     from tools.run_pytest import run_tests
 
+    monkeypatch.chdir(tmp_path.parent)
     marker = tmp_path / "marker"
     marker.write_text("retained", encoding="utf-8")
     with pytest.raises(FileExistsError):
         run_tests(tmp_path, [])
     assert marker.read_text(encoding="utf-8") == "retained"
+
+
+@pytest.mark.parametrize("evidence", ["..", "../outside", "."])
+def test_evidence_outside_the_starting_directory_is_refused_before_creation(tmp_path, monkeypatch, evidence):
+    from tools.run_pytest import run_tests
+
+    start = tmp_path / "start"
+    start.mkdir()
+    monkeypatch.chdir(start)
+    with pytest.raises(ValueError, match="must be inside"):
+        run_tests(Path(evidence), [])
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["start"] and not any(start.iterdir())
+
+
+@pytest.mark.parametrize("arguments", [
+    ["-v", "--tb=short", "-p", "no:unraisableexception", "-pno:cacheprovider", "--basetemp", "D:/Codes/tests/x"],
+    ["-q", "-ra", "--junitxml=build/qt68-tests.xml", "-k", "not (slow or flaky)", r"test\test_gui.py::test_one[a-1]"],
+])
+def test_ci_and_local_pytest_arguments_are_forwarded_unchanged(arguments):
+    from tools.run_pytest import pytest_arguments
+
+    assert pytest_arguments(arguments) == arguments
+
+
+@pytest.mark.parametrize("arguments", [
+    ["-p", "evil_plugin"], ["-pevil_plugin"], ["-p"], ["-k", "a; rm -rf /"], ["--basetemp", "x\ny"],
+    ["-k", "$(whoami)"], ['"quoted"'], ["a|b"], ["x\x00y"],
+])
+def test_plugin_loading_and_shell_or_control_characters_are_refused(arguments):
+    from tools.run_pytest import pytest_arguments
+
+    with pytest.raises(ValueError):
+        pytest_arguments(arguments)
 
 
 def test_export_replace_fault_injection_cannot_break_diagnostic_teardown(tmp_path):
