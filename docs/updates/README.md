@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-45 | 2026-10-17 | Decode the MSI inventory test's PowerShell output as UTF-8 | #snapshot #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-44 | 2026-10-17 | Quote workflow commands containing YAML mapping separators | #done #fix #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-43 | 2026-10-17 | Gate native clipboard measurements in a fresh private station | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-42 | 2026-10-17 | Observe later slow-child phases within the original deadline | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
