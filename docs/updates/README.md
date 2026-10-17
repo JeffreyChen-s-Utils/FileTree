@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-31 | 2026-10-17 | Isolate grouped header layout work across native Qt runtimes | #snapshot #performance #qt | [2026-10-d](2026-10-d.md) |
 | U-20261017-30 | 2026-10-17 | Verify native literal-file reporting and retain an empty helper timeout | #snapshot #ci #apfs #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-29 | 2026-10-17 | Align PowerShell phase origins with owned-child timing | #snapshot #diagnostics #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-28 | 2026-10-17 | Retain repeated APFS busy and late mocked receipt timeout evidence | #incident #ci #apfs #windows | [2026-10-d](2026-10-d.md) |

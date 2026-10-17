@@ -413,7 +413,7 @@ jobs:
         test/test_grouped_display_refresh.py test/test_grouped_list.py
         test/test_duplicate_keeper_refresh.py test/test_duplicate_savings_panel.py
         test/test_similar_photos_gui.py test/test_list_transfer.py
-        test/test_pytest_context.py
+        test/test_pytest_context.py test/test_measure_grouped_layout.py
     - name: Preserve pytest native context
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

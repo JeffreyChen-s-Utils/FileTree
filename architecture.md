@@ -1565,8 +1565,14 @@ Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI tes
 match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
 one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
 
-An independent Qt 6.8 compatibility matrix runs the grouped display, keeper/estimate, photo and
-list-capture regressions on Windows and Linux with Python 3.13. Its wheel-only hash lock is
+`tools.measure_grouped_layout` isolates grouped model updates on bounded, owned in-memory nodes
+using the production view builder. It separately records synchronous handling and three cumulative
+Qt event passes, optional counters on the actual instantiated model and subsequent state checks.
+Uninstrumented runs use the ordinary model/view classes. No source filesystem access or application
+update policy changes occur; event passes are not frame/input-latency guarantees. See `docs/testing.md`.
+
+An independent Qt 6.8 compatibility matrix runs the grouped display/layout probe, keeper/estimate,
+photo and list-capture regressions on Windows and Linux with Python 3.13. Its wheel-only hash lock is
 `.github/requirements/qt68.txt`; `tools/compile_qt68_lock.py` regenerates it from the regular test
 pins, preserving non-Qt versions and markers while applying the four explicit Qt 6.8.3 overrides.
 The regular test/runtime locks keep their current Qt. A preflight writes the observed Python/Qt

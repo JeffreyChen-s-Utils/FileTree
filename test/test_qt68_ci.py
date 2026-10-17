@@ -55,5 +55,6 @@ def test_compatibility_matrix_and_failure_evidence_are_independent():
     assert job.index("write_text(json.dumps(record") < job.index("raise SystemExit")
     assert "PYTEST_DISABLE_PLUGIN_AUTOLOAD:" in job and "--junitxml=build/qt68-tests.xml" in job
     assert "test/test_grouped_list.py" in job and "test/test_grouped_display_refresh.py" in job
+    assert "test/test_measure_grouped_layout.py" in job
     upload = job.split("    - name: Preserve compatibility runtime and test evidence", 1)[1]
     assert "if: always()" in upload and "build/qt68-runtime.json" in upload and "build/qt68-tests.xml" in upload

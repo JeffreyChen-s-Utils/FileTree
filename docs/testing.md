@@ -1,5 +1,42 @@
 # Test diagnostics
 
+## Grouped view layout measurements
+
+Run each operation in its own process, without concurrent tests or benchmarks:
+
+```powershell
+py -3 -m tools.measure_grouped_layout noop
+py -3 -m tools.measure_grouped_layout headers
+py -3 -m tools.measure_grouped_layout language --no-counts
+py -3 -m tools.measure_grouped_layout unit --groups 3 --members 33334
+```
+
+The tool builds the production grouped view over owned in-memory Node objects. It never scans,
+opens or changes source files. All members remain exposed, including those outside the viewport.
+The default is 1,000 groups of 100 members; refuse more than 1,000 groups or 1,000,000 total members.
+`headers` isolates the native header notification; `language` additionally updates keeper names.
+`unit`, `labels`, `keeper` and `noop` isolate the other model updates. These are synthetic model/view
+measurements, not full-panel or whole-window interaction tests.
+
+JSON records the handler and cumulative elapsed time after each of three Qt event passes, actual
+binding/Qt/platform/model/view classes, header/data/reset notification counts and before/after geometry.
+Index/flags counters belong to the model actually passed to the production view builder. Counter
+snapshots precede state verification, so QA queries cannot inflate them. Instrumentation adds dispatch
+overhead; use `--no-counts` for ordinary model timings and retain every observation. Compare repeated
+runs only within the same runtime/platform/shape, and never interpret an event pass as a settled frame
+or an input-latency guarantee. The tool checks source identities, every row, member tuples, selection,
+current/persistent indexes, collapsed first group, name-column width and scroll clamping. It returns
+nonzero on a failed check, detaches its view and restores the previous language even if an update fails.
+
+Qt's native header notification can schedule a full item layout even when visible geometry stays
+unchanged: see [the Qt 6.8 connection](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview.cpp),
+[private layout scheduling](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview_p.h)
+and [tree layout/accessibility updates](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qtreeview.cpp).
+Retain those notifications and native handling. This tool diagnoses the remaining #95 pause; it does
+not fix it or establish the owner's original hanging path.
+
+## Pytest native context
+
 Run the full suite once with a fresh evidence directory:
 
 ```powershell
