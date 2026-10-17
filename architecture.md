@@ -495,11 +495,21 @@ bytes, while nested folders do not overlap. TypeLocationsWorker replaces the GUI
 drill-down walk. ResultsView rejects obsolete replies on scope/scan/branch changes and exposes the
 folder table alongside matching largest files, with selection, context actions and clipboard support.
 
-`list_transfer` snapshots Qt models only on the GUI thread in ≤128-row / 4 ms turns, observing model
-changes to invalidate mixed captures. Current-list CSV sends text batches over an eight-batch bounded
+`list_transfer` snapshots Qt models only on the GUI thread with at most 128 work units and a cooperative
+4 ms budget per turn; an individual Qt/model callback can exceed that budget. Selected-list capture
+prepares range metadata and ancestor paths incrementally, then heap-merges candidate rows in the
+original model order. Deduplicate by actual parent identity and row, retaining different parent
+columns even when numeric ancestor paths coincide. Full-width ranges retain every cell's enabled/
+selectable flag check without rebuilding Qt's global selection cache for each row. Partial ranges
+use native `isRowSelected`; custom selection classes/Python instance/class method overrides keep the
+original `selectedRows` delegation. Observe model/data/header/row/column changes, view rebinding and
+view/selection destruction to invalidate mixed captures. Reentrant cancellation drops pending rows
+and never restarts a timer or publishes partial text. Current-list CSV sends text batches over an eight-batch bounded
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
 Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
 before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
+Final TSV formatting and native clipboard access remain synchronous; yielding capture does not
+establish that the whole clipboard operation or all custom-model callbacks are free of pauses.
 
 `details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
 Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`

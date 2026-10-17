@@ -15,7 +15,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 - **Search and filter**: find files by name, type, size or last change. Sorting, units and tree filters keep visible selections. Tree filters reuse unchanged results, map each opened group once, and skip hidden archive members. Tree filters keep large selections and their gaps while retaining less cached data. Large result lists sort with one value calculation per row.
 - **Review clean-up suggestions**: inspect caches, temporary files and duplicates before acting. Large lists keep selections when changing units or language; large batches of skipped or failed entries remain available in complete, copyable tables. Keeper choices and space estimates keep your selection and view position. Grouped results open together and retain every listed file.
 - **See what grew**: compare scans to find folders using more space than before.
-- **Save reports**: export results to CSV, JSON or Excel.
+- **Save reports**: export results to CSV, JSON or Excel. Large selected-list copies are prepared in batches; changing the selection cancels preparation.
 - **Use your language**: switch between English, Traditional Chinese, Simplified Chinese, Japanese and Korean.
 - **Explorer folder menu (Windows)**: add Scan with FileTree from Options. Settings stay responsive; an active Save finishes before closing.
 

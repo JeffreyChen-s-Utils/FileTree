@@ -99,6 +99,32 @@ Output is retained while the child runs and copied to the console after it exits
 can still leave partial evidence. Full Windows/Linux/macOS and Qt 6.8 jobs always upload the evidence
 directory for seven days. No memory dumps are collected or uploaded.
 
+## Selected-list capture responsiveness
+
+`ListCapture(selected=True)` prepares native selection ranges and ancestor order keys in the same
+cooperative 128-work-unit / 4 ms turns as row reads. A heap merges range candidates without allocating
+all selected row indexes before the first yield. Deduplication includes actual parent identity, so
+equal numeric paths under different parent columns keep both rows in native stable order. Full-width
+selected ranges still read every column's enabled/selectable flags, excluding wholly disabled rows;
+partial-cell ranges delegate to native `isRowSelected`. Default native selection models take this
+path; custom classes and Python instance/class method overrides retain `selectedRows` delegation.
+The [Qt 6.11 selection implementation](https://raw.githubusercontent.com/qt/qtbase/v6.11.2/src/corelib/itemmodels/qitemselectionmodel.cpp)
+and [Qt 6.8 implementation](https://raw.githubusercontent.com/qt/qtbase/v6.8.3/src/corelib/itemmodels/qitemselectionmodel.cpp)
+show why repeated global row checks revisit selection ranges and why selectable/enabled flags matter.
+
+Keep model/data/header/row/column invalidation, selection changes, view rebinding and destruction
+observable. Cancellation clears pending output and releases preparation state; a reentrant data
+change cannot refill canceled rows or restart a timer. Existing bounded streams, formula escaping,
+atomic CSV writes and original selection state remain. Structural tests bound callbacks, compare
+native row semantics across partial/disabled/proxy/tree and pending Select/Toggle/Deselect cases,
+exercise deep ancestors and parent columns, and check cancellation preserves existing files. Run
+them in both pinned Qt 6.8 lanes as well as the full matrix.
+
+The time budget is cooperative: an individual model/Qt API, opaque custom selection callback,
+final TSV formatting or native clipboard access may still block. Native performance probes must run
+sequentially without a concurrent local full test suite, retain rejected prototypes and every sample,
+and distinguish first-turn/one-heartbeat observations from total capture and end-to-end input latency.
+
 ## APFS final-busy observations
 
 The original owned-image `hdiutil detach` attempts include its documented `-verbose` diagnostic option
