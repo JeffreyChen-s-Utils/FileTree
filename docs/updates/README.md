@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-58 | 2026-10-17 | Stop the welcome drive test from scanning a real drive | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-57 | 2026-10-17 | Remove the remaining real-time chunk assumptions from capture tests | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-56 | 2026-10-17 | Fix a time-dependent copy cancellation test | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-55 | 2026-10-17 | Bound the pytest wrapper's evidence path and forwarded arguments | #snapshot #security #tests | [2026-10-d](2026-10-d.md) |

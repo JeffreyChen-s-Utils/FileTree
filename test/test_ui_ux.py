@@ -270,19 +270,23 @@ def test_drive_rows_show_native_roots_fill_and_nearly_full_warning(window, qapp,
     monkeypatch.setattr("je_file_tree.gui.welcome.drives", lambda: [])
     page = window.welcome
     _wait(qapp, lambda: not page._drive_timer.isActive() and page._drive_worker is None)
-    page.drive_rows = (DriveSnapshot("C:/", "System", 1000, 50), DriveSnapshot("D:/", "", 1000, 600))
+    # Owned, nonexistent roots: the rows are rendered from snapshots and no drive is ever scanned.
+    page.drive_rows = (DriveSnapshot("Q:/filetree-owned/", "System", 1000, 50),
+                       DriveSnapshot("R:/filetree-owned/", "", 1000, 600))
     page.retranslate()
     full_button, full_bar = page._drives.itemAtPosition(0, 0).widget(), page._drives.itemAtPosition(0, 1).widget()
     roomy_bar = page._drives.itemAtPosition(2, 1).widget()
-    shown = QDir.toNativeSeparators("C:/")
+    shown = QDir.toNativeSeparators("Q:/filetree-owned/")
     assert full_button.text() == f"System  ({shown})"
     assert full_bar.toolTip() == i18n.tr("welcome_drive_used", percent="95.0 %")
     assert full_bar.palette().color(QPalette.ColorRole.Highlight) == QColor("#d13438")
     assert roomy_bar.palette().color(QPalette.ColorRole.Highlight) != QColor("#d13438")
     requested = []
+    page.scan_requested.disconnect()  # the window would start a real scan; record the request only
     page.scan_requested.connect(requested.append)
     full_button.click()
-    assert requested == ["C:/"]  # the scan keeps the native root Qt reported
+    assert requested == ["Q:/filetree-owned/"]  # the scan keeps the native root Qt reported
+    assert window._worker is None and window._pending_scan is None  # nothing was scanned
     page.set_unit("KB")
     free = page._drives.itemAtPosition(0, 2).widget()
     assert free.text() == i18n.tr("welcome_drive_free", free=format_size(50, "KB"), total=format_size(1000, "KB"))
