@@ -177,6 +177,26 @@ It runs only after the attempts end (its own 20-second bound, at most 200 parsed
 attempts and outcomes are unchanged. DiskArbitration names the dissenter of a refused eject; an entry
 is an observation, not an established cause, and a missing or refused log read changes nothing.
 
+## Windows PowerShell start-up samples
+
+#99's disconnect helper and #100's first mocked case both spend their time in `powershell.exe`
+start-up before the first script statement (U-20261017-62): 2.2–9.0 s on hosted runners against
+about 0.2 s locally. The `Windows PowerShell start-up` job runs, on a fresh runner:
+
+```powershell
+python -m tools.measure_powershell_startup --output powershell-startup.json
+```
+
+It launches the system `powershell.exe -NoLogo -NoProfile -NonInteractive` twelve times in order
+(the first is the cold start). Each `-EncodedCommand` script prints a clock origin, converts one
+literal JSON value and prints the elapsed milliseconds. The owned-child observer samples a launch
+still alive after one second, inside start-up, so its modules and kernel thread states show what
+the main thread waits on; a second sample comes five seconds before the 30-second bound. Each record
+keeps the launch-to-origin time from the parent's UTC stamp, the creation-aligned clock when sampled,
+the first `ConvertFrom-Json` time, the actual outcome and capped output. Launches never retry, the
+report path must be new, and the artifact is kept even when the step fails. These are diagnostics:
+they do not change the share helpers or their 20/30-second deadlines.
+
 ## PowerShell clock evidence
 
 The native disconnect helper emits `FILETREE_SMB_CLOCK`; the mocked helper harness additionally emits
