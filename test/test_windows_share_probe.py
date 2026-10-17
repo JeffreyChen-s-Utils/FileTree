@@ -274,3 +274,9 @@ def test_warm_up_outcomes_are_recorded_without_retry(monkeypatch, raised, outcom
     assert probe.base64.b64decode(command[5]).decode("utf-16-le") == probe._WARMUP_SCRIPT
     assert kwargs["timeout"] == 120 and kwargs["env"] == {"PSModulePath": "owned"} and not kwargs["check"]
     assert record["outcome"] == outcome
+
+
+def test_warm_up_without_systemroot_is_recorded_unavailable(monkeypatch):
+    monkeypatch.delenv("SYSTEMROOT", raising=False)
+    monkeypatch.setattr(probe, "warm_powershell", lambda *_args: pytest.fail("No Windows runtime to warm"))
+    assert probe._warm_up() == {"outcome": "unavailable", "reason": "SYSTEMROOT is not set"}

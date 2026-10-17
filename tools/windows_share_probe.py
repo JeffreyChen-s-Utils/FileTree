@@ -216,9 +216,16 @@ def _helper_environment(program: Path) -> dict[str, str]:
     return environment
 
 
-def _disconnect(owned: Path, args) -> dict:
+def _warm_up() -> dict:
+    """Warm the helper's runtime; without SYSTEMROOT (not Windows) there is none to warm."""
+    if "SYSTEMROOT" not in os.environ:
+        return {"outcome": "unavailable", "reason": "SYSTEMROOT is not set"}
     program = windows_powershell()
-    captured = {"disconnected": False, "powershell_warmup": warm_powershell(program, _helper_environment(program))}
+    return warm_powershell(program, _helper_environment(program))
+
+
+def _disconnect(owned: Path, args) -> dict:
+    captured: dict = {"disconnected": False, "powershell_warmup": _warm_up()}
     pause = threading.Event()
 
     def progress(current) -> None:
@@ -226,6 +233,7 @@ def _disconnect(owned: Path, args) -> dict:
             return
         # A final callback must never be misreported as a mid-scan disconnect.
         require(current.files < _BRANCHES * 4, "Share scan completed before disconnect; no proof")
+        program = windows_powershell()
         script = Path(__file__).with_name("validate_windows_share.ps1").resolve(strict=True)
         environment = _helper_environment(program)
         captured.update(helper_attempted=True, observed_files_before_disconnect=current.files)

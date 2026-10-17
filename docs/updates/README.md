@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-69 | 2026-10-17 | Warm-up without SYSTEMROOT off Windows | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-68 | 2026-10-17 | macOS unit tests never read the host's unified log | #incident #tests #ci #macos | [2026-10-d](2026-10-d.md) |
 | U-20261017-67 | 2026-10-17 | #104's Qt6Core termination: a window's drive worker destroyed while running | #done #fix #gui #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-66 | 2026-10-17 | Wait for drive discovery before reading Recycle Bin captions | #incident #tests | [2026-10-d](2026-10-d.md) |
