@@ -297,7 +297,7 @@ def test_an_unreadable_desktop_name_is_recorded_and_restoration_still_runs(monke
 
 def test_helper_imports_where_ctypes_has_no_windows_callback_type():
     """Linux/macOS collect these tests too: Windows-only ctypes names must wait for ``_Native``."""
-    code = 'import ctypes; del ctypes.WINFUNCTYPE; import tools.windows_private_clipboard'
+    code = "import ctypes; vars(ctypes).pop('WINFUNCTYPE', None); import tools.windows_private_clipboard"
     result = subprocess.run([sys.executable, '-c', code], cwd=Path(__file__).resolve().parents[1],  # noqa: S603
                             capture_output=True, text=True, timeout=60, check=False)
     assert result.returncode == 0, result.stderr
