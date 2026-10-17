@@ -21,8 +21,9 @@ class _Observer:
         self.stop_reason = None
         try:
             script = Path(__file__).with_name("windows_child_observer.py")
+            executable = getattr(sys, "_base_executable", None) or sys.executable
             self.process = subprocess.Popen(  # noqa: S603 - fixed observer; validates captured sibling identity
-                [sys.executable, str(script), "--pid", str(pid)], stdout=subprocess.PIPE,
+                [executable, str(script), "--pid", str(pid)], stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, creationflags=subprocess.CREATE_NO_WINDOW)
             self.timer = threading.Timer(5, self._stop, args=("observer-deadline",))
             self.timer.daemon = True

@@ -156,6 +156,17 @@ five seconds and retains its five-second bound, thread/node caps and ownership c
 cross-process flags, object names, dumps, retries or target-control operations are added. A passing
 run cannot resolve a prior intermittent timeout; the next reproduced failure must supply aligned data.
 
+The standard-library observer starts with the runtime's base executable when available, falling back
+to its current executable only when that metadata is absent/empty. A Windows virtual-environment
+redirector would otherwise add a parent and cause the unchanged exact sibling check to reject an
+owned target. CPython also selects the base executable for [Windows process spawning from a virtual
+environment](https://github.com/python/cpython/blob/3.13/Lib/multiprocessing/popen_spawn_win32.py).
+This changes only the observer program: target commands/environments, parent/handle authorization,
+hidden-window flags, query caps, timers and remaining execution deadlines stay the same. It never
+follows descendants or accepts a grandparent in place of the actual parent. Tests use a fresh pip-free
+Windows environment and a base-interpreter target held until observation ends, requiring its actual
+controller PID in the native identity record. A healthy observation does not establish a timeout cause.
+
 ## Owned-child timeout fixtures
 
 The post-output timeout test prepares one real child and waits, for at most ten seconds, for its owned

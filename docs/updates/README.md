@@ -68,6 +68,9 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-37 | 2026-10-17 | Align the reproduced PowerShell timeout and observer output limit | #incident #diagnostics #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-36 | 2026-10-17 | Verify the corrected hosted macOS layout diagnostic | #done #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-35 | 2026-10-17 | Keep owned Windows wait observers attached through virtual environments | #done #diagnostics #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-34 | 2026-10-17 | Synchronize emitted-output timeout fixtures without extending deadlines | #incident #testing #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-33 | 2026-10-17 | Retain native header geometry changes in the layout diagnostic | #incident #ci #qt | [2026-10-d](2026-10-d.md) |
 | U-20261017-32 | 2026-10-17 | Coalesce native layout while opening grouped results | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |

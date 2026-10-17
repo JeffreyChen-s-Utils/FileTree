@@ -1318,7 +1318,9 @@ identity comparison have separate markers; buffering zero/one raw outputs preser
 pipeline semantics, guarded by a frozen pre-change function and real PowerShell 5/7 parity cases.
 Both helpers now use `tools/observed_process.run_observed`: one captured child, unchanged 30/20-second
 deadlines and no retry. Only after five seconds of waiting on a still-live Windows child, start a
-separate fixed Python observer. Its Toolhelp parent check accepts only a sibling child of the same
+separate fixed Python observer using the runtime's base interpreter when available. This avoids a
+Windows virtual-environment launcher's extra parent; the observer uses only the standard library.
+Its Toolhelp parent check still accepts only a sibling child of the same
 parent, whose original Popen handle is still retained. Read process CPU/creation times and at most
 16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
 querying, refusing recycled/foreign IDs. Use no cross-process traversal flags, object names,

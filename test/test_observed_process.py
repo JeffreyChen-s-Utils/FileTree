@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 from types import SimpleNamespace
+import venv
 
 import pytest
 
@@ -265,3 +266,68 @@ def test_reused_or_foreign_thread_id_is_refused_before_native_wait_query(monkeyp
     monkeypatch.setattr(native.c, "get_last_error", lambda: 5, raising=False)
     record = native._chain(api, 1, 123, 7)
     assert record["ownership_refused"] and closed == [42] and not queried
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Native Windows virtual-environment launcher binding")
+def test_virtual_environment_observer_keeps_actual_sibling_parent_binding(tmp_path):
+    environment = tmp_path / "owned-venv"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    script = """
+import json, os, subprocess, sys
+from tools.observed_process import _Observer
+command = [sys._base_executable, '-c', 'import sys;sys.stdin.readline()']
+with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as target:
+    observer = None
+    try:
+        observer = _Observer(target.pid)
+        observer.process.communicate(timeout=10)
+        observation = observer.finish()
+        print(json.dumps({'parent_pid': os.getpid(), 'target_pid': target.pid,
+                          'executable': sys.executable, 'base_executable': sys._base_executable,
+                          'observation': observation}))
+    finally:
+        if observer is not None:
+            observer.finish()
+        target.communicate(b'release\\n', timeout=5)
+"""
+    child_env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[1]))
+    result = subprocess.run(  # noqa: S603 - fresh owned venv, base child and readonly observer only
+        [str(environment / "Scripts/python.exe"), "-c", script], env=child_env,
+        capture_output=True, timeout=20, check=True)
+    record = json.loads(result.stdout)
+    observation = record["observation"]
+    identities = [item for item in observation["records"] if item["event"] == "identity"]
+    assert identities, observation
+    assert observation["returncode"] == 0 and identities[0]["pid"] == record["target_pid"]
+    assert identities[0]["parent_pid"] == record["parent_pid"]
+    assert record["executable"] != record["base_executable"] and identities[0]["cpu"]["created_100ns"] > 0
+
+
+@pytest.mark.parametrize("base", ["owned-base.exe", None, "", "missing"])
+def test_observer_uses_runtime_base_executable_with_original_hidden_flags_and_timer(monkeypatch, base):
+    calls, timers = [], []
+    monkeypatch.setattr(runner.sys, "executable", "owned-venv.exe")
+    if base == "missing":
+        monkeypatch.delattr(runner.sys, "_base_executable", raising=False)
+    else:
+        monkeypatch.setattr(runner.sys, "_base_executable", base, raising=False)
+    monkeypatch.setattr(runner.subprocess, "CREATE_NO_WINDOW", 0x08000000, raising=False)
+
+    def launch(command, **kwargs):
+        calls.append((command, kwargs))
+        return SimpleNamespace(poll=lambda: 0, returncode=0, communicate=lambda: (b"", b""))
+
+    def timer(seconds, callback, args):
+        result = SimpleNamespace(start=lambda: None, cancel=lambda: None)
+        timers.append((seconds, callback, args, result))
+        return result
+
+    monkeypatch.setattr(runner.subprocess, "Popen", launch)
+    monkeypatch.setattr(runner.threading, "Timer", timer)
+    observer = runner._Observer(123)
+    expected = "owned-base.exe" if base == "owned-base.exe" else "owned-venv.exe"
+    assert calls == [([expected, str(Path(runner.__file__).with_name("windows_child_observer.py")), "--pid", "123"],
+                      {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE, "creationflags": 0x08000000})]
+    assert len(timers) == 1 and timers[0][0] == 5 and timers[0][2] == ("observer-deadline",)
+    assert timers[0][1] == observer._stop and timers[0][3].daemon
+    assert observer.finish()["returncode"] == 0
