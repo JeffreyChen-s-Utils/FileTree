@@ -340,7 +340,7 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |
 
-Focus a list and press Ctrl+C (Command+C on macOS) to copy complete selected rows with headers in list order. Large selections are prepared in small batches. Changing the displayed data or selection, starting another copy, or closing the view cancels preparation; partial cells do not produce partial output rows. The quoted TSV protects spreadsheet formula text. Preparation can take longer than one bulk pass, and final text formatting or native clipboard access can still pause.
+Focus a list and press Ctrl+C (Command+C on macOS) to copy complete selected rows with headers in list order. Large selections and their quoted TSV text are prepared in small batches, protecting spreadsheet formula text. A new copy in any list replaces the pending request. Changes to displayed data or selection, an observed clipboard change, closing the view or its owner, explicitly hiding its top-level window, or quitting cancel preparation. Only the current complete result replaces the clipboard; canceled or partial rows never publish. Preparation can take longer than one bulk pass. Individual model calls, final string extraction and native clipboard access can still pause; an OS call already in progress cannot be interrupted.
 
 ### Freeing space
 

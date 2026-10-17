@@ -13,7 +13,6 @@ import time
 from collections.abc import Generator, Iterator
 
 from PySide6.QtCore import QAbstractItemModel, QItemSelectionModel, QModelIndex, QObject, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QAbstractItemView, QApplication
 
 from je_file_tree.core.export import spreadsheet_text
@@ -248,22 +247,8 @@ class ListCapture(QObject):
 
 def install_copy(view: QAbstractItemView) -> None:
     """Give one list Ctrl+C scoped to the view; input fields keep their normal text copying."""
-    shortcut = QShortcut(QKeySequence.StandardKey.Copy, view)
-    shortcut.setContext(Qt.ShortcutContext.WidgetShortcut)
-    captures: set[ListCapture] = set()
-
-    def copy() -> None:
-        for capture in list(captures):
-            capture.cancel()
-        capture = ListCapture(view, view, selected=True)
-        captures.add(capture)
-        capture.ready.connect(copy_table)
-        capture.finished.connect(lambda: captures.discard(capture))
-        capture.finished.connect(capture.deleteLater)
-        capture.start()
-
-    shortcut.activated.connect(copy)
-    view.destroyed.connect(captures.clear)
+    from je_file_tree.gui.clipboard_copy import install_copy as install  # noqa: PLC0415 - capture is defined first
+    install(view)
 
 
 def copy_table(header: tuple[str, ...], rows: list[list[str]]) -> None:

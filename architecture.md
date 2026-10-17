@@ -508,8 +508,14 @@ and never restarts a timer or publishes partial text. Current-list CSV sends tex
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
 Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
 before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
-Final TSV formatting and native clipboard access remain synchronous; yielding capture does not
-establish that the whole clipboard operation or all custom-model callbacks are free of pauses.
+`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row during the existing
+cooperative capture turns. One application-owned controller supersedes pending copies across all
+views, rejects stale/reentrant replies, and publishes only complete current results on the GUI thread.
+Observed clipboard changes, application exit, view/ancestor close and explicit top-level hide cancel
+pending preparation; the temporary event filter never consumes events. Finished/canceled captures
+close their text buffers. The public synchronous `copy_table` helper retains its original contract.
+Final string extraction and native clipboard access remain synchronous and cannot be preempted;
+yielding preparation does not establish that the whole operation or custom callbacks are pause-free.
 
 `details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
 Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`

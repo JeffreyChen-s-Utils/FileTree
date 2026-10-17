@@ -121,7 +121,7 @@ exercise deep ancestors and parent columns, and check cancellation preserves exi
 them in both pinned Qt 6.8 lanes as well as the full matrix.
 
 The time budget is cooperative: an individual model/Qt API, opaque custom selection callback,
-final TSV formatting or native clipboard access may still block. Native performance probes must run
+final string extraction or native clipboard access may still block. Native performance probes must run
 sequentially without a concurrent local full test suite, retain rejected prototypes and every sample,
 and distinguish first-turn/one-heartbeat observations from total capture and end-to-end input latency.
 
@@ -226,3 +226,21 @@ This corrects an unsynchronized test assumption; empty historical stdout alone d
 startup delay or output loss. The production runner still starts its clock before Popen, launches
 once and uses the remaining deadline. Its modeled remaining-time checks and native helpers' original
 30/20-second execution bounds and five-second observation bounds remain unchanged.
+
+## Clipboard text preparation
+
+`test_clipboard_copy.py` checks encoding before the last capture turn, byte-for-byte TSV equality
+with the synchronous helper (formulas, quotes, tabs, newlines and Unicode), GUI-thread publication,
+and one current request across views. Exercise stale callbacks and reentrant requests during header
+reads or clipboard publication in either observer order. Check model/selection changes, observed
+clipboard changes during row escaping and after completion, close/hide/destruction, empty selection,
+and an actual QApplication exit in a fresh child. Recording QObject sinks avoid touching the OS
+clipboard. Both Qt 6.8 compatibility jobs execute these cases.
+
+[QClipboard](https://doc.qt.io/qt-6/qclipboard.html) documents the application clipboard and its
+change notification; macOS external changes may only be detected on activation. Cancellation starts
+when a notification is observed, without a claim about undelivered OS changes. The pending-only
+[QObject event filter](https://doc.qt.io/qt-6/qobject.html#installEventFilter) runs on the GUI thread
+and returns false to preserve normal event delivery. Native probes measure the actual shortcut and
+capture with a recording sink; they exclude native clipboard conversion/ownership and OS interaction.
+Retain all callback durations, runtime/source hashes, validated row counts and complete text digests.
