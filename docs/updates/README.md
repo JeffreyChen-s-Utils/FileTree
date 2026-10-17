@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-72 | 2026-10-17 | Native grouped-list header layout still costs about 0.6 s per 100,000 rows | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-71 | 2026-10-17 | Hosted confirmation: UTF-8 clipboard publication and PowerShell warm-up | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261017-70 | 2026-10-17 | Publish copied rows as UTF-8 bytes instead of a converted string | #snapshot #performance #gui #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-69 | 2026-10-17 | Warm-up without SYSTEMROOT off Windows | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
