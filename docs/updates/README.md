@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-51 | 2026-10-17 | #100 reproduced: idle native wait at start-up and in receipt-parse | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-50 | 2026-10-17 | Keep the clipboard helper importable off Windows; skip late reader starts | #incident #clipboard #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-49 | 2026-10-17 | Repository hash of the LF-normalized clipboard evidence | #docs #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-48 | 2026-10-17 | Retire Qt's leftover windows before leaving the private clipboard desktop | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
