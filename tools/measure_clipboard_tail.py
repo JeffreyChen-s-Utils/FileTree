@@ -40,7 +40,7 @@ def _consumer(scope: PrivateStation) -> subprocess.Popen:
 
 
 def _instrument(app, scope: PrivateStation, state: dict) -> object:
-    from PySide6.QtCore import QObject, QTimer, Signal  # noqa: PLC0415 - import only after private scope verification
+    from PySide6.QtCore import QMimeData, QObject, QTimer, Signal  # noqa: PLC0415 - only after scope verification
     from PySide6.QtWidgets import QApplication  # noqa: PLC0415
 
     scope.check()
@@ -52,9 +52,16 @@ def _instrument(app, scope: PrivateStation, state: dict) -> object:
         def setText(self, text):  # noqa: N802
             scope.check()
             print("FILETREE_CLIPBOARD_PHASE set-text-start", flush=True)
+            # QClipboard.setText is setMimeData with a text QMimeData; timing the halves separately
+            # attributes the pause to Qt string conversion or native publication (#95).
             started = time.perf_counter()
-            board.setText(text)
-            state.update(set_text_ms=(time.perf_counter()-started)*1000, text=text, characters=len(text))
+            mime = QMimeData()
+            mime.setText(text)
+            converted = time.perf_counter()
+            board.setMimeData(mime)  # the clipboard takes ownership
+            finished = time.perf_counter()
+            state.update(set_text_ms=(finished-started)*1000, mime_text_ms=(converted-started)*1000,
+                         publish_ms=(finished-converted)*1000, text=text, characters=len(text))
             print("FILETREE_CLIPBOARD_PHASE set-text-complete", flush=True)
             QTimer.singleShot(0, state["start_consumer"])
 

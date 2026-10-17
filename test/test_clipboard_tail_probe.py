@@ -33,6 +33,9 @@ def boundary(qapp, monkeypatch):
             self.writes += 1
             self.dataChanged.emit()
 
+        def setMimeData(self, mime):  # noqa: N802 - mirrors QClipboard
+            self.setText(mime.text())
+
         def clear(self):
             self.cleared += 1
 
@@ -60,6 +63,8 @@ def test_probe_captures_every_quoted_unicode_row_and_retains_all_turns(qapp, bou
     assert board.writes == 1 and board.cleared == 1 and len(board.text) > 1000
     assert '\tline\n😀' in board.text and "'=entry" in board.text
     assert result['callbacks_ms'] and result['heartbeat_ms'] and result['set_text_ms'] >= 0
+    assert result['mime_text_ms'] >= 0 and result['publish_ms'] >= 0
+    assert abs(result['mime_text_ms'] + result['publish_ms'] - result['set_text_ms']) < 1
     assert result['extract_ms'] >= 0 and result['native']['parent_pid'] == os.getpid()
     assert report == result and not hasattr(qapp, '_filetree_clipboard_copy')
 

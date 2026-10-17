@@ -347,7 +347,8 @@ under both Python runtimes; it calls no clipboard API and is not private clipboa
 Compare the complete text hash after Windows CRLF normalization and decode/check every quoted,
 formula-safe Unicode row against the capture. Preserve source identities/selection and all rows.
 Record every capture callback and 5 ms heartbeat interval, final StringIO extraction, native Qt
-setText call, consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
+setText call (split into `mime_text_ms` for the QMimeData text conversion and `publish_ms` for
+`QClipboard.setMimeData`, which is what `setText` does), consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
 reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
 deadline apply only to the probe and do not change production copy behavior. Keep partial output,
 return codes and cleanup failures; nonempty diagnostic stderr alone is not failure. A reader start
