@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-49 | 2026-10-17 | Repository hash of the LF-normalized clipboard evidence | #docs #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-48 | 2026-10-17 | Retire Qt's leftover windows before leaving the private clipboard desktop | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-47 | 2026-10-17 | Welcome drive rows with native roots and a nearly-full warning | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
 | U-20261017-46 | 2026-10-17 | Clearer result lists: path tails, visible bars and empty-state hints | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
