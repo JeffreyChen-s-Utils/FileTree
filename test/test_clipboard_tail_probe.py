@@ -98,6 +98,23 @@ def test_stalled_native_consumer_is_stopped_only_by_its_owned_handle(qapp, monke
     assert report['consumer']['stderr'] == 'kept native phase' and report['consumer']['returncode'] == 124
 
 
+def test_a_reader_start_queued_after_closing_is_recorded_and_never_launched(monkeypatch):
+    monkeypatch.setattr(probe, '_consumer', lambda _scope: pytest.fail('Reader launched during cleanup'))
+    state, reader, quits = {}, [], []
+    start = probe._consumer_starter(object(), state, reader, SimpleNamespace(quit=lambda: quits.append(1)), [True])
+    start()
+    assert reader == [] and not quits
+    assert state['late_consumer_start'].startswith('skipped')
+
+
+def test_a_reader_start_before_closing_launches_once(monkeypatch):
+    launched = []
+    monkeypatch.setattr(probe, '_consumer', lambda scope: launched.append(scope) or 'process')
+    state, reader = {}, []
+    probe._consumer_starter('scope', state, reader, SimpleNamespace(quit=pytest.fail), [])()
+    assert reader == ['process'] and launched == ['scope'] and 'late_consumer_start' not in state
+
+
 @pytest.mark.parametrize(('rows', 'width'), [(0, 1), (100001, 1), (1, -1), (1, 513), (True, 1)])
 def test_invalid_shapes_are_refused_before_native_construction(monkeypatch, rows, width):
     monkeypatch.setattr(probe, 'PrivateStation', lambda: pytest.fail('Native before bounds'))

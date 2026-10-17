@@ -168,6 +168,26 @@ def _timers(loop, pulse):
     return timer, watchdog
 
 
+def _consumer_starter(scope: PrivateStation, state: dict, reader: list, loop, closing: list):
+    """The reader start that setText queues; once the probe is closing it is recorded, never launched.
+
+    After the watchdog ends the loop, cleanup still processes events, so a start queued by a late
+    setText would otherwise launch a reader that nothing stops or reports.
+    """
+    def start_consumer():
+        if closing:
+            state["late_consumer_start"] = "skipped: queued start ran after the probe began closing"
+            return
+        try:
+            reader.append(_consumer(scope))
+            print("FILETREE_CLIPBOARD_PHASE native-reader-started", flush=True)
+        except (OSError, RuntimeError) as error:
+            state["consumer_start_error"] = {"type": type(error).__name__, "message": str(error)}
+            loop.quit()
+
+    return start_consumer
+
+
 def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> dict:
     from PySide6.QtCore import QEventLoop, QTimer  # noqa: PLC0415
     from PySide6.QtGui import QShortcut  # noqa: PLC0415
@@ -181,14 +201,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
     view, model, root, nodes = _view(rows, width)
     started, last = time.perf_counter(), [time.perf_counter()]
 
-    def start_consumer():
-        try:
-            reader.append(_consumer(scope))
-            print("FILETREE_CLIPBOARD_PHASE native-reader-started", flush=True)
-        except (OSError, RuntimeError) as error:
-            state["consumer_start_error"] = {"type": type(error).__name__, "message": str(error)}
-            loop.quit()
-
+    closing: list[bool] = []
     def pulse():
         now = time.perf_counter()
         state["heartbeat_ms"].append((now-last[0])*1000)
@@ -196,7 +209,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
         if reader and reader[0].poll() is not None:
             loop.quit()
 
-    state["start_consumer"] = start_consumer
+    state["start_consumer"] = _consumer_starter(scope, state, reader, loop, closing)
     proxy = _instrument(app, scope, state)
     QApplication.clipboard = staticmethod(lambda: proxy)
     clipboard_copy._ClipboardCapture = _capture_class(state)
@@ -214,6 +227,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
         require(len(view.selectionModel().selectedRows()) == rows, "Source selection changed")
         return _public_state(state)
     finally:
+        closing.append(True)  # a start that setText queued must not launch a reader during cleanup
         timer.stop()
         watchdog.stop()
         QApplication.clipboard, clipboard_copy._ClipboardCapture = original_getter, original_capture

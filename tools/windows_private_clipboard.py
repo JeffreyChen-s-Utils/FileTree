@@ -44,8 +44,7 @@ class _Security(c.Structure):
     _fields_ = [("size", w.DWORD), ("descriptor", c.c_void_p), ("inherit", w.BOOL)]
 
 
-_ENUM_WINDOWS = c.WINFUNCTYPE(w.BOOL, w.HWND, w.LPARAM)
-_HWND_MESSAGE = w.HWND(-3)
+_HWND_MESSAGE = -3
 _IME_CLASS = "IME"  # the system's default IME window retires with the thread's last other window
 
 
@@ -81,7 +80,9 @@ class _Native:
         self.size = _api(kernel, "GlobalSize", [w.HANDLE], c.c_size_t)
         self.lock = _api(kernel, "GlobalLock", [w.HANDLE], c.c_void_p)
         self.unlock = _api(kernel, "GlobalUnlock", [w.HANDLE], w.BOOL)
-        self.enum_thread_windows = _api(user, "EnumThreadWindows", [w.DWORD, _ENUM_WINDOWS, w.LPARAM], w.BOOL)
+        # WINFUNCTYPE exists only on Windows; the module itself must still import elsewhere for tests.
+        self.enum_callback = c.WINFUNCTYPE(w.BOOL, w.HWND, w.LPARAM)
+        self.enum_thread_windows = _api(user, "EnumThreadWindows", [w.DWORD, self.enum_callback, w.LPARAM], w.BOOL)
         self.find_window = _api(user, "FindWindowExW", [w.HWND, w.HWND, w.LPCWSTR, w.LPCWSTR], w.HWND)
         self.window_thread = _api(user, "GetWindowThreadProcessId", [w.HWND, c.POINTER(w.DWORD)], w.DWORD)
         self.window_class = _api(user, "GetClassNameW", [w.HWND, w.LPWSTR, c.c_int], c.c_int)
@@ -106,10 +107,10 @@ class _Native:
     def thread_windows(self) -> list[int]:
         """Top-level and message-only windows of the calling thread (EnumThreadWindows omits the latter)."""
         thread, found = self.thread(), []
-        callback = _ENUM_WINDOWS(lambda handle, _param: found.append(handle) is None)
+        callback = self.enum_callback(lambda handle, _param: found.append(handle) is None)
         self.enum_thread_windows(thread, callback, 0)
         handle = None
-        while handle := self.find_window(_HWND_MESSAGE, handle, None, None):
+        while handle := self.find_window(w.HWND(_HWND_MESSAGE), handle, None, None):
             if self.window_thread(handle, None) == thread:
                 found.append(handle)
         return found

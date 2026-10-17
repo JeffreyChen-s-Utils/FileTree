@@ -292,7 +292,9 @@ Record every capture callback and 5 ms heartbeat interval, final StringIO extrac
 setText call, consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
 reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
 deadline apply only to the probe and do not change production copy behavior. Keep partial output,
-return codes and cleanup failures; nonempty diagnostic stderr alone is not failure.
+return codes and cleanup failures; nonempty diagnostic stderr alone is not failure. A reader start
+that setText queued but that runs only after cleanup began is recorded as `late_consumer_start` and
+never launched, so no reader outlives the probe unreported.
 
 Stop/join only the retained reader, clear only the guarded private clipboard, destroy Qt while the
 private scope still matches, then retire the windows this thread still owns on the private desktop
