@@ -43,7 +43,7 @@ def captured_image(tmp_path, monkeypatch):
         return deepcopy(unmounted["post_busy_volume"]["info"])
 
     def detach(args):
-        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
         state["commands"].append(args)
         if state["phase"] == 0:
             state["phase"] = 1
@@ -166,7 +166,7 @@ def test_unmounted_retries_share_the_existing_three_attempt_limit(captured_image
         assert image.attached
     assert len(state["commands"]) == 3 and len(image.detach_attempts) == 3
     assert len(state["busy_observations"]) == int(not succeeds)
-    assert all(args == ["/usr/bin/hdiutil", "detach", image.device] for args in state["commands"])
+    assert all(args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device] for args in state["commands"])
 
 
 def test_native_success_without_attachment_absence_does_not_grant_cleanup(captured_image, monkeypatch):

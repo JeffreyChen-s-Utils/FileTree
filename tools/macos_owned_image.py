@@ -330,7 +330,7 @@ class OwnedImage:
             self._record_detach_observations(record)
 
     def detach(self) -> None:
-        """Bound checked busy retries; retain each attempt's native output and any later refusal."""
+        """Bound checked verbose detach attempts; retain native output and any later refusal."""
         self.detach_attempts = []
         for attempt in range(_DETACH_ATTEMPTS):
             record: dict[str, object] = {"attempt": attempt + 1, "device": self.device, "phase": "checking"}
@@ -345,7 +345,9 @@ class OwnedImage:
                 _detach_failure(record, "ownership-refused", error)
                 raise
             try:
-                command(["/usr/bin/hdiutil", "detach", self.device])
+                output = command(["/usr/bin/hdiutil", "detach", "-verbose", self.device])
+                record["native_stdout"] = output[:_NATIVE_ERROR_LIMIT].decode("utf-8", errors="replace")
+                record["native_stdout_truncated"] = len(output) > _NATIVE_ERROR_LIMIT
             except subprocess.CalledProcessError as error:
                 _detach_failure(record, "native-refused", error)
                 if error.returncode != _DEVICE_BUSY or attempt == _DETACH_ATTEMPTS - 1:

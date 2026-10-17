@@ -123,10 +123,11 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
                         raising=False)
 
     def detach(args):
-        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
         calls.append("detach")
         if calls.count("detach") == 1:
             raise subprocess.CalledProcessError(16, args, stderr=b"hdiutil: detach failed - Resource busy")
+        return b""
 
     monkeypatch.setattr(owned, "command", detach)
     monkeypatch.setattr(owned, "plist", lambda _args: {"images": []})
@@ -148,7 +149,7 @@ def test_failed_owned_detach_is_bounded_and_never_forced(tmp_path, monkeypatch, 
     monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
 
     def detach(args):
-        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
         calls.append("detach")
         raise subprocess.CalledProcessError(code, args, stderr=b"owned detach refusal")
 
@@ -210,7 +211,7 @@ def test_busy_detach_preserves_native_failure_when_retry_loses_mountpoints(tmp_p
 
     def detach(args):
         calls.append(args)
-        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
         del entries[1]["mount-point"]
         raise subprocess.CalledProcessError(16, args, output=b"disk10s1 unmounted",
                                             stderr=b"hdiutil: couldn't eject disk9 - Resource busy")
@@ -223,7 +224,7 @@ def test_busy_detach_preserves_native_failure_when_retry_loses_mountpoints(tmp_p
     assert image.attached
     assert calls == [["/usr/bin/hdiutil", "info", "-plist"],
                      ["/usr/sbin/diskutil", "info", "-plist", str(image.root)],
-                     ["/usr/bin/hdiutil", "detach", image.device],
+                     ["/usr/bin/hdiutil", "detach", "-verbose", image.device],
                      ["/usr/bin/hdiutil", "info", "-plist"],
                      ["/usr/sbin/diskutil", "info", "-plist", "/dev/disk10s1"]]
     assert image.detach_attempts[0]["native_error"] == {

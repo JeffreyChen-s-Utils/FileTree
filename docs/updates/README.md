@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-39 | 2026-10-17 | Retain APFS busy associations and enable native diagnostics | #incident #diagnostics #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-38 | 2026-10-17 | Drain bounded observer streams before anonymous pipes can block | #done #diagnostics #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-37 | 2026-10-17 | Align the reproduced PowerShell timeout and observer output limit | #incident #diagnostics #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-36 | 2026-10-17 | Verify the corrected hosted macOS layout diagnostic | #done #ci #qt | [2026-10-d](2026-10-d.md) |

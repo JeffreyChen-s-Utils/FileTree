@@ -158,7 +158,7 @@ def test_only_final_native_busy_invokes_observer_and_original_error_survives(mon
     image.image, image.device = tmp_path / "owned", "/dev/disk9"
     image._mountpoints, image.attached = {tmp_path / "volume"}, True
     attempts, observations, delays = [], [], []
-    failure = subprocess.CalledProcessError(16, ["/usr/bin/hdiutil", "detach", image.device])
+    failure = subprocess.CalledProcessError(16, ["/usr/bin/hdiutil", "detach", "-verbose", image.device])
 
     def detach(arguments):
         attempts.append(arguments)

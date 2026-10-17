@@ -101,6 +101,14 @@ directory for seven days. No memory dumps are collected or uploaded.
 
 ## APFS final-busy observations
 
+The original owned-image `hdiutil detach` attempts include its documented `-verbose` diagnostic option
+([macOS hdiutil manual](https://man.freebsd.org/cgi/man.cgi?manpath=macOS+13.6.5&query=hdiutil&sektion=1)).
+Each successful attempt retains up to 64 KiB of stdout with an explicit truncation flag; failures keep
+their existing capped stdout/stderr and original exception. Output is diagnostic text, never device
+authority. Preserve the checked target, three-attempt maximum, original 0.5/1-second delays, 60-second
+command bound, complete-binding recovery checks and independent final absence verification. This
+adds evidence for the next native failure; mocked flag/output tests cannot prove the busy cause.
+
 `tools.macos_busy_observer` runs only after the third owned-image detach returns native exit 16.
 It fences a literal-file `lsof` query with fresh image/scratch identity, complete registration and
 canonical volume/container/store checks. The original detach error, attempts, delays and cleanup
@@ -125,7 +133,8 @@ The probe exclusively creates and holds one temporary ordinary file, requires it
 native output, verifies bytes/identity and records cleanup even on failure. It refuses existing proof.
 The macOS CI job runs it after the original three APFS samples, including when an earlier step fails,
 and retains `macos-evidence/literal-open-file.json`. This verifies the native query backend without
-warming or mounting an image before those samples; actual final-busy capture and recovery remain #96.
+warming or mounting an image before those samples. A final-busy capture with a backing-image helper
+association still cannot establish the busy cause; identifying it and verifying recovery remain #96.
 
 ## PowerShell clock evidence
 

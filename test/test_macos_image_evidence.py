@@ -56,7 +56,7 @@ def busy_image(tmp_path, monkeypatch):
         return state["volume"]
 
     def detach(args):
-        assert args == ["/usr/bin/hdiutil", "detach", image.device]
+        assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
         state["detaches"] += 1
         state["unmounted"] = True
         _unmount(entries, state["variant"], image.root)
@@ -168,3 +168,45 @@ def test_oversize_expected_uuid_is_marked_without_unbounded_proof_or_changed_ref
     assert "VolumeUUID" in image.detach_attempts[0]["checked_volume"]["truncated_fields"]
     assert len(json.dumps(image.detach_attempts)) < 10000 and image.attached
     assert state["reads"] == state["detaches"] == 1
+
+
+@pytest.mark.parametrize("codes", [(0,), (16, 0), (16, 16, 16), (5,)])
+def test_verbose_detach_keeps_same_target_attempts_errors_and_bounded_success_output(tmp_path, monkeypatch, codes):
+    image = object.__new__(owned.OwnedImage)
+    image.image, image.root, image.device = tmp_path / "owned", tmp_path / "volume", "/dev/disk9"
+    image.attached, image._mountpoints = True, {image.root}
+    checks, commands, delays, observations, failures = [], [], [], [], []
+    pending = iter(codes)
+
+    def native(arguments):
+        assert len(checks) == len(commands)+1
+        assert arguments == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
+        commands.append(arguments)
+        code = next(pending)
+        if code:
+            error = subprocess.CalledProcessError(code, arguments, output=b"native detail", stderr=b"owned refusal")
+            failures.append(error)
+            raise error
+        return b"\xff" + b"x"*70000
+
+    monkeypatch.setattr(image, "_check_detach", lambda record, previous: checks.append(previous))
+    monkeypatch.setattr(image, "_image_check", lambda: None)
+    monkeypatch.setattr(owned, "command", native)
+    monkeypatch.setattr(owned, "plist", lambda _arguments: {"images": []})
+    monkeypatch.setattr(owned.os.path, "ismount", lambda _path: False)
+    monkeypatch.setattr(owned.time, "sleep", delays.append)
+    monkeypatch.setattr(owned, "observe_busy_image", lambda *args: observations.append(args) or {"incomplete": True})
+    if codes[-1]:
+        with pytest.raises(subprocess.CalledProcessError) as caught:
+            image.detach()
+        assert caught.value is failures[-1] and image.attached
+        assert image.detach_attempts[-1]["native_error"] == {
+            "returncode": codes[-1], "stdout": "native detail", "stderr": "owned refusal"}
+    else:
+        image.detach()
+        record = image.detach_attempts[-1]
+        assert not image.attached and record["phase"] == "verified"
+        assert record["native_stdout"] == "\ufffd" + "x"*65535 and record["native_stdout_truncated"]
+    assert len(commands) == len(codes) and checks == [False]+[True]*(len(codes)-1)
+    assert delays == [.5, 1.0][:len(codes)-1]
+    assert len(observations) == (1 if codes[-1] == 16 else 0)

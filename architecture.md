@@ -1345,7 +1345,11 @@ and zero empty-folder proposals; exact DACL restoration and final source identit
 remote-link or concurrency speed claim. Both push/PR Tests runs at that head passed all 14 jobs.
 
 The owned macOS image tool retries hdiutil detach exit 16 at most three times, rechecking the exact
-private image/device/mountpoint before each call. Other native failures and ownership changes refuse
+private image/device/mountpoint before each call. Each ordinary detach includes `-verbose` for native
+diagnostics, with the same target, three-attempt bound and 60-second per-command timeout. Successful
+stdout is retained up to 64 KiB with explicit truncation; failures keep capped stdout/stderr. This
+human-readable output is never ownership, device-selection or cleanup authority.
+Other native failures and ownership changes refuse
 immediately; no force option or host unmount is used. Native image absence and unmounted fixture root
 must still be verified before cleanup. Failed APFS cleanup retains bounded native stdout/stderr and
 the disposable scratch path; retained fixtures never become a successful cleanup claim. The phase
