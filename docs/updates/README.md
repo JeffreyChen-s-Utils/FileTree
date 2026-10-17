@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-68 | 2026-10-17 | macOS unit tests never read the host's unified log | #incident #tests #ci #macos | [2026-10-d](2026-10-d.md) |
 | U-20261017-64 | 2026-10-17 | Windows PowerShell's cold start causes #99 and #100; warm it outside the deadlines | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-63 | 2026-10-17 | Sample Windows PowerShell start-up from a cold hosted runner | #snapshot #diagnostics #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-62 | 2026-10-17 | #99's disconnect time is Windows PowerShell start-up, not SMB work | #snapshot #diagnostics #smb | [2026-10-d](2026-10-d.md) |
