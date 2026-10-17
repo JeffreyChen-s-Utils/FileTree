@@ -302,3 +302,11 @@ report path prevents overwriting old evidence. The always-run artifact step reta
 on native failure; the job/step bounds remain 10/3 minutes. Native proof is pending #111 until the
 hosted artifacts establish all these assertions. Modeled boundary tests and offscreen recording
 tests are not native proof, interactive clipboard-manager contention, settled frames, or input latency.
+
+## Workflow command scalars
+
+Quote a complete single-line `run` value or use a block when a command contains a colon followed by
+whitespace, including `pip --only-binary :all: -r ...`. YAML interprets that separator structurally
+even when it is part of a shell argument. `test_workflow_actions.py` checks workflow/composite run
+scalars, preserving quoted/block values, URLs, times and comments. This focused guard is not a
+general YAML/schema parser; workflow creation and the actual hosted jobs still require validation.
