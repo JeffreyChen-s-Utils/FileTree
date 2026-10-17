@@ -1552,6 +1552,15 @@ Always-run artifacts retain that observation and JUnit results on both runners. 
 20k-member regression bounds synchronous index callbacks before allowing Qt's event-pass layout;
 it therefore catches the old visibility walk rather than depending on wall-clock timing.
 
+Full-suite and Qt 6.8 jobs invoke `tools.run_pytest` once and always retain native test context.
+Its opt-in `tools.pytest_context` plugin atomically replaces the current case/phase and a bounded
+phase-entry Python thread snapshot. The parent retains actual child exit status and native output;
+tee-sys capture and Qt's stderr sink preserve fatal messages without replacing Qt handlers. Built-in
+Python fault handling remains active, but Windows Qt fail-fast can bypass its fault-time traceback.
+Snapshots cannot establish the fault's cause. Windows reader conflicts get bounded diagnostic-only
+publication retries; fixture teardown still runs on write failure. Keep launched-child and actual
+pytest PID roles distinct for Windows virtual environments. See `docs/testing.md` for evidence limits.
+
 ## 7. Design constraints
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with

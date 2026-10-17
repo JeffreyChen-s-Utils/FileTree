@@ -1,0 +1,802 @@
+{
+  "schema": 1,
+  "baseline_commit": "8c813cb28393467d952e945b2caa2b06c993b439",
+  "runtime_observation_after_full": {
+    "pyside6": "6.11.2",
+    "qt": "6.11.2"
+  },
+  "scope": "Test diagnostics only; original intermittent Qt failure remains #104.",
+  "limits": [
+    "Controlled qFatal exit code is not evidence of the original cause.",
+    "Phase snapshots precede execution and are not fault-time traces.",
+    "Custom Qt handlers and explicit capture fixtures can consume messages.",
+    "Diagnostics can change scheduling; a passing run cannot establish a race fix.",
+    "No memory dumps, locals or environment values are collected."
+  ],
+  "sources_sha256_lf": {
+    "tools/run_pytest.py": "845334079e6bebcf28c2c6c31da3cafc4b5b158bf40c9469fcb43abaf7a5551a",
+    "tools/pytest_context.py": "fd10d3ff3d6d48b6091b7a1f90993d1de56e6dafd45510ebf6907de4076a6f70",
+    "test/test_pytest_context.py": "a93a26c348c37c4c0cb89d855a565818260204326607b0835e5807b92e2a7cd7",
+    ".github/workflows/test.yml": "e185fd5664d6281927d3833e7ab47baa609d4c7f98730f3a3e0843323df44fa7",
+    "docs/testing.md": "115bfd74872e3aa35b15da2664fbfb1d8c9baee5c71cfd960a81c565ae1cf6df",
+    "architecture.md": "407b3907c5758938d21a4a145b82e87d94830f031a663a472e8566cf725a03a8",
+    "progress.md": "8261d8d44c81affa84914e0679028751cb5fab38f2db019348d38b0499951c49"
+  },
+  "application_requirements_screenshots_unchanged": true,
+  "controlled_children": {
+    "test_abort_retains_fault_time_0": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 74936,
+        "utc": "2026-10-17T00:50:40.164680+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 74036,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 3,
+        "elapsed_seconds": 1.4925670999800786
+      },
+      "active": {
+        "schema": 1,
+        "pid": 74036,
+        "phase": "call",
+        "nodeid": "::test_owned",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T00:50:41.637019+00:00",
+        "monotonic_ns": 270163963979400
+      },
+      "output.log": {
+        "sha256": "0239a3ff6ddf72aa8f7242703fbbc45b0ae91e688273443f41857a5f2fca94fe",
+        "bytes": 4827,
+        "text": "Fatal Python error: Aborted\n\nThread 0x0000b858 [Thread-1 (held_owned_thread)] (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 369 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 670 in wait\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_abort_retains_fault_time_0\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1024 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1082 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1044 in _bootstrap\n\nCurrent thread 0x000120d0 (most recent call first):\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_abort_retains_fault_time_0\\test_owned.py\", line 22 in test_owned\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\python.py\", line 167 in pytest_pyfunc_call\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\python.py\", line 1707 in runtest\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 184 in pytest_runtest_call\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 139 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n\nCurrent thread's C stack trace (most recent call first):\n  <cannot get C stack on this system>\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "d777ef380ce1ff553391fe6f2af54a0f2c7ed302e3eae4f2b078bb5fd4b1c4ad",
+        "bytes": 4209,
+        "text": "{\"schema\": 1, \"pid\": 74036, \"phase\": \"call\", \"nodeid\": \"::test_owned\", \"nodeid_truncated\": false, \"outcome\": \"\", \"utc\": \"2026-10-17T00:50:41.637019+00:00\", \"monotonic_ns\": 270163963979400}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nThread 0x0000b858 [Thread-1 (held_owned_thread)] (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 369 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 670 in wait\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_abort_retains_fault_time_0\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1024 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1082 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1044 in _bootstrap\n\nCurrent thread 0x000120d0 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 76 in pytest_runtest_call\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 139 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": true
+    },
+    "test_export_replace_fault_inje0": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 65748,
+        "utc": "2026-10-17T00:50:42.524252+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 29916,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 0,
+        "elapsed_seconds": 1.2490754000027664
+      },
+      "active": {
+        "schema": 1,
+        "pid": 29916,
+        "phase": "session-finished",
+        "nodeid": "",
+        "nodeid_truncated": false,
+        "outcome": "0",
+        "utc": "2026-10-17T00:50:43.617500+00:00",
+        "monotonic_ns": 270165944462600
+      },
+      "output.log": {
+        "sha256": "0ec6a8ddce91f1cfefcb222cad948630ded5ca27fb1c40266359581544a761ac",
+        "bytes": 100,
+        "text": "..                                                                       [100%]\r\n2 passed in 0.05s\r\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "f2085a429239d3b70cf2956d751a24b5aa1bd237ac5025986b95230eaaffc8b2",
+        "bytes": 1891,
+        "text": "{\"schema\": 1, \"pid\": 29916, \"phase\": \"session-finished\", \"nodeid\": \"\", \"nodeid_truncated\": false, \"outcome\": \"0\", \"utc\": \"2026-10-17T00:50:43.617500+00:00\", \"monotonic_ns\": 270165944462600}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nCurrent thread 0x00010334 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 88 in pytest_sessionfinish\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 365 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_qt_fatal_retains_message_0": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 75040,
+        "utc": "2026-10-17T00:50:33.461144+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 19820,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 3221226505,
+        "elapsed_seconds": 1.424477000022307
+      },
+      "active": {
+        "schema": 1,
+        "pid": 19820,
+        "phase": "setup",
+        "nodeid": "::test_owned",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T00:50:34.691639+00:00",
+        "monotonic_ns": 270157018597900
+      },
+      "output.log": {
+        "sha256": "fbe7079b7621a9e65772a73766a50292a21fd1085f9250903edef40c4146c1a2",
+        "bytes": 75,
+        "text": "owned-pid:19820\nowned-qt-fatal\n[A qFatal() call was made from Python code]\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "e23ab5f454ae374202f39b307a263056a6081eb35158ac61a29439d22be62645",
+        "bytes": 4211,
+        "text": "{\"schema\": 1, \"pid\": 19820, \"phase\": \"setup\", \"nodeid\": \"::test_owned\", \"nodeid_truncated\": false, \"outcome\": \"\", \"utc\": \"2026-10-17T00:50:34.691639+00:00\", \"monotonic_ns\": 270157018597900}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nThread 0x00010fe4 [Thread-1 (held_owned_thread)] (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 369 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 670 in wait\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_qt_fatal_retains_message_0\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1024 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1082 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1044 in _bootstrap\n\nCurrent thread 0x000115b8 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 71 in pytest_runtest_setup\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 132 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_qt_fatal_retains_message_1": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 76720,
+        "utc": "2026-10-17T00:50:35.655118+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 74872,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 3221226505,
+        "elapsed_seconds": 1.240615600021556
+      },
+      "active": {
+        "schema": 1,
+        "pid": 74872,
+        "phase": "call",
+        "nodeid": "::test_owned",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T00:50:36.706324+00:00",
+        "monotonic_ns": 270159033289900
+      },
+      "output.log": {
+        "sha256": "0d84a090bc8e6a44ea59ce7b83404d41605fa1c296c6ecba538667ea0e1a323e",
+        "bytes": 75,
+        "text": "owned-pid:74872\nowned-qt-fatal\n[A qFatal() call was made from Python code]\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "43639127c007286570813a19c30185e6a9003a7d29741c7da3500029953999c3",
+        "bytes": 4209,
+        "text": "{\"schema\": 1, \"pid\": 74872, \"phase\": \"call\", \"nodeid\": \"::test_owned\", \"nodeid_truncated\": false, \"outcome\": \"\", \"utc\": \"2026-10-17T00:50:36.706324+00:00\", \"monotonic_ns\": 270159033289900}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nThread 0x00010598 [Thread-1 (held_owned_thread)] (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 369 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 670 in wait\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_qt_fatal_retains_message_1\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1024 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1082 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1044 in _bootstrap\n\nCurrent thread 0x000074dc (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 76 in pytest_runtest_call\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 139 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_qt_fatal_retains_message_2": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 42032,
+        "utc": "2026-10-17T00:50:37.917304+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 75160,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 3221226505,
+        "elapsed_seconds": 1.4283923000330105
+      },
+      "active": {
+        "schema": 1,
+        "pid": 75160,
+        "phase": "teardown",
+        "nodeid": "::test_owned",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T00:50:39.149336+00:00",
+        "monotonic_ns": 270161476298900
+      },
+      "output.log": {
+        "sha256": "c0f9fd317c81a4900390b99ef3c00314c59b29214e7230014caeb49df9868b32",
+        "bytes": 76,
+        "text": ".owned-pid:75160\nowned-qt-fatal\n[A qFatal() call was made from Python code]\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "3881a28b883067f8d6496948517470ad8ede4b5255ee8b1251f44aa253d25689",
+        "bytes": 4217,
+        "text": "{\"schema\": 1, \"pid\": 75160, \"phase\": \"teardown\", \"nodeid\": \"::test_owned\", \"nodeid_truncated\": false, \"outcome\": \"\", \"utc\": \"2026-10-17T00:50:39.149336+00:00\", \"monotonic_ns\": 270161476298900}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nThread 0x000057c4 [Thread-1 (held_owned_thread)] (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 369 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 670 in wait\n  File \"D:\\Codes\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_qt_fatal_retains_message_2\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1024 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1082 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\threading.py\", line 1044 in _bootstrap\n\nCurrent thread 0x00000b24 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 82 in pytest_runtest_teardown\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 116 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 144 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_recording_failure_is_visi0": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 72800,
+        "utc": "2026-10-17T00:50:44.718451+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 76248,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 1,
+        "elapsed_seconds": 1.8121846999856643
+      },
+      "active": {
+        "schema": 1,
+        "pid": 76248,
+        "phase": "session-finished",
+        "nodeid": "",
+        "nodeid_truncated": false,
+        "outcome": "1",
+        "utc": "2026-10-17T00:50:46.428987+00:00",
+        "monotonic_ns": 270168755948900
+      },
+      "output.log": {
+        "sha256": "9c6dfe04acf918bde64b14aef020ef60166486362af89439e6c17d2375e4c2f3",
+        "bytes": 811,
+        "text": ".E.                                                                      [100%]\r\n=================================== ERRORS ====================================\r\n_______________________ ERROR at teardown of test_owned _______________________\r\n\r\nphase = 'teardown', args = ('::test_owned',), kwargs = {}\r\n\r\n    def denied(phase, *args, **kwargs):\r\n        if phase == \"teardown\":\r\n>           raise PermissionError(\"owned diagnostic failure\")\r\nE           PermissionError: owned diagnostic failure\r\n\r\n..\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_recording_failure_is_visi0\\test_owned.py:18: PermissionError\r\n=========================== short test summary info ===========================\r\nERROR ::test_owned - PermissionError: owned diagnostic failure\r\n2 passed, 1 error in 0.15s\r\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "a3bc14d4a9bc72a44747607b6f05b1f0df6f2793ff821f4c0f06271257fc1ab6",
+        "bytes": 1891,
+        "text": "{\"schema\": 1, \"pid\": 76248, \"phase\": \"session-finished\", \"nodeid\": \"\", \"nodeid_truncated\": false, \"outcome\": \"1\", \"utc\": \"2026-10-17T00:50:46.428987+00:00\", \"monotonic_ns\": 270168755948900}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nCurrent thread 0x00012528 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 88 in pytest_sessionfinish\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 365 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_runner_preserves_exit_and0": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 67784,
+        "utc": "2026-10-17T00:50:27.381313+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 70700,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 0,
+        "elapsed_seconds": 2.0846065999940038
+      },
+      "active": {
+        "schema": 1,
+        "pid": 70700,
+        "phase": "session-finished",
+        "nodeid": "",
+        "nodeid_truncated": false,
+        "outcome": "0",
+        "utc": "2026-10-17T00:50:29.303101+00:00",
+        "monotonic_ns": 270151630063200
+      },
+      "output.log": {
+        "sha256": "ea0c1932157edf51de804643043c78f47d399642764a5d5ed10882c5139d0f75",
+        "bytes": 144,
+        "text": "owned-pid:70700\nowned-handler:owned-warning\n.                                                                        [100%]\r\n1 passed in 0.14s\r\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "368ace1a754c5ac217f6f5c8fd9aab459672ca4240e34917d05fe91b9a2d0474",
+        "bytes": 1891,
+        "text": "{\"schema\": 1, \"pid\": 70700, \"phase\": \"session-finished\", \"nodeid\": \"\", \"nodeid_truncated\": false, \"outcome\": \"0\", \"utc\": \"2026-10-17T00:50:29.303101+00:00\", \"monotonic_ns\": 270151630063200}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nCurrent thread 0x000122e8 (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 88 in pytest_sessionfinish\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 365 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "test_runner_preserves_exit_and1": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 57420,
+        "utc": "2026-10-17T00:50:30.450300+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 66968,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 1,
+        "elapsed_seconds": 1.993234699999448
+      },
+      "active": {
+        "schema": 1,
+        "pid": 66968,
+        "phase": "session-finished",
+        "nodeid": "",
+        "nodeid_truncated": false,
+        "outcome": "1",
+        "utc": "2026-10-17T00:50:32.319473+00:00",
+        "monotonic_ns": 270154646433100
+      },
+      "output.log": {
+        "sha256": "c5fa31520e3ce319b7d25d9be2c8d70cb727ad4600d6ac403784edca195d6296",
+        "bytes": 1053,
+        "text": "owned-pid:66968\nowned-handler:owned-warning\nF                                                                        [100%]\r\n================================== FAILURES ===================================\r\n_________________________________ test_owned __________________________________\r\n\r\n    def test_owned():\r\n        os.write(2, (\"owned-pid:\" + str(os.getpid()) + \"\\n\").encode())\r\n        def handler(kind, context, message):\r\n            os.write(2, (\"owned-handler:\" + message + \"\\n\").encode())\r\n        original = qInstallMessageHandler(handler)\r\n        try:\r\n            qWarning(\"owned-warning\")\r\n            assert qInstallMessageHandler(original) is handler\r\n        finally:\r\n            qInstallMessageHandler(original)\r\n>       assert False\r\nE       assert False\r\n\r\n..\\tests\\pytest-context-final-focused-7cbda916cbcb4693aa05216d0cc7a242\\test_runner_preserves_exit_and1\\test_owned.py:23: AssertionError\r\n=========================== short test summary info ===========================\r\nFAILED ::test_owned - assert False\r\n1 failed in 0.24s\r\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "2aaa26f3872c178a061e33e90950bb3315b4e5cf06ae36e6c8ad8235476798db",
+        "bytes": 1891,
+        "text": "{\"schema\": 1, \"pid\": 66968, \"phase\": \"session-finished\", \"nodeid\": \"\", \"nodeid_truncated\": false, \"outcome\": \"1\", \"utc\": \"2026-10-17T00:50:32.319473+00:00\", \"monotonic_ns\": 270154646433100}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nCurrent thread 0x00010f9c (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 88 in pytest_sessionfinish\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 365 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    }
+  },
+  "prototype_fault_injection_failure": {
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 34736,
+      "utc": "2026-10-17T00:35:13.611001+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 68576,
+      "returncode": 1,
+      "elapsed_seconds": 162.53306280000834
+    },
+    "log_sha256": "ce27a677b691317c668e39d9ca7f6450e5f762e59bd0db3e85cdd6d67fe8edf2",
+    "last_successful_context": {
+      "schema": 1,
+      "pid": 68576,
+      "phase": "call",
+      "nodeid": "test/test_core.py::test_a_failed_export_leaves_no_temporary_file",
+      "nodeid_truncated": false,
+      "outcome": "",
+      "utc": "2026-10-17T00:35:53.245180+00:00",
+      "monotonic_ns": 269275572137200
+    },
+    "junit_exists": true,
+    "junit": {
+      "path": "build/pytest-context-full.xml",
+      "sha256": "e6ad09bbd45a1df1103fae20e0b49ab7d504e3739d61598d12f7a363e9f88c9a",
+      "name": "pytest",
+      "errors": "3985",
+      "failures": "0",
+      "skipped": "16",
+      "tests": "2349",
+      "time": "160.834",
+      "timestamp": "2026-10-17T08:35:14.056182+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "traceback_tail": "    )\n    ^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512, in __call__\n    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)\n           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_manager.py\", line 120, in _hookexec\n    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)\n           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 167, in _multicall\n    raise exception\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 139, in _multicall\n    teardown.throw(exception)\n    ~~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\logging.py\", line 888, in pytest_sessionfinish\n    return (yield)\n            ^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 139, in _multicall\n    teardown.throw(exception)\n    ~~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\terminal.py\", line 961, in pytest_sessionfinish\n    result = yield\n             ^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 139, in _multicall\n    teardown.throw(exception)\n    ~~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"D:\\Codes\\tests\\filetree-pr-tools-1b4e4fd33d5a426ba42e5ceb6af46411\\_pytest\\warnings.py\", line 119, in pytest_sessionfinish\n    return (yield)\n            ^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pluggy\\_callers.py\", line 121, in _multicall\n    res = hook_impl.function(*args)\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 66, in pytest_sessionfinish\n    self._record(\"session-finished\", outcome=str(int(exitstatus)))\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 37, in _record\n    write_record(self.folder / \"active.json\", record)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 21, in write_record\n    temporary.replace(path)\n    ~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\pathlib\\__init__.py\", line 1091, in replace\n    os.replace(self, target)\n    ~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"D:\\Codes\\FileTree\\test\\test_core.py\", line 245, in refuse\n    raise PermissionError(13, \"denied\")\nPermissionError: [Errno 13] denied",
+    "resolution": "Capture original atomic replacement and always yield fixture teardown; two regressions pass."
+  },
+  "final_validation": {
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 73976,
+      "utc": "2026-10-17T00:51:07.465922+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 33800,
+      "child_pid_role": "Popen process; may be a Windows venv launcher",
+      "returncode": 0,
+      "elapsed_seconds": 691.2922748000128
+    },
+    "active": {
+      "schema": 1,
+      "pid": 33800,
+      "phase": "session-finished",
+      "nodeid": "",
+      "nodeid_truncated": false,
+      "outcome": "0",
+      "utc": "2026-10-17T01:02:36.400734+00:00",
+      "monotonic_ns": 270878727700400
+    },
+    "full_junit": {
+      "path": "build/pytest-context-full-green.xml",
+      "sha256": "203073ccd9eb4c2997e8388e8caf907c0f855f2f69728002464e36ceada97f94",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "54",
+      "tests": "2357",
+      "time": "686.313",
+      "timestamp": "2026-10-17T08:51:10.072668+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "focused_junit": {
+      "path": "build/pytest-context-final-focused.xml",
+      "sha256": "d05c29fb1504b3bd6b8e25a7ea3778d057d1a5958f04652a62ef7d4f1485648f",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "80",
+      "time": "29.741",
+      "timestamp": "2026-10-17T08:50:19.189238+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "minimum_qt_junit": {
+      "path": "build/pytest-context-qt68-green.xml",
+      "sha256": "5eb9f543e60ef42a64dda21870ba749f296920f156f570995f0a29def14ce66a",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "73",
+      "time": "38.596",
+      "timestamp": "2026-10-17T08:49:32.320970+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "logs": {
+      "build/pytest-context-full-green/output.log": {
+        "sha256": "702d13ad6027c2266ed7aecb7951d3b4f2aa0eec1c72b7bcbd3eeda88f9730af",
+        "bytes": 304779
+      },
+      "build/pytest-context-full-green/phase-threads.txt": {
+        "sha256": "476e32ac2edc0c0041873b59277ef39c5e659557a4bd5f91572e327ae6fdb284",
+        "bytes": 1891
+      },
+      "build/pytest-context-final-focused/output.log": {
+        "sha256": "8f85cf75e2cde1126cbfa8b6cf60ec765cac1069725185662f9b0f56fb77f83e",
+        "bytes": 183
+      },
+      "build/pytest-context-qt68-green/output.log": {
+        "sha256": "71a607ecc84d8ae7b618172bedc8086b9cf8d10d5f6fc3e099c464fcbd9abd57",
+        "bytes": 1955
+      },
+      "build/pytest-context-ruff-global.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      },
+      "build/pytest-context-ruff-pinned.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      }
+    }
+  },
+  "baseline_hosted_ci": {
+    "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/38986535286",
+    "head_sha": "8c813cb28393467d952e945b2caa2b06c993b439",
+    "result": {
+      "conclusion": "success",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "databaseId": 117259209867,
+          "name": "Windows owned SMB loopback",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210035,
+          "name": "Linux / Python 3.12",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210113,
+          "name": "Windows private NTFS volume",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210117,
+          "name": "Linux native Trash restore",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210124,
+          "name": "Lint (ruff)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210144,
+          "name": "Linux desktop / X11 and D-Bus",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210149,
+          "name": "FreeBSD native nullfs boundaries",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210167,
+          "name": "macOS arm64 / Python 3.12",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210186,
+          "name": "Qt 6.8 compatibility / windows-latest",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210193,
+          "name": "Windows owned MSI installation",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210204,
+          "name": "Qt 6.8 compatibility / ubuntu-latest",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210212,
+          "name": "Windows / Python 3.11",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210230,
+          "name": "Windows / Python 3.14",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210304,
+          "name": "Windows / Python 3.12",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210317,
+          "name": "Windows / Python 3.13",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 117259210359,
+          "name": "Windows / Python 3.10",
+          "status": "completed"
+        }
+      ],
+      "status": "completed"
+    },
+    "artifacts": [
+      {
+        "archive_download_url": "https://api.github.com/repos/JeffreyChen-s-Utils/FileTree/actions/artifacts/12083302546/zip",
+        "digest": "sha256:e8e777ea78d366ab9ec602ebd8bd6cae6d2d35ac7c11c3a5e65355ac97e2608b",
+        "expired": false,
+        "id": 12083302546,
+        "name": "qt68-windows-latest",
+        "size_in_bytes": 2134
+      },
+      {
+        "archive_download_url": "https://api.github.com/repos/JeffreyChen-s-Utils/FileTree/actions/artifacts/12083038541/zip",
+        "digest": "sha256:770a7d67c2cc69908c3ad4ae262391e4c5518e081834e47fd0a5f1a0409d6986",
+        "expired": false,
+        "id": 12083038541,
+        "name": "qt68-ubuntu-latest",
+        "size_in_bytes": 2098
+      }
+    ],
+    "compatibility": {
+      "windows-latest": {
+        "runtime": {
+          "python": "3.13.16 (tags/v3.13.16:cbc944f, Sep 30 2026, 19:17:50) [MSC v.1944 64 bit (AMD64)]",
+          "pyside6": "6.8.3",
+          "qt": "6.8.3",
+          "update_threshold_available": false,
+          "requirements_sha256_lf": "d71dd507c7ae1fa63e3948fdc6a557671fd85d8b4751a1b9c7833b55ebc911ed"
+        },
+        "runtime_sha256": "862fddcb5e60d8541f2cd83c7af9b39f7ff91b0045b9acf806d4487078ad69c2",
+        "junit": {
+          "path": "build/qt68-hosted-38986535286/qt68-windows-latest/qt68-tests.xml",
+          "sha256": "d0efde668af22422ef9e79fc7e1ecf59360c245fa068800d4a69d61746d88e4e",
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "57",
+          "time": "17.021",
+          "timestamp": "2026-10-17T00:29:32.969815+00:00",
+          "hostname": "runnervm0xl3a"
+        }
+      },
+      "ubuntu-latest": {
+        "runtime": {
+          "python": "3.13.16 (main, Oct  1 2026, 02:37:54) [GCC 13.3.0]",
+          "pyside6": "6.8.3",
+          "qt": "6.8.3",
+          "update_threshold_available": false,
+          "requirements_sha256_lf": "d71dd507c7ae1fa63e3948fdc6a557671fd85d8b4751a1b9c7833b55ebc911ed"
+        },
+        "runtime_sha256": "83801d03797d7730f9af18f600aa07960e23f8182983b29aafaf895a5362005e",
+        "junit": {
+          "path": "build/qt68-hosted-38986535286/qt68-ubuntu-latest/qt68-tests.xml",
+          "sha256": "059f6f42b246c467957325da033a31a24419e96a9dfa93e4c93530c15b80792f",
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "57",
+          "time": "10.809",
+          "timestamp": "2026-10-17T00:29:05.664856+00:00",
+          "hostname": "runnervm8k3b6"
+        }
+      }
+    },
+    "ordinary_apfs_samples": [
+      {
+        "path": "apfs/proof.json",
+        "sha256": "9a9e34c2b1584d8437a21dfc17536d52e1f978374a1a68f84c1c1a1e45198bc8",
+        "cleanup_verified": true,
+        "attempts": [
+          {
+            "phase": "verified",
+            "unmounted_identity_rechecked": null
+          }
+        ]
+      },
+      {
+        "path": "apfs/sample-2/proof.json",
+        "sha256": "751981b184993919bbe104b7655ad176be870d111bd07a5a5ccf9efb8857cd9d",
+        "cleanup_verified": true,
+        "attempts": [
+          {
+            "phase": "verified",
+            "unmounted_identity_rechecked": null
+          }
+        ]
+      },
+      {
+        "path": "apfs/sample-3/proof.json",
+        "sha256": "7e89bfcc34d5b71991259a45e058171e2de3ca49cb0d3a5ded5582b8e3dd30e5",
+        "cleanup_verified": true,
+        "attempts": [
+          {
+            "phase": "verified",
+            "unmounted_identity_rechecked": null
+          }
+        ]
+      }
+    ]
+  },
+  "reader_publication_prototype": {
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 63184,
+      "utc": "2026-10-17T00:38:52.471222+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 64840,
+      "returncode": 1,
+      "elapsed_seconds": 408.17292400001315
+    },
+    "junit": {
+      "path": "build/pytest-context-full-final.xml",
+      "sha256": "710dba2341c072ea837b0391727410edf8f4897fe7296e68851abc3aa628623a",
+      "name": "pytest",
+      "errors": "1",
+      "failures": "4",
+      "skipped": "54",
+      "tests": "2352",
+      "time": "405.827",
+      "timestamp": "2026-10-17T08:38:52.951957+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "failures": [
+      {
+        "case": "test.test_details::test_selection_details_replace_stale_results_and_join_on_close",
+        "kind": "failure",
+        "traceback": "tools\\pytest_context.py:60: in pytest_runtest_call\n    self._record(\"call\", item.nodeid)\ntools\\pytest_context.py:40: in _record\n    write_record(self.folder / \"active.json\", record)\ntools\\pytest_context.py:24: in write_record\n    _ATOMIC_REPLACE(temporary, path)\nE   PermissionError: [WinError 5] \u5b58\u53d6\u88ab\u62d2\u3002: 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.tmp' -> 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.json'"
+      },
+      {
+        "case": "test.test_pytest_context::test_existing_evidence_is_never_overwritten",
+        "kind": "failure",
+        "traceback": "tools\\pytest_context.py:60: in pytest_runtest_call\n    self._record(\"call\", item.nodeid)\ntools\\pytest_context.py:40: in _record\n    write_record(self.folder / \"active.json\", record)\ntools\\pytest_context.py:24: in write_record\n    _ATOMIC_REPLACE(temporary, path)\nE   PermissionError: [WinError 5] \u5b58\u53d6\u88ab\u62d2\u3002: 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.tmp' -> 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.json'"
+      },
+      {
+        "case": "test.test_pytest_context::test_existing_evidence_is_never_overwritten",
+        "kind": "error",
+        "traceback": "tools\\pytest_context.py:66: in pytest_runtest_teardown\n    self._record(\"teardown\", item.nodeid)\ntools\\pytest_context.py:40: in _record\n    write_record(self.folder / \"active.json\", record)\ntools\\pytest_context.py:24: in write_record\n    _ATOMIC_REPLACE(temporary, path)\nE   PermissionError: [WinError 5] \u5b58\u53d6\u88ab\u62d2\u3002: 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.tmp' -> 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.json'"
+      },
+      {
+        "case": "test.test_system_files::test_system_namespaces_cover_descendants_case_and_extended_paths[\\\\\\\\?\\\\C:\\\\CustomWindows\\\\WinSxS-winsxs-cleanup]",
+        "kind": "failure",
+        "traceback": "tools\\pytest_context.py:60: in pytest_runtest_call\n    self._record(\"call\", item.nodeid)\ntools\\pytest_context.py:40: in _record\n    write_record(self.folder / \"active.json\", record)\ntools\\pytest_context.py:24: in write_record\n    _ATOMIC_REPLACE(temporary, path)\nE   PermissionError: [WinError 5] \u5b58\u53d6\u88ab\u62d2\u3002: 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.tmp' -> 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.json'"
+      },
+      {
+        "case": "test.test_tree_selection_capture::test_partial_cells_and_custom_semantics_keep_qt_row_capture[proxy_data-False]",
+        "kind": "failure",
+        "traceback": "tools\\pytest_context.py:60: in pytest_runtest_call\n    self._record(\"call\", item.nodeid)\ntools\\pytest_context.py:40: in _record\n    write_record(self.folder / \"active.json\", record)\ntools\\pytest_context.py:24: in write_record\n    _ATOMIC_REPLACE(temporary, path)\nE   PermissionError: [WinError 5] \u5b58\u53d6\u88ab\u62d2\u3002: 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.tmp' -> 'D:\\\\Codes\\\\FileTree\\\\build\\\\pytest-context-full-final\\\\active.json'"
+      }
+    ],
+    "log_sha256": "f63e0e28e4788c8bafed7323d508e2910476ca64fcbfbaedb9c63ff18df29a8f",
+    "observation": "Four call failures and one teardown error coincide with own active.json reads; all fail publication, before application assertions.",
+    "resolution": "At most ten diagnostic replacement attempts, with nine 10ms pauses, only Windows errors 5/32/33; persistent errors remain visible."
+  },
+  "windows_virtual_environment_pid_roles": {
+    "minimum_runtime_child": {
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 69968,
+        "utc": "2026-10-17T00:50:01.563570+00:00",
+        "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 74912,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 3221226505,
+        "elapsed_seconds": 1.2797074999543838
+      },
+      "active": {
+        "schema": 1,
+        "pid": 62160,
+        "phase": "call",
+        "nodeid": "::test_owned",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T00:50:02.688221+00:00",
+        "monotonic_ns": 270125015181200
+      },
+      "output.log": {
+        "sha256": "e56042595dad82aba5343eae3e272ba858ba769954b8e9bdf4ed7e577bc751fb",
+        "bytes": 75,
+        "text": "owned-pid:62160\nowned-qt-fatal\n[A qFatal() call was made from Python code]\n",
+        "truncated": false
+      },
+      "phase-threads.txt": {
+        "sha256": "9e18af2d232f8eaf0eb777d495815fdb81f802f051a07812d2874b6ee7bcbf5c",
+        "bytes": 4606,
+        "text": "{\"schema\": 1, \"pid\": 62160, \"phase\": \"call\", \"nodeid\": \"::test_owned\", \"nodeid_truncated\": false, \"outcome\": \"\", \"utc\": \"2026-10-17T00:50:02.688221+00:00\", \"monotonic_ns\": 270125015181200}\r\nPhase-entry snapshot, not a fault-time traceback.\r\nThread 0x00010b40 (most recent call first):\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\threading.py\", line 359 in wait\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\threading.py\", line 659 in wait\n  File \"D:\\Codes\\tests\\pytest-context-qt68-green-94480dfd028b4a419573cab102c1a97f\\test_qt_fatal_retains_message_1\\test_owned.py\", line 17 in held_owned_thread\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\threading.py\", line 994 in run\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\threading.py\", line 1043 in _bootstrap_inner\n  File \"C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\threading.py\", line 1014 in _bootstrap\n\nCurrent thread 0x0001264c (most recent call first):\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 61 in _record\n  File \"D:\\Codes\\FileTree\\tools\\pytest_context.py\", line 76 in pytest_runtest_call\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\runner.py\", line 250 in <lambda>\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\runner.py\", line 361 in from_call\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\runner.py\", line 249 in call_and_report\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\runner.py\", line 139 in runtestprotocol\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\runner.py\", line 118 in pytest_runtest_protocol\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\main.py\", line 408 in pytest_runtestloop\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\main.py\", line 384 in _main\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\main.py\", line 330 in wrap_session\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\main.py\", line 377 in pytest_cmdline_main\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_callers.py\", line 121 in _multicall\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_manager.py\", line 120 in _hookexec\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512 in __call__\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\config\\__init__.py\", line 229 in _main\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\_pytest\\config\\__init__.py\", line 253 in _console_main\n  File \"D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Lib\\site-packages\\pytest\\__main__.py\", line 9 in <module>\n  File \"<frozen runpy>\", line 88 in _run_code\n  File \"<frozen runpy>\", line 198 in _run_module_as_main\n",
+        "truncated": false
+      },
+      "fault_time_python_traceback_present": false
+    },
+    "first_incorrect_pid_equality_assumption": {
+      "junit": {
+        "path": "build/pytest-context-qt68.xml",
+        "sha256": "7ab8c0d9311491c9c68fd7b65eb7bb0b67027e849e7d508b0281f220eae77e0a",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "5",
+        "skipped": "0",
+        "tests": "73",
+        "time": "34.988",
+        "timestamp": "2026-10-17T08:48:07.961730+08:00",
+        "hostname": "LAPTOP-EKQMFLNE"
+      },
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 76244,
+        "utc": "2026-10-17T00:48:07.161812+00:00",
+        "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 76404,
+        "returncode": 1,
+        "elapsed_seconds": 36.494537899969146
+      },
+      "log_sha256": "2709d140917db0a9b322f3b32aaf05b10f499ede896e3c1cc60824c16896d199",
+      "result": "5 failed / 68 passed; all failures were equality assertions between launcher and interpreter PIDs."
+    },
+    "validation": "The controlled test emits its own PID; the phase record must match it on both runtimes."
+  }
+}

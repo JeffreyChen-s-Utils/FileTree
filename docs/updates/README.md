@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-26 | 2026-10-17 | Retain native Qt test messages and active phase context | #snapshot #diagnostics #ci #qt | [2026-10-d](2026-10-d.md) |
 | U-20261017-25 | 2026-10-17 | Record repeated APFS busy refusals after identity recovery | #incident #apfs | [2026-10-d](2026-10-d.md) |
 | U-20261017-24 | 2026-10-17 | Continuously verify the Qt 6.8 grouped-view path | #snapshot #ci #qt | [2026-10-d](2026-10-d.md) |
 | U-20261017-23 | 2026-10-17 | Preserve grouped results when changing size units or language | #snapshot #fix #performance #gui | [2026-10-d](2026-10-d.md) |

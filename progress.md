@@ -7,7 +7,7 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#104** (P1) Capture the active test case and fatal/thread context for the intermittent local Windows Qt6Core.dll termination retained in `docs/updates/qt68-ci-20261017-evidence.json`. A native event matches the owned test process creation time, but the original run has no Python failure summary or JUnit result. A passing detailed rerun does not establish the cause or a fix; do not attribute it to Qt object/worker lifetime without failing-context evidence.
+- **#104** (P1) Obtain a reproduced intermittent Windows Qt6Core.dll termination with `tools.run_pytest` context before choosing a fix. The original incident is retained in `docs/updates/qt68-ci-20261017-evidence.json`; it has no Python summary/JUnit result. Controlled Qt fatal children verify retained case/phase, native message and phase-entry thread snapshots, but Windows fail-fast still bypasses a fault-time Python trace. A passing detailed rerun or matching native exit code does not establish the cause or a fix; do not attribute it to Qt object/worker lifetime without failing-context evidence.
 
 - **#100** (P1) Diagnose Windows PowerShell 5 helper-test timeouts in CI run 38922008928: Windows/Python 3.14 has six 20-second subprocess timeouts and 3.10 has one in `test_windows_share_script.py`. Obtain a reproduced timeout's bounded phase/process observation from `windows-mocked-share-script-<python>` before choosing a fix; absent entry markers establish only that none was captured. The owned-child observer must preserve the 20-second deadline, exact ownership assertions and autoload isolation. Mocked helper failures do not establish #99's native timeout cause.
 
