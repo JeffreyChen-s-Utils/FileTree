@@ -295,7 +295,14 @@ deadline apply only to the probe and do not change production copy behavior. Kee
 return codes and cleanup failures; nonempty diagnostic stderr alone is not failure.
 
 Stop/join only the retained reader, clear only the guarded private clipboard, destroy Qt while the
-private scope still matches, then restore/verify the original context and close only created handles.
+private scope still matches, then retire the windows this thread still owns on the private desktop
+before restoring/verifying the original context and closing only created handles. SetThreadDesktop
+refuses a thread that owns windows, and Qt 6.11/6.12 keep a theme-change observer window after
+QApplication is deleted: run 39034413839 measured and verified the readback, then failed to restore
+with error 170 (ERROR_BUSY). The thread had no windows when it entered the private desktop, so each
+remaining window is on it; retirement happens only while the thread is still on that desktop. The
+system IME window retires with the last other window and is never destroyed directly. Each retired
+class, failure and residual window is recorded in `cleanup`.
 If scope cannot be verified before Qt destruction, the fresh helper reports failure and exits without
 Qt finalization or station switching; the outer driver retains that nonzero result. Reserving a new
 report path prevents overwriting old evidence. The always-run artifact step retains JSON/logs even

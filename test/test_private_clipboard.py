@@ -21,7 +21,7 @@ def _scope(monkeypatch, *, fail=None):
     scope.previous_station, scope.previous_desktop = 1, 2
     scope.station_changed = scope.desktop_changed = False
     scope.cleanup = []
-    state = SimpleNamespace(station=1, desktop=2, calls=[], visible=False)
+    state = SimpleNamespace(station=1, desktop=2, calls=[], visible=False, windows={})
 
     def call(operation, handle):
         state.calls.append((operation, handle))
@@ -50,6 +50,15 @@ def _scope(monkeypatch, *, fail=None):
         state.desktop = 4
         return 4
 
+    def destroy(handle):
+        state.calls.append(('destroy', handle))
+        if handle in getattr(state, 'stuck', ()):
+            return 0
+        state.windows.pop(handle)
+        if not any(name != 'IME' for name in state.windows.values()):
+            state.windows = {}  # the default IME window retires with the thread's last other window
+        return 1
+
     scope.native = SimpleNamespace(
         security=lambda: c.c_void_p(17), free=lambda pointer: state.calls.append(('free', pointer.value)),
         create_station=create, checked=checked, station=lambda: state.station,
@@ -59,7 +68,9 @@ def _scope(monkeypatch, *, fail=None):
         set_station=lambda handle: call('station', handle), set_desktop=lambda handle: call('desktop', handle),
         create_desktop=create_desktop,
         close_desktop=lambda handle: call('close-desktop', handle),
-        close_station=lambda handle: call('close-station', handle))
+        close_station=lambda handle: call('close-station', handle),
+        thread_windows=lambda: list(state.windows), class_name=lambda handle: state.windows.get(handle, ''),
+        is_window=lambda handle: handle in state.windows, destroy_window=destroy)
     monkeypatch.setattr(private.c, 'get_last_error', lambda: 5, raising=False)
     return scope, state
 
@@ -234,3 +245,51 @@ def test_reader_explicitly_joins_only_its_validated_inherited_handles(monkeypatc
     private._join(scope.native, scope.station_name, scope.desktop_name, (3,4))
     assert state.station == 3 and state.desktop == 4
     assert state.calls[-2:] == [('station',3),('desktop',4)]
+
+
+def test_windows_left_on_the_owned_desktop_are_retired_before_restoring(monkeypatch):
+    scope, state = _scope(monkeypatch)
+    scope.__enter__()
+    state.windows = {11: 'Qt6112ThemeChangeObserverWindow', 12: 'IME'}
+    scope.close()
+    assert ('destroy', 12) not in state.calls  # the system IME window is never destroyed directly
+    assert state.calls.index(('destroy', 11)) < state.calls.index(('desktop', 2))
+    assert scope.cleanup[0] == {'action': 'retire-window', 'class': 'Qt6112ThemeChangeObserverWindow',
+                                'ok': True, 'error': 0}
+    assert all(item['ok'] for item in scope.cleanup) and ('close-desktop', 4) in state.calls
+
+
+def test_unretired_windows_are_reported_and_keep_cleanup_failed(monkeypatch):
+    scope, state = _scope(monkeypatch)
+    scope.__enter__()
+    state.windows, state.stuck = {11: 'Stubborn', 12: 'IME'}, {11}
+    with pytest.raises(RuntimeError, match='cleanup incomplete'):
+        scope.close()
+    assert {'action': 'retire-window', 'class': 'Stubborn', 'ok': False, 'error': 5} in scope.cleanup
+    assert {'action': 'residual-windows', 'ok': False, 'classes': ['Stubborn', 'IME']} in scope.cleanup
+
+
+def test_windows_are_not_touched_once_the_thread_left_the_owned_desktop(monkeypatch):
+    scope, state = _scope(monkeypatch)
+    scope.__enter__()
+    state.desktop, state.windows = 2, {11: 'Foreign'}
+    scope.close()
+    assert not any(call[0] == 'destroy' for call in state.calls)
+    assert not any(item['action'].endswith('window') or item['action'] == 'residual-windows'
+                   for item in scope.cleanup)
+
+
+def test_an_unreadable_desktop_name_is_recorded_and_restoration_still_runs(monkeypatch):
+    scope, state = _scope(monkeypatch)
+    scope.__enter__()
+    names = scope.native.name
+
+    def name(handle):
+        if handle == 4 and state.desktop == 4:
+            raise OSError('modeled name refusal')
+        return names(handle)
+    scope.native.name = name
+    with pytest.raises(RuntimeError, match='cleanup incomplete'):
+        scope.close()
+    assert scope.cleanup[0] == {'action': 'retire-windows', 'ok': False, 'error': 'modeled name refusal'}
+    assert ('desktop', 2) in state.calls and ('station', 1) in state.calls

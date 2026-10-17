@@ -526,7 +526,9 @@ same desktop validates and joins only the explicitly inherited private handles b
 bounded CF_UNICODETEXT. Retain every capture/heartbeat sample, string-extraction
 and setter durations, native readback hash, runtime/source identity, raw output and cleanup result.
 Reader/GUI/helper bounds are 30/45/60 seconds; no interactive/existing-station fallback or elevation.
-Destroy Qt only after a scope recheck and before restoring original handles; an uncertain shutdown
+Destroy Qt only after a scope recheck, then retire this thread's remaining windows on the private
+desktop (Qt keeps a theme observer window that blocks `SetThreadDesktop`), before restoring original
+handles; an uncertain shutdown
 scope ends only the owned helper without Qt finalization. Validate creation/cleanup before drawing
 native performance conclusions; local modeled checks do not establish the hosted native path.
 

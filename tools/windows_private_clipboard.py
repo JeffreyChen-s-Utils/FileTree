@@ -44,6 +44,11 @@ class _Security(c.Structure):
     _fields_ = [("size", w.DWORD), ("descriptor", c.c_void_p), ("inherit", w.BOOL)]
 
 
+_ENUM_WINDOWS = c.WINFUNCTYPE(w.BOOL, w.HWND, w.LPARAM)
+_HWND_MESSAGE = w.HWND(-3)
+_IME_CLASS = "IME"  # the system's default IME window retires with the thread's last other window
+
+
 def _api(library: object, name: str, args: list, result: object) -> object:
     function = getattr(library, name)
     function.argtypes, function.restype = args, result
@@ -76,6 +81,12 @@ class _Native:
         self.size = _api(kernel, "GlobalSize", [w.HANDLE], c.c_size_t)
         self.lock = _api(kernel, "GlobalLock", [w.HANDLE], c.c_void_p)
         self.unlock = _api(kernel, "GlobalUnlock", [w.HANDLE], w.BOOL)
+        self.enum_thread_windows = _api(user, "EnumThreadWindows", [w.DWORD, _ENUM_WINDOWS, w.LPARAM], w.BOOL)
+        self.find_window = _api(user, "FindWindowExW", [w.HWND, w.HWND, w.LPCWSTR, w.LPCWSTR], w.HWND)
+        self.window_thread = _api(user, "GetWindowThreadProcessId", [w.HWND, c.POINTER(w.DWORD)], w.DWORD)
+        self.window_class = _api(user, "GetClassNameW", [w.HWND, w.LPWSTR, c.c_int], c.c_int)
+        self.destroy_window = _api(user, "DestroyWindow", [w.HWND], w.BOOL)
+        self.is_window = _api(user, "IsWindow", [w.HWND], w.BOOL)
 
     def checked(self, value):
         if not value:
@@ -91,6 +102,21 @@ class _Native:
         flags, needed = _Flags(), w.DWORD()
         self.checked(self.info(handle, 1, c.byref(flags), c.sizeof(flags), c.byref(needed)))
         return bool(flags.flags & 1)
+
+    def thread_windows(self) -> list[int]:
+        """Top-level and message-only windows of the calling thread (EnumThreadWindows omits the latter)."""
+        thread, found = self.thread(), []
+        callback = _ENUM_WINDOWS(lambda handle, _param: found.append(handle) is None)
+        self.enum_thread_windows(thread, callback, 0)
+        handle = None
+        while handle := self.find_window(_HWND_MESSAGE, handle, None, None):
+            if self.window_thread(handle, None) == thread:
+                found.append(handle)
+        return found
+
+    def class_name(self, handle: int) -> str:
+        value = c.create_unicode_buffer(256)
+        return value.value if self.window_class(handle, value, len(value)) else ""
 
     def security(self) -> c.c_void_p:
         descriptor = c.c_void_p()
@@ -157,6 +183,8 @@ class PrivateStation:
         if self.station is None and self.desktop is None and not (self.station_changed or self.desktop_changed):
             require(all(item["ok"] for item in self.cleanup), "Private clipboard cleanup incomplete")
             return
+        if self.desktop_changed:
+            self._retire_windows()
         actions = [("restore-desktop", self.desktop_changed, self.native.set_desktop, self.previous_desktop),
                    ("restore-station", self.station_changed, self.native.set_station, self.previous_station)]
         for name, active, function, handle in actions:
@@ -179,6 +207,31 @@ class PrivateStation:
         self.station = self.desktop = None
         self.station_changed = self.desktop_changed = False
         require(all(item["ok"] for item in self.cleanup), "Private clipboard cleanup incomplete")
+
+    def _retire_windows(self) -> None:
+        """Destroy the windows this thread left on the owned desktop, which SetThreadDesktop refuses to leave.
+
+        The thread had no windows when it entered (SetThreadDesktop would have refused), so each one lives
+        on the private desktop. Qt 6.11/6.12 keep a theme-change observer window after QApplication is
+        deleted: hosted run 39034413839 and a local probe both restored with error 170 (ERROR_BUSY).
+        """
+        try:
+            current = self.native.name(self.native.desktop(self.native.thread()))
+        except OSError as error:  # still attempt the restoration that follows
+            self.cleanup.append({"action": "retire-windows", "ok": False, "error": str(error)[:512]})
+            return
+        if current != self.desktop_name:
+            return
+        windows = [(handle, self.native.class_name(handle)) for handle in self.native.thread_windows()]
+        for handle, name in windows:
+            # Destroying one window can retire others (owned windows, the default IME window).
+            if name != _IME_CLASS and self.native.is_window(handle):
+                ok = bool(self.native.destroy_window(handle))
+                self.cleanup.append({"action": "retire-window", "class": name, "ok": ok,
+                                     "error": 0 if ok else c.get_last_error()})
+        residual = [self.native.class_name(handle) for handle in self.native.thread_windows()]
+        if residual:
+            self.cleanup.append({"action": "residual-windows", "ok": False, "classes": residual})
 
     def __exit__(self, *_args) -> None:
         self.close()
