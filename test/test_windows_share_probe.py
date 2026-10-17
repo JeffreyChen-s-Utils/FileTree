@@ -235,3 +235,42 @@ def test_share_row_parity_detects_allocation_and_coverage_changes(tmp_path):
     other = ScanResult(result.root, errors=[("owned", ACCESS_DENIED)])
     with pytest.raises(RuntimeError, match="incomplete coverage"):
         probe._safe_failure(other)
+
+
+def test_disconnect_warms_windows_powershell_once_before_the_scan(monkeypatch, tmp_path):
+    order = []
+    monkeypatch.setenv("SYSTEMROOT", str(tmp_path))
+    monkeypatch.setenv("PSModulePath", "C:/foreign/modules")
+    monkeypatch.setattr(probe, "warm_powershell", lambda program, environment: order.append(
+        ("warm", program, environment["PSModulePath"])) or {"outcome": "completed", "elapsed_seconds": 2.6})
+
+    def scanner(*_args, **_kwargs):
+        order.append("scan")
+        raise RuntimeError("stop after the warm-up order is known")
+    monkeypatch.setattr(probe, "scan", scanner)
+    with pytest.raises(probe.ShareDisconnectError) as caught:
+        probe._disconnect(tmp_path, SimpleNamespace(unc="owned"))
+    program = tmp_path / "System32/WindowsPowerShell/v1.0/powershell.exe"
+    assert order == [("warm", program, str(program.parent / "Modules")), "scan"]
+    assert caught.value.proof["powershell_warmup"] == {"outcome": "completed", "elapsed_seconds": 2.6}
+
+
+@pytest.mark.parametrize(("raised", "outcome"), [
+    (None, "completed"), (subprocess.TimeoutExpired(["powershell.exe"], 120), "timeout"),
+    (FileNotFoundError("missing"), "start-failed"),
+])
+def test_warm_up_outcomes_are_recorded_without_retry(monkeypatch, raised, outcome):
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append((command, kwargs))
+        if raised is not None:
+            raise raised
+        return subprocess.CompletedProcess(command, 0, b"", b"progress")
+    monkeypatch.setattr(probe.subprocess, "run", run)
+    record = probe.warm_powershell(probe.Path("powershell.exe"), {"PSModulePath": "owned"})
+    [(command, kwargs)] = calls
+    assert command[1:5] == ["-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand"]
+    assert probe.base64.b64decode(command[5]).decode("utf-16-le") == probe._WARMUP_SCRIPT
+    assert kwargs["timeout"] == 120 and kwargs["env"] == {"PSModulePath": "owned"} and not kwargs["check"]
+    assert record["outcome"] == outcome

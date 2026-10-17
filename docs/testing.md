@@ -197,6 +197,15 @@ the first `ConvertFrom-Json` time, the actual outcome and capped output. Launche
 report path must be new, and the artifact is kept even when the step fails. These are diagnostics:
 they do not change the share helpers or their 20/30-second deadlines.
 
+Run 39054002281 measured the cold start directly: the first launch took 2,636 ms to its first
+statement and 1,351 ms for its first `ConvertFrom-Json`; the next eleven took 152–272 ms and 77–91 ms.
+Inside the cold start the main thread waited in the kernel (`KWAIT_REASON` 0, Executive) while
+`pwrshsip.dll`, `dbghelp.dll` and `System.Data` were the newest images. So the native disconnect
+probe (`windows_share_probe.warm_powershell`) and the mocked helper tests (`shell` fixture) start
+Windows PowerShell once, with the helpers' environment, before any timed helper: one launch that
+converts a literal JSON value, bounded at 120 seconds, recorded as `powershell_warmup`, never retried.
+The helpers keep their own 20/30-second deadlines, steps and ownership checks.
+
 ## PowerShell clock evidence
 
 The native disconnect helper emits `FILETREE_SMB_CLOCK`; the mocked helper harness additionally emits
