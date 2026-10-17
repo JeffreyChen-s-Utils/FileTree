@@ -2,8 +2,8 @@
 
 import dataclasses
 
-from PySide6.QtCore import QCoreApplication, QEvent, Qt
-from PySide6.QtGui import QColor, QStandardItem, QStandardItemModel
+from PySide6.QtCore import QCoreApplication, QDir, QEvent, Qt
+from PySide6.QtGui import QColor, QPalette, QStandardItem, QStandardItemModel
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QLabel, QPushButton, QStyleOptionViewItem, QTableView
 import pytest
@@ -264,6 +264,29 @@ def test_chart_breadcrumbs_show_the_pane_background(window):
     crumbs = window.results.breadcrumbs
     assert not crumbs._container.autoFillBackground()
     assert not crumbs._scroll.viewport().autoFillBackground()
+
+
+def test_drive_rows_show_native_roots_fill_and_nearly_full_warning(window, qapp, monkeypatch):
+    monkeypatch.setattr("je_file_tree.gui.welcome.drives", lambda: [])
+    page = window.welcome
+    _wait(qapp, lambda: not page._drive_timer.isActive() and page._drive_worker is None)
+    page.drive_rows = (DriveSnapshot("C:/", "System", 1000, 50), DriveSnapshot("D:/", "", 1000, 600))
+    page.retranslate()
+    full_button, full_bar = page._drives.itemAtPosition(0, 0).widget(), page._drives.itemAtPosition(0, 1).widget()
+    roomy_bar = page._drives.itemAtPosition(2, 1).widget()
+    shown = QDir.toNativeSeparators("C:/")
+    assert full_button.text() == f"System  ({shown})"
+    assert full_bar.toolTip() == i18n.tr("welcome_drive_used", percent="95.0 %")
+    assert full_bar.palette().color(QPalette.ColorRole.Highlight) == QColor("#d13438")
+    assert roomy_bar.palette().color(QPalette.ColorRole.Highlight) != QColor("#d13438")
+    requested = []
+    page.scan_requested.connect(requested.append)
+    full_button.click()
+    assert requested == ["C:/"]  # the scan keeps the native root Qt reported
+    page.set_unit("KB")
+    free = page._drives.itemAtPosition(0, 2).widget()
+    assert free.text() == i18n.tr("welcome_drive_free", free=format_size(50, "KB"), total=format_size(1000, "KB"))
+    assert page.scan_all.minimumHeight() == page._choose.minimumHeight()
 
 
 def test_empty_lists_explain_themselves_without_claiming_unfinished_coverage(window, qapp, sample_tree):

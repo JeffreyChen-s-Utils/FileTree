@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import threading
 
-from PySide6.QtCore import QStorageInfo, QThread, QTimer, Qt, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtCore import QDir, QStorageInfo, QThread, QTimer, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QPalette
 from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from je_file_tree.core.formatting import AUTO_UNIT, format_size
+from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
@@ -27,6 +27,8 @@ from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.worker_lifecycle import after_threads
 
 _MAX_RECENT = 6
+NEARLY_FULL = .9  # used share from which a drive's bar turns red
+_NEARLY_FULL_COLOUR = "#d13438"  # readable on light and dark surfaces
 
 
 def drives() -> list[QStorageInfo]:
@@ -166,9 +168,9 @@ class WelcomePage(QWidget):
         self._update_bin_labels()
 
     def set_unit(self, unit: str) -> None:
-        """Format cached per-drive bin amounts in the current size unit."""
+        """Format cached drive capacities and per-drive bin amounts in the current size unit."""
         self.unit = unit
-        self._update_bin_labels()
+        self._fill_drives()
 
     def _update_bin_labels(self) -> None:
         for key, (root, label) in self._bin_labels.items():
@@ -201,6 +203,7 @@ class WelcomePage(QWidget):
         self._title.setFont(title_font)
         self._subtitle.setWordWrap(True)
         self._choose.setMinimumHeight(44)
+        self.scan_all.setMinimumHeight(44)  # both ways to start sit on one line, at one height
         self._choose.setDefault(True)
         self._choose.setStyleSheet("QPushButton { background: palette(highlight);"
                                    " color: palette(highlighted-text); padding: 8px 20px; border-radius: 6px; }"
@@ -267,20 +270,7 @@ class WelcomePage(QWidget):
         _clear(self._drives)
         self._bin_labels = {}
         for row, volume in enumerate(self.drive_rows):
-            used = volume.total - volume.available
-            name = volume.name or volume.root
-            root = volume.root
-            button = QPushButton((f"{name}  ({root})" if name != root else root).replace("&", "&&"))
-            button.setToolTip(tr("welcome_drive_tip", path=root))
-            button.clicked.connect(lambda _checked=False, path=root: self.scan_requested.emit(path))
-            bar = QProgressBar()
-            bar.setRange(0, 1000)
-            bar.setValue(round(1000 * used / volume.total))
-            bar.setTextVisible(False)
-            bar.setMaximumHeight(10)
-            free = QLabel(tr("welcome_drive_free", free=format_size(volume.available),
-                             total=format_size(volume.total)))
-            free.setWordWrap(True)
+            button, bar, free = self._drive_widgets(volume)
             self._drives.addWidget(button, row * 2, 0)
             self._drives.addWidget(bar, row * 2, 1)
             self._drives.addWidget(free, row * 2, 2)
@@ -288,10 +278,39 @@ class WelcomePage(QWidget):
             bin_label.setWordWrap(True)
             bin_label.setTextFormat(Qt.TextFormat.PlainText)
             bin_label.setToolTip(tr("bin_labels_hint"))
-            self._bin_labels[bin_key(root)] = (root, bin_label)
-            self._drives.addWidget(bin_label, row * 2 + 1, 0, 1, 3)
+            bin_label.setStyleSheet("color: palette(placeholder-text);")  # a caption of the drive above
+            self._bin_labels[bin_key(volume.root)] = (volume.root, bin_label)
+            self._drives.addWidget(bin_label, row * 2 + 1, 1, 1, 2)
         self._drives.setColumnStretch(1, 1)
         self._update_bin_labels()
+
+    def _drive_widgets(self, volume: DriveSnapshot) -> tuple[QPushButton, QProgressBar, QLabel]:
+        """One drive's scan button, fill bar and free-space text; the scan path stays the native root."""
+        root = volume.root
+        shown = QDir.toNativeSeparators(root)
+        name = volume.name or shown
+        button = QPushButton((f"{name}  ({shown})" if name != shown else shown).replace("&", "&&"))
+        button.setToolTip(tr("welcome_drive_tip", path=shown))
+        button.clicked.connect(lambda _checked=False, path=root: self.scan_requested.emit(path))
+        used = volume.total - volume.available
+        share = used / volume.total
+        bar = QProgressBar()
+        bar.setRange(0, 1000)
+        bar.setValue(round(1000 * share))
+        bar.setTextVisible(False)
+        bar.setMaximumHeight(10)
+        percent = format_share(share)
+        bar.setToolTip(tr("welcome_drive_used", percent=percent))
+        bar.setAccessibleName(tr("welcome_drive_used", percent=percent))
+        if share >= NEARLY_FULL:
+            palette = bar.palette()
+            for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.Accent):
+                palette.setColor(role, QColor(_NEARLY_FULL_COLOUR))
+            bar.setPalette(palette)
+        free = QLabel(tr("welcome_drive_free", free=format_size(volume.available, self.unit),
+                         total=format_size(volume.total, self.unit)))
+        free.setTextFormat(Qt.TextFormat.PlainText)
+        return button, bar, free
 
     def _fill_recent(self) -> None:
         _clear(self._recent_box)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import threading
 
-from PySide6.QtCore import QObject, QStorageInfo, QThread, Signal
+from PySide6.QtCore import QDir, QObject, QStorageInfo, QThread, Signal
 from PySide6.QtWidgets import QWidget
 
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size
@@ -23,9 +23,13 @@ def bin_key(root: str) -> str:
 
 
 def bin_caption(root: str, usage: TrashUsage | None, unit: str = AUTO_UNIT) -> str:
-    """Show unqueried/partial totals distinctly from a successfully queried empty bin."""
+    """Show unqueried/partial totals distinctly from a successfully queried empty bin.
+
+    The root is shown with the platform's separators (a backslash on Windows rather than Qt's ``C:/``).
+    """
     if not root:
         return tr("bin_label_scope_unknown")
+    root = QDir.toNativeSeparators(root)
     if usage is None:
         return tr("bin_label_unqueried", root=root)
     fields = dict(root=root, size=format_size(usage.size, unit), count=format_count(usage.count))

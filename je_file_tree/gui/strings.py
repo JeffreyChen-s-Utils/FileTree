@@ -1126,6 +1126,7 @@ EN: dict[str, str] = {
     "welcome_drives": "Drives",
     "welcome_drive_tip": "Scan {path}",
     "welcome_drive_free": "{free} free of {total}",
+    "welcome_drive_used": "{percent} used",
     "welcome_recent": "Recently scanned",
     "welcome_tip": "Tip: you can also drag a folder from your file manager onto this window. Paste an absolute "
                    "UNC share path on Windows (\\\\server\\share); access uses your current account. Scan workers "
@@ -2474,6 +2475,7 @@ ZH_TW: dict[str, str] = {
     "welcome_drives": "磁碟",
     "welcome_drive_tip": "掃描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
+    "welcome_drive_used": "已使用 {percent}",
     "welcome_recent": "最近掃描過",
     "welcome_tip": "小技巧：也可以把資料夾從檔案總管拖曳到這個視窗。Windows 可貼上絕對 UNC 共用路徑"
                    "（\\\\server\\share），使用目前帳戶存取。掃描執行緒數可在選項調整；權限不足／斷線的分支維持不完整，非空資料夾。",
@@ -3793,6 +3795,7 @@ ZH_CN: dict[str, str] = {
     "welcome_drives": "磁盘",
     "welcome_drive_tip": "扫描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
+    "welcome_drive_used": "已使用 {percent}",
     "welcome_recent": "最近扫描过",
     "welcome_tip": "小技巧：也可以把文件夹从文件管理器拖到这个窗口。Windows 可粘贴绝对 UNC 共享路径"
                    "（\\\\server\\share），使用当前账户访问。扫描线程数可在选项调整；权限不足／断线的分支保持不完整，并非空文件夹。",
@@ -5429,6 +5432,7 @@ JA: dict[str, str] = {
     'welcome_drives': 'ドライブ',
     'welcome_drive_tip': '{path} をスキャンします',
     'welcome_drive_free': '合計 {total}、空き容量 {free}',
+    'welcome_drive_used': '使用率 {percent}',
     'welcome_recent': '最近スキャンした',
     'welcome_tip': (
         'ヒント: ファイル マネージャーからフォルダーをこのウィンドウにドラッグすることもできます。絶対 UNC 共'
@@ -6993,6 +6997,7 @@ KO: dict[str, str] = {
     'welcome_drives': '드라이브',
     'welcome_drive_tip': '{path} 스캔',
     'welcome_drive_free': '전체 {total}, 여유 공간 {free}',
+    'welcome_drive_used': '사용률 {percent}',
     'welcome_recent': '최근에 스캔됨',
     'welcome_tip': (
         '팁: 파일 관리자에서 폴더를 이 창으로 끌어서 놓을 수도 있습니다. Windows(\\\\server\\share)에 절대 UN'

@@ -11,7 +11,10 @@ waiting without inventing a completion percentage or implying that an incomplete
 - **Welcome:** a primary folder chooser beside all-drive scanning, followed by a short workflow hint,
   cached drive rows, grouped drive tools and recent folders. The content scrolls when many drives or
   recent entries exceed the window height. Recent-path buttons preserve literal ampersands and expose
-  their entire path through tooltips and accessible names.
+  their entire path through tooltips and accessible names. Drive rows show the root in native form
+  (`C:\`), free and total space on one line in the selected size unit, and the used share in the bar's
+  tooltip and accessible name; the bar turns red from 90 % used. Each drive's Recycle Bin caption sits
+  muted under its bar. Choose a folder and Scan all drives share one height.
 - **Path toolbar:** an explicit Scan path action next to the input, alongside existing chooser, rescan,
   stop and help actions. Enter activates that button. Blank input and the shared source-operation
   guard disable it; typing does no filesystem validation. Replacing a running scan retains the

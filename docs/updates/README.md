@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-47 | 2026-10-17 | Welcome drive rows with native roots and a nearly-full warning | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
 | U-20261017-46 | 2026-10-17 | Clearer result lists: path tails, visible bars and empty-state hints | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
 | U-20261017-45 | 2026-10-17 | Decode the MSI inventory test's PowerShell output as UTF-8 | #snapshot #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-44 | 2026-10-17 | Quote workflow commands containing YAML mapping separators | #done #fix #ci | [2026-10-d](2026-10-d.md) |
