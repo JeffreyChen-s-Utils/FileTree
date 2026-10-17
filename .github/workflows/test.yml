@@ -127,6 +127,9 @@ jobs:
           printf '%s\t%s\t%s\n' "$apfs_sample" "$apfs_status" "$apfs_evidence" >> "$apfs_summary"
         done
         exit "$apfs_failed"
+    - name: Verify literal open-file reporting on an owned temporary file
+      if: always()
+      run: python -m tools.validate_macos_busy_observer --output macos-evidence/literal-open-file.json
     - name: Preserve macOS evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

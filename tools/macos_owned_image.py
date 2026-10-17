@@ -15,6 +15,7 @@ import time
 import uuid
 
 from tools.macos_detach_identity import VolumeBinding, registration, volume_binding
+from tools.macos_busy_observer import observe_busy_image
 
 _PLIST_LIMIT = 8 * 1024 * 1024
 _DEVICE = re.compile(r"/dev/disk[0-9]+\Z")
@@ -348,6 +349,10 @@ class OwnedImage:
             except subprocess.CalledProcessError as error:
                 _detach_failure(record, "native-refused", error)
                 if error.returncode != _DEVICE_BUSY or attempt == _DETACH_ATTEMPTS - 1:
+                    if error.returncode == _DEVICE_BUSY:
+                        record["busy_observation"] = observe_busy_image(
+                            getattr(self, "image", None), self.device, getattr(self, "_detach_binding", None),
+                            getattr(self, "_mountpoints", set()), self._image_check)
                     raise
                 delay = .5 * (attempt + 1)
                 record["retry_delay_seconds"] = delay

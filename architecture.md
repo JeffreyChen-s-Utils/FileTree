@@ -1352,6 +1352,19 @@ fresh registration. Native image absence and normal cleanup guards remain mandat
 The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery still requires
 its own native cleanup evidence under #96.
 
+After the third native busy refusal only, `tools.macos_busy_observer` records read-only image/device
+associations. It checks the private image/scratch identity and fresh complete registration/volume
+binding on both sides of one literal-file `lsof` query. Five native reads share a ten-second command
+budget (two seconds per call); anonymous output files bound RAM, with capped retained bytes and
+explicit truncation/timeout/refusal states. `-f --` prevents filesystem-wide selection: only the
+owned image and its already registered device paths are arguments. Retain NUL fields/stdout/stderr
+losslessly in base64, and only hashes for the global hdiutil inventory. Unelevated observations are
+always incomplete; helper PIDs and open-file associations are not cause or cleanup authority. Keep
+the original exit 16, three attempts and delays, and retained failed fixture. No query occurs before
+or between those attempts. A separate always-run macOS CI probe holds one fresh ordinary temporary
+file and verifies its own PID, preserved bytes and cleanup through the same literal-file backend;
+it creates no mount and cannot establish APFS busy recovery. Usage/limits are in `docs/testing.md`.
+
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
 build_nuitka passes that file directly on macOS, avoiding optional external PNG conversion.

@@ -26,7 +26,8 @@ def captured_image(tmp_path, monkeypatch):
     for entry in mounted["attachment"]["entities"]:
         if entry.get("mount-point"):
             entry["mount-point"] = str(image.root)
-    state = {"phase": 0, "commands": [], "reads": [], "mounted": mounted, "unmounted": unmounted}
+    state = {"phase": 0, "commands": [], "reads": [], "mounted": mounted, "unmounted": unmounted,
+             "busy_observations": []}
 
     def information(args):
         state["reads"].append(args)
@@ -53,6 +54,8 @@ def captured_image(tmp_path, monkeypatch):
     monkeypatch.setattr(image, "_image_check", lambda: None)
     monkeypatch.setattr(owned, "plist", information)
     monkeypatch.setattr(owned, "command", detach)
+    monkeypatch.setattr(owned, "observe_busy_image", lambda *args:
+                        state["busy_observations"].append(args) or {"status": "modeled", "incomplete": True})
     monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
     monkeypatch.setattr(owned.os.path, "ismount", lambda _path: state["phase"] == 0)
     return image, state
@@ -162,6 +165,7 @@ def test_unmounted_retries_share_the_existing_three_attempt_limit(captured_image
             image.detach()
         assert image.attached
     assert len(state["commands"]) == 3 and len(image.detach_attempts) == 3
+    assert len(state["busy_observations"]) == int(not succeeds)
     assert all(args == ["/usr/bin/hdiutil", "detach", image.device] for args in state["commands"])
 
 

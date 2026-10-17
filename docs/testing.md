@@ -55,3 +55,31 @@ and unrelated errors remain visible; tests, helpers and native cleanup operation
 Output is retained while the child runs and copied to the console after it exits. Interrupted CI runs
 can still leave partial evidence. Full Windows/Linux/macOS and Qt 6.8 jobs always upload the evidence
 directory for seven days. No memory dumps are collected or uploaded.
+
+## APFS final-busy observations
+
+`tools.macos_busy_observer` runs only after the third owned-image detach returns native exit 16.
+It fences a literal-file `lsof` query with fresh image/scratch identity, complete registration and
+canonical volume/container/store checks. The original detach error, attempts, delays and cleanup
+guards remain authoritative. A ten-second native-command budget allows at most two seconds per
+read. Queries never retry detach, force an unmount, inspect process command lines or signal a holder.
+
+The [`lsof` field format and `-f --` semantics](https://raw.githubusercontent.com/lsof-org/lsof/master/Lsof.8)
+keep selectors as literal files. Arguments contain only the owned image and registered device paths;
+the query does not walk the fixture filesystem. Output selects PID, short command, descriptor,
+type and filename fields. Retain capped NUL-separated bytes in base64, including stderr; fields
+may be incomplete or include permissions warnings. Global image inventory output is hashed rather
+than copied into proof. A stable scope and an open-file association do not establish the busy cause.
+No visible result is still incomplete, especially for other-user/kernel holders and unqueried aliases.
+
+On unelevated macOS, validate the literal-file backend independently:
+
+```sh
+python -m tools.validate_macos_busy_observer --output build/literal-open-file.json
+```
+
+The probe exclusively creates and holds one temporary ordinary file, requires its own PID in the
+native output, verifies bytes/identity and records cleanup even on failure. It refuses existing proof.
+The macOS CI job runs it after the original three APFS samples, including when an earlier step fails,
+and retains `macos-evidence/literal-open-file.json`. This verifies the native query backend without
+warming or mounting an image before those samples; actual final-busy capture and recovery remain #96.

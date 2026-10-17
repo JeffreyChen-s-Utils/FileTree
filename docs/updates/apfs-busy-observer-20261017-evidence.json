@@ -1,0 +1,753 @@
+{
+  "schema": 1,
+  "baseline_commit": "db6a4c7b576c5409addcaa21bc6651714602e82c",
+  "native_backend_pending_this_push": true,
+  "application_requirements_screenshots_unchanged": true,
+  "owned_image_methods_ast_unchanged_except_final_busy_observation": true,
+  "sources_sha256_lf": {
+    "tools/macos_busy_observer.py": "d4693b2d6404286bb2ba832a3a500d6007d845ffa5d3f2fb69f77576c86ab08a",
+    "tools/macos_owned_image.py": "291b2ac2c4bee151fea9d492e545fd9b650e3d3b7fa1b60fb5c52d9346e7e59a",
+    "tools/validate_macos_busy_observer.py": "2b9c181d96ed1616990d73d03b3c3331701e13877447d5f4f8220578d17d234f",
+    "test/test_macos_busy_observer.py": "f7230e8a389904a4f81e49e39e11780b22095f274a24cd2243185585a258cc0a",
+    "test/test_macos_detach_recovery.py": "33ccddb58acd02c9a54fe736d2b7e668bafac9365734f1e206f3b1b7aca41bdc",
+    ".github/workflows/test.yml": "4218e16df1312dfc18539b815c50e5fe9337f892d754933fcb77c52e7e022a98",
+    "architecture.md": "33eb641e1a4a5b16eaef90db4a6d8f68e62bbcd04b4f65817fb09f54bf2e21d1",
+    "docs/testing.md": "790f694cf19b0f2e1e8a40967dc23b1dfd5c9142f1fe282b289810d51b561cb6",
+    "progress.md": "9fc90dad5dcab5ef1c7ec6cf9e68966216fa5d2e5720453537550beb78835f83"
+  },
+  "modeled_observations": {
+    "healthy-association": {
+      "modeled": true,
+      "result": {
+        "status": "observed",
+        "incomplete": true,
+        "scope_rechecked": true,
+        "cause_established": false,
+        "native_budget_seconds": 10.0,
+        "metadata": [
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          }
+        ],
+        "before": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        },
+        "lsof": {
+          "returncode": 0,
+          "timed_out": false,
+          "stdout_captured_sha256": "10d0224e40dac56f40441fe6220002158003bd43e40820ff09f065c49e8ba562",
+          "stdout_truncated": false,
+          "stderr_truncated": false,
+          "stderr_base64": "b3duZWQgd2FybmluZw==",
+          "stdout_base64": "cDEyMwBjZGlza2ltYWdlcy1oZWxwAApmNAB0UkVHAG5vd25lZC5zcGFyc2VpbWFnZQAK",
+          "literal_files": [
+            "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+            "/dev/disk5",
+            "/dev/disk5s1",
+            "/dev/disk6",
+            "/dev/disk6s1",
+            "/dev/disk6s2"
+          ],
+          "field_format": "NUL-separated p,c,f,t,n fields"
+        },
+        "after": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        }
+      },
+      "calls": [
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ],
+        [
+          "/usr/sbin/lsof",
+          "-nP",
+          "-F0pcftn",
+          "-f",
+          "--",
+          "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+          "/dev/disk5",
+          "/dev/disk5s1",
+          "/dev/disk6",
+          "/dev/disk6s1",
+          "/dev/disk6s2"
+        ],
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ]
+      ],
+      "image_checks": 4
+    },
+    "empty-output": {
+      "modeled": true,
+      "result": {
+        "status": "observed",
+        "incomplete": true,
+        "scope_rechecked": true,
+        "cause_established": false,
+        "native_budget_seconds": 10.0,
+        "metadata": [
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          }
+        ],
+        "before": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        },
+        "lsof": {
+          "returncode": 1,
+          "timed_out": false,
+          "stdout_captured_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_truncated": false,
+          "stderr_truncated": false,
+          "stderr_base64": "b3duZWQgd2FybmluZw==",
+          "stdout_base64": "",
+          "literal_files": [
+            "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+            "/dev/disk5",
+            "/dev/disk5s1",
+            "/dev/disk6",
+            "/dev/disk6s1",
+            "/dev/disk6s2"
+          ],
+          "field_format": "NUL-separated p,c,f,t,n fields"
+        },
+        "after": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        }
+      },
+      "calls": [
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ],
+        [
+          "/usr/sbin/lsof",
+          "-nP",
+          "-F0pcftn",
+          "-f",
+          "--",
+          "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+          "/dev/disk5",
+          "/dev/disk5s1",
+          "/dev/disk6",
+          "/dev/disk6s1",
+          "/dev/disk6s2"
+        ],
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ]
+      ],
+      "image_checks": 4
+    },
+    "timeout": {
+      "modeled": true,
+      "result": {
+        "status": "observed",
+        "incomplete": true,
+        "scope_rechecked": true,
+        "cause_established": false,
+        "native_budget_seconds": 10.0,
+        "metadata": [
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          }
+        ],
+        "before": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        },
+        "lsof": {
+          "returncode": null,
+          "timed_out": true,
+          "stdout_captured_sha256": "10d0224e40dac56f40441fe6220002158003bd43e40820ff09f065c49e8ba562",
+          "stdout_truncated": false,
+          "stderr_truncated": false,
+          "stderr_base64": "b3duZWQgd2FybmluZw==",
+          "stdout_base64": "cDEyMwBjZGlza2ltYWdlcy1oZWxwAApmNAB0UkVHAG5vd25lZC5zcGFyc2VpbWFnZQAK",
+          "literal_files": [
+            "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+            "/dev/disk5",
+            "/dev/disk5s1",
+            "/dev/disk6",
+            "/dev/disk6s1",
+            "/dev/disk6s2"
+          ],
+          "field_format": "NUL-separated p,c,f,t,n fields"
+        },
+        "after": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        }
+      },
+      "calls": [
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ],
+        [
+          "/usr/sbin/lsof",
+          "-nP",
+          "-F0pcftn",
+          "-f",
+          "--",
+          "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+          "/dev/disk5",
+          "/dev/disk5s1",
+          "/dev/disk6",
+          "/dev/disk6s1",
+          "/dev/disk6s2"
+        ],
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ]
+      ],
+      "image_checks": 4
+    },
+    "scope-changed-after": {
+      "modeled": true,
+      "result": {
+        "status": "observation-refused",
+        "incomplete": true,
+        "scope_rechecked": false,
+        "cause_established": false,
+        "native_budget_seconds": 10.0,
+        "metadata": [
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "4b08831b77b75d3c52e77fab9d728a2422626cf01d24e98036c1218a423abf4a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/bin/hdiutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "198448d1ea9cafa3712e0cdd185ab756d4ee02995a57a3fdb057ffc297a0034a",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          },
+          {
+            "program": "/usr/sbin/diskutil",
+            "operation": "info",
+            "returncode": 0,
+            "timed_out": false,
+            "stdout_captured_sha256": "d7149a6bc1508789b780920f8161d0cdc2cab4cda988b2803a885cab308beb56",
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stderr_base64": ""
+          }
+        ],
+        "before": {
+          "registration": [
+            [
+              "/dev/disk5",
+              "GUID_partition_scheme"
+            ],
+            [
+              "/dev/disk5s1",
+              "7C3457EF-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6",
+              "EF57347C-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s1",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ],
+            [
+              "/dev/disk6s2",
+              "41504653-0000-11AA-AA11-00306543ECAC"
+            ]
+          ],
+          "volume_uuid": "a92c9eb5-11b1-41c7-a8e1-9317d4ce1b29",
+          "volume": "/dev/disk6s1",
+          "container": "/dev/disk6",
+          "stores": [
+            "/dev/disk5s1"
+          ],
+          "helper_pid": 123,
+          "helper_pid_invalid": false
+        },
+        "lsof": {
+          "returncode": 0,
+          "timed_out": false,
+          "stdout_captured_sha256": "10d0224e40dac56f40441fe6220002158003bd43e40820ff09f065c49e8ba562",
+          "stdout_truncated": false,
+          "stderr_truncated": false,
+          "stderr_base64": "b3duZWQgd2FybmluZw==",
+          "stdout_base64": "cDEyMwBjZGlza2ltYWdlcy1oZWxwAApmNAB0UkVHAG5vd25lZC5zcGFyc2VpbWFnZQAK",
+          "literal_files": [
+            "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+            "/dev/disk5",
+            "/dev/disk5s1",
+            "/dev/disk6",
+            "/dev/disk6s1",
+            "/dev/disk6s2"
+          ],
+          "field_format": "NUL-separated p,c,f,t,n fields"
+        },
+        "failed_stage": "scope-after",
+        "exception_type": "ValueError",
+        "error": "Owned image complete volume binding changed"
+      },
+      "calls": [
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ],
+        [
+          "/usr/sbin/lsof",
+          "-nP",
+          "-F0pcftn",
+          "-f",
+          "--",
+          "D:\\Codes\\tests\\apfs-observer-evidence-q176amgr\\owned.sparseimage",
+          "/dev/disk5",
+          "/dev/disk5s1",
+          "/dev/disk6",
+          "/dev/disk6s1",
+          "/dev/disk6s2"
+        ],
+        [
+          "/usr/bin/hdiutil",
+          "info",
+          "-plist"
+        ],
+        [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/dev/disk6s1"
+        ]
+      ],
+      "image_checks": 3
+    }
+  },
+  "validation": {
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 76780,
+      "utc": "2026-10-17T01:16:39.380635+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 76760,
+      "child_pid_role": "Popen process; may be a Windows venv launcher",
+      "returncode": 0,
+      "elapsed_seconds": 597.6573020999786
+    },
+    "full_junit": {
+      "path": "build/apfs-busy-observer-full.xml",
+      "sha256": "0cb301c41cabadae071455c58ed18ab586a335312e1fa9f8887ec2fb155eddd2",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "54",
+      "tests": "2386",
+      "time": "593.922",
+      "timestamp": "2026-10-17T09:16:40.449408+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "focused_junit": {
+      "path": "build/apfs-busy-observer-focused-final.xml",
+      "sha256": "ac7be008d7808121b3ce65bc38cb0263ac9950cda0d82067643bb49a73b538c8",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "147",
+      "time": "6.227",
+      "timestamp": "2026-10-17T09:15:54.325912+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "development_focus_failure": {
+      "junit": {
+        "path": "build/apfs-busy-observer-final-focused.xml",
+        "sha256": "81c40b9eea888ebc37520e80f0002fd5dffd81468dd3fe495e68e6b0247c97c3",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "4",
+        "skipped": "0",
+        "tests": "141",
+        "time": "8.922",
+        "timestamp": "2026-10-17T09:12:42.283328+08:00",
+        "hostname": "LAPTOP-EKQMFLNE"
+      },
+      "log_sha256": "c0e0dde2f7baf0c730bc4d95bdab9d59217e9f79aa758495d09e5e6c00838646",
+      "resolution": "Missing captured metadata stays ineligible; the mocked backend does not reopen a Windows delete-on-close fixture."
+    },
+    "logs": {
+      "build/apfs-busy-observer-full/output.log": {
+        "sha256": "097d91f4831c358a9475f3c47b9abd51fcbb50cf56cf727c432d1c46541d3cf6",
+        "bytes": 308247
+      },
+      "build/apfs-busy-observer-full/phase-threads.txt": {
+        "sha256": "78686cd2f1ffa1e1485dcb9db1623fb03f2b2a428db885a2db899c1eaab50ce7",
+        "bytes": 1891
+      },
+      "build/apfs-busy-observer-ruff-global.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      },
+      "build/apfs-busy-observer-ruff-pinned.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      }
+    }
+  }
+}
