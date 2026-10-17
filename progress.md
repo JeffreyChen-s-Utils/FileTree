@@ -2,12 +2,10 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #96 (DiskArbitration dissenter for the remaining APFS refusal), #104 (native Qt termination context), #95 (remaining UI hangs), #113 (warm-up confirmation on hosted runs), then the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #96 (DiskArbitration dissenter for the remaining APFS refusal), #95 (remaining UI hangs), #113 (warm-up confirmation on hosted runs), then the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
-
-- **#104** (P1) Obtain a reproduced intermittent Windows Qt6Core.dll termination with `tools.run_pytest` context before choosing a fix. The original incident is retained in `docs/updates/qt68-ci-20261017-evidence.json`; it has no Python summary/JUnit result. Controlled Qt fatal children verify retained case/phase, native message and phase-entry thread snapshots, but Windows fail-fast still bypasses a fault-time Python trace. A passing detailed rerun or matching native exit code does not establish the cause or a fix; do not attribute it to Qt object/worker lifetime without failing-context evidence.
 
 - **#113** (P2) Confirm on hosted runs that the Windows PowerShell warm-up (U-20261017-64) removes the share helpers' 20/30-second timeouts. If a `powershell.exe` helper still times out after a completed `powershell_warmup`, keep its thread-state samples and investigate that warm wait as a new cause; do not lengthen the deadlines.
 

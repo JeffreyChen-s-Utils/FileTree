@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import threading
 
 from PySide6.QtCore import QDir, QStorageInfo, QThread, QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPalette
+from PySide6.QtGui import QColor, QFont, QPalette, QShowEvent
 from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
@@ -116,7 +116,19 @@ class WelcomePage(QWidget):
         self._drive_timer = QTimer(self)
         self._drive_timer.setSingleShot(True)
         self._drive_timer.timeout.connect(self.refresh_drives)
-        self._drive_timer.start(0)
+        self._drives_requested = False  # discovery starts when the page is first shown (showEvent)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """Qt: query drives once the page is first visible.
+
+        Not from the constructor: a window that is never shown must not start a native worker later,
+        from whatever event loop runs next. A window deleted without close() would then destroy that
+        still-running worker, which Qt 6 treats as fatal (U-20261017-67, #104).
+        """
+        super().showEvent(event)
+        if not self._drives_requested:
+            self._drives_requested = True
+            self._drive_timer.start(0)
 
     def set_recent(self, folders: list[str]) -> None:
         """Show these recently scanned folders (most recent first)."""

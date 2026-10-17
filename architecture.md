@@ -997,7 +997,7 @@ gate first. Normal whole-root scan replacement uses `worker_lifecycle.ThreadFenc
 request. Pending replacements retain the ordinary scan/source-operation exclusion and Stop discards them.
 Old workers stay owned until joining; no thread is terminated. Background receipts are finalized before
 foreground dispatch. Folder validation runs in ScanWorker. Welcome DriveWorker discovers volumes once
-per coalesced request and publishes immutable scalar DriveSnapshot values; language/unit/action updates
+per coalesced request, first when the page is shown (never from its constructor), and publishes immutable scalar DriveSnapshot values; language/unit/action updates
 render the cache without storage I/O. Tab destruction still cancels/joins these owned workers.
 
 **Show.** `ResultsView.show_outcome` hands the tree to `FolderTreeModel` (which wraps the `Node`s, sorts
