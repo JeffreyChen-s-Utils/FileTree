@@ -1,0 +1,1750 @@
+{
+ "run": 39036712716,
+ "job": 117407942061,
+ "commit": "e8fc2aa",
+ "job_name": "Windows / Python 3.10",
+ "artifact": "windows-mocked-share-script-3.10",
+ "failed_tests": [
+  "test/test_windows_share_script.py::test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands[powershell.exe-none]",
+  "test/test_windows_share_script.py::test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands[powershell.exe-path]"
+ ],
+ "records": {
+  "test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands-power-4c1426727d0146d09840712a79453e8a.json": {
+   "artifact_sha256": "505256dcf767c6a567fbecc1e0b684803aeaf55728a0e088f8a1fa985ec49261",
+   "record": {
+    "outcome": "timeout",
+    "returncode": null,
+    "timeout_seconds": 20,
+    "elapsed_seconds": 20.109,
+    "stdout": "",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "steps": [],
+    "invalid_step_records": 0,
+    "trace_complete": false,
+    "process_observation": {
+     "status": "observed",
+     "child_pid": 7324,
+     "returncode": 0,
+     "records": [
+      {
+       "event": "identity",
+       "pid": 7324,
+       "parent_pid": 5668,
+       "cpu": {
+        "created_100ns": 134367177248451991,
+        "exited_100ns": 0,
+        "kernel_100ns": 1406250,
+        "user_100ns": 1250000
+       },
+       "reported_threads": 16,
+       "emitted_filetime_100ns": 134367177299017735
+      },
+      {
+       "event": "threads",
+       "count": 16,
+       "truncated": false,
+       "emitted_filetime_100ns": 134367177299107613
+      },
+      {
+       "event": "chain",
+       "tid": 896,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 896,
+         "wait_time_raw": 43346,
+         "switches": 4
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301204466,
+       "query_after_filetime_100ns": 134367177301204466,
+       "emitted_filetime_100ns": 134367177301204466
+      },
+      {
+       "event": "chain",
+       "tid": 1776,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 1776,
+         "wait_time_raw": 43350,
+         "switches": 4
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301204466,
+       "query_after_filetime_100ns": 134367177301224550,
+       "emitted_filetime_100ns": 134367177301224550
+      },
+      {
+       "event": "chain",
+       "tid": 2464,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 2464,
+         "wait_time_raw": 43118,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301224550,
+       "query_after_filetime_100ns": 134367177301224550,
+       "emitted_filetime_100ns": 134367177301224550
+      },
+      {
+       "event": "chain",
+       "tid": 4272,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 4272,
+         "wait_time_raw": 43030,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301224550,
+       "query_after_filetime_100ns": 134367177301244620,
+       "emitted_filetime_100ns": 134367177301244620
+      },
+      {
+       "event": "chain",
+       "tid": 4364,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 4364,
+         "wait_time_raw": 43118,
+         "switches": 4
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301244620,
+       "query_after_filetime_100ns": 134367177301262157,
+       "emitted_filetime_100ns": 134367177301262157
+      },
+      {
+       "event": "chain",
+       "tid": 4972,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 4972,
+         "wait_time_raw": 43118,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301262157,
+       "query_after_filetime_100ns": 134367177301262157,
+       "emitted_filetime_100ns": 134367177301262157
+      },
+      {
+       "event": "chain",
+       "tid": 4980,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 4980,
+         "wait_time_raw": 43356,
+         "switches": 327
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301262157,
+       "query_after_filetime_100ns": 134367177301282231,
+       "emitted_filetime_100ns": 134367177301282231
+      },
+      {
+       "event": "chain",
+       "tid": 5536,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 5536,
+         "wait_time_raw": 43343,
+         "switches": 20
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301282231,
+       "query_after_filetime_100ns": 134367177301282231,
+       "emitted_filetime_100ns": 134367177301282231
+      },
+      {
+       "event": "chain",
+       "tid": 6324,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 6324,
+         "wait_time_raw": 43201,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301282231,
+       "query_after_filetime_100ns": 134367177301302324,
+       "emitted_filetime_100ns": 134367177301302324
+      },
+      {
+       "event": "chain",
+       "tid": 7400,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 7400,
+         "wait_time_raw": 43356,
+         "switches": 145
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301302324,
+       "query_after_filetime_100ns": 134367177301302324,
+       "emitted_filetime_100ns": 134367177301302324
+      },
+      {
+       "event": "chain",
+       "tid": 7516,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 7516,
+         "wait_time_raw": 43366,
+         "switches": 675
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301302324,
+       "query_after_filetime_100ns": 134367177301322398,
+       "emitted_filetime_100ns": 134367177301322398
+      },
+      {
+       "event": "chain",
+       "tid": 7884,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 7884,
+         "wait_time_raw": 43159,
+         "switches": 10
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301322398,
+       "query_after_filetime_100ns": 134367177301342469,
+       "emitted_filetime_100ns": 134367177301342469
+      },
+      {
+       "event": "chain",
+       "tid": 8184,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 8184,
+         "wait_time_raw": 43299,
+         "switches": 9
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301342469,
+       "query_after_filetime_100ns": 134367177301342469,
+       "emitted_filetime_100ns": 134367177301342469
+      },
+      {
+       "event": "chain",
+       "tid": 9372,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7324,
+         "tid": 9372,
+         "wait_time_raw": 43346,
+         "switches": 5
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301342469,
+       "query_after_filetime_100ns": 134367177301362539,
+       "emitted_filetime_100ns": 134367177301362539
+      },
+      {
+       "event": "chain",
+       "tid": 9788,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 9788,
+         "wait_time_raw": 43299,
+         "switches": 9
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301362539,
+       "query_after_filetime_100ns": 134367177301362539,
+       "emitted_filetime_100ns": 134367177301362539
+      },
+      {
+       "event": "chain",
+       "tid": 9996,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7324,
+         "tid": 9996,
+         "wait_time_raw": 43201,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177301362539,
+       "query_after_filetime_100ns": 134367177301362539,
+       "emitted_filetime_100ns": 134367177301362539
+      },
+      {
+       "event": "complete",
+       "cpu": {
+        "created_100ns": 134367177248451991,
+        "exited_100ns": 0,
+        "kernel_100ns": 1406250,
+        "user_100ns": 1406250
+       },
+       "emitted_filetime_100ns": 134367177301362539
+      }
+     ],
+     "stop_reason": null,
+     "invalid_records": 0,
+     "output_truncated": false,
+     "stderr": "",
+     "later_samples": [
+      {
+       "status": "observed",
+       "child_pid": 7324,
+       "returncode": 0,
+       "records": [
+        {
+         "event": "identity",
+         "pid": 7324,
+         "parent_pid": 5668,
+         "cpu": {
+          "created_100ns": 134367177248451991,
+          "exited_100ns": 0,
+          "kernel_100ns": 2343750,
+          "user_100ns": 2031250
+         },
+         "reported_threads": 17,
+         "emitted_filetime_100ns": 134367177399129462
+        },
+        {
+         "event": "threads",
+         "count": 17,
+         "truncated": true,
+         "emitted_filetime_100ns": 134367177399219374
+        },
+        {
+         "event": "chain",
+         "tid": 896,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 896,
+           "wait_time_raw": 43517,
+           "switches": 137
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401373735,
+         "query_after_filetime_100ns": 134367177401393835,
+         "emitted_filetime_100ns": 134367177401393835
+        },
+        {
+         "event": "chain",
+         "tid": 2072,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 2072,
+           "wait_time_raw": 43361,
+           "switches": 3
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401393835,
+         "query_after_filetime_100ns": 134367177401413907,
+         "emitted_filetime_100ns": 134367177401413907
+        },
+        {
+         "event": "chain",
+         "tid": 2464,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 2464,
+           "wait_time_raw": 43118,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401413907,
+         "query_after_filetime_100ns": 134367177401433976,
+         "emitted_filetime_100ns": 134367177401433976
+        },
+        {
+         "event": "chain",
+         "tid": 4272,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 4272,
+           "wait_time_raw": 43030,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401433976,
+         "query_after_filetime_100ns": 134367177401433976,
+         "emitted_filetime_100ns": 134367177401433976
+        },
+        {
+         "event": "chain",
+         "tid": 4364,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 4364,
+           "wait_time_raw": 43118,
+           "switches": 4
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401433976,
+         "query_after_filetime_100ns": 134367177401454059,
+         "emitted_filetime_100ns": 134367177401454059
+        },
+        {
+         "event": "chain",
+         "tid": 4484,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 4484,
+           "wait_time_raw": 43360,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401454059,
+         "query_after_filetime_100ns": 134367177401454059,
+         "emitted_filetime_100ns": 134367177401454059
+        },
+        {
+         "event": "chain",
+         "tid": 4972,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 4972,
+           "wait_time_raw": 43118,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401454059,
+         "query_after_filetime_100ns": 134367177401474136,
+         "emitted_filetime_100ns": 134367177401474136
+        },
+        {
+         "event": "chain",
+         "tid": 4980,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 4980,
+           "wait_time_raw": 43517,
+           "switches": 446
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401474136,
+         "query_after_filetime_100ns": 134367177401474136,
+         "emitted_filetime_100ns": 134367177401474136
+        },
+        {
+         "event": "chain",
+         "tid": 5536,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 5536,
+           "wait_time_raw": 43468,
+           "switches": 21
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401494205,
+         "query_after_filetime_100ns": 134367177401494205,
+         "emitted_filetime_100ns": 134367177401494205
+        },
+        {
+         "event": "chain",
+         "tid": 6324,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 6324,
+           "wait_time_raw": 43201,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401494205,
+         "query_after_filetime_100ns": 134367177401514280,
+         "emitted_filetime_100ns": 134367177401514280
+        },
+        {
+         "event": "chain",
+         "tid": 7400,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 7400,
+           "wait_time_raw": 43465,
+           "switches": 251
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401514280,
+         "query_after_filetime_100ns": 134367177401514280,
+         "emitted_filetime_100ns": 134367177401514280
+        },
+        {
+         "event": "chain",
+         "tid": 7516,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 7516,
+           "wait_time_raw": 44007,
+           "switches": 1061
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401514280,
+         "query_after_filetime_100ns": 134367177401531799,
+         "emitted_filetime_100ns": 134367177401531799
+        },
+        {
+         "event": "chain",
+         "tid": 7884,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 7884,
+           "wait_time_raw": 43159,
+           "switches": 10
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401531799,
+         "query_after_filetime_100ns": 134367177401551883,
+         "emitted_filetime_100ns": 134367177401551883
+        },
+        {
+         "event": "chain",
+         "tid": 8184,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 8184,
+           "wait_time_raw": 43299,
+           "switches": 9
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401551883,
+         "query_after_filetime_100ns": 134367177401551883,
+         "emitted_filetime_100ns": 134367177401551883
+        },
+        {
+         "event": "chain",
+         "tid": 9372,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7324,
+           "tid": 9372,
+           "wait_time_raw": 43465,
+           "switches": 106
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401551883,
+         "query_after_filetime_100ns": 134367177401571950,
+         "emitted_filetime_100ns": 134367177401571950
+        },
+        {
+         "event": "chain",
+         "tid": 9788,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7324,
+           "tid": 9788,
+           "wait_time_raw": 43299,
+           "switches": 9
+          }
+         ],
+         "query_before_filetime_100ns": 134367177401571950,
+         "query_after_filetime_100ns": 134367177401571950,
+         "emitted_filetime_100ns": 134367177401571950
+        },
+        {
+         "event": "complete",
+         "cpu": {
+          "created_100ns": 134367177248451991,
+          "exited_100ns": 0,
+          "kernel_100ns": 2343750,
+          "user_100ns": 2031250
+         },
+         "emitted_filetime_100ns": 134367177401571950
+        }
+       ],
+       "stop_reason": null,
+       "invalid_records": 0,
+       "output_truncated": false,
+       "stderr": ""
+      }
+     ]
+    },
+    "clock": {
+     "status": "missing"
+    },
+    "shell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "case": "test/test_windows_share_script.py::test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands[powershell.exe-none]",
+    "mocked_smb": true,
+    "case_sha256": "0e78433ed4e1885350510ac2cee37068304e2bacda9fea61fcf80e675b3511df",
+    "exception_type": "TimeoutExpired",
+    "harness": {
+     "steps": [],
+     "invalid_records": 0,
+     "trace_complete": false,
+     "last_phase": null,
+     "runtime": null,
+     "clock": {
+      "status": "missing"
+     }
+    }
+   }
+  },
+  "test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands-power-5aa9f0618b4d422f86edcd1a787e60c5.json": {
+   "artifact_sha256": "d16914868a07fef43e19ca50709a680f762d8a534ece90acc02cb409971ac67c",
+   "record": {
+    "outcome": "timeout",
+    "returncode": null,
+    "timeout_seconds": 20,
+    "elapsed_seconds": 20.093,
+    "stdout": "",
+    "stderr": "FILETREE_TEST_CLOCK {\"pid\":7560,\"before_filetime_100ns\":134367177511776722,\"after_filetime_100ns\":134367177512256730}\r\nFILETREE_TEST_PHASE {\"sequence\":1,\"phase\":\"entry\",\"event\":\"completed\",\"elapsed_ms\":46}\r\nFILETREE_TEST_RUNTIME 5.1.26100.33438\r\nFILETREE_TEST_PHASE {\"sequence\":2,\"phase\":\"import-modules\",\"event\":\"started\",\"elapsed_ms\":77}\r\nFILETREE_TEST_PHASE {\"sequence\":3,\"phase\":\"import-modules\",\"event\":\"completed\",\"elapsed_ms\":2735}\r\nFILETREE_TEST_PHASE {\"sequence\":4,\"phase\":\"parse-source\",\"event\":\"started\",\"elapsed_ms\":2736}\r\nFILETREE_TEST_PHASE {\"sequence\":5,\"phase\":\"parse-source\",\"event\":\"completed\",\"elapsed_ms\":9554}\r\nFILETREE_TEST_PHASE {\"sequence\":6,\"phase\":\"extract-helpers\",\"event\":\"started\",\"elapsed_ms\":9554}\r\nFILETREE_TEST_PHASE {\"sequence\":7,\"phase\":\"extract-helpers\",\"event\":\"completed\",\"elapsed_ms\":11150}\r\nFILETREE_SMB_CLOCK {\"pid\":7560,\"before_filetime_100ns\":134367177623766015,\"after_filetime_100ns\":134367177623766015}\r\nFILETREE_TEST_PHASE {\"sequence\":8,\"phase\":\"run-case\",\"event\":\"started\",\"elapsed_ms\":11152}\r\nFILETREE_SMB_STEP {\"sequence\":1,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":406}\r\nFILETREE_SMB_STEP {\"sequence\":2,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":414}\r\nFILETREE_SMB_STEP {\"sequence\":3,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":1746}\r\nFILETREE_SMB_STEP {\"sequence\":4,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":2049}\r\nFILETREE_SMB_STEP {\"sequence\":5,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":2049}\r\nFILETREE_SMB_STEP {\"sequence\":6,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":2050}\r\nFILETREE_SMB_STEP {\"sequence\":7,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":2050}\r\nFILETREE_SMB_STEP {\"sequence\":8,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":2053}\r\nFILETREE_SMB_STEP {\"sequence\":9,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":2053}\r\nFILETREE_SMB_STEP {\"sequence\":10,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":2054}\r\nFILETREE_SMB_STEP {\"sequence\":11,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":2054}\r\nFILETREE_SMB_STEP {\"sequence\":12,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":2054}\r\nFILETREE_SMB_STEP {\"sequence\":13,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":2703}\r\nFILETREE_SMB_STEP {\"sequence\":14,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":2703}\r\n",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "steps": [
+     {
+      "sequence": 1,
+      "step": "root-scope",
+      "event": "started",
+      "elapsed_ms": 406
+     },
+     {
+      "sequence": 2,
+      "step": "root-scope",
+      "event": "completed",
+      "elapsed_ms": 414
+     },
+     {
+      "sequence": 3,
+      "step": "owned-entry-1",
+      "event": "started",
+      "elapsed_ms": 1746
+     },
+     {
+      "sequence": 4,
+      "step": "owned-entry-1",
+      "event": "completed",
+      "elapsed_ms": 2049
+     },
+     {
+      "sequence": 5,
+      "step": "owned-entry-2",
+      "event": "started",
+      "elapsed_ms": 2049
+     },
+     {
+      "sequence": 6,
+      "step": "owned-entry-2",
+      "event": "completed",
+      "elapsed_ms": 2050
+     },
+     {
+      "sequence": 7,
+      "step": "owned-entry-3",
+      "event": "started",
+      "elapsed_ms": 2050
+     },
+     {
+      "sequence": 8,
+      "step": "owned-entry-3",
+      "event": "completed",
+      "elapsed_ms": 2053
+     },
+     {
+      "sequence": 9,
+      "step": "owned-entry-4",
+      "event": "started",
+      "elapsed_ms": 2053
+     },
+     {
+      "sequence": 10,
+      "step": "owned-entry-4",
+      "event": "completed",
+      "elapsed_ms": 2054
+     },
+     {
+      "sequence": 11,
+      "step": "owner-receipt",
+      "event": "started",
+      "elapsed_ms": 2054
+     },
+     {
+      "sequence": 12,
+      "step": "receipt-read",
+      "event": "started",
+      "elapsed_ms": 2054
+     },
+     {
+      "sequence": 13,
+      "step": "receipt-read",
+      "event": "completed",
+      "elapsed_ms": 2703
+     },
+     {
+      "sequence": 14,
+      "step": "receipt-parse",
+      "event": "started",
+      "elapsed_ms": 2703
+     }
+    ],
+    "invalid_step_records": 0,
+    "trace_complete": false,
+    "process_observation": {
+     "status": "observed",
+     "child_pid": 7560,
+     "returncode": 0,
+     "records": [
+      {
+       "event": "identity",
+       "pid": 7560,
+       "parent_pid": 5668,
+       "cpu": {
+        "created_100ns": 134367177453616684,
+        "exited_100ns": 0,
+        "kernel_100ns": 1562500,
+        "user_100ns": 1250000
+       },
+       "reported_threads": 18,
+       "emitted_filetime_100ns": 134367177504198888
+      },
+      {
+       "event": "threads",
+       "count": 18,
+       "truncated": true,
+       "emitted_filetime_100ns": 134367177504279372
+      },
+      {
+       "event": "chain",
+       "tid": 604,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 604,
+         "wait_time_raw": 44345,
+         "switches": 3
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506434547,
+       "query_after_filetime_100ns": 134367177506434547,
+       "emitted_filetime_100ns": 134367177506434547
+      },
+      {
+       "event": "chain",
+       "tid": 2824,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 2824,
+         "wait_time_raw": 44351,
+         "switches": 337
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506434547,
+       "query_after_filetime_100ns": 134367177506454618,
+       "emitted_filetime_100ns": 134367177506454618
+      },
+      {
+       "event": "chain",
+       "tid": 3460,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 3460,
+         "wait_time_raw": 44348,
+         "switches": 3
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506454618,
+       "query_after_filetime_100ns": 134367177506454618,
+       "emitted_filetime_100ns": 134367177506454618
+      },
+      {
+       "event": "chain",
+       "tid": 3840,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 3840,
+         "wait_time_raw": 44348,
+         "switches": 3
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506454618,
+       "query_after_filetime_100ns": 134367177506474699,
+       "emitted_filetime_100ns": 134367177506474699
+      },
+      {
+       "event": "chain",
+       "tid": 4052,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 4052,
+         "wait_time_raw": 44342,
+         "switches": 6
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506474699,
+       "query_after_filetime_100ns": 134367177506494770,
+       "emitted_filetime_100ns": 134367177506494770
+      },
+      {
+       "event": "chain",
+       "tid": 4344,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 4344,
+         "wait_time_raw": 44349,
+         "switches": 14
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506494770,
+       "query_after_filetime_100ns": 134367177506494770,
+       "emitted_filetime_100ns": 134367177506494770
+      },
+      {
+       "event": "chain",
+       "tid": 5000,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 5000,
+         "wait_time_raw": 44344,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506494770,
+       "query_after_filetime_100ns": 134367177506514841,
+       "emitted_filetime_100ns": 134367177506514841
+      },
+      {
+       "event": "chain",
+       "tid": 5036,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 5036,
+         "wait_time_raw": 44351,
+         "switches": 305
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506514841,
+       "query_after_filetime_100ns": 134367177506514841,
+       "emitted_filetime_100ns": 134367177506514841
+      },
+      {
+       "event": "chain",
+       "tid": 7048,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 7048,
+         "wait_time_raw": 44345,
+         "switches": 3
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506514841,
+       "query_after_filetime_100ns": 134367177506534919,
+       "emitted_filetime_100ns": 134367177506534919
+      },
+      {
+       "event": "chain",
+       "tid": 7152,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 7152,
+         "wait_time_raw": 44342,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506534919,
+       "query_after_filetime_100ns": 134367177506555010,
+       "emitted_filetime_100ns": 134367177506555010
+      },
+      {
+       "event": "chain",
+       "tid": 7796,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 7796,
+         "wait_time_raw": 44351,
+         "switches": 191
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506555010,
+       "query_after_filetime_100ns": 134367177506555010,
+       "emitted_filetime_100ns": 134367177506555010
+      },
+      {
+       "event": "chain",
+       "tid": 8256,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 8256,
+         "wait_time_raw": 44675,
+         "switches": 136
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506555010,
+       "query_after_filetime_100ns": 134367177506572615,
+       "emitted_filetime_100ns": 134367177506572615
+      },
+      {
+       "event": "chain",
+       "tid": 8364,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 8364,
+         "wait_time_raw": 44344,
+         "switches": 2
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506572615,
+       "query_after_filetime_100ns": 134367177506592690,
+       "emitted_filetime_100ns": 134367177506592690
+      },
+      {
+       "event": "chain",
+       "tid": 8832,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 8832,
+         "wait_time_raw": 44346,
+         "switches": 22
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506592690,
+       "query_after_filetime_100ns": 134367177506592690,
+       "emitted_filetime_100ns": 134367177506592690
+      },
+      {
+       "event": "chain",
+       "tid": 9584,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 2,
+         "pid": 7560,
+         "tid": 9584,
+         "wait_time_raw": 44344,
+         "switches": 4
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506592690,
+       "query_after_filetime_100ns": 134367177506612766,
+       "emitted_filetime_100ns": 134367177506612766
+      },
+      {
+       "event": "chain",
+       "tid": 9748,
+       "complete": true,
+       "error": 0,
+       "cycle": false,
+       "required_nodes": 1,
+       "nodes": [
+        {
+         "kind": 8,
+         "status": 3,
+         "pid": 7560,
+         "tid": 9748,
+         "wait_time_raw": 44471,
+         "switches": 18
+        }
+       ],
+       "query_before_filetime_100ns": 134367177506612766,
+       "query_after_filetime_100ns": 134367177506612766,
+       "emitted_filetime_100ns": 134367177506612766
+      },
+      {
+       "event": "complete",
+       "cpu": {
+        "created_100ns": 134367177453616684,
+        "exited_100ns": 0,
+        "kernel_100ns": 1562500,
+        "user_100ns": 1250000
+       },
+       "emitted_filetime_100ns": 134367177506612766
+      }
+     ],
+     "stop_reason": null,
+     "invalid_records": 0,
+     "output_truncated": false,
+     "stderr": "",
+     "later_samples": [
+      {
+       "status": "observed",
+       "child_pid": 7560,
+       "returncode": 0,
+       "records": [
+        {
+         "event": "identity",
+         "pid": 7560,
+         "parent_pid": 5668,
+         "cpu": {
+          "created_100ns": 134367177453616684,
+          "exited_100ns": 0,
+          "kernel_100ns": 2500000,
+          "user_100ns": 2031250
+         },
+         "reported_threads": 19,
+         "emitted_filetime_100ns": 134367177604271708
+        },
+        {
+         "event": "threads",
+         "count": 19,
+         "truncated": true,
+         "emitted_filetime_100ns": 134367177604349580
+        },
+        {
+         "event": "chain",
+         "tid": 604,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 604,
+           "wait_time_raw": 44345,
+           "switches": 3
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606445806,
+         "query_after_filetime_100ns": 134367177606465880,
+         "emitted_filetime_100ns": 134367177606465880
+        },
+        {
+         "event": "chain",
+         "tid": 2824,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 2824,
+           "wait_time_raw": 44892,
+           "switches": 457
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606465880,
+         "query_after_filetime_100ns": 134367177606465880,
+         "emitted_filetime_100ns": 134367177606485948
+        },
+        {
+         "event": "chain",
+         "tid": 3460,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 3460,
+           "wait_time_raw": 44348,
+           "switches": 3
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606485948,
+         "query_after_filetime_100ns": 134367177606485948,
+         "emitted_filetime_100ns": 134367177606485948
+        },
+        {
+         "event": "chain",
+         "tid": 3840,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 3840,
+           "wait_time_raw": 44348,
+           "switches": 3
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606485948,
+         "query_after_filetime_100ns": 134367177606506036,
+         "emitted_filetime_100ns": 134367177606506036
+        },
+        {
+         "event": "chain",
+         "tid": 4052,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 4052,
+           "wait_time_raw": 44342,
+           "switches": 6
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606506036,
+         "query_after_filetime_100ns": 134367177606506036,
+         "emitted_filetime_100ns": 134367177606506036
+        },
+        {
+         "event": "chain",
+         "tid": 4344,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 4344,
+           "wait_time_raw": 44349,
+           "switches": 14
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606523560,
+         "query_after_filetime_100ns": 134367177606523560,
+         "emitted_filetime_100ns": 134367177606523560
+        },
+        {
+         "event": "chain",
+         "tid": 5000,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 5000,
+           "wait_time_raw": 44344,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606523560,
+         "query_after_filetime_100ns": 134367177606543637,
+         "emitted_filetime_100ns": 134367177606543637
+        },
+        {
+         "event": "chain",
+         "tid": 5036,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 5036,
+           "wait_time_raw": 44892,
+           "switches": 493
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606543637,
+         "query_after_filetime_100ns": 134367177606543637,
+         "emitted_filetime_100ns": 134367177606543637
+        },
+        {
+         "event": "chain",
+         "tid": 6912,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 6912,
+           "wait_time_raw": 44820,
+           "switches": 3
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606543637,
+         "query_after_filetime_100ns": 134367177606563730,
+         "emitted_filetime_100ns": 134367177606563730
+        },
+        {
+         "event": "chain",
+         "tid": 7048,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 7048,
+           "wait_time_raw": 45305,
+           "switches": 4
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606563730,
+         "query_after_filetime_100ns": 134367177606583802,
+         "emitted_filetime_100ns": 134367177606583802
+        },
+        {
+         "event": "chain",
+         "tid": 7152,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 7152,
+           "wait_time_raw": 44342,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606583802,
+         "query_after_filetime_100ns": 134367177606583802,
+         "emitted_filetime_100ns": 134367177606583802
+        },
+        {
+         "event": "chain",
+         "tid": 7796,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 7796,
+           "wait_time_raw": 44351,
+           "switches": 191
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606583802,
+         "query_after_filetime_100ns": 134367177606603880,
+         "emitted_filetime_100ns": 134367177606603880
+        },
+        {
+         "event": "chain",
+         "tid": 8256,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 3,
+           "pid": 7560,
+           "tid": 8256,
+           "wait_time_raw": 45313,
+           "switches": 616
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606603880,
+         "query_after_filetime_100ns": 134367177606603880,
+         "emitted_filetime_100ns": 134367177606603880
+        },
+        {
+         "event": "chain",
+         "tid": 8364,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 8364,
+           "wait_time_raw": 44344,
+           "switches": 2
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606603880,
+         "query_after_filetime_100ns": 134367177606623962,
+         "emitted_filetime_100ns": 134367177606623962
+        },
+        {
+         "event": "chain",
+         "tid": 8832,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 8832,
+           "wait_time_raw": 44346,
+           "switches": 22
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606623962,
+         "query_after_filetime_100ns": 134367177606623962,
+         "emitted_filetime_100ns": 134367177606623962
+        },
+        {
+         "event": "chain",
+         "tid": 9584,
+         "complete": true,
+         "error": 0,
+         "cycle": false,
+         "required_nodes": 1,
+         "nodes": [
+          {
+           "kind": 8,
+           "status": 2,
+           "pid": 7560,
+           "tid": 9584,
+           "wait_time_raw": 44344,
+           "switches": 4
+          }
+         ],
+         "query_before_filetime_100ns": 134367177606623962,
+         "query_after_filetime_100ns": 134367177606644032,
+         "emitted_filetime_100ns": 134367177606644032
+        },
+        {
+         "event": "complete",
+         "cpu": {
+          "created_100ns": 134367177453616684,
+          "exited_100ns": 0,
+          "kernel_100ns": 2500000,
+          "user_100ns": 2031250
+         },
+         "emitted_filetime_100ns": 134367177606644032
+        }
+       ],
+       "stop_reason": null,
+       "invalid_records": 0,
+       "output_truncated": false,
+       "stderr": ""
+      }
+     ]
+    },
+    "clock": {
+     "status": "aligned-origin",
+     "origin": {
+      "pid": 7560,
+      "before_filetime_100ns": 134367177623766015,
+      "after_filetime_100ns": 134367177623766015
+     },
+     "assumption": "stable host UTC",
+     "process_created_filetime_100ns": 134367177453616684,
+     "creation_to_origin_100ns": [
+      170149331,
+      170149331
+     ]
+    },
+    "shell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "case": "test/test_windows_share_script.py::test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands[powershell.exe-path]",
+    "mocked_smb": true,
+    "case_sha256": "5a2d762bdcad69375b2dbc70be94117488e4715014c655af8175ede34433e584",
+    "exception_type": "TimeoutExpired",
+    "harness": {
+     "steps": [
+      {
+       "sequence": 1,
+       "phase": "entry",
+       "event": "completed",
+       "elapsed_ms": 46
+      },
+      {
+       "sequence": 2,
+       "phase": "import-modules",
+       "event": "started",
+       "elapsed_ms": 77
+      },
+      {
+       "sequence": 3,
+       "phase": "import-modules",
+       "event": "completed",
+       "elapsed_ms": 2735
+      },
+      {
+       "sequence": 4,
+       "phase": "parse-source",
+       "event": "started",
+       "elapsed_ms": 2736
+      },
+      {
+       "sequence": 5,
+       "phase": "parse-source",
+       "event": "completed",
+       "elapsed_ms": 9554
+      },
+      {
+       "sequence": 6,
+       "phase": "extract-helpers",
+       "event": "started",
+       "elapsed_ms": 9554
+      },
+      {
+       "sequence": 7,
+       "phase": "extract-helpers",
+       "event": "completed",
+       "elapsed_ms": 11150
+      },
+      {
+       "sequence": 8,
+       "phase": "run-case",
+       "event": "started",
+       "elapsed_ms": 11152
+      }
+     ],
+     "invalid_records": 0,
+     "trace_complete": false,
+     "last_phase": {
+      "sequence": 8,
+      "phase": "run-case",
+      "event": "started",
+      "elapsed_ms": 11152
+     },
+     "runtime": "5.1.26100.33438",
+     "clock": {
+      "status": "aligned-origin",
+      "origin": {
+       "pid": 7560,
+       "before_filetime_100ns": 134367177511776722,
+       "after_filetime_100ns": 134367177512256730
+      },
+      "assumption": "stable host UTC",
+      "process_created_filetime_100ns": 134367177453616684,
+      "creation_to_origin_100ns": [
+       58160038,
+       58640046
+      ]
+     }
+    }
+   }
+  }
+ }
+}

@@ -120,5 +120,13 @@ def test_welcome_and_view_share_the_scan_root_controller(qapp, window, monkeypat
         return 0
     monkeypatch.setattr(main_module.VolumesDialog, "exec", execute)
     window._actions["volumes"].trigger()
+    # A widget mouse event needs actual layout/viewport geometry, including after async drive discovery.
+    window.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+    window.show()
+    qapp.processEvents()
+    window.welcome.scroll.ensureWidgetVisible(window.welcome._overview)
+    qapp.processEvents()
+    assert window.welcome._overview.isVisibleTo(window) and window.welcome._overview.isEnabled()
+    assert window.welcome._overview.rect().isValid()
     QTest.mouseClick(window.welcome._overview, Qt.MouseButton.LeftButton)
     assert requested == ["D:/", "D:/"]

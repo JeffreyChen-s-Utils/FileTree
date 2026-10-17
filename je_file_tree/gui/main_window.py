@@ -39,6 +39,9 @@ from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import elevation, file_actions, shell_integration
 from je_file_tree.gui.locale_font import language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
+from je_file_tree.gui.elevation_dialog import ElevationDialog
+from je_file_tree.gui.startup_state import WorkspaceState
+from je_file_tree.gui.scan_preferences import MAX_SCAN_WORKERS as _MAX_SCAN_WORKERS, SCAN_FLAGS, ScanDefaults
 from je_file_tree.gui.special_files import SpecialFilesDialog
 from je_file_tree.gui.live_compare import LiveCompareDialog
 from je_file_tree.gui.git_history import GitHistoryDialog
@@ -56,6 +59,10 @@ from je_file_tree.gui.copy_dialog import CopyDialog
 from je_file_tree.gui.duplicate_link_dialog import DuplicateLinksDialog
 from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.gui.report_dialog import ReportDialog
+from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
+from je_file_tree.gui.entry_report import EntryReportDialog
+from je_file_tree.gui.failed_dialog import FailedEntriesDialog
+from je_file_tree.gui.entry_move_prompt import confirm_entry_move
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -73,7 +80,7 @@ from je_file_tree.gui.trash_worker import TrashWorker
 from je_file_tree.gui.trash_undo import TrashUndo
 from je_file_tree.gui.recent_actions import RecentActions, journal_folder
 from je_file_tree.gui.welcome import WelcomePage
-from je_file_tree.gui.worker_lifecycle import after_threads, queue_worker
+from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.folder_validation import FolderDrops
 from je_file_tree.gui.themes import ThemeMenu
@@ -87,13 +94,13 @@ LIVE_REFRESH_MS = 700
 _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
+_MAX_REFUSAL_NOTICE = 1024
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
 SEARCHES_KEY = "saved_searches"
 CLEANUP_POLICY_KEY = "cleanup_policy"
 SCAN_WORKERS_KEY = "scan_workers"
-_MAX_SCAN_WORKERS = 32
 _CHART_SETTINGS = ("chart_mode", "treemap_levels", "treemap_colours", "tree_orientation")
 
 
@@ -132,7 +139,7 @@ class MainWindow(QMainWindow):
         self._journal = OperationJournal(journal_folder())
         self._init_scan_state()
         self._trash_worker: TrashWorker | None = None
-        self._path_dialogs: set[QDialog] = set()
+        self._path_dialogs, self._settings_dialogs = set[QDialog](), set[WorkerDialog]()
         self._trash_rescans: list[Node] = []
         self._closing, self._close_waiting, self._close_ready = False, False, False
         self._analyser: AnalyseWorker | None = None
@@ -174,6 +181,8 @@ class MainWindow(QMainWindow):
         self._restore_cleanup_policy()
 
     def _init_scan_state(self) -> None:
+        self._restart_arguments: Callable[[], list[str]] | None = None
+        self._scan_defaults: ScanDefaults | None = None
         self._worker: ScanWorker | None = None
         self._scan_workers: set[ScanWorker] = set()
         self._pending_scan: ScanWorker | None = None
@@ -633,11 +642,34 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
 
     def _without_managed(self, nodes: list[Node]) -> list[Node]:
-        blocked = [node for node in nodes if system_file(node.path) is not None]
+        # 10k managed refusals: the old full warning label took 5.14 s to display.
+        blocked, allowed = [], []
+        for node in nodes:
+            (blocked if system_file(node.path) is not None else allowed).append(node)
         if blocked:
-            lines = '\n'.join(f"{node.path}: {tr('trash_skip_system_managed')}" for node in blocked)
-            QMessageBox.warning(self, tr('trash_confirm_title'), tr('trash_skipped', names=lines))
-        return [node for node in nodes if node not in blocked]
+            self._show_skipped([(node, "system_managed") for node in blocked])
+        return allowed
+
+    def _show_skipped(self, skipped: Sequence[tuple[Node, str]]) -> None:
+        """Keep small notices familiar; show every large refusal in a lazy read-only table."""
+        if len(skipped) <= _LISTED_NAMES:
+            lines = "\n".join(f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in skipped)
+            text = tr("trash_skipped", names=lines)
+            if len(text) <= _MAX_REFUSAL_NOTICE and "<" not in text and ">" not in text:
+                QMessageBox.warning(self, tr("trash_confirm_title"), text)
+                return
+        self._show_entry_report(SkippedEntriesDialog(skipped, self))
+
+    def _show_entry_report(self, dialog: EntryReportDialog) -> None:
+        """Own a complete read-only report until dismissal, serializing source actions."""
+        self._path_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
+            dialog.deleteLater()
 
     def _summary_ready(self, summary: Summary) -> None:
         self.results.apply_summary(summary)
@@ -663,6 +695,8 @@ class MainWindow(QMainWindow):
                                             or not self._proposal_current(proposal))):
             return
         chosen = self._without_managed(chosen)
+        if self._closing:
+            return
         reasons = self.results.cleanup.reasons_for(chosen) if proposal is None else proposal.reasons
         if reasons and chosen:
             chosen = self._review_cleanup(chosen, reasons, root)
@@ -671,25 +705,28 @@ class MainWindow(QMainWindow):
         approvals = {node: protection_of(node.path, self._protected) for node in chosen}
         if not self._confirm_protected(chosen):
             return
-        answer = self._confirm_copy_trash(chosen, copies) if copies is not None else QMessageBox.question(
+        answer = self._confirm_copy_trash(chosen, copies) if copies is not None else confirm_entry_move(
             self, tr("trash_confirm_title"), self._trash_question(chosen))
         if answer != QMessageBox.StandardButton.Yes or proposal is not None and not self._proposal_current(proposal):
             return
         if self._worker is not None or self.operation_busy or self.results.tree_model.root is not root:
-            lines = "\n".join(f"{node.path}: {tr('trash_skip_outside')}" for node in chosen)
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names=lines))
+            self._show_skipped([(node, "outside") for node in chosen])
             return
         if self.results.duplicates.running:
             self.results.duplicates.stop()
         decisions = self.results.duplicates.decisions_for(chosen)
-        explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items()}
-        explanations.update((node, "duplicates") for group in decisions for node in group.files if node in chosen)
+        # 20k captured duplicate members: repeated selected-list searches took 1.55 s.
+        selected = set(chosen)
+        explanations = {node: f"cleanup:{group.key}" for node, group in reasons.items() if node in selected}
+        explanations.update((node, "duplicates") for group in decisions for node in group.files if node in selected)
         audit = JournalApproval(self._journal, explanations)
         worker = TrashWorker(root, chosen, self._protected, approvals, self, decisions=decisions, audit=audit)
+        if self.results.outcome is not None:
+            worker.summary_now = self.results.outcome.now
         worker.proposal_context = proposal.report.context if proposal is not None else None
         worker.proposal_check = (lambda: proposal.store.status(proposal.report)) if proposal is not None else None
         if copies is not None:
-            worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in chosen),
+            worker.copy_approval = CopyApproval(tuple(proof for proof in copies.proofs if proof.item.node in selected),
                                                 copies.redirect)
         self._undo.expire()
         worker.allow_undo = True
@@ -715,13 +752,14 @@ class MainWindow(QMainWindow):
         return False
 
     def _confirm_copy_trash(self, nodes: list[Node], copies: CopyApproval) -> QMessageBox.StandardButton:
+        selected = set(nodes)
         question = QMessageBox(QMessageBox.Icon.Question, tr("trash_confirm_title"), "",
                               QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(self._trash_question(nodes) + "\n\n" + tr("copy_trash_confirm")
                          + ("\n\n" + tr("copy_redirect") if copies.redirect else ""))
         question.setDetailedText("\n\n".join(f"{proof.item.source}\n→ {proof.item.destination}"
-                                            for proof in copies.proofs if proof.item.node in nodes))
+                                            for proof in copies.proofs if proof.item.node in selected))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         return question.exec()
 
@@ -752,15 +790,15 @@ class MainWindow(QMainWindow):
         moved_size = format_size(sum(node.size for node in moved), self._unit)
         if moved:
             self._analyser = None
-            if self.results.outcome is None or self.results.outcome.result.hard_links is None:
-                self.results.forget(moved)
+            outcome = self.results.outcome
+            removed = worker.removed_summary if worker is not None else None
+            if (outcome is not None and outcome.result.hard_links is None and removed is not None
+                    and removed.now == outcome.now):
+                self.results.forget(moved, removed=removed)
         if failed:
-            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
-                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
-            QMessageBox.warning(self, tr("trash_confirm_title"), message + self._holder_lines(result))
+            self._show_failed(result)
         if result.skipped:
-            lines = [f"{node.path}: {tr(f'trash_skip_{reason}')}" for node, reason in result.skipped]
-            QMessageBox.warning(self, tr("trash_confirm_title"), tr("trash_skipped", names="\n".join(lines)))
+            self._show_skipped(result.skipped)
         if result.journal_errors:
             QMessageBox.warning(self, tr("action_recent_actions"),
                                 tr("journal_write_failed", reason="\n".join(result.journal_errors)))
@@ -771,6 +809,24 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(done + ("\n" + unavailable if unavailable else ""), _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
         QTimer.singleShot(0, self._rescan_after_trash)
+
+    def _show_failed(self, result: MoveResult) -> None:
+        """Keep brief warnings; retain all large/limited diagnostic details in a lazy report."""
+        failed = result.failed
+        if not failed:
+            return
+        reports = (result.holders.get(node) for node in failed)
+        brief = len(failed) <= _LISTED_NAMES and all(
+            report is None or (not report.error and len(report.holders) <= _LISTED_NAMES) for report in reports)
+        if brief:
+            message = (tr("trash_failed", name=failed[0].name) if len(failed) == 1 else
+                       tr("trash_failed_many", count=format_count(len(failed)), names=self._name_lines(failed)))
+            text = message + self._holder_lines(result)
+            if len(text) <= _MAX_REFUSAL_NOTICE and "<" not in text and ">" not in text:
+                QMessageBox.warning(self, tr("trash_confirm_title"), text)
+                return
+        # 1k failures: the old 431k-character label took 2.10 s and omitted query errors.
+        self._show_entry_report(FailedEntriesDialog(failed, result.holders, self))
 
     def _report_copy_errors(self, result: MoveResult | None) -> None:
         if result is not None and result.copy_errors:
@@ -814,9 +870,7 @@ class MainWindow(QMainWindow):
         if len(guarded) > _LISTED_NAMES:
             lines.append(tr("trash_more", count=format_count(len(guarded) - _LISTED_NAMES)))
         question = tr("protected_question", count=format_count(len(guarded)), names="\n".join(lines))
-        answer = QMessageBox.warning(self, tr("protected_title"), question,
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                                     QMessageBox.StandardButton.No)
+        answer = confirm_entry_move(self, tr("protected_title"), question, protected=True)
         return answer == QMessageBox.StandardButton.Yes
 
     def _trash_question(self, nodes: list[Node]) -> str:
@@ -1126,14 +1180,14 @@ class MainWindow(QMainWindow):
         self._follow.shutdown(wait=wait)
         self._updates.shutdown(wait=wait)
         self._undo.shutdown(wait=wait)
-        for dialog in self._path_dialogs.copy():
+        for dialog in (*self._path_dialogs, *self._settings_dialogs):
             dialog.shutdown(wait=wait)
             if wait:
                 dialog.reject()
         self._bin_labels.shutdown(wait=wait)
         if self._trash_worker is not None:
             worker = self._trash_worker
-            worker.cancel()
+            worker.cancel(discard_results=True)
             if wait:
                 wait_for(worker)
                 self._trash_worker = None
@@ -1160,7 +1214,8 @@ class MainWindow(QMainWindow):
             wait_for(worker)
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("splitter", self.results.splitter.saveState())
-        self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
+        if self._scan_defaults is None:
+            self.settings.setValue("include_hidden", self._actions["hidden"].isChecked())
 
     # --- drag and drop ----------------------------------------------------
 
@@ -1400,6 +1455,8 @@ class MainWindow(QMainWindow):
             self.pending_source_workers()
         if self._operations is not None:
             self._operations.refresh(self)
+        self._actions["elevate"].setEnabled(
+            not self._closing and not self.operation_busy and not self._settings_dialogs)
         scanning = self._worker is not None or self.operation_busy
         self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
@@ -1577,17 +1634,42 @@ class MainWindow(QMainWindow):
 
         When the prompt is declined, this copy keeps running and says so.
         """
-        arguments = [self._last_path] if self._last_path else []
-        if elevation.relaunch_elevated(arguments):
-            self.quit_application()
+        if self._closing or self._settings_dialogs or self.operation_busy:
             return
-        self.statusBar().showMessage(tr("elevate_declined"), _STATUS_TIMEOUT_MS)
+        try:
+            arguments = (self._restart_arguments() if self._restart_arguments is not None
+                         else WorkspaceState((self._last_roots or self._last_path or None,),
+                                             options=(self._scan_options(),)).arguments())
+        except ValueError as error:
+            self.statusBar().showMessage(tr("elevate_failed", reason=str(error)), _STATUS_TIMEOUT_MS)
+            return
+        dialog = ElevationDialog(arguments, self)
+        self._settings_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
+            dialog.deleteLater()
+            if not self._closing:
+                self._update_actions()
+        if self._closing:
+            return
+        if dialog.worker.started_copy:
+            self.quit_application()
+        else:
+            message = (tr("elevate_failed", reason=dialog.worker.error) if dialog.worker.error is not None
+                       else tr("elevate_declined"))
+            self.statusBar().showMessage(message, _STATUS_TIMEOUT_MS)
 
     def edit_exclusions(self) -> None:
         """Edit the folders to skip while scanning; they apply from the next scan."""
         dialog = ExclusionsDialog(self.exclusions(), self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
+        if self._scan_defaults is not None:
+            self._scan_defaults.exclude = tuple(dialog.patterns())
         self.settings.setValue(EXCLUSIONS_KEY, dialog.patterns())
         self.statusBar().showMessage(tr("exclusions_saved", count=format_count(len(dialog.patterns()))),
                                      _STATUS_TIMEOUT_MS)
@@ -1608,10 +1690,17 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def edit_shell_integration(self) -> None:
-        """Open explicit Explorer settings; cancel leaves the registry untouched."""
-        if shell_integration.supported():
-            dialog = ShellIntegrationDialog(self)
+        """Keep the native settings worker and modal guard owned until every request joins."""
+        if (self._closing or self._settings_dialogs or self.operation_busy
+                or not shell_integration.supported()):
+            return
+        dialog = ShellIntegrationDialog(self)
+        self._settings_dialogs.add(dialog)
+        try:
             dialog.exec()
+        finally:
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
             dialog.deleteLater()
 
     def show_special_files(self) -> None:
@@ -1680,14 +1769,25 @@ class MainWindow(QMainWindow):
 
     def exclusions(self) -> list[str]:
         """The folder name patterns and folder paths that scans skip (the ``exclusions`` setting)."""
+        if self._scan_defaults is not None:
+            return list(self._scan_defaults.exclude)
         value = self.settings.value(EXCLUSIONS_KEY, [])
         if isinstance(value, str):  # an INI file keeps a one-item list as a plain string
             return [value] if value else []
         return [str(pattern) for pattern in value or []]
 
+    def restore_scan_preferences(self, options: ScanOptions, defaults: ScanDefaults) -> None:
+        """Apply captured choices without emitting preference writes or starting any operation."""
+        self._scan_defaults = defaults
+        for action, field in SCAN_FLAGS:
+            with QSignalBlocker(self._actions[action]):
+                self._actions[action].setChecked(getattr(options, field))
+
     def _scan_options(self, *, exact_allocation: bool = False) -> ScanOptions:
         return ScanOptions(include_hidden=self._actions["hidden"].isChecked(), exclude=tuple(self.exclusions()),
-                           gentle=self._actions["gentle"].isChecked(), workers=read_workers(self.settings),
+                           gentle=self._actions["gentle"].isChecked(),
+                           workers=(self._scan_defaults.workers if self._scan_defaults is not None
+                                    else read_workers(self.settings)),
                            file_times=self._actions["capture_file_times"].isChecked(),
                            windows_owners=self._actions["capture_owners"].isChecked(),
                            exact_windows_allocation=exact_allocation or self._actions["exact_allocation"].isChecked(),
@@ -1697,8 +1797,10 @@ class MainWindow(QMainWindow):
         """Persist bounded concurrency for new scans and branch rescans, leaving running workers alone."""
         value, accepted = QInputDialog.getInt(self, tr("action_scan_workers"),
                                              tr("workers_prompt", default=DEFAULT_WORKERS),
-                                             read_workers(self.settings), 1, _MAX_SCAN_WORKERS, 1)
+                                             self._scan_options().workers, 1, _MAX_SCAN_WORKERS, 1)
         if accepted:
+            if self._scan_defaults is not None:
+                self._scan_defaults.workers = value
             self.settings.setValue(SCAN_WORKERS_KEY, value)
 
     def choose_saved_scan(self) -> None:

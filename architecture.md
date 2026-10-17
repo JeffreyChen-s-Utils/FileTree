@@ -52,6 +52,132 @@ and uses captured data; source operations, worker ownership and §6 factory cont
 it explicitly. Nonblocking retirement must not let background traversal compete with an active GUI
 event. Normal dispatcher idle transitions still release workers between events.
 
+`FolderTreeModel` batches persistent-index row lookup by visible parent for selections of at least
+sixteen distinct entries, storing requested file rows only. Small selections keep C list searches;
+unopened branches are not visited. Index lookup verifies the current model root and active virtual
+ancestors, so detached branches, foreign roots and obsolete nested archive members cannot be revived.
+An existing real or virtual subtree can remain the model root without changing its original parent.
+After a post-scan mutation, parents of resized entries and their ancestors retain a marker that
+invalidates only their default scanner-order shortcut. Removal starts above each changed direct
+parent, since its surviving children keep their relative sizes; replacement starts at the replaced
+entry's parent. The model sorts marked sibling groups only when queried, retains the marker across
+other column sorts, prunes detached markers and clears them on root reset. Untouched folders and
+direct sibling deletions retain the original list fast path; no descendant traversal or physical
+child-list rewrite is added.
+Only completed-tree `sort()` emits `VerticalSortHint` on both layout signals, following the
+[Qt same-parent, unchanged-membership contract](https://doc.qt.io/qtforpython-6.11/PySide6/QtCore/QAbstractItemModel.html).
+Live sorts, refreshes and branch changes retain `NoLayoutChangeHint`, since their membership may change.
+`hasChildren` reads an existing order snapshot or raw/archive child presence without creating a sort,
+copy or presentation-group registration. Explicit live row queries freeze even initially empty groups
+until refresh; merely checking the expander does not freeze an unqueried group.
+Repeated row reads return an existing sorted/frozen sibling order before consulting raw/archive
+children or sort metadata. Cache misses retain the lazy scanner-order shortcut. Existing root,
+layout/structure and archive-preview notifications invalidate orders, including empty live snapshots.
+
+Unit/capacity changes instead emit column- and role-specific
+[same-parent `dataChanged` ranges](https://doc.qt.io/qtforpython-6/PySide6/QtCore/QAbstractItemModel.html#PySide6.QtCore.QAbstractItemModel.dataChanged)
+for the root row and previously queried nonempty sibling groups. The model records those parents
+without indexing every file, prunes obsolete groups with structural cache invalidation and clears
+them on root reset. Formatting retains frozen live orders and skips unchanged values.
+`TreeFilter` connects its proxy source only while filtering is active; clearing the query releases
+the mapping and owned source signal connections. `tree_projection.ExpandedTreeProxy` uses
+`QAbstractProxyModel` with lazy per-parent lists of borrowed real nodes and their source row numbers.
+The worker still decides membership over expanded subtrees; the GUI maps only explicitly queried
+sibling groups from `FolderTreeModel.filesystem_rows`, preserving its sorted/frozen order. Whole
+virtual archive groups return no real candidates without reading their members. No Node tree is copied.
+Default cells use `entry_data`, and expansion reads `has_entry_children` / `can_preview` without
+allocating source indexes for each displayed leaf. Native read-only flags are reused only for the
+unmodified source implementation; source data/flag overrides and custom row predicates still delegate.
+Cached source parents/row numbers make reverse mapping independent of a file's sibling position.
+Row coordinates use compact 64-bit buffers. Forward mapping binary-searches those coordinates;
+persistent-node remapping batches only its requested source positions with `indexes_for`, avoiding
+a Python position dictionary for every visible file. Group buffers hold references, not cloned nodes.
+Filtered-out ancestors and foreign/detached/virtual entries cannot become alternate roots.
+Source layout/row changes remap surviving persistent nodes/columns with the source's layout hint;
+membership invalidation uses `NoLayoutChangeHint`. Reset/destruction clears references and disconnecting
+an inactive proxy drops all groups. Formatting forwards only materialized groups: binary searches
+translate affected source row ranges to visible rows while preserving column/role bounds. Formatting
+never reevaluates name predicates. The existing controller still cancels/requeries structural changes.
+After validating a worker reply, the proxy stores its captured expanded-folder set as `searched`.
+For an unsearched parent, including a collapsed root, `hasChildren` skips child mapping and only
+preserves the source's lazy archive-fetch offer. The same shortcut applies to a physical file with
+no scanned children even if its preview was expanded: virtual members never match the tree filter.
+Captured non-directory entries with actual children keep their normal filtered mapping. Searched
+directory groups and the top-level root container check their lazy filtered rows.
+`None` means no worker snapshot is available and keeps Qt's
+ordinary child-presence behavior for standalone proxies. Root reset drops captured references, retaining an empty
+snapshot only when one previously existed; clearing the filter restores `None` after unbinding.
+Its row predicate reads `FolderTreeModel.node_at(row, source_parent)` directly. This identity-only
+lookup uses the same lazy `_ordered` cache and row bounds as Qt indexes, retaining frozen live rows
+without allocating a temporary index or dispatching `NODE_ROLE` for each candidate. It returns no
+filesystem node for virtual preview rows, virtual roots or missing rows. An empty source cannot be
+accepted through a `None`-root identity comparison. The compatibility predicate remains available to explicit callers and custom overrides.
+After the stale-worker/root/cancellation guards, `TreeFilter._ready` compares the full accepted-identity
+sets. A bound proxy is invalidated only when those identities change; equal counts with different
+identities still invalidate. Source sort/layout/reset/row notifications still rebuild source
+mappings as needed; an unchanged worker reply does not repeat that work. An unbound proxy still binds
+and restores the filtered view even when its retained identity set matches the new reply.
+During the synchronous `setModel` and header-state restoration, a nested, exception-safe
+`FolderTreeModel.preserve_sort` scope ignores identical sort requests, avoiding Qt's two redundant
+relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,
+selection and current indexes; explicit refresh and ordinary repeated sorts retain live-snapshot semantics.
+
+Result-table `TableProxy` retains Qt filtering but delegates sorting to `_TableModel`. A separate
+row-ordinal permutation leaves captured records intact and evaluates each sort key once; strings
+use UTF-16 code units to match QString, numbers retain raw values, and ties retain prior display order.
+Replacement resets the permutation and reapplies the active column/direction. Sorting emits vertical
+layout hints and remaps persistent cells by original ordinal (including duplicate row references),
+so current/selected rows follow their records. Refresh rechecks active keys before repainting. Other
+flat dialogs retain their existing Qt comparison proxies. No tree traversal or source I/O is added.
+
+The controller records the freshly initialized tree/header's generated selection models and only
+new models created during its own `setModel` calls. Qt deliberately retains replaced selection models
+([ownership contract](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QAbstractItemView.html#PySide6.QtWidgets.QAbstractItemView.setModel)).
+Keep the tree/header's active shared selection, immediately block and detach retired owned listeners,
+then defer their destruction with `deleteLater`. Later caller-supplied models are not adopted, even
+when parented to the tree; another view may still use them. Filter switching restores the current
+node, visible selection, expansion and header state before normal interaction resumes.
+
+For ordinary complete-column selections, `TreeFilter` captures node references directly from selected
+row intervals before rebinding. Source `plain_row_selection` requires the concrete standard model,
+unchanged instance data/flags/entry behavior and the original node-role handler. Custom models,
+proxy data/flags overrides and partial-column ranges retain Qt's `selectedRows` semantics. Source
+and projection `row_nodes` read only their current sibling order; virtual entries are excluded.
+Copy only selected node references before callbacks can sort or mutate the source, then use normal
+identity-based restoration. No per-cell Qt expansion, descendants or filesystem work is added.
+
+`FolderTreeModel.selection_rows` groups selected references by parent and resolves each group in a
+temporary position map. At least sixteen distinct entries use one sibling pass; smaller groups
+retain existing row lookup. Preserve input order/duplicates and existing caches without filling the
+shared file-row cache with every selected file. Resolve only requested parents and their current
+sorted/frozen rows; exclude missing, virtual and out-of-scope entries. Instance/subclass overrides
+of `_row_of` or `_prime_rows` keep the prior `_cached_selection_rows` implementation. Generic
+`indexes_for`, persistent-index priming and invalidation remain unchanged. Create only parent indexes.
+`ExpandedTreeProxy.map_selection_rows` validates mapped parents/ancestors,
+then projects coordinates through each group's increasing source-row buffer. The controller sorts
+and merges adjacent row positions, constructing full-column selection indexes only at range endpoints.
+Distinct parents and gaps never merge. One `QItemSelection` update restores the result; the current
+index is restored separately. Source instance overrides of `index`, `parent`, `index_for` or
+`indexes_for`, and proxy overrides of `index`, `parent` or `mapFromSource`, retain the index-based
+mapping path alongside custom model/data/permission fallback. `FolderTreeModel.indexes_for` still
+preserves input order and invalid positions for these callers. Virtual archive entries never authorize
+file actions and remain excluded before either mapping path. No whole-tree or filesystem walk is added.
+
+Selected-folder list analyses use cooperatively cancellable `AnalyseWorker` instances. Changing
+scope, starting/replacing a result or closing invalidates the active reply before retiring its
+worker; closing also stops the scope debounce timer. Retired workers remain owned in the list-worker
+set until finished and are joined by the normal closing fence. `core.analysis.summarise` accepts an
+optional cancellation event, checking traversal, largest-file selection and age counting without
+returning partial totals. Active native capacity calls finish before the worker retires; canceled
+workers suppress capacity and summary replies. Scope replies also require membership in the current
+scan tree, so detached branches cannot refill lists.
+
+`gui.chart_legend.ChartLegend` lays out each category/age label as an indivisible rich-text label
+and wraps only between entries using a small height-for-width layout. Labels retain literal
+accessible text, inherited fonts and palette-based text ink. The layout needs only the bounded
+category/age list; it never walks scan nodes. Ordinary labels replace inserted U+2060 word joiners,
+which triggered expensive first-use Windows font fallback during result-page size calculation.
+
 The macOS 15 arm64 CI job runs the full suite plus `validate_macos_sources.py` in a separate native
 cocoa process. This tool exclusively creates disposable temporary sources, uses production verified
 copy/link APIs, hashes complete resource forks/xattrs, preserves source identity and renders CJK/all
@@ -335,6 +461,15 @@ Native registry creation disposition prevents claiming an existing unowned key; 
 checks limit updates/removal to this verb. Commands quote the executable and absolute `launcher.py`
 entry, whose source path bootstrap works independently of Explorer's working directory; Nuitka starts
 its original executable. Native Properties uses ShellExecuteExW with a fixed verb and item path.
+`ShellIntegrationDialog` owns one native settings worker at a time. Initial registry reads and an
+explicit Save's captured enabled state/translated label run off the GUI thread. Controls stay disabled
+until the read completes or the current write joins; failures remain literal inline text. Cancel before
+Save never writes. Closing during a native call invalidates replies and retains the dialog/owning
+window ownership through `WorkerDialog` and zero-time joins; a started Save continues and is never terminated
+or rolled back by closing. Only a joined successful Save accepts the dialog. Registry ownership/schema
+checks and explicit current-user opt-in remain in the unchanged native helper.
+The window tracks settings dialogs independently from source-operation reviews, preserving existing
+scan/live-monitor readers while settings are open; shutdown retains both kinds until their workers join.
 
 `themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
 palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice
@@ -360,11 +495,43 @@ bytes, while nested folders do not overlap. TypeLocationsWorker replaces the GUI
 drill-down walk. ResultsView rejects obsolete replies on scope/scan/branch changes and exposes the
 folder table alongside matching largest files, with selection, context actions and clipboard support.
 
-`list_transfer` snapshots Qt models only on the GUI thread in ≤128-row / 4 ms turns, observing model
-changes to invalidate mixed captures. Current-list CSV sends text batches over an eight-batch bounded
+`list_transfer` snapshots Qt models only on the GUI thread with at most 128 work units and a cooperative
+4 ms budget per turn; an individual Qt/model callback can exceed that budget. Selected-list capture
+prepares range metadata and ancestor paths incrementally, then heap-merges candidate rows in the
+original model order. Deduplicate by actual parent identity and row, retaining different parent
+columns even when numeric ancestor paths coincide. Full-width ranges retain every cell's enabled/
+selectable flag check without rebuilding Qt's global selection cache for each row. Partial ranges
+use native `isRowSelected`; custom selection classes/Python instance/class method overrides keep the
+original `selectedRows` delegation. Observe model/data/header/row/column changes, view rebinding and
+view/selection destruction to invalidate mixed captures. Reentrant cancellation drops pending rows
+and never restarts a timer or publishes partial text. Current-list CSV sends text batches over an eight-batch bounded
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
 Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
 before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
+`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row during the existing
+cooperative capture turns. One application-owned controller supersedes pending copies across all
+views, rejects stale/reentrant replies, and publishes only complete current results on the GUI thread.
+Observed clipboard changes, application exit, view/ancestor close and explicit top-level hide cancel
+pending preparation; the temporary event filter never consumes events. Finished/canceled captures
+close their text buffers. The public synchronous `copy_table` helper retains its original contract.
+Final string extraction and native clipboard access remain synchronous and cannot be preempted;
+yielding preparation does not establish that the whole operation or custom callbacks are pause-free.
+
+Native clipboard measurement is isolated in `tools.measure_clipboard_tail` and
+`tools.windows_private_clipboard`, gated to disposable hosted Windows runners. A fresh helper
+creates a named create-only noninteractive station and desktop before importing Qt, with a
+protected owner/System DACL. Exact names and noninteractive flags gate clipboard access. The real
+copy shortcut/capture publishes to that private station; a separate base-interpreter child on the
+same desktop validates and joins only the explicitly inherited private handles before reading
+bounded CF_UNICODETEXT. Retain every capture/heartbeat sample, string-extraction
+and setter durations, native readback hash, runtime/source identity, raw output and cleanup result.
+Reader/GUI/helper bounds are 30/45/60 seconds; no interactive/existing-station fallback or elevation.
+Destroy Qt only after a scope recheck, then retire this thread's remaining windows on the private
+desktop (Qt keeps a theme observer window that blocks `SetThreadDesktop`), before restoring original
+handles; an uncertain shutdown
+scope ends only the owned helper without Qt finalization. Validate creation/cleanup before drawing
+native performance conclusions; local modeled checks do not establish the hosted native path.
+
 
 `details_panel` is a persisted collapsible selection pane below the tree. Selection facts use existing
 Node fields; only expanded, completed scans launch a debounced DetailsWorker. `core.details.breakdown`
@@ -841,12 +1008,29 @@ outlines it in the treemap.
 **Free space.** Context menu or Delete → a first question when system or program folders are among the entries
 (`protected.protection_of` against `protected_places()`, read once from the environment; the most specific
 place decides, temporary folders are free) → one confirmation → background validation and
-`QFile.moveToTrash` per entry → `ResultsView.forget` → affected-parent rescans. The tree and the largest-files
+`QFile.moveToTrash` per entry → worker-prepared removed-entry statistics → `ResultsView.forget`
+→ affected-parent rescans. The tree and the largest-files
 list allow several rows to be selected; the entries acted
 on are `node.outermost` of the selection without the scanned folder (an entry inside a chosen folder goes with
-it). `FolderTreeModel.remove` detaches each node and subtracts its totals from every folder above; the
+it). `FolderTreeModel.remove_many` applies all completed moves and invalidates stale drive capacity
+in one general structural layout change, remapping persistent indexes with no sorting hint. The
+[Qt structural-update protocol](https://doc.qt.io/qtforpython-6.10/overviews/qtwidgets-model-view-programming.html)
+explicitly supports a single layout change for discontiguous removals. `core.node.detach_many`
+deduplicates outermost entries and filters each affected parent's captured child list once, preserving
+its list identity and survivor order. It subtracts each parent's combined named totals from ancestors
+without traversing removed or unrelated descendants. Foreign, root and virtual preview entries are
+excluded by the model. The single-entry `remove` delegates to the same path. The
 largest files, per-type and per-age totals and treemap are updated once before the rescans. Entries the system
 refuses stay and are named in a warning.
+
+`TrashWorker` prepares one named `Summary` over only successful moved subtrees, using the displayed
+outcome's frozen age reference. A synthetic root borrows their node references without reparenting or
+reading source paths. `ResultsView.forget(nodes, removed=summary)` applies those deltas and scalar
+ancestor updates without statistical subtree traversal; a mismatched age reference is refused before
+model changes, and the window retains its normal affected-parent rescan path instead of applying it.
+Counted hard-link scopes retain whole-root rebuilding. Stop cancels further moves but finishes totals
+for completed moves. Explicit closing uses `cancel(discard_results=True)` to cancel statistics through
+a separate event while preserving `MoveResult`, journal/copy errors and native worker ownership.
 
 For platform failures, `TrashWorker` calls the read-only `core.lock_holders` diagnostics: Windows
 Restart Manager registers up to 256 scanned files; Linux compares `/proc/*/fd` identities. Warnings
@@ -864,7 +1048,48 @@ and model changes are blocked during the batch; Stop cancels remaining entries a
 These are immediate no-follow checks; Qt's path-based Trash call is not an atomic transaction with the
 identity check, so it does not provide an OS guarantee against concurrent malicious path substitution.
 
-**Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. `TrashWorker`
+`MainWindow._without_managed` partitions recorded Nodes once instead of searching a refused list
+for every survivor. `_show_skipped` retains existing notices for at most eight entries with at most
+1,024 characters and no markup-like text; other preflight, invalidated-root and worker-skip batches
+go to `gui.skipped_dialog`. The shared `gui.entry_report.EntryReportDialog` owns the read-only
+viewport, literal tooltip encoding, full-row details and cancelable clipboard lifecycle; report
+subclasses supply models and translated title/summary text. The refusal `SkippedModel` exposes all captured pairs in original order, formats only requested paths/reasons
+and has no file-operation Node roles. Escape tooltip payloads for Qt rich text while preserving
+literal markup, tabs and newlines; details and clipboard use raw plain text. The modal table uses
+the existing yielding, quoted TSV clipboard capture. Register it in `_path_dialogs` to serialize
+source actions; shutdown cancels pending capture. Returning during owner closing aborts preflight,
+and dismissing the notice does not grant operation approval. No source reads, moves or result cap
+are added by this display path.
+
+`gui.failed_dialog.FailedModel` supplies the same report viewport with all failed Nodes in
+result order and their captured LockReports. It formats diagnostics only on request, keeps every
+observed name/PID, and distinguishes missing/incomplete visibility and raw query errors. These
+observations do not prove the native move failure cause. `_show_failed` preserves a brief notice
+only when count, process count, query-error state, text length and literal text permit it; other
+failures use the complete table. `_show_entry_report` centralizes modal ownership/capture cleanup
+for both report types. No diagnostic query, process action, move retry or authority is introduced.
+GUI failure-flow fixtures model both complete and unsupported holder diagnostics and explicitly
+inspect the modal report. The unattended-test guard dismisses any unhandled failure report and
+fails fixture teardown, preventing a platform-specific dialog from silently awaiting a user.
+
+`gui.entry_move_prompt.confirm_entry_move` presents ordinary Trash and protected-folder Yes/No
+questions with PlainText set before assigning captured names/paths. Preserve Qt's ordinary default
+choice and the protected question's explicit No, standard dismissal results and application modality;
+retire each owned box after dismissal. The existing MainWindow approval/source rechecks remain in
+place. Flow tests inject explicit modeled replies; actual Qt presentation tests restore this presenter
+and verify literal single/bulk/protected text and button/keyboard/close parity with static questions.
+The isolated Linux desktop probe temporarily binds this presenter for one ordinary fixture approval,
+rejects unexpected protected/foreign/additional requests and restores it on every exit. A Qt timer
+declines unexpected modal dialogs during approval and result pumping; it never approves them or
+changes the global static question API. Native source/review/journal/receipt checks still run.
+
+**Audit.** MainWindow captures rule/manual/duplicate reasons in a `JournalApproval`. After all review
+and confirmation gates, one set of final selected Node identities serves duplicate reason lookup
+and verified-copy proof restriction. Cleanup reasons are also narrowed to that reviewed selection;
+unchecked entries leave the audit map. Chosen execution order and original frozen proof order remain
+unchanged; full duplicate groups remain available to the worker for complete pre-operation checks.
+The verified-copy confirmation uses its own selected-identity set to filter frozen path details,
+retaining the existing default-No/plain-text question and all matching receipt paths. `TrashWorker`
 writes all approved events before acting and appends each platform result immediately, preserving Qt's
 optional destination in `MoveReceipt`/`MoveResult.destinations`; skipped entries are appended too.
 A failed approval write prevents moves, while a failed result write preserves the observed success,
@@ -918,6 +1143,69 @@ folder whole without looking inside it, then adds `empty_folders` (only folders 
 outermost); it runs again after a move to the Recycle Bin or a folder rescan. The rules are data
 (`cleanup.RULES`). *Duplicates* is the page below; both list their groups with `grouped_list`.
 
+`grouped_list.GroupedListModel` captures each group's membership as a tuple of original Node
+references, with optional explicit keeper and bounded photo-icon roles. Group indexes use ID zero;
+entry indexes use their one-based group number, avoiding per-cell Qt objects and row wrappers.
+Only requested display/tooltip roles format sizes, dates and paths. Every captured row is immediately
+addressable; group headers have no Node role, and entries remain selectable read-only leaves even
+when their Nodes represent folders. Resets discard prior groups/icons and clear stale selections.
+`fill` configures column geometry before expanding group roots only. For at least 500 groups with
+uniform row heights and no supplied icon collection, it schedules one native delayed layout before the ordered root
+expansions, so Qt can retain its normal signals while
+combining repeated geometry/layout work. Every captured row remains addressable immediately;
+callbacks that request geometry can still cause Qt to perform its ordinary pending layout early.
+Small, variable-height and thumbnail lists keep their original path; the event-pass full layout
+remains and can pause on very large results. Precomputed leaf flags keep
+Qt's necessary wide-layout index checks from repeatedly constructing enum values. Exact duplicates
+retain their existing oldest-first order and explicit keeper labels; similar photos retain the
+existing member bound, thumbnail display and separate authority from exact duplicate decisions.
+
+Completed duplicate estimates call `GroupedListModel.set_group_labels` for only the displayed
+groups. It validates the group count, retains captured member tuples, keepers, icons and units, and
+notifies only each changed root title/tooltip cell. It performs no member sorting or model reset;
+selection, persistent/current indexes, collapsed groups, scroll and column geometry remain intact.
+Separate root notifications avoid Qt traversing intervening member rows in a broad root range.
+The existing worker-identity guard rejects late estimates after replacement or cancellation, and
+the updated savings/issues still gate extra-copy selection. `ListCapture` aborts on these data
+notifications, preventing mixed estimate labels in an in-progress export. New results and changed
+membership retain their reset behavior.
+
+`DuplicatesPanel.choose_kept_copy` replaces only its current decision, clears all previous
+savings/checks, marks the captured member through `GroupedListModel.set_group_keeper`, refreshes
+bounded group labels and starts the existing estimate/check worker. The model validates group and
+member identity before mutation, retains every captured member tuple and notifies only old/new
+keeper first-column display/font cells, including repeated identities. It never reads file metadata
+or sorts members. Current/persistent indexes, selections, collapse and column state survive;
+ordinary viewport resizing can clamp scroll to the available range. The original search result is
+unchanged. Busy/late-worker guards, explicit-keeper bulk exclusions and operation review remain in
+place; membership changes still use their existing rebuilds.
+
+Grouped-list preference changes retain captured membership. `GroupedListModel.set_unit` validates
+the unit and emits size-column display ranges for nonempty groups; `retranslate` notifies the
+column headings and each explicit keeper name. Neither resets the model. CleanupPanel shares
+title/explanation formatting between its initial rebuild and preference updates; its constructor
+keeps the initial column geometry. DuplicatesPanel refreshes bounded exact/photo labels, folder
+matches and status without re-sorting members, rebuilding thumbnails or replacing a running worker.
+`_photo_groups` shares the existing group/member cap between initial capture and label refresh.
+Normal Qt data/header notifications still cancel mixed-format list captures. Selection, current
+and persistent indexes, collapsed groups and column widths survive; viewport resize can clamp scroll.
+
+For Qt 6.9+, `build_view` sets the [native update threshold](https://doc.qt.io/qt-6/qabstractitemview.html#updateThreshold-prop) to zero so grouped size ranges repaint
+the bounded viewport without costly per-index visibility checks. Qt 6.8 uses `_LegacyGroupedView`:
+only uniform-height multi-row size-display ranges schedule Qt's [ordinary delayed layout](https://doc.qt.io/qt-6/qabstractitemview.html#scheduleDelayedItemsLayout), and every
+notification still delegates to Qt's base implementation. Repeated changes share the pending layout.
+Legacy size refreshes and translated-view layouts can still pause on very wide expanded lists;
+these updates provide no fixed latency guarantee.
+Other roles and variable-height photo rows retain normal Qt handling. Both native paths are checked
+on Windows; dependency minimums, workers, captured metadata and operation checks are unchanged.
+
+`GroupedListModel.extra_selection` scans only captured displayed members by identity and builds
+complete-column ranges around explicit keepers. Missing/foreign keepers contribute no ranges; every
+repeated keeper reference is excluded. `DuplicatesPanel.select_extra_copies` admits only completed
+issue-free displayed groups and replaces selection once with `ClearAndSelect`, retaining the current
+index. Normal groups need at most two ranges rather than one Qt selection and signal per extra file.
+Busy or absent estimates leave existing selection intact; file operations retain their normal checks.
+
 Before matching, `coverage_of` checks excluded, unread and inaccessible folders and propagates unknown
 coverage to ancestors. Folder nodes start with `NOT_SCANNED`; successful reads clear it, hidden omissions
 and failed entry stats leave the parent incomplete. A matching incomplete folder is never proposed whole;
@@ -959,6 +1247,32 @@ to start a second copy through the "runas" verb (the UAC prompt) unless the `ask
 off or FileTree already is elevated; if that copy starts, this one exits, and a declined prompt just
 continues. The File menu and the Problems tab (shown when folders were denied) offer the same restart, with
 the scanned folder as its argument. A built program restarts itself; from Python it is `-m je_file_tree`.
+Open-window requests use `ElevationDialog`/`ElevationWorker`: capture arguments on the GUI thread,
+run exactly one native request off-thread, and retain modal settings ownership until a zero-time
+join completes. Close/Escape cannot cancel an issued Windows request. Read the joined worker's
+launch result even after dialog rejection, so a successfully started copy still retires the original
+workspace. Decline/failure keeps it running; errors remain plain text. Duplicate requests and source
+mutation conflicts are refused, and parent closing suppresses late UI callbacks while retaining the worker.
+`native_shell` shares one Unicode Shell structure with Properties. Administrator launch initializes
+STA COM with OLE1 DDE disabled, balances both S_OK/S_FALSE, and uses ShellExecuteExW/runas with
+SEE_MASK_NOASYNC. It joins launch completion without waiting for the new process to exit or requesting
+a process handle. Failed COM initialization never invokes the Shell. Startup remains pre-workspace;
+Properties retains its existing native verb/lifetime and is not moved to a short-lived thread.
+`ScanWorkspace.restart_arguments` captures nonclosing tabs in visual order and the active tab.
+`startup_state.WorkspaceState` distinguishes blank, single-folder and combined scopes, including a
+one-root combined scan. It shares the 16-tab bound with the workspace and the existing 256-root
+combined-scan bound. Ordinary one-tab/one-folder launches retain their command; other scopes use
+versioned internal JSON arguments with strict types, unique fields and a 1 MiB payload bound.
+`app.main` validates before approval, then restores a fresh workspace and dispatches normal read-only
+scan workers after all tabs exist. Invalid input gets a literal, locale-font-aware startup error.
+Version 2 adds immutable `ScanOptions` snapshots: six flags per tab and shared exclusion/worker
+defaults encoded once. `scan_preferences` validates exact booleans, the existing 1–32 worker bound,
+pattern strings and consistent workspace defaults; experimental backends/unknown authority fields
+are refused. Version 1 remains readable and uses saved preferences. Apply all flags through signal
+blockers before scan dispatch. A shared transient `ScanDefaults` serves current/new tabs; explicit
+exclusion/concurrency edits update it and saved settings. Imported flags do not cause preference
+writes on restore/closing. Worker options stay immutable when runtime defaults change.
+No result tree, mutation approval or execution receipt is transferred.
 UAC identifies the executable being elevated, independently of the Qt title/AppUserModelID. Source
 execution elevates Python/pythonw; its administrator-action tooltips explain this identity. Windows
 Nuitka builds embed FileTree product/file descriptions and package-derived product/file versions.
@@ -1007,6 +1321,60 @@ performance, and source preservation does not establish complete coverage after 
 Only the fresh denied-directory fixture's DACL is initialized before capturing the native denial
 baseline; original/restored descriptors are retained and exact equality is required. Set-Acl's
 legacy-to-automatic inheritance conversion must not be counted as successful restoration.
+The disconnect helper emits ordered ASCII `FILETREE_SMB_STEP` JSON records on stderr around runner,
+identity, owned-root/receipt/entry checks, share queries, share ownership and removal. The same native
+commands and 30-second deadline remain in place. `windows_share_probe` retains outcome, actual exit
+code, elapsed time, the last 64 KiB of each output stream, truncation flags and up to 64 parsed steps.
+Malformed step records do not replace the native error. A zero exit without a final complete trace
+is refused; even a completion marker cannot turn a process timeout into success. Each scan attempts
+the helper at most once and always resumes paused reads. Later scan-verification refusal retains
+helper success separately from the failed proof.
+The Python helper emits partial JSON with a nonzero exit on disconnect failure. `Invoke-Probe`
+locally controls native-exit handling, saves that JSON before propagating failure, and leaves it in
+`windows-share.json` through outer cleanup. Failed diagnostics never grant source/share cleanup
+authority or a retry. Mocked PowerShell helper tests disable module auto-loading and replace SMB
+commands; only disposable hosted CI runs real share operations. A native timeout with these step
+observations is still required to diagnose the original intermittent wait.
+The mocked helper tests retain separate `FILETREE_TEST_PHASE` startup/import/parse/extraction/case
+markers, runtime, process outcome and bounded outputs in uniquely named JSON files. The Windows
+matrix always uploads `windows-mocked-share-script-<python>` for seven days. Its subprocess still
+runs once with a 20-second deadline, explicit module imports and SMB-command mocks; complete markers
+cannot turn a timeout into success. A missing first marker only establishes that no harness-entry
+marker was captured. These records do not establish the cause of a native SMB disconnect wait.
+`Start-DisconnectClock` and the mocked harness bracket their separate Stopwatch starts with UTC
+FILETIME samples in `FILETREE_SMB_CLOCK` / `FILETREE_TEST_CLOCK` records. `windows_trace_clock`
+keeps missing/invalid/ambiguous origins explicit and computes creation-to-origin integer offsets
+only when the already observed child PID, identity PID and creation time agree. Clock failures
+never change the existing exit/timeout or step-completion verdict. Receipt read, JSON parse and
+identity comparison have separate markers; buffering zero/one raw outputs preserves the original
+pipeline semantics, guarded by a frozen pre-change function and real PowerShell 5/7 parity cases.
+Both helpers now use `tools/observed_process.run_observed`: one captured child, unchanged 30/20-second
+deadlines and no retry. After five seconds of waiting on a still-live Windows child, start a
+fixed Python observer. If the target remains live, take at most one later sample five seconds before
+the original deadline, only when at least five seconds separate the scheduled samples. Every wait
+subtracts elapsed monotonic time. Collect observer results only after the target exits, preserving
+the first report shape and adding an optional one-entry `later_samples` list. Both observers use the
+runtime's base interpreter when available. This avoids a
+Windows virtual-environment launcher's extra parent; the observer uses only the standard library.
+Two readers drain its stdout/stderr concurrently, retaining at most 64 KiB per stream and discarding
+overflow while reporting truncation; this prevents pipe capacity from stopping the bounded capture.
+Finish cancels/joins the timer, stops/joins only the observer if still live, joins readers and closes
+their streams, retaining partial output and separate read errors. Partial reader-start failure also
+reaps the observer and closes both pipes; caller interruptions are cleaned up and re-raised.
+Its Toolhelp parent check still accepts only a sibling child of the same
+parent, whose original Popen handle is still retained. Read process CPU/creation times and at most
+16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
+querying, refusing recycled/foreign IDs. Before the wait chains, name at most the newest 160 loaded
+modules in load order from a read-only Toolhelp module snapshot (file names only, U-20261017-54), so
+a stall's pending load is visible. Use no cross-process traversal flags, object names,
+memory dumps, privilege changes, debugger attachment or target mutation. The observer emits each
+record immediately and has its own five-second kill timer, so a stalled native diagnostic cannot
+hold up helper termination. Retain partial/error/truncation status separately from actual helper
+exit, output and timeout; every communicate uses only the original deadline's remainder.
+Access-denied, unsupported waits and missing observations remain unknown, never successful proof.
+WCT query entry/return and record emission also carry UTC FILETIME samples, allowing later phase
+correlation without interpreting `wait_time_raw` as elapsed wall time. UTC resolution, clock changes
+and instrumentation overhead limit that correlation; deadlines still use the original monotonic clock.
 Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
 cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
 real share removal after six files were observed. The latter records 254 errors/incomplete coverage
@@ -1015,10 +1383,52 @@ and zero empty-folder proposals; exact DACL restoration and final source identit
 remote-link or concurrency speed claim. Both push/PR Tests runs at that head passed all 14 jobs.
 
 The owned macOS image tool retries hdiutil detach exit 16 at most three times, rechecking the exact
-private image/device/mountpoint before each call. Other native failures and ownership changes refuse
+private image/device/mountpoint before each call. Each ordinary detach includes `-verbose` for native
+diagnostics, with the same target, three-attempt bound and 60-second per-command timeout. Successful
+stdout is retained up to 64 KiB with explicit truncation; failures keep capped stdout/stderr. This
+human-readable output is never ownership, device-selection or cleanup authority.
+Other native failures and ownership changes refuse
 immediately; no force option or host unmount is used. Native image absence and unmounted fixture root
 must still be verified before cleanup. Failed APFS cleanup retains bounded native stdout/stderr and
-the disposable scratch path; retained fixtures never become a successful cleanup claim.
+the disposable scratch path; retained fixtures never become a successful cleanup claim. The phase
+JSON also keeps an ordered `detach_attempts` list (at most three attempts), distinguishing ownership
+refusal, native failure/success and final absence-verification failure. Each native failure retains
+its real code and capped stdout/stderr even if a later ownership check refuses before another call.
+Attempt observations retain checked image/scratch identities, capped image entities and the last
+validated primary-volume metadata. Only after a native busy result and subsequent refusal with a
+fresh, wholly unmounted, same-image/device registration may the tool read `diskutil info -plist`
+once for the previously validated primary volume still uniquely present in that registration.
+The read is joined with the existing 60-second command bound; retain UUID match/mismatch/unknown,
+device/container/physical-store observations and bounded read failures. A UUID observation alone
+never grants another detach. `macos_detach_identity` separately validates the raw metadata into a
+frozen complete binding: canonical nonzero UUID, exact name/filesystem/primary node, matching
+container/parent and unique physical stores belonging to the owned image. Snapshot every unique
+device/hint while mounted (64 maximum, eight stores); missing, malformed or oversized topology
+cannot authorize recovery. After an actual preceding detach exit 16 only, the wholly unmounted
+candidate must equal that complete binding. Re-read the full image registration after the volume
+query, require the same devices/hints with no mounts, and recheck image/scratch identity and every
+owned mountpoint before continuing the existing normal detach loop. No extra attempt, force flag,
+attach or host unmount is added. Unexpected first-attempt unmounts still refuse. Changed, missing,
+duplicate or foreign primary/image mappings skip the query; any topology change refuses recovery.
+Diagnostic fields stay capped at 512
+characters and device arguments at 128, with explicit unknown/truncation states; clipped JSON is
+never used as authority. Retain the original busy error and mounted-check refusal alongside the
+fresh registration. Native image absence and normal cleanup guards remain mandatory after success.
+The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery still requires
+its own native cleanup evidence under #96.
+
+After the third native busy refusal only, `tools.macos_busy_observer` records read-only image/device
+associations. It checks the private image/scratch identity and fresh complete registration/volume
+binding on both sides of one literal-file `lsof` query. Five native reads share a ten-second command
+budget (two seconds per call); anonymous output files bound RAM, with capped retained bytes and
+explicit truncation/timeout/refusal states. `-f --` prevents filesystem-wide selection: only the
+owned image and its already registered device paths are arguments. Retain NUL fields/stdout/stderr
+losslessly in base64, and only hashes for the global hdiutil inventory. Unelevated observations are
+always incomplete; helper PIDs and open-file associations are not cause or cleanup authority. Keep
+the original exit 16, three attempts and delays, and retained failed fixture. No query occurs before
+or between those attempts. A separate always-run macOS CI probe holds one fresh ordinary temporary
+file and verifies its own PID, preserved bytes and cleanup through the same literal-file backend;
+it creates no mount and cannot establish APFS busy recovery. Usage/limits are in `docs/testing.md`.
 
 `tools/package_posix.py` packages completed native compiler outputs without launching FileTree.
 `gui/icon.icns_bytes` supplies native ICNS with Qt-encoded PNG blocks at 128/256/512/1024 pixels;
@@ -1210,6 +1620,31 @@ Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI tes
 match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
 one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
 
+`tools.measure_grouped_layout` isolates grouped model updates on bounded, owned in-memory nodes
+using the production view builder. It separately records synchronous handling and three cumulative
+Qt event passes, optional counters on the actual instantiated model and subsequent state checks.
+Uninstrumented runs use the ordinary model/view classes. No source filesystem access or application
+update policy changes occur; event passes are not frame/input-latency guarantees. See `docs/testing.md`.
+
+An independent Qt 6.8 compatibility matrix runs the grouped display/layout probe, keeper/estimate,
+photo and list-capture regressions on Windows and Linux with Python 3.13. Its wheel-only hash lock is
+`.github/requirements/qt68.txt`; `tools/compile_qt68_lock.py` regenerates it from the regular test
+pins, preserving non-Qt versions and markers while applying the four explicit Qt 6.8.3 overrides.
+The regular test/runtime locks keep their current Qt. A preflight writes the observed Python/Qt
+versions, threshold capability and lock digest, then refuses a mismatched or modern Qt runtime.
+Always-run artifacts retain that observation and JUnit results on both runners. The two-group,
+20k-member regression bounds synchronous index callbacks before allowing Qt's event-pass layout;
+it therefore catches the old visibility walk rather than depending on wall-clock timing.
+
+Full-suite and Qt 6.8 jobs invoke `tools.run_pytest` once and always retain native test context.
+Its opt-in `tools.pytest_context` plugin atomically replaces the current case/phase and a bounded
+phase-entry Python thread snapshot. The parent retains actual child exit status and native output;
+tee-sys capture and Qt's stderr sink preserve fatal messages without replacing Qt handlers. Built-in
+Python fault handling remains active, but Windows Qt fail-fast can bypass its fault-time traceback.
+Snapshots cannot establish the fault's cause. Windows reader conflicts get bounded diagnostic-only
+publication retries; fixture teardown still runs on write failure. Keep launched-child and actual
+pytest PID roles distinct for Windows virtual environments. See `docs/testing.md` for evidence limits.
+
 ## 7. Design constraints
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with
@@ -1287,7 +1722,10 @@ raw Qt size-boundary probing remains confined to fresh owned disposable fixtures
 it accepts no image/device/volume selector. Native partition-map entries identify the image disk,
 separately from the synthesized APFS container. Before each phase/detach it checks image and scratch
 identities, native image mapping, exact private mountpoint/name and volume UUID. No forced detach is
-used; uncertain attachments are retained and never recursively cleaned up. `validate_macos_volume.py`
+used; uncertain attachments are retained and never recursively cleaned up. Attachment-refusal errors
+include bounded observed device/mountpoint pairs and allowed private paths, retained in phase JSON.
+This diagnosis does not add an attach/detach attempt, retry, alternate mountpoint or cleanup permission.
+`validate_macos_volume.py`
 compares statvfs-bracketed capacity, ordinary file st_blocks, sparse/compressed/native clone fixtures,
 one/last/all hard-link recovery estimates and private current-uid bin logical versus allocated bytes.
 Actual free-space deltas retain deferred reclamation/metadata uncertainty; unknown shared/reserved
@@ -1295,6 +1733,10 @@ bytes stay null. It additionally exercises production cross-volume fcopyfile/res
 between its own host scratch and image. No Finder automation, real user bin or cloud provider is used.
 Each completed phase/failure and verified cleanup are atomically retained by native macOS CI; local
 refusal tests alone do not establish native APFS behavior. macOS savings explicitly retain uncertainty.
+The hosted APFS step runs three independent fresh-image processes and preserves all outcomes; a
+failure in any sample fails the step. The first proof remains under `macos-evidence/apfs`, with the
+other proofs under `sample-2` and `sample-3` and exit codes/paths in `apfs/samples.tsv`. Subsequent
+samples never reopen or recover a retained image; each creates its own private image and directory.
 Recovery retains each completed case before the next one. An all-name hard-link batch rechecks full
 payload/identity metadata and subtracts only its own preceding removals from expected link counts.
 The APFS diagnostic runs after the existing cocoa/background probes so its failure preserves their

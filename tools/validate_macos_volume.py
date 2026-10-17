@@ -22,7 +22,7 @@ from je_file_tree.core.export import _atomic_file  # noqa: E402
 from je_file_tree.core.scanner import ScanOptions, scan  # noqa: E402
 from je_file_tree.core.savings import estimate_savings  # noqa: E402
 from je_file_tree.core.trash_size import trash_usage  # noqa: E402
-from tools.macos_owned_image import OwnedImage, command, require  # noqa: E402
+from tools.macos_owned_image import OwnedImage, command, native_failure, require  # noqa: E402
 from tools.volume_evidence import ledger_record  # noqa: E402
 
 _MIB = 1024 * 1024
@@ -239,10 +239,7 @@ def main() -> int:
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         proof.update(phase="failed", error=str(error))
         if isinstance(error, subprocess.CalledProcessError):
-            proof["native_command_error"] = {
-                "returncode": error.returncode,
-                "stdout": (error.stdout or b"")[:65536].decode("utf-8", errors="replace"),
-                "stderr": (error.stderr or b"")[:65536].decode("utf-8", errors="replace")}
+            proof["native_command_error"] = native_failure(error)
         raise
     finally:
         try:
@@ -253,10 +250,8 @@ def main() -> int:
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
             proof.update(cleanup_error=str(error), retained_owned_fixture=str(image.owned))
             if isinstance(error, subprocess.CalledProcessError):
-                proof["cleanup_native_command_error"] = {
-                    "returncode": error.returncode,
-                    "stdout": (error.stdout or b"")[:65536].decode("utf-8", errors="replace"),
-                    "stderr": (error.stderr or b"")[:65536].decode("utf-8", errors="replace")}
+                proof["cleanup_native_command_error"] = native_failure(error)
+        proof["detach_attempts"] = image.detach_attempts
         save(args.evidence, proof)
     require(proof["cleanup_verified"], "Owned APFS fixture retained; inspect phase evidence")
     proof["phase"] = "complete"

@@ -28,6 +28,49 @@ _LOCAL = re.compile(r"^\./")
 _VERSION_COMMENT = re.compile(r"^\s+#\s*v\d+(\.\d+)*\s*$")
 
 
+def _unsafe_run_scalars(text: str) -> list[int]:
+    """Find mapping separators in plain run scalars, excluding quoted/block values and comments."""
+    bad, block_indent = [], None
+    for number, line in enumerate(text.splitlines(), 1):
+        indent = len(line)-len(line.lstrip())
+        if block_indent is not None:
+            if not line.strip() or indent > block_indent:
+                continue
+            block_indent = None
+        match = re.match(r"^\s*(?:-\s*)?run:\s*(\S.*)$", line)
+        if match is None:
+            continue
+        value = match.group(1)
+        if value.startswith(("|", ">")):
+            block_indent = indent
+        elif not value.startswith(("'", '"')):
+            command = re.split(r"\s+#", value, maxsplit=1)[0]
+            if re.search(r":(?:\s|$)", command):
+                bad.append(number)
+    return bad
+
+
+@pytest.mark.parametrize(('text', 'expected'), [
+    ('run: python -m pip install --only-binary :all: -r test.txt', [1]),
+    ("run: 'python -m pip install --only-binary :all: -r test.txt'", []),
+    ('run: |\n  run: echo nested: text\n', []),
+    ('run: >-\n  echo nested: text\n', []),
+    ('run: echo https://example.com', []),
+    ('run: echo path: value', [1]),
+    ('run: echo ok # note: value', []),
+    ('- run: echo 12:34', []),
+    ('run: echo final:', [1]),
+])
+def test_plain_run_scalar_separator_detection(text, expected):
+    assert _unsafe_run_scalars(text) == expected
+
+
+def test_workflow_and_composite_run_scalars_quote_mapping_separators():
+    bad = [f"{path.relative_to(_ROOT)}:{line}" for path in _ACTION_FILES
+           for line in _unsafe_run_scalars(path.read_text(encoding='utf-8'))]
+    assert not bad, 'Quote the whole run value or use a YAML block: ' + ', '.join(bad)
+
+
 def _uses(path: Path) -> list[tuple[int, str, str]]:
     """Return ``(line number, action reference, rest of line)`` for each remote ``uses:``."""
     found = []
@@ -141,6 +184,18 @@ def _jobs(path: Path) -> list[tuple[str, str]]:
     heads = [i for i in range(start + 1, len(lines)) if _JOB_HEAD.match(lines[i])]
     ends = [*heads[1:], len(lines)]
     return [(lines[i].strip().rstrip(":"), "\n".join(lines[i:end])) for i, end in zip(heads, ends, strict=True)]
+
+
+def test_windows_mocked_share_helper_evidence_survives_failed_tests():
+    jobs = dict(_jobs(_ROOT / ".github/workflows/test.yml"))
+    windows = jobs["windows"]
+    steps = re.split(r"^    - ", windows, flags=re.MULTILINE)
+    tests = next(step for step in steps if step.startswith("name: Run tests\n"))
+    upload = next(step for step in steps if step.startswith("name: Preserve mocked PowerShell helper evidence\n"))
+    assert "FILETREE_SHARE_SCRIPT_EVIDENCE: build/share-script-evidence" in tests
+    assert "if: always()" in upload and "uses: actions/upload-artifact@" in upload
+    assert "name: windows-mocked-share-script-${{ matrix.python-version }}" in upload
+    assert "path: build/share-script-evidence/" in upload and "retention-days: 7" in upload
 
 
 @pytest.mark.parametrize("workflow", _WORKFLOWS, ids=lambda p: p.name)

@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt
 from test_gui import _scanned, _wait
 from test_gui import window as window  # noqa: PLC0414
 from je_file_tree.core.node import Node
+from je_file_tree.core.analysis import summarise
 from je_file_tree.core.owners import OwnerInventory, OwnerStat
 from je_file_tree.core.scanner import scan
 from je_file_tree.gui import users_panel as users
@@ -113,7 +114,7 @@ def test_recorded_owner_totals_refresh_after_forgetting_entries_and_replacing_br
     _wait(qapp, lambda: not panel.busy)
     assert panel._inventory.files == 7 and panel._inventory.size == 1003
     node = next(node for node in root.children if node.name == "notes.txt")
-    window.results.forget([node])
+    window.results.forget([node], removed=summarise(node, limit=0, now=window.results.outcome.now))
     _wait(qapp, lambda: not panel.busy)
     assert panel._inventory.files == 6 and panel._inventory.size == 903
     assert (sample_tree / "notes.txt").exists()  # UI record mutation does not remove the fixture.

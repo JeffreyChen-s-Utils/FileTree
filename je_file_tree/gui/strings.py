@@ -11,6 +11,15 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "shell_reading": "Reading Explorer registration…",
+    "shell_saving": "Saving Explorer registration…",
+    "shell_waiting": "Waiting for the current Explorer settings request to finish… A started Save continues.",
+    "trash_failed_title": "Entries not moved",
+    "trash_failed_summary": "Failed entries: {count}. Review the full paths and diagnostic information.",
+    "trash_holders_error": "Open-file query error: {reason}",
+    "trash_skipped_title": "Skipped entries",
+    "trash_skipped_summary": "Skipped entries: {count}. Rescan their folders before trying again.",
+    "trash_skipped_hint": "Select a row for its full path and reason. {shortcut} copies selected rows.",
     "closing_workers": "Closing FileTree: stopping background work; waiting for current filesystem calls to finish…",
     "elevate_python_tip": (
         "Running from Python: Windows UAC displays Python, the executable being elevated. "
@@ -769,7 +778,8 @@ EN: dict[str, str] = {
     "shell_scan": "Scan with FileTree",
     "shell_hint": ("Save changes only your account's folder menu; no administrator rights are needed. "
                    "On Windows 11, look under Show more options. Turn this off here to remove the entry. "
-                   "Register again after moving the executable or source checkout."),
+                   "Register again after moving the executable or source checkout. "
+                   "A started Save finishes before closing."),
     "shell_failed": "Explorer integration could not be changed.\n{reason}",
     "menu_properties": "Properties",
     "properties_failed": "Windows could not open Properties for:\n{path}",
@@ -1102,6 +1112,9 @@ EN: dict[str, str] = {
     "action_ask_admin_tip": "Windows asks for permission when FileTree starts, so protected folders can be read too",
     "problems_hint": "Some folders need administrator rights. Restart FileTree as administrator to read them too.",
     "elevate_declined": "FileTree is still running without administrator rights.",
+    "startup_invalid": "Could not restore the requested workspace: {reason}",
+    "elevate_waiting": "Complete or dismiss the Windows permission prompt. Closing this window waits for that request.",
+    "elevate_failed": "FileTree could not restart as administrator: {reason}",
     "unit_auto": "Automatic",
     "path_placeholder": "Type or paste a folder path and press Enter",
     "choose_folder_title": "Choose a folder to scan",
@@ -1113,6 +1126,7 @@ EN: dict[str, str] = {
     "welcome_drives": "Drives",
     "welcome_drive_tip": "Scan {path}",
     "welcome_drive_free": "{free} free of {total}",
+    "welcome_drive_used": "{percent} used",
     "welcome_recent": "Recently scanned",
     "welcome_tip": "Tip: you can also drag a folder from your file manager onto this window. Paste an absolute "
                    "UNC share path on Windows (\\\\server\\share); access uses your current account. Scan workers "
@@ -1257,6 +1271,8 @@ EN: dict[str, str] = {
     "search_save_title": "Save this search",
     "search_save_prompt": "Name:",
     "search_none": "Nothing matches.",
+    "problems_none": "Every entry in this scan was read; nothing to review.",
+    "largest_none": "No files to list.",
     "search_summary": "{count} matches, {size} in total.",
     "search_limited": "The {shown} largest are listed.",
     "tab_types": "File types",
@@ -1449,6 +1465,15 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "shell_reading": "正在讀取檔案總管登錄…",
+    "shell_saving": "正在儲存檔案總管登錄…",
+    "shell_waiting": "正在等待目前的檔案總管設定作業完成…已開始的儲存會繼續執行。",
+    "trash_failed_title": "未能移動的項目",
+    "trash_failed_summary": "有 {count} 個項目移動失敗。請檢視完整路徑與診斷資訊。",
+    "trash_holders_error": "開啟檔案的行程查詢錯誤：{reason}",
+    "trash_skipped_title": "已略過的項目",
+    "trash_skipped_summary": "已略過 {count} 個項目，請重新掃描其資料夾後再試。",
+    "trash_skipped_hint": "選取一列可查看完整路徑與原因。使用 {shortcut} 複製選取的資料列。",
     "closing_workers": "正在關閉 FileTree：停止背景工作，等待目前的檔案系統呼叫完成…",
     "elevate_python_tip": (
         "目前由 Python 執行：Windows UAC 會顯示實際提升權限的 Python 執行檔。"
@@ -2144,7 +2169,7 @@ ZH_TW: dict[str, str] = {
     "shell_scan": "使用 FileTree 掃描",
     "shell_hint": ("儲存只會變更您帳號的資料夾選單，不需要系統管理員權限。"
                    "Windows 11 請查看「顯示其他選項」。在此取消勾選即可移除。"
-                   "移動執行檔或原始碼資料夾後，請重新登錄。"),
+                   "移動執行檔或原始碼資料夾後，請重新登錄。已開始的儲存完成後才會關閉視窗。"),
     "shell_failed": "無法變更檔案總管整合。\n{reason}",
     "menu_properties": "內容",
     "properties_failed": "Windows 無法開啟此項目的內容：\n{path}",
@@ -2437,6 +2462,9 @@ ZH_TW: dict[str, str] = {
     "action_ask_admin_tip": "FileTree 啟動時由 Windows 詢問權限，受保護的資料夾也能讀取",
     "problems_hint": "有些資料夾需要系統管理員權限。以系統管理員身分重新啟動 FileTree 就能一起讀取。",
     "elevate_declined": "FileTree 仍以一般權限執行。",
+    "startup_invalid": "無法恢復要求的工作區：{reason}",
+    "elevate_waiting": "請完成或關閉 Windows 權限提示。關閉此視窗時，仍會等待該請求完成。",
+    "elevate_failed": "FileTree 無法以系統管理員身分重新啟動：{reason}",
     "unit_auto": "自動",
     "path_placeholder": "輸入或貼上資料夾路徑，按 Enter 開始掃描",
     "choose_folder_title": "選擇要掃描的資料夾",
@@ -2447,6 +2475,7 @@ ZH_TW: dict[str, str] = {
     "welcome_drives": "磁碟",
     "welcome_drive_tip": "掃描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
+    "welcome_drive_used": "已使用 {percent}",
     "welcome_recent": "最近掃描過",
     "welcome_tip": "小技巧：也可以把資料夾從檔案總管拖曳到這個視窗。Windows 可貼上絕對 UNC 共用路徑"
                    "（\\\\server\\share），使用目前帳戶存取。掃描執行緒數可在選項調整；權限不足／斷線的分支維持不完整，非空資料夾。",
@@ -2580,6 +2609,8 @@ ZH_TW: dict[str, str] = {
     "search_save_title": "儲存這個搜尋",
     "search_save_prompt": "名稱：",
     "search_none": "沒有符合的項目。",
+    "problems_none": "這次掃描的每個項目都讀取成功，沒有需要檢查的問題。",
+    "largest_none": "沒有可列出的檔案。",
     "search_summary": "{count} 個符合，共 {size}。",
     "search_limited": "只列出最大的 {shown} 個。",
     "tab_types": "檔案類型",
@@ -2754,6 +2785,15 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "shell_reading": "正在读取资源管理器注册项…",
+    "shell_saving": "正在保存资源管理器注册项…",
+    "shell_waiting": "正在等待当前资源管理器设置操作完成…已开始的保存会继续执行。",
+    "trash_failed_title": "未能移动的项目",
+    "trash_failed_summary": "有 {count} 个项目移动失败。请查看完整路径与诊断信息。",
+    "trash_holders_error": "打开文件的进程查询错误：{reason}",
+    "trash_skipped_title": "已跳过的项目",
+    "trash_skipped_summary": "已跳过 {count} 个项目，请重新扫描其文件夹后再试。",
+    "trash_skipped_hint": "选择一行可查看完整路径与原因。使用 {shortcut} 复制选中的行。",
     "closing_workers": "正在关闭 FileTree：停止后台工作，等待当前文件系统调用完成…",
     "elevate_python_tip": (
         "当前由 Python 运行：Windows UAC 会显示实际提升权限的 Python 可执行文件。"
@@ -3450,7 +3490,7 @@ ZH_CN: dict[str, str] = {
     "shell_scan": "使用 FileTree 扫描",
     "shell_hint": ("保存只会更改您账户的文件夹菜单，不需要管理员权限。"
                    "Windows 11 请查看“显示更多选项”。在此取消勾选即可移除。"
-                   "移动可执行文件或源码文件夹后，请重新注册。"),
+                   "移动可执行文件或源码文件夹后，请重新注册。已开始的保存完成后才会关闭窗口。"),
     "shell_failed": "无法更改资源管理器集成。\n{reason}",
     "menu_properties": "属性",
     "properties_failed": "Windows 无法打开此项目的属性：\n{path}",
@@ -3742,6 +3782,9 @@ ZH_CN: dict[str, str] = {
     "action_ask_admin_tip": "FileTree 启动时由 Windows 询问权限，受保护的文件夹也能读取",
     "problems_hint": "有些文件夹需要管理员权限。以管理员身份重新启动 FileTree 就能一起读取。",
     "elevate_declined": "FileTree 仍以普通权限运行。",
+    "startup_invalid": "无法恢复请求的工作区：{reason}",
+    "elevate_waiting": "请完成或关闭 Windows 权限提示。关闭此窗口时，仍会等待该请求完成。",
+    "elevate_failed": "FileTree 无法以管理员身份重新启动：{reason}",
     "unit_auto": "自动",
     "path_placeholder": "输入或粘贴文件夹路径，按 Enter 开始扫描",
     "choose_folder_title": "选择要扫描的文件夹",
@@ -3752,6 +3795,7 @@ ZH_CN: dict[str, str] = {
     "welcome_drives": "磁盘",
     "welcome_drive_tip": "扫描 {path}",
     "welcome_drive_free": "可用 {free}，共 {total}",
+    "welcome_drive_used": "已使用 {percent}",
     "welcome_recent": "最近扫描过",
     "welcome_tip": "小技巧：也可以把文件夹从文件管理器拖到这个窗口。Windows 可粘贴绝对 UNC 共享路径"
                    "（\\\\server\\share），使用当前账户访问。扫描线程数可在选项调整；权限不足／断线的分支保持不完整，并非空文件夹。",
@@ -3885,6 +3929,8 @@ ZH_CN: dict[str, str] = {
     "search_save_title": "保存这个搜索",
     "search_save_prompt": "名称：",
     "search_none": "没有匹配的项目。",
+    "problems_none": "本次扫描的每个项目都读取成功，没有需要检查的问题。",
+    "largest_none": "没有可列出的文件。",
     "search_summary": "{count} 个匹配，共 {size}。",
     "search_limited": "只列出最大的 {shown} 个。",
     "tab_types": "文件类型",
@@ -4071,6 +4117,15 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "shell_reading": "エクスプローラーの登録を読み取り中…",
+    "shell_saving": "エクスプローラーの登録を保存中…",
+    "shell_waiting": "現在のエクスプローラー設定の処理が終わるまで待機中…開始済みの保存は続行します。",
+    "trash_failed_title": "移動できなかった項目",
+    "trash_failed_summary": "失敗した項目: {count}。完全なパスと診断情報を確認してください。",
+    "trash_holders_error": "ファイル使用プロセスの照会エラー: {reason}",
+    "trash_skipped_title": "スキップした項目",
+    "trash_skipped_summary": "{count} 件をスキップしました。再試行する前にフォルダーを再スキャンしてください。",
+    "trash_skipped_hint": "行を選ぶと完全なパスと理由を表示します。{shortcut} で選択行をコピーします。",
     "closing_workers": (
         "FileTree を終了しています：バックグラウンド処理を停止し、"
         "現在のファイルシステム呼び出しの完了を待っています…"),
@@ -4932,7 +4987,7 @@ JA: dict[str, str] = {
     'shell_hint': (
         '変更を保存するのは、アカウントのフォルダー メニューのみです。管理者権限は必要ありません。 Windows 11'
         ' で、[その他のオプションを表示] を確認します。エントリを削除するには、ここでこれをオフにします。実行'
-        '可能ファイルまたはソース チェックアウトを移動した後、再度登録します。'
+        '可能ファイルまたはソース チェックアウトを移動した後、再度登録します。開始済みの保存が完了してから閉じます。'
     ),
     'shell_failed': 'Explorer の統合を変更できませんでした。\n{reason}',
     'menu_properties': 'プロパティ',
@@ -5361,6 +5416,10 @@ JA: dict[str, str] = {
         '。'
     ),
     'elevate_declined': 'FileTree は管理者権限なしでまだ実行されています。',
+    "startup_invalid": "要求されたワークスペースを復元できませんでした: {reason}",
+    "elevate_waiting": ("Windows の権限確認を承認または拒否してください。"
+                        "このウィンドウを閉じても、要求の完了を待ちます。"),
+    "elevate_failed": "管理者として FileTree を再起動できませんでした: {reason}",
     'unit_auto': '自動',
     'path_placeholder': 'フォルダーのパスを入力または貼り付けて Enter キーを押します',
     'choose_folder_title': 'スキャンするフォルダーを選択してください',
@@ -5373,6 +5432,7 @@ JA: dict[str, str] = {
     'welcome_drives': 'ドライブ',
     'welcome_drive_tip': '{path} をスキャンします',
     'welcome_drive_free': '合計 {total}、空き容量 {free}',
+    'welcome_drive_used': '使用率 {percent}',
     'welcome_recent': '最近スキャンした',
     'welcome_tip': (
         'ヒント: ファイル マネージャーからフォルダーをこのウィンドウにドラッグすることもできます。絶対 UNC 共'
@@ -5548,6 +5608,8 @@ JA: dict[str, str] = {
     'search_save_title': 'この検索を保存します',
     'search_save_prompt': '名前:',
     'search_none': '何も一致しません。',
+    'problems_none': 'このスキャンではすべての項目を読み取れました。確認が必要な問題はありません。',
+    'largest_none': '表示するファイルはありません。',
     'search_summary': '{count} 件一致、合計 {size} 件。',
     'search_limited': '最大の {shown} がリストされます。',
     'tab_types': 'ファイルの種類',
@@ -5731,6 +5793,15 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "shell_reading": "탐색기 등록을 읽는 중…",
+    "shell_saving": "탐색기 등록을 저장하는 중…",
+    "shell_waiting": "현재 탐색기 설정 요청이 끝날 때까지 기다리는 중…이미 시작한 저장은 계속됩니다.",
+    "trash_failed_title": "이동하지 못한 항목",
+    "trash_failed_summary": "실패한 항목: {count}개. 전체 경로와 진단 정보를 확인하세요.",
+    "trash_holders_error": "파일 사용 프로세스 조회 오류: {reason}",
+    "trash_skipped_title": "건너뛴 항목",
+    "trash_skipped_summary": "{count}개 항목을 건너뛰었습니다. 다시 시도하기 전에 해당 폴더를 다시 스캔하세요.",
+    "trash_skipped_hint": "행을 선택하면 전체 경로와 이유를 표시합니다. {shortcut}로 선택한 행을 복사합니다.",
     "closing_workers": "FileTree 종료 중: 백그라운드 작업을 중지하고 현재 파일 시스템 호출이 끝나기를 기다리는 중…",
     "elevate_python_tip": (
         "Python으로 실행 중: Windows UAC에는 권한을 높이는 실행 파일인 Python이 표시됩니다. "
@@ -6527,7 +6598,7 @@ KO: dict[str, str] = {
     'shell_hint': (
         '변경 사항은 계정의 폴더 메뉴에만 저장하세요. 관리자 권한이 필요하지 않습니다. Windows 11에서 추가 옵'
         '션 표시 아래를 살펴보세요. 항목을 제거하려면 여기에서 이 기능을 끄세요. 실행 파일 이동 또는 소스 체'
-        '크아웃 후 다시 등록하세요.'
+        '크아웃 후 다시 등록하세요. 이미 시작한 저장을 마친 후 닫힙니다.'
     ),
     'shell_failed': 'Explorer 통합을 변경할 수 없습니다.\n{reason}',
     'menu_properties': '속성',
@@ -6911,6 +6982,9 @@ KO: dict[str, str] = {
         '일부 폴더에는 관리자 권한이 필요합니다. 해당 내용을 읽으려면 FileTree를 관리자로 다시 시작하세요.'
     ),
     'elevate_declined': 'FileTree가 여전히 관리자 권한 없이 실행 중입니다.',
+    "startup_invalid": "요청한 작업 공간을 복원하지 못했습니다: {reason}",
+    "elevate_waiting": "Windows 권한 요청을 승인하거나 닫으세요. 이 창을 닫아도 요청이 끝날 때까지 기다립니다.",
+    "elevate_failed": "관리자로 FileTree를 다시 시작하지 못했습니다: {reason}",
     'unit_auto': '자동',
     'path_placeholder': '폴더 경로를 입력하거나 붙여넣고 Enter를 누르세요.',
     'choose_folder_title': '스캔할 폴더를 선택하세요',
@@ -6923,6 +6997,7 @@ KO: dict[str, str] = {
     'welcome_drives': '드라이브',
     'welcome_drive_tip': '{path} 스캔',
     'welcome_drive_free': '전체 {total}, 여유 공간 {free}',
+    'welcome_drive_used': '사용률 {percent}',
     'welcome_recent': '최근에 스캔됨',
     'welcome_tip': (
         '팁: 파일 관리자에서 폴더를 이 창으로 끌어서 놓을 수도 있습니다. Windows(\\\\server\\share)에 절대 UN'
@@ -7073,6 +7148,8 @@ KO: dict[str, str] = {
     'search_save_title': '이 검색 저장',
     'search_save_prompt': '이름:',
     'search_none': '일치하는 항목이 없습니다.',
+    'problems_none': '이번 스캔의 모든 항목을 읽었습니다. 확인할 문제가 없습니다.',
+    'largest_none': '표시할 파일이 없습니다.',
     'search_summary': '{count}개 일치, 총 {size}개.',
     'search_limited': '가장 큰 {shown}이 나열됩니다.',
     'tab_types': '파일 형식',

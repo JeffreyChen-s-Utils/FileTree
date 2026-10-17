@@ -84,7 +84,8 @@ def test_operation_owner_blocks_peer_commands_before_confirmation(workspace, tmp
     assert not second.operation_busy and second._actions["open"].isEnabled()
 
 
-def test_source_operation_waits_for_peer_native_reader_without_blocking_gui(workspace, qapp, tmp_path, monkeypatch):
+def test_source_operation_waits_for_peer_native_reader_without_blocking_gui(
+        workspace, qapp, tmp_path, monkeypatch, failed_move_diagnostics):
     source = tmp_path / "source"
     source.mkdir()
     kept = source / "kept"
@@ -106,6 +107,8 @@ def test_source_operation_waits_for_peer_native_reader_without_blocking_gui(work
         assert release.is_set() and calls == [str(kept)]
         assert not first.operation_busy and not second.operation_busy
         assert kept.read_bytes() == b"kept"
+        report, captured = failed_move_diagnostics
+        assert len(captured) == int(bool(report.error))
     finally:
         release.set()
 

@@ -3,7 +3,7 @@
 import threading
 from types import SimpleNamespace
 
-from PySide6.QtCore import QThread, Qt
+from PySide6.QtCore import QDir, QThread, Qt
 from PySide6.QtWidgets import QWidget
 
 from test_gui import _scanned, _wait
@@ -33,9 +33,10 @@ def _sources(monkeypatch, roots=("D:/", "E:/"), selected="D:/"):
 
 def test_unknown_partial_and_empty_captions_are_distinct(window):
     root = "D:/"
-    assert labels.bin_caption(root, None) == tr("bin_label_unqueried", root=root)
+    shown = QDir.toNativeSeparators(root)  # D:\ on Windows
+    assert labels.bin_caption(root, None) == tr("bin_label_unqueried", root=shown)
     assert labels.bin_caption(root, TrashUsage(0, 0, True)) == tr(
-        "bin_label_total", root=root, size="0 B", count="0")
+        "bin_label_total", root=shown, size="0 B", count="0")
     partial = labels.bin_caption(root, TrashUsage(123, 2, False, "<denied>"))
     assert "123 B" in partial and "2" in partial and "unknown" in partial and "<denied>" in partial
     assert labels.bin_caption("", None) == tr("bin_label_scope_unknown")

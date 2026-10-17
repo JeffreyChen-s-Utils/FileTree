@@ -13,7 +13,7 @@ from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import unquote
 
-from PySide6.QtCore import QSettings, Qt, QUrl
+from PySide6.QtCore import QSettings, QTimer, Qt, QUrl
 from PySide6.QtDBus import QDBusConnection, QDBusMessage
 from PySide6.QtGui import QFont, QRawFont
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QSystemTrayIcon
@@ -25,6 +25,8 @@ from je_file_tree.gui.i18n import set_language
 from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.scan_worker import analyse
 from drag import check_drag
+
+_UNEXPECTED_MODAL_INTERVAL_MS = 100
 
 
 def require(condition: bool, message: str) -> None:
@@ -77,6 +79,16 @@ def check_bus(app: QApplication, evidence: Path, scratch: Path) -> dict[str, obj
             service.wait(timeout=10)
 
 
+def _reject_unhandled_modal(app: QApplication, unhandled: list[str]) -> None:
+    dialog = app.activeModalWidget()
+    if dialog is not None:
+        unhandled.append(type(dialog).__name__)
+        if isinstance(dialog, QDialog):
+            dialog.reject()
+        else:
+            dialog.close()
+
+
 def check_trash(app: QApplication, window: main_window.MainWindow, scratch: Path) -> dict[str, object]:
     """Move one owned fixture through MainWindow's normal review/confirmation/journal workflow."""
     root = scratch / "trash-source"
@@ -85,17 +97,31 @@ def check_trash(app: QApplication, window: main_window.MainWindow, scratch: Path
     target.write_text("owned trash contents", encoding="utf-8")
     window.results.show_outcome(analyse(scan(root)))
     node = window.results.outcome.result.root.children[0]
-    original_review, original_question = main_window.CleanupReview.exec, QMessageBox.question
+    original_review, original_presenter = main_window.CleanupReview.exec, main_window.confirm_entry_move
+    approvals, unhandled = [], []
+    modal_guard = QTimer()
 
     def approve(dialog):
         dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
         return QDialog.DialogCode.Accepted
 
+    def approve_move(parent, _title, _text, *, protected=False):
+        require(parent is window and not protected, "Unexpected protected or foreign entry approval")
+        approvals.append(True)
+        require(len(approvals) == 1, "Unexpected extra entry approval")
+        return QMessageBox.StandardButton.Yes
+
+    modal_guard.timeout.connect(lambda: _reject_unhandled_modal(app, unhandled))
+
     try:
         main_window.CleanupReview.exec = approve
-        QMessageBox.question = lambda *_args: QMessageBox.StandardButton.Yes
+        main_window.confirm_entry_move = approve_move
+        modal_guard.start(_UNEXPECTED_MODAL_INTERVAL_MS)
         window.move_to_trash([node])
+        require(not unhandled, f"Unhandled entry-move confirmation: {unhandled}")
+        require(len(approvals) == 1, "Owned fixture confirmation was not reached")
         pump(app, lambda: window._trash_worker is None)
+        require(not unhandled, f"Unhandled entry-move result dialog: {unhandled}")
         require(not target.exists(), "Approved owned fixture did not enter the Trash")
         trash = Path(os.environ["XDG_DATA_HOME"]) / "Trash"
         infos = list((trash / "info").glob("*.trashinfo"))
@@ -113,7 +139,8 @@ def check_trash(app: QApplication, window: main_window.MainWindow, scratch: Path
         return {"trashinfo": True, "original_path_preserved": True, "contents_preserved": True,
                 "inventory_count": usage.count, "inventory_bytes": usage.size}
     finally:
-        main_window.CleanupReview.exec, QMessageBox.question = original_review, original_question
+        modal_guard.stop()
+        main_window.CleanupReview.exec, main_window.confirm_entry_move = original_review, original_presenter
 
 
 def check_fallback(app: QApplication, evidence: Path, scratch: Path) -> dict[str, object]:

@@ -48,11 +48,8 @@ from je_file_tree.core.analysis import (
     ExtensionStat,
     Summary,
     age_of,
-    age_stats,
     category_stats,
     extension_of,
-    extension_stats,
-    files_beneath,
     subtract_ages,
     subtract_stats,
 )
@@ -69,7 +66,9 @@ from je_file_tree.gui.capacity_panel import CapacityPanel
 from je_file_tree.gui.age_colours import AGE_COLOURS, UNKNOWN_AGE_COLOUR
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
-from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.chart_legend import ChartLegend
+from je_file_tree.gui.delegates import PathTailDelegate, ShareBarDelegate
+from je_file_tree.gui.empty_hint import EmptyHint
 from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
@@ -89,6 +88,7 @@ from je_file_tree.gui.tables import (
     FileTypesModel,
     LargestFilesModel,
     ProblemsModel,
+    TableProxy,
 )
 from je_file_tree.gui.tree_model import (
     ALLOCATED,
@@ -123,7 +123,7 @@ USERS_TAB = 8
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
-class _FileTypesProxy(QSortFilterProxyModel):
+class _FileTypesProxy(TableProxy):
     """Filters the file-type rows to one group."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -175,7 +175,7 @@ class ResultsView(QWidget):
         self._build_chart_controls()
         self._treemap_up = QToolButton()
         self.breadcrumbs = Breadcrumbs()
-        self._legend = QLabel()
+        self._legend = ChartLegend()
         self._largest_filter = QLineEdit()
         self._focus_label = QLabel()
         self._show_all = QPushButton()
@@ -223,6 +223,9 @@ class ResultsView(QWidget):
 
     def begin_scan(self) -> None:
         """Clear the page for a new scan and show the progress bar."""
+        self._stop_scope()
+        self._scope = None
+        self._scope_button.setChecked(False)
         self._outcome = None
         self.breadcrumbs.set_root(None)
         self.details.set_node(None)
@@ -282,6 +285,7 @@ class ResultsView(QWidget):
 
     def show_outcome(self, outcome: ScanOutcome) -> None:
         """Show a finished (or stopped) scan; folders opened while it ran stay open."""
+        self._stop_scope()
         self._outcome = outcome
         self.charts.set_age_reference(outcome.now)
         root = outcome.result.root
@@ -469,21 +473,23 @@ class ResultsView(QWidget):
             index, QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows)
         self.tree.scrollTo(index)
 
-    def forget(self, nodes: Sequence[Node]) -> None:
-        """Update every view after ``nodes`` were deleted from disk (none of them inside another)."""
+    def forget(self, nodes: Sequence[Node], *, removed: Summary) -> None:
+        """Apply worker-prepared named totals instead of recomputing removed-subtree statistics.
+
+        Nodes must be disjoint; ``removed`` must use this outcome's frozen age reference. A mismatched
+        reference is refused before any view changes; the operation owner must refresh from a rescan.
+        """
         outcome = self._outcome
         if outcome is None:
             return
+        if removed.now != outcome.now:
+            raise ValueError("Removed statistics use a different scan age reference")
         self._stop_focused()
         self.capacity.set_ledger(None)
-        self.tree_model.set_drive_total(None)
         view_root = self.charts.view_root
-        extensions = outcome.extensions
-        ages = outcome.ages
-        for node in nodes:
-            extensions = subtract_stats(extensions, extension_stats(node))
-            ages = subtract_ages(ages, age_stats(files_beneath(node), outcome.now))
-            self.tree_model.remove(node)
+        extensions = subtract_stats(outcome.extensions, removed.extensions)
+        ages = subtract_ages(outcome.ages, removed.ages)
+        self.tree_model.remove_many(nodes)
         root = outcome.result.root
         self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,
                                             categories=category_stats(extensions),
@@ -620,13 +626,14 @@ class ResultsView(QWidget):
         for column, width in _LARGEST_COLUMN_WIDTHS.items():
             table.setColumnWidth(column, width)
         header.setSectionResizeMode(_LARGEST_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
-        table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # the end of a path says the most
+        table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # names keep their extension
+        table.setItemDelegateForColumn(_LARGEST_FOLDER_COLUMN, PathTailDelegate(table))  # the nearest folders
         table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         return table, proxy
 
     def _build_table(self, model: LargestFilesModel | ProblemsModel | ChangesModel,
                      size_column: int) -> tuple[QTableView, QSortFilterProxyModel]:
-        proxy = QSortFilterProxyModel(self)
+        proxy = TableProxy(self)
         proxy.setSourceModel(model)
         proxy.setSortRole(SORT_ROLE)
         proxy.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -638,7 +645,7 @@ class ResultsView(QWidget):
         return table, proxy
 
     def _build_age_table(self) -> QTableView:
-        proxy = QSortFilterProxyModel(self)
+        proxy = TableProxy(self)
         proxy.setSourceModel(self.age_model)
         proxy.setSortRole(SORT_ROLE)
         table = _table(proxy)
@@ -673,7 +680,6 @@ class ResultsView(QWidget):
         """The Chart tab: the path and view buttons, the treemap options, the charts and the legend."""
         self._treemap_up.clicked.connect(self.charts.zoom_out)
         self.breadcrumbs.navigate.connect(self.charts.set_view_root)
-        self._legend.setWordWrap(True)
         self.charts.node_clicked.connect(self._treemap_clicked)
         self.charts.view_root_changed.connect(self._treemap_root_changed)
         self.charts.context_menu_requested.connect(self._emit_menu)
@@ -721,6 +727,8 @@ class ResultsView(QWidget):
         self.changes.failed.connect(self.compare_failed)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
+        self._empty_hints = (EmptyHint(self.problems_table, self._problems_empty_text),
+                             EmptyHint(self.largest_table, self._largest_empty_text))
         self.tabs.addTab(self.users, "")
         self.tabs.currentChanged.connect(lambda index: self.users.set_active(index == USERS_TAB))
         for view in (self.tree, self.largest_table, self.search_table, self.types_table, self.age_table,
@@ -803,7 +811,7 @@ class ResultsView(QWidget):
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column, width in ((1, 95), (2, 60), (3, 80)):
             self.type_locations_table.setColumnWidth(column, width)
-        self.type_locations_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self.type_locations_table.setItemDelegateForColumn(0, PathTailDelegate(self.type_locations_table))
         self._type_locations_label = QLabel()
         self._type_locations_pane = _column(self._type_locations_label, self.type_locations_table)
         self._type_locations_pane.hide()
@@ -854,7 +862,7 @@ class ResultsView(QWidget):
         by_folder = self.charts.mode == TREE or (self.charts.mode in (TREEMAP, SUNBURST)
                                                   and self.charts.treemap.colour_mode == BY_FOLDER)
         self._legend.setVisible(not by_folder)
-        self._legend.setText(self._legend_html())
+        self._legend.set_items(self._legend_items())
 
     def _changes_shown(self, shown: bool) -> None:
         self.tabs.setTabVisible(CHANGES_TAB, shown)
@@ -891,7 +899,10 @@ class ResultsView(QWidget):
 
     def wait_for_lists(self, *, wait: bool = True) -> None:
         """Wait for list computations still running (before the window closes)."""
+        self._stop_scope()
         self._stop_focused()
+        for worker in self._list_workers.copy():
+            worker.stop()
         self.tree_filter.shutdown(wait=wait)
         self.archives.shutdown(wait=wait)
         if wait:
@@ -927,8 +938,7 @@ class ResultsView(QWidget):
             self._rescope(force=True)
             return
         self._scope = None
-        self._scope_worker = None
-        self._scope_timer.stop()
+        self._stop_scope()
         if self._outcome is not None:
             self._show_lists(self._outcome.largest, self._outcome.extensions, self._outcome.ages)
 
@@ -941,6 +951,7 @@ class ResultsView(QWidget):
         folder = self._selected_folder() or outcome.result.root
         if folder is self._scope and not force:
             return
+        self._stop_scope()
         self._scope = folder
         worker = AnalyseWorker(folder, self)
         worker.done.connect(lambda summary: worker is self._scope_worker and self._scope_ready(folder, summary))
@@ -953,8 +964,17 @@ class ResultsView(QWidget):
 
     def _scope_ready(self, folder: Node, summary: Summary) -> None:
         self._scope_worker = None
-        if folder is self._scope:
+        outcome = self._outcome
+        if (outcome is not None and self._scope_button.isChecked() and folder is self._scope
+                and folder.is_in(outcome.result.root)):
             self._show_lists(summary.largest, summary.extensions, summary.ages)
+
+    def _stop_scope(self) -> None:
+        """Discard pending folder replies and timers without joining the retained worker."""
+        self._scope_timer.stop()
+        if self._scope_worker is not None:
+            self._scope_worker.stop()
+        self._scope_worker = None
 
     def _update_scope_button(self) -> None:
         """Shown on the three list tabs once there is a scan; names the folder while it is on."""
@@ -1065,9 +1085,20 @@ class ResultsView(QWidget):
         self.navigation.refresh()
         self._focus_label.setText(tr("largest_focus", what=self._focus_text()) if self._focus else "")
         self._problems_bar.setVisible(bool(errors) and elevation.can_elevate())
-        self._legend.setText(self._legend_html())
+        self._legend.set_items(self._legend_items())
         self.summary.setText(self._summary_text())
         self._update_overview()
+        for hint in self._empty_hints:
+            hint.refresh()
+
+    def _problems_empty_text(self) -> str:
+        """Reassure only about a complete scan: a running or stopped one has not read everything."""
+        return tr("problems_none") if self._outcome is not None and not self._outcome.partial else ""
+
+    def _largest_empty_text(self) -> str:
+        if self._largest_filter.text() or self._focus is not None:
+            return tr("search_none")
+        return tr("largest_none") if self._outcome is not None else ""
 
     def _summary_text(self) -> str:
         outcome = self._outcome
@@ -1117,13 +1148,11 @@ class ResultsView(QWidget):
         width = self.splitter.width()
         self.splitter.setSizes([round(width * .45), round(width * .55)])
 
-    def _legend_html(self) -> str:
+    def _legend_items(self) -> list[tuple[str, str]]:
         if self.charts.mode in (TREEMAP, SUNBURST) and self.charts.treemap.colour_mode == BY_AGE:
             self._legend.setToolTip(tr("age_colour_tip"))
-            return " &nbsp; ".join(f'<span style="color:{colour}">&#9632;</span> '
-                                   + _unbreakable(label) for colour, label in
-                                   [(AGE_COLOURS[age], tr(f"age_{age}")) for age in AGES]
-                                   + [(UNKNOWN_AGE_COLOUR, tr("age_colour_unknown"))])
+            return ([(AGE_COLOURS[age], tr(f"age_{age}")) for age in AGES]
+                    + [(UNKNOWN_AGE_COLOUR, tr("age_colour_unknown"))])
         self._legend.setToolTip("")
         sizes = {stat.category: stat.size for stat in self._categories}
         parts = []
@@ -1132,20 +1161,9 @@ class ResultsView(QWidget):
             if size is None:
                 continue
             colour = CATEGORY_COLOURS[category]
-            label = _unbreakable(f"\u00a0{tr(f'category_{category}')} ({format_size(size)})")
-            parts.append(f'<span style="color:{colour}">&#9632;</span>\u2060{label}')
-        return " &nbsp; ".join(parts)
-
-
-
-def _unbreakable(text: str) -> str:
-    """``text`` that a line break can never split.
-
-    Chinese may break between any two characters and Qt ignores ``<nobr>`` and
-    ``white-space: nowrap`` for that, so spaces become no-break spaces and a
-    word joiner (U+2060) goes between every two characters.
-    """
-    return "\u2060".join(text.replace(" ", "\u00a0"))
+            label = f"{tr(f'category_{category}')} ({format_size(size)})"
+            parts.append((colour, label))
+        return parts
 
 
 def _selected_in(view: QAbstractItemView) -> list[Node]:

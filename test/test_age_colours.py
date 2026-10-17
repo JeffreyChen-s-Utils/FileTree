@@ -46,7 +46,7 @@ def test_shared_colour_preference_and_age_legend_follow_chart_switches(qapp, tmp
     assert not view._legend.isHidden() and not view._colours_combo.isHidden()
     assert view._levels_combo.isHidden()
     for age in AGES:
-        assert tr("age_" + age).replace(" ", "\u00a0") in view._legend.text().replace("\u2060", "")
+        assert tr("age_" + age) in [label.accessibleName() for label in view._legend.labels()]
     assert view._legend.toolTip() == tr("age_colour_tip")
     view.set_chart_mode("bars")
     assert view._legend.toolTip() == ""

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import inspect
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     """Fail any test that reaches the real UAC prompt (it would wait on the desktop of whoever runs the tests).
 
     A test that needs an answer replaces ``elevation.relaunch_elevated``; the prompt itself counts as declined.
+    Uninspected failed-entry reports are dismissed and reported at teardown instead of waiting for a user.
     """
     reached: list[str] = []
     from je_file_tree.gui import main_window
@@ -24,6 +26,14 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     from je_file_tree.core import trash_size
     from je_file_tree.gui import bin_labels
     from je_file_tree.core import bin_empty
+    from je_file_tree.gui.failed_dialog import FailedEntriesDialog
+    from PySide6.QtWidgets import QDialog
+
+    unhandled_reports: list[str] = []
+    def reject_unhandled_report(dialog):
+        unhandled_reports.append(dialog.windowTitle())
+        return QDialog.DialogCode.Rejected
+    monkeypatch.setattr(FailedEntriesDialog, "exec", reject_unhandled_report)
 
     emptied: list[str] = []
     original_empty_scope = bin_empty._empty_scope
@@ -54,6 +64,7 @@ def no_administrator_prompt(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     yield
     assert not reached, f"a test brought up the real administrator prompt for {reached}"
     assert not emptied, f"a test tried to empty a real user Recycle Bin for {emptied}"
+    assert not unhandled_reports, f"a test did not inspect its failed-entry report: {unhandled_reports}"
 
 
 def make_tree(root: Path, spec: dict) -> None:
@@ -99,3 +110,46 @@ def _modeled_gui_recycling(request, monkeypatch):
         from je_file_tree.gui import trash_worker
 
         monkeypatch.setattr(trash_worker, "recycle_reason", lambda _node, _cancel: None)
+
+
+@pytest.fixture(autouse=True)
+def _modeled_entry_move_prompts(request, monkeypatch):
+    """Flow tests supply explicit answers; presentation tests restore the real literal presenter."""
+    unhandled = []
+    if "qapp" in request.fixturenames:
+        from PySide6.QtWidgets import QMessageBox
+        from je_file_tree.gui import main_window
+
+        def answer(parent, title, text, *, protected=False):
+            callback = QMessageBox.warning if protected else QMessageBox.question
+            if inspect.isbuiltin(callback):
+                unhandled.append(title)
+                return QMessageBox.StandardButton.No
+            if protected:
+                return callback(parent, title, text, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                QMessageBox.StandardButton.No)
+            return callback(parent, title, text)
+        monkeypatch.setattr(main_window, "confirm_entry_move", answer)
+    yield
+    assert not unhandled, f"a flow test did not supply an entry-move approval answer: {unhandled}"
+
+
+@pytest.fixture(params=("complete", "unsupported"))
+def failed_move_diagnostics(request, monkeypatch):
+    """Model both diagnostic backends and inspect modal failures without waiting for a real user."""
+    from PySide6.QtWidgets import QDialog
+    from je_file_tree.core.lock_holders import LockReport
+    from je_file_tree.gui import trash_worker
+    from je_file_tree.gui.failed_dialog import FailedEntriesDialog
+
+    unsupported = request.param == "unsupported"
+    report = LockReport(incomplete=unsupported, error="unsupported" if unsupported else None)
+    monkeypatch.setattr(trash_worker, "find_holders", lambda _node, **_kwargs: report)
+    captured: list[str] = []
+    def inspect(dialog):
+        text = dialog.details.toPlainText()
+        assert report.error and report.error in text and "unknown" in text
+        captured.append(text)
+        return QDialog.DialogCode.Rejected
+    monkeypatch.setattr(FailedEntriesDialog, "exec", inspect)
+    return report, captured

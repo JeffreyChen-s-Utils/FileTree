@@ -243,7 +243,8 @@ def test_follow_reconfiguration_queues_only_latest_reader_without_gui_wait(windo
 
 
 @pytest.mark.parametrize("cancel", [False, True])
-def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_path, monkeypatch, cancel):
+def test_trash_queues_behind_native_reader_without_gui_wait(
+        window, qapp, tmp_path, monkeypatch, cancel, failed_move_diagnostics):
     source = tmp_path / "source"
     source.mkdir()
     kept = source / "kept"
@@ -268,6 +269,8 @@ def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_pa
         assert release.is_set() and not window.operation_busy
         assert calls == ([] if cancel else [str(kept)])
         assert kept.read_bytes() == b"kept"
+        report, captured = failed_move_diagnostics
+        assert len(captured) == int(not cancel and bool(report.error))
         if cancel:
             assert not window._journal.recent().records
     finally:

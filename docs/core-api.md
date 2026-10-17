@@ -71,7 +71,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 |---|---|---|
 | `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False, exact_windows_allocation=False, count_hard_links=False, experimental_mft=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds including pauses, `.backend` (`ordinary` or explicitly selected `mft` audit) |
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
-| `analysis` | `summarise(root, limit=1000, *, now=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
+| `analysis` | `summarise(root, limit=1000, *, now=None, cancel=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
 | `hard_links` | `account_hard_links(root, *, cancel=None)`; `ScanOptions(count_hard_links=False)` | Optional `ScanResult.hard_links` describes `.aliases`, `.logical_overcount`, `.allocation_overcount`, `.unknown`; worker-only recorded-stat accounting without OS/payload queries; `Node.accounted_size/accounted_allocated` preserve named size/allocation; lexical first observed name contributes, proven aliases count zero; inconsistent/unknown groups stay named; reapply after tree mutation; canceled surveys retain previous accounting |
 | `similar_photos` | `group_similar(signatures, distance=4, *, cancel=None)` | `PhotoSignature(node, value)` holds a 64-bit hash; groups expose `.files` and `.distances` relative to the first representative, not pairwise/equal-content proofs; 0..16-bit threshold, iterative indexed grouping, `PhotoSearchCancelledError` on Stop |
 | `archives` | `read_archive(node, *, reader=zip_members, cancel=None)` | Worker-only guarded ZIP metadata by default; injected readers yield `ArchiveMember`; `ArchiveInventory.children` contains display-only `VirtualEntry` trees, `.files`/`.size` declared totals and `.rejected` omissions; real children/totals unchanged, no extraction; `ArchiveCancelledError` on Stop, OSError on changed/unavailable/unsafe metadata |
@@ -168,6 +168,9 @@ Pass a `threading.Event` as `cancel`, then set it from another thread or a signa
 `scanner.ScanCancelledError.partial` holds a `ScanResult` when available; its unread folders carry an
 error and must not be interpreted as empty. `search` returns `None` on cancellation;
 `duplicates.DuplicateSearchCancelledError` aborts duplicate hashing without a result.
+`analysis.summarise(..., cancel=event)` raises `analysis.AnalysisCancelledError` during tree traversal,
+largest-file selection or age counting; it never returns partial statistics. Omitting the event
+preserves ordinary synchronous summary behavior.
 Scan progress callbacks run on the calling thread; duplicate progress callbacks run on hashing threads,
 so dispatch them to your application's UI and synchronize shared state. Root and progress callbacks
 must not mutate the scan tree.

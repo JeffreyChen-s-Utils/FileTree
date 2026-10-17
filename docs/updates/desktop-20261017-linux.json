@@ -1,0 +1,95 @@
+{
+  "inspected_on": "2026-10-17",
+  "head_sha": "9c496be181fc650e56258f0080da77f5eaa443c0",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/38938143798",
+  "run_conclusion": "success",
+  "job_id": 117098717643,
+  "job_conclusion": "success",
+  "artifact": {
+    "id": 12062250645,
+    "name": "linux-desktop-evidence",
+    "size_in_bytes": 848980,
+    "proof_json_sha256": "d8664d10ec99062ac4e2e54e3485d6ea7203795ae7fa6d6d44a5e98a8a59338c"
+  },
+  "scope": "Isolated X11/private D-Bus container; current uid, read-only repository, 1 GiB and two CPUs; owned fixtures only",
+  "proof": {
+    "dbus": {
+      "signature": [
+        "as",
+        "s"
+      ],
+      "call": {
+        "uris": [
+          "file:///tmp/filetree-desktop-fe167s0j/資料, with space.txt"
+        ],
+        "startup_id": ""
+      }
+    },
+    "trash": {
+      "trashinfo": true,
+      "original_path_preserved": true,
+      "contents_preserved": true,
+      "inventory_count": 1,
+      "inventory_bytes": 20
+    },
+    "fallback": {
+      "disconnected_bus": true,
+      "parent_folder_preserved": true,
+      "arguments": [
+        "file:///tmp/filetree-desktop-fe167s0j/%E5%82%99%E6%8F%B4%20%E8%B3%87%E6%96%99,%E5%A4%BE"
+      ]
+    },
+    "drag": {
+      "file_manager": "Thunar",
+      "external_x11_drag": true,
+      "scanned_path": "/tmp/filetree-desktop-fe167s0j/drag-source/待掃描資料夾",
+      "original_identity_and_contents_preserved": true
+    },
+    "background": {
+      "phase": "complete",
+      "platform": "xcb",
+      "qt": "6.12.0",
+      "real_login_launch_verified": false,
+      "last_native_phase": "joining",
+      "session": {
+        "autostart_registration": false,
+        "tray_available": true,
+        "scheduled_history_complete": true,
+        "native_capacity_rows": 6,
+        "foreground_unchanged": true,
+        "recurring": {
+          "comparison_complete": true,
+          "new_junk_rows": 1,
+          "growth_rows": 1,
+          "binding_current": true,
+          "source_preserved": true,
+          "native_trash_move": false
+        },
+        "recurring_review": {
+          "fresh_foreground_scan": true,
+          "native_review_queue": true,
+          "manual_selection_required": true,
+          "confirmation_canceled": true,
+          "source_preserved": true,
+          "native_trash_move": false,
+          "wrapped_summary_visible": true,
+          "confirmation_backend": "qt_widget",
+          "os_native_alert_verified": false
+        },
+        "notification": {
+          "supported": true,
+          "dispatch": true,
+          "display_verified": true,
+          "scope": "explicit owned-fixture notification",
+          "os_policy_approval_verified": false
+        },
+        "close_to_tray": true,
+        "restored_window": true,
+        "source_preserved": true,
+        "quit_joined": true
+      },
+      "owned_fixture_cleanup": true
+    },
+    "cjk_font": "Noto Sans CJK TC"
+  }
+}

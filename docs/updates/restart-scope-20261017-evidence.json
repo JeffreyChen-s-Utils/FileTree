@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "5d6d4d40245545049d1d29f956df21ab12e95d07",
+  "sources": {
+    "je_file_tree/gui/startup_state.py": {
+      "lf_sha256": "6206a220500a4528a4d90f536da77c5351ef0951625badae72e2411ae07d99fb",
+      "ast_sha256": "55371d88d10c48fe096facd7d5c6e674f1de9f7b950a882b2e796e2e00ac2acb"
+    },
+    "je_file_tree/gui/app.py": {
+      "lf_sha256": "8041368b6498385c92db113e949ce0ff9698fb379d2a9b264fefc77d61cefcda",
+      "ast_sha256": "dd6b2ce3d63d423ea7d82d45bda176df8bac69ec8d278ea730100c6dc018d08e"
+    },
+    "je_file_tree/gui/main_window.py": {
+      "lf_sha256": "1e8332ba389c9f7db3b8257d759c5d771c7bd50eeadcf39668834bb00e9f0a5a",
+      "ast_sha256": "e1be7721e22eb6e1a6fd3f63b17cbe2484ae7bb714559f6be0a2c8ee277a7f46"
+    },
+    "je_file_tree/gui/workspace.py": {
+      "lf_sha256": "d7f445b47817300d50dc92f81beb7235b8df4337a3d6011813e8523b8ddea72e",
+      "ast_sha256": "e8730727bfea5198b07054e549e3ead85273424ebe2e6d6a01c1e2745eb69ae5"
+    },
+    "je_file_tree/gui/strings.py": {
+      "lf_sha256": "36a00f7005ccfc5ee8170c810a470042573de22200e141e9d9fc0c464f8075a4",
+      "ast_sha256": "b6ead502de17b7cabd2327829b25b319213fe218f29bdc7c7ca814ea8563883f"
+    }
+  },
+  "scope": "Preserve explicit live scan scopes, visual tab order and active tab across administrator restart. Blank/single/combined kinds remain distinct, including one-root combined scans. Closing tabs are excluded.",
+  "protocol": "Version 1, strict unique fields/types, 16 tabs, up to 256 roots per combined scan, 1 MiB internal JSON bound. Ordinary single-folder/blank startup and background arguments remain compatible. Malformed, duplicate, ambiguous, unknown, deep or oversized payloads fail before approval.",
+  "authority": "Metadata carries only root scopes and focus. New scans use saved preferences. No result tree, mutation approval, execution receipt or arbitrary executable is restored. Actual UAC and unsaved per-tab option continuity remain unverified.",
+  "regressions": {
+    "red": "build/restart-scope-red.log reproduces empty relaunch arguments from nonempty _last_roots.",
+    "focused": "86 passed in build/restart-scope-final-focused.log, including native Windows CommandLineToArgvW roundtrips for executable and Python-module argument prefixes.",
+    "first_full": "2134 passed, 54 skipped in 304.94 s; predates locale font application to the new startup error dialog."
+  },
+  "bootstrap": {
+    "raw_log": "build/restart-scope-bootstrap-final.json",
+    "sha256": "60e1e7988941998d621a7e4159cd0d08b673fd2bd6e9b379d98f95c8e9621f53",
+    "result": {
+      "native_uac_invoked": false,
+      "elevation_attempted": false,
+      "fresh_application": true,
+      "scopes": [
+        "D:\\Codes\\tests\\filetree-restart-bootstrap-_1oppjyh\\scope-one",
+        [
+          "D:\\Codes\\tests\\filetree-restart-bootstrap-_1oppjyh\\scope-two",
+          "D:\\Codes\\tests\\filetree-restart-bootstrap-_1oppjyh\\scope-three"
+        ],
+        null
+      ],
+      "active": 1,
+      "physical_root": "D:\\Codes\\tests\\filetree-restart-bootstrap-_1oppjyh\\scope-one",
+      "combined_root": null,
+      "blank": true,
+      "hashes_unchanged": true,
+      "exit_code": 0
+    },
+    "boundary": "Fresh hidden native Windows QApplication, real temporary owned-root scans and file hashes, elevation disabled and guarded. This is not an actual elevated-child launch."
+  },
+  "visual_qa": {
+    "command": "py -3 tools/make_screenshots.py",
+    "main_images": [
+      {
+        "path": "docs/images/main_window_en.png",
+        "before_sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+        "after_sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+        "pixel_diff_bbox": null
+      },
+      {
+        "path": "docs/images/main_window_zh-TW.png",
+        "before_sha256": "ba96164d09a6d462396a0502e3b10c4ef9cc23c533074149c5e1859b0f73a774",
+        "after_sha256": "f4c63a05de1acd96b9e58c8126a96c9be9b22af0d373c3740e4dcfcf5522c37b",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_zh-CN.png",
+        "before_sha256": "8a89ddaf4cd55831f79ab09f3aae0f5c6b5cc02c5ee819709c7a912e07c170e7",
+        "after_sha256": "b35014edbd73f199638de9a9b92ef47a858381d0804482019c7ed200faf2e34d",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ja.png",
+        "before_sha256": "54d1d911487d8183d551506cc09a93643af11b26df61484f14d629b1e0d6192f",
+        "after_sha256": "eeb9b7bb3a103d13204715bcd84b051c6bc594a1f08649abca6d298bc8194aa3",
+        "pixel_diff_bbox": [
+          983,
+          88,
+          989,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ko.png",
+        "before_sha256": "76352f53a0c0bfc9ed54a54b93f9f54267a3ce8217e34b86ddd07bb0b0c21ec7",
+        "after_sha256": "bbde87e7246658a075e3e8a861ea01e01315dcb92e1adb3d1fe595c682fcb454",
+        "pixel_diff_bbox": [
+          1021,
+          88,
+          1028,
+          94
+        ]
+      }
+    ],
+    "startup_error_images": [
+      {
+        "path": "build/restart-scope-previews/en-invalid.png",
+        "sha256": "e39bcdad8d9b8c799cd8f620ae4eefc16cb7dd0bf870fa2a418269ed6a83bf01"
+      },
+      {
+        "path": "build/restart-scope-previews/ja-invalid.png",
+        "sha256": "912896854b8451f75fcc4bacc5084dee165e79b279c6ced6ecc88a276394606b"
+      },
+      {
+        "path": "build/restart-scope-previews/ko-invalid.png",
+        "sha256": "20c09972ee63d617f048bef79cb1f9be1c630b50c933e085c28dd34c208a89de"
+      },
+      {
+        "path": "build/restart-scope-previews/zh-CN-invalid.png",
+        "sha256": "4007dc17964c76631f8cefa627ad441f51de3d5cdec8719baa00364802736032"
+      },
+      {
+        "path": "build/restart-scope-previews/zh-TW-invalid.png",
+        "sha256": "636117d24314765bcf72b6e94bca69ef14353a3ccca3fa535a60086701d57b83"
+      }
+    ],
+    "review": "Inspect all five product images and all five literal-error previews. Rerender Japanese/Korean with the existing locale font helper; no clipping. Final font change affects only the parentless startup error path."
+  },
+  "validation": {
+    "passed": 2134,
+    "skipped": 54,
+    "seconds": 286.19,
+    "new_cases_in_final_junit": 40,
+    "junit": "build/restart-scope-final-full.xml",
+    "log": "build/restart-scope-final-full-pytest.log",
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ],
+    "scope": "Existing native-platform/privilege and owned-fixture 8.3 skips; real UAC and per-tab unsaved preferences remain unverified."
+  }
+}

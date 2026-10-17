@@ -1,0 +1,1444 @@
+{
+  "schema": 1,
+  "baseline_commit": "6c7447a1510d40d21e87220c06590c0b1997c945",
+  "failing_aligned_timeout_pending": true,
+  "sources_sha256_lf": {
+    "tools/windows_trace_clock.py": "ee8f69498972e498419df6a33ad7cf046e510c51bbf01e90b76ad9a9ab9ab0ab",
+    "tools/windows_share_probe.py": "032bb1ff69f98229168a584b49e83482f526c51551dc88de777a87ea92187cfd",
+    "tools/validate_windows_share.ps1": "c4cefcd8db8601561bde0ff5efec8255d2abec5a2bd727a41d2a5d2c8abddb9b",
+    "tools/windows_child_observer.py": "d1c987f8ddfa3a41f2d02424dd9c6d605db8e4c693c857a93c5190f6b35f4e30",
+    "test/test_windows_trace_clock.py": "b966731e9cfe06150e0e384dcfbd83721072cbed80a807e27202b37d2fc3c2e5",
+    "test/test_windows_share_script.py": "1e3e128e7e6de639f89683e4ec1ec6b2d9a12b46030be65af5f1fe4bb7ea353c",
+    "test/test_observed_process.py": "cd7608621bb430d00318df671681970d801f86ab44afab53d39e2455cbb99250",
+    "test/fixtures/windows_confirm_owned_root_before_clock.ps1": "dc3c357f85918d18b9b9e47727eec1871c0c004ae50d44c01cd53a37a686299a",
+    "architecture.md": "d0730ca15f5199bdb402b5c5f08bcfa09109917cbefc13462af04ace66bdd953",
+    "docs/testing.md": "9fd6a36912a650f8ee616368400c55370a23f6a2594c06138e24285daf16be0e",
+    "progress.md": "42a9636795858416b8232fe00c6eda3450eb8eda6012bfae30e0e460aae2bf1d"
+  },
+  "source_audits": {
+    "powershell_sensitive_ast": {
+      "param_block_unchanged": true,
+      "Write-DisconnectStep": true,
+      "Remove-OwnedShare": true,
+      "Invoke-Probe": true,
+      "IfStatementAst": true,
+      "ForEachStatementAst": true,
+      "Get-Item": true,
+      "Get-Content": true,
+      "ConvertFrom-Json": true
+    },
+    "powershell_audit_source": "param([string]$Before, [string]$After, [string]$Output)\n$ErrorActionPreference = 'Stop'\nfunction Read-Ast([string]$path) {\n    $tokens=$null; $errors=$null\n    $ast=[Management.Automation.Language.Parser]::ParseFile($path,[ref]$tokens,[ref]$errors)\n    if($errors.Count){throw 'AST parsing failed'}\n    return $ast\n}\nfunction Get-Definition($ast,[string]$name) {\n    $found=$ast.FindAll({param($item)\n        $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -eq $name\n    },$true)\n    if($found.Count -ne 1){throw 'Function definition ambiguous'}\n    return $found[0]\n}\nfunction Canonical($text){return $text.Replace(\"`r`n\",\"`n\")}\n$old=Read-Ast $Before; $new=Read-Ast $After\n$proof=[ordered]@{param_block_unchanged=((Canonical $old.ParamBlock.Extent.Text) -eq (Canonical $new.ParamBlock.Extent.Text))}\nforeach($name in @('Write-DisconnectStep','Remove-OwnedShare','Invoke-Probe')){\n    $proof[$name]=((Canonical (Get-Definition $old $name).Extent.Text) -eq (Canonical (Get-Definition $new $name).Extent.Text))\n}\n$a=Get-Definition $old 'Confirm-OwnedRoot'; $b=Get-Definition $new 'Confirm-OwnedRoot'\nforeach($kind in @([Management.Automation.Language.IfStatementAst],[Management.Automation.Language.ForEachStatementAst])){\n    $x=@($a.Body.FindAll({param($n) $n -is $kind},$true)|ForEach-Object {Canonical $_.Extent.Text})\n    $y=@($b.Body.FindAll({param($n) $n -is $kind},$true)|ForEach-Object {Canonical $_.Extent.Text})\n    $proof[$kind.Name]=($x.Count -eq $y.Count -and [string]::Join(\"`n\",$x) -eq [string]::Join(\"`n\",$y))\n}\nforeach($name in @('Get-Item','Get-Content','ConvertFrom-Json')){\n    $x=@($a.Body.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst] -and $n.GetCommandName() -eq $name},$true)|ForEach-Object {Canonical $_.Extent.Text})\n    $y=@($b.Body.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst] -and $n.GetCommandName() -eq $name},$true)|ForEach-Object {Canonical $_.Extent.Text})\n    $proof[$name]=($x.Count -eq $y.Count -and [string]::Join(\"`n\",$x) -eq [string]::Join(\"`n\",$y))\n}\n$proof | ConvertTo-Json | Set-Content -LiteralPath $Output -Encoding UTF8\nif($proof.Values -contains $false){throw 'Sensitive source flow changed'}\n",
+    "observer_ownership_flags_and_limits_ast_unchanged": true,
+    "run_observed_byte_unchanged_lf": true
+  },
+  "actual_powershell_birth_unit_checks": [
+    {
+      "source_sha256": "b9127e31358bee43bbc6cbb17c341e02dc4693259818f45b39f09731283fc9ad",
+      "record": {
+        "outcome": "completed",
+        "returncode": 0,
+        "timeout_seconds": 20,
+        "elapsed_seconds": 0.748963,
+        "stdout": "{\"created_filetime_100ns\":134366758063626966,\"pid\":55348}\r\n",
+        "stderr": "FILETREE_TEST_CLOCK {\"pid\":55348,\"before_filetime_100ns\":134366758068718664,\"after_filetime_100ns\":134366758068767836}\r\nFILETREE_TEST_PHASE {\"sequence\":1,\"phase\":\"entry\",\"event\":\"completed\",\"elapsed_ms\":17}\r\nFILETREE_TEST_RUNTIME 5.1.26100.9711\r\nFILETREE_TEST_PHASE {\"sequence\":2,\"phase\":\"import-modules\",\"event\":\"started\",\"elapsed_ms\":23}\r\nFILETREE_TEST_PHASE {\"sequence\":3,\"phase\":\"import-modules\",\"event\":\"completed\",\"elapsed_ms\":60}\r\nFILETREE_TEST_PHASE {\"sequence\":4,\"phase\":\"parse-source\",\"event\":\"started\",\"elapsed_ms\":60}\r\nFILETREE_TEST_PHASE {\"sequence\":5,\"phase\":\"parse-source\",\"event\":\"completed\",\"elapsed_ms\":76}\r\nFILETREE_TEST_PHASE {\"sequence\":6,\"phase\":\"extract-helpers\",\"event\":\"started\",\"elapsed_ms\":76}\r\nFILETREE_TEST_PHASE {\"sequence\":7,\"phase\":\"extract-helpers\",\"event\":\"completed\",\"elapsed_ms\":134}\r\nFILETREE_SMB_CLOCK {\"pid\":55348,\"before_filetime_100ns\":134366758070130703,\"after_filetime_100ns\":134366758070130703}\r\nFILETREE_TEST_PHASE {\"sequence\":8,\"phase\":\"run-case\",\"event\":\"started\",\"elapsed_ms\":136}\r\nFILETREE_TEST_PHASE {\"sequence\":9,\"phase\":\"run-case\",\"event\":\"completed\",\"elapsed_ms\":185}\r\n",
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "steps": [],
+        "invalid_step_records": 0,
+        "trace_complete": false,
+        "process_observation": {
+          "status": "not-sampled"
+        },
+        "clock": {
+          "status": "origin-only",
+          "origin": {
+            "pid": 55348,
+            "before_filetime_100ns": 134366758070130703,
+            "after_filetime_100ns": 134366758070130703
+          },
+          "assumption": "stable host UTC"
+        },
+        "shell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "case": "test/test_windows_share_script.py::test_native_clock_brackets_match_same_process_birth_units[powershell.exe]",
+        "mocked_smb": true,
+        "case_sha256": "a8dc367e9acd44b86f46dede664d889f74d2d242cd95a37912e43ea310022d90",
+        "harness": {
+          "steps": [
+            {
+              "sequence": 1,
+              "phase": "entry",
+              "event": "completed",
+              "elapsed_ms": 17
+            },
+            {
+              "sequence": 2,
+              "phase": "import-modules",
+              "event": "started",
+              "elapsed_ms": 23
+            },
+            {
+              "sequence": 3,
+              "phase": "import-modules",
+              "event": "completed",
+              "elapsed_ms": 60
+            },
+            {
+              "sequence": 4,
+              "phase": "parse-source",
+              "event": "started",
+              "elapsed_ms": 60
+            },
+            {
+              "sequence": 5,
+              "phase": "parse-source",
+              "event": "completed",
+              "elapsed_ms": 76
+            },
+            {
+              "sequence": 6,
+              "phase": "extract-helpers",
+              "event": "started",
+              "elapsed_ms": 76
+            },
+            {
+              "sequence": 7,
+              "phase": "extract-helpers",
+              "event": "completed",
+              "elapsed_ms": 134
+            },
+            {
+              "sequence": 8,
+              "phase": "run-case",
+              "event": "started",
+              "elapsed_ms": 136
+            },
+            {
+              "sequence": 9,
+              "phase": "run-case",
+              "event": "completed",
+              "elapsed_ms": 185
+            }
+          ],
+          "invalid_records": 0,
+          "trace_complete": true,
+          "last_phase": {
+            "sequence": 9,
+            "phase": "run-case",
+            "event": "completed",
+            "elapsed_ms": 185
+          },
+          "runtime": "5.1.26100.9711",
+          "clock": {
+            "status": "origin-only",
+            "origin": {
+              "pid": 55348,
+              "before_filetime_100ns": 134366758068718664,
+              "after_filetime_100ns": 134366758068767836
+            },
+            "assumption": "stable host UTC"
+          }
+        }
+      }
+    },
+    {
+      "source_sha256": "bf53b8586148e13c690859d3e6dcc5e9d85e952a68ed6721e13d9b67e5bc64ab",
+      "record": {
+        "outcome": "completed",
+        "returncode": 0,
+        "timeout_seconds": 20,
+        "elapsed_seconds": 0.963469,
+        "stdout": "{\"created_filetime_100ns\":134366758071597249,\"pid\":75912}\r\n",
+        "stderr": "FILETREE_TEST_CLOCK {\"pid\":75912,\"before_filetime_100ns\":134366758077611268,\"after_filetime_100ns\":134366758077688314}\r\nFILETREE_TEST_PHASE {\"sequence\":1,\"phase\":\"entry\",\"event\":\"completed\",\"elapsed_ms\":12}\r\nFILETREE_TEST_RUNTIME 7.6.6\r\nFILETREE_TEST_PHASE {\"sequence\":2,\"phase\":\"import-modules\",\"event\":\"started\",\"elapsed_ms\":19}\r\nFILETREE_TEST_PHASE {\"sequence\":3,\"phase\":\"import-modules\",\"event\":\"completed\",\"elapsed_ms\":161}\r\nFILETREE_TEST_PHASE {\"sequence\":4,\"phase\":\"parse-source\",\"event\":\"started\",\"elapsed_ms\":161}\r\nFILETREE_TEST_PHASE {\"sequence\":5,\"phase\":\"parse-source\",\"event\":\"completed\",\"elapsed_ms\":182}\r\nFILETREE_TEST_PHASE {\"sequence\":6,\"phase\":\"extract-helpers\",\"event\":\"started\",\"elapsed_ms\":182}\r\nFILETREE_TEST_PHASE {\"sequence\":7,\"phase\":\"extract-helpers\",\"event\":\"completed\",\"elapsed_ms\":238}\r\nFILETREE_SMB_CLOCK {\"pid\":75912,\"before_filetime_100ns\":134366758080086091,\"after_filetime_100ns\":134366758080086508}\r\nFILETREE_TEST_PHASE {\"sequence\":8,\"phase\":\"run-case\",\"event\":\"started\",\"elapsed_ms\":239}\r\nFILETREE_TEST_PHASE {\"sequence\":9,\"phase\":\"run-case\",\"event\":\"completed\",\"elapsed_ms\":256}\r\n",
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "steps": [],
+        "invalid_step_records": 0,
+        "trace_complete": false,
+        "process_observation": {
+          "status": "not-sampled"
+        },
+        "clock": {
+          "status": "origin-only",
+          "origin": {
+            "pid": 75912,
+            "before_filetime_100ns": 134366758080086091,
+            "after_filetime_100ns": 134366758080086508
+          },
+          "assumption": "stable host UTC"
+        },
+        "shell": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.6.6.0_x64__8wekyb3d8bbwe\\pwsh.EXE",
+        "case": "test/test_windows_share_script.py::test_native_clock_brackets_match_same_process_birth_units[pwsh]",
+        "mocked_smb": true,
+        "case_sha256": "a8dc367e9acd44b86f46dede664d889f74d2d242cd95a37912e43ea310022d90",
+        "harness": {
+          "steps": [
+            {
+              "sequence": 1,
+              "phase": "entry",
+              "event": "completed",
+              "elapsed_ms": 12
+            },
+            {
+              "sequence": 2,
+              "phase": "import-modules",
+              "event": "started",
+              "elapsed_ms": 19
+            },
+            {
+              "sequence": 3,
+              "phase": "import-modules",
+              "event": "completed",
+              "elapsed_ms": 161
+            },
+            {
+              "sequence": 4,
+              "phase": "parse-source",
+              "event": "started",
+              "elapsed_ms": 161
+            },
+            {
+              "sequence": 5,
+              "phase": "parse-source",
+              "event": "completed",
+              "elapsed_ms": 182
+            },
+            {
+              "sequence": 6,
+              "phase": "extract-helpers",
+              "event": "started",
+              "elapsed_ms": 182
+            },
+            {
+              "sequence": 7,
+              "phase": "extract-helpers",
+              "event": "completed",
+              "elapsed_ms": 238
+            },
+            {
+              "sequence": 8,
+              "phase": "run-case",
+              "event": "started",
+              "elapsed_ms": 239
+            },
+            {
+              "sequence": 9,
+              "phase": "run-case",
+              "event": "completed",
+              "elapsed_ms": 256
+            }
+          ],
+          "invalid_records": 0,
+          "trace_complete": true,
+          "last_phase": {
+            "sequence": 9,
+            "phase": "run-case",
+            "event": "completed",
+            "elapsed_ms": 256
+          },
+          "runtime": "7.6.6",
+          "clock": {
+            "status": "origin-only",
+            "origin": {
+              "pid": 75912,
+              "before_filetime_100ns": 134366758077611268,
+              "after_filetime_100ns": 134366758077688314
+            },
+            "assumption": "stable host UTC"
+          }
+        }
+      }
+    }
+  ],
+  "actual_powershell_receipt_parity": [
+    {
+      "source_sha256": "4e11f9577a4092c8bef3b5a998b012cdade8b41a0d9a5a1e21f4f3d49e940e12",
+      "record": {
+        "outcome": "completed",
+        "returncode": 0,
+        "timeout_seconds": 20,
+        "elapsed_seconds": 2.077728,
+        "stdout": "[{\"same_error\":true,\"old_refused\":false,\"name\":\"valid\",\"same_receipt\":true,\"new_refused\":false},{\"same_error\":true,\"old_refused\":false,\"name\":\"bom\",\"same_receipt\":true,\"new_refused\":false},{\"same_error\":true,\"old_refused\":false,\"name\":\"unicode\",\"same_receipt\":true,\"new_refused\":false},{\"same_error\":true,\"old_refused\":true,\"name\":\"empty\",\"same_receipt\":true,\"new_refused\":true},{\"same_error\":true,\"old_refused\":true,\"name\":\"null\",\"same_receipt\":true,\"new_refused\":true},{\"same_error\":true,\"old_refused\":true,\"name\":\"array\",\"same_receipt\":true,\"new_refused\":true},{\"same_error\":true,\"old_refused\":true,\"name\":\"broken\",\"same_receipt\":true,\"new_refused\":true},{\"same_error\":true,\"old_refused\":true,\"name\":\"missing\",\"same_receipt\":true,\"new_refused\":true},{\"same_error\":true,\"old_refused\":true,\"name\":\"sid\",\"same_receipt\":true,\"new_refused\":true}]\r\n",
+        "stderr": "FILETREE_TEST_CLOCK {\"pid\":62240,\"before_filetime_100ns\":134366758036451637,\"after_filetime_100ns\":134366758036538858}\r\nFILETREE_TEST_PHASE {\"sequence\":1,\"phase\":\"entry\",\"event\":\"completed\",\"elapsed_ms\":20}\r\nFILETREE_TEST_RUNTIME 5.1.26100.9711\r\nFILETREE_TEST_PHASE {\"sequence\":2,\"phase\":\"import-modules\",\"event\":\"started\",\"elapsed_ms\":32}\r\nFILETREE_TEST_PHASE {\"sequence\":3,\"phase\":\"import-modules\",\"event\":\"completed\",\"elapsed_ms\":104}\r\nFILETREE_TEST_PHASE {\"sequence\":4,\"phase\":\"parse-source\",\"event\":\"started\",\"elapsed_ms\":105}\r\nFILETREE_TEST_PHASE {\"sequence\":5,\"phase\":\"parse-source\",\"event\":\"completed\",\"elapsed_ms\":133}\r\nFILETREE_TEST_PHASE {\"sequence\":6,\"phase\":\"extract-helpers\",\"event\":\"started\",\"elapsed_ms\":133}\r\nFILETREE_TEST_PHASE {\"sequence\":7,\"phase\":\"extract-helpers\",\"event\":\"completed\",\"elapsed_ms\":248}\r\nFILETREE_SMB_CLOCK {\"pid\":62240,\"before_filetime_100ns\":134366758039034971,\"after_filetime_100ns\":134366758039034971}\r\nFILETREE_TEST_PHASE {\"sequence\":8,\"phase\":\"run-case\",\"event\":\"started\",\"elapsed_ms\":250}\r\nFILETREE_SMB_STEP {\"sequence\":1,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":68}\r\nFILETREE_SMB_STEP {\"sequence\":2,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":80}\r\nFILETREE_SMB_STEP {\"sequence\":3,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":82}\r\nFILETREE_SMB_STEP {\"sequence\":4,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":98}\r\nFILETREE_SMB_STEP {\"sequence\":5,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":99}\r\nFILETREE_SMB_STEP {\"sequence\":6,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":100}\r\nFILETREE_SMB_STEP {\"sequence\":7,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":101}\r\nFILETREE_SMB_STEP {\"sequence\":8,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":104}\r\nFILETREE_SMB_STEP {\"sequence\":9,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":104}\r\nFILETREE_SMB_STEP {\"sequence\":10,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":106}\r\nFILETREE_SMB_STEP {\"sequence\":11,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":106}\r\nFILETREE_SMB_STEP {\"sequence\":12,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":219}\r\nFILETREE_SMB_STEP {\"sequence\":13,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":228}\r\nFILETREE_SMB_STEP {\"sequence\":14,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":229}\r\nFILETREE_SMB_STEP {\"sequence\":15,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":230}\r\nFILETREE_SMB_STEP {\"sequence\":16,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":231}\r\nFILETREE_SMB_STEP {\"sequence\":17,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":231}\r\nFILETREE_SMB_STEP {\"sequence\":18,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":233}\r\nFILETREE_SMB_STEP {\"sequence\":19,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":234}\r\nFILETREE_SMB_STEP {\"sequence\":20,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":235}\r\nFILETREE_SMB_STEP {\"sequence\":21,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":235}\r\nFILETREE_SMB_STEP {\"sequence\":22,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":238}\r\nFILETREE_SMB_STEP {\"sequence\":23,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":238}\r\nFILETREE_SMB_STEP {\"sequence\":24,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":239}\r\nFILETREE_SMB_STEP {\"sequence\":25,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":241}\r\nFILETREE_SMB_STEP {\"sequence\":26,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":242}\r\nFILETREE_SMB_STEP {\"sequence\":27,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":243}\r\nFILETREE_SMB_STEP {\"sequence\":28,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":29,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":30,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":31,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":271}\r\nFILETREE_SMB_STEP {\"sequence\":32,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":272}\r\nFILETREE_SMB_STEP {\"sequence\":33,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":273}\r\nFILETREE_SMB_STEP {\"sequence\":34,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":274}\r\nFILETREE_SMB_STEP {\"sequence\":35,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":274}\r\nFILETREE_SMB_STEP {\"sequence\":36,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":276}\r\nFILETREE_SMB_STEP {\"sequence\":37,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":276}\r\nFILETREE_SMB_STEP {\"sequence\":38,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":277}\r\nFILETREE_SMB_STEP {\"sequence\":39,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":278}\r\nFILETREE_SMB_STEP {\"sequence\":40,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":279}\r\nFILETREE_SMB_STEP {\"sequence\":41,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":280}\r\nFILETREE_SMB_STEP {\"sequence\":42,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":298}\r\nFILETREE_SMB_STEP {\"sequence\":43,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":298}\r\nFILETREE_SMB_STEP {\"sequence\":44,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":299}\r\nFILETREE_SMB_STEP {\"sequence\":45,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":300}\r\nFILETREE_SMB_STEP {\"sequence\":46,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":301}\r\nFILETREE_SMB_STEP {\"sequence\":47,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":301}\r\nFILETREE_SMB_STEP {\"sequence\":48,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":331}\r\nFILETREE_SMB_STEP {\"sequence\":49,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":332}\r\nFILETREE_SMB_STEP {\"sequence\":50,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":332}\r\nFILETREE_SMB_STEP {\"sequence\":51,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":333}\r\nFILETREE_SMB_STEP {\"sequence\":52,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":333}\r\nFILETREE_SMB_STEP {\"sequence\":53,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":333}\r\nFILETREE_SMB_STEP {\"sequence\":54,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":334}\r\nFILETREE_SMB_STEP {\"sequence\":55,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":335}\r\nFILETREE_SMB_STEP {\"sequence\":56,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":335}\r\nFILETREE_SMB_STEP {\"sequence\":57,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":336}\r\nFILETREE_SMB_STEP {\"sequence\":58,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":336}\r\nFILETREE_SMB_STEP {\"sequence\":59,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":336}\r\nFILETREE_SMB_STEP {\"sequence\":60,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":336}\r\nFILETREE_SMB_STEP {\"sequence\":61,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":338}\r\nFILETREE_SMB_STEP {\"sequence\":62,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":338}\r\nFILETREE_SMB_STEP {\"sequence\":63,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":339}\r\nFILETREE_SMB_STEP {\"sequence\":64,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":340}\r\nFILETREE_SMB_STEP {\"sequence\":65,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":340}\r\nFILETREE_SMB_STEP {\"sequence\":66,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":341}\r\nFILETREE_SMB_STEP {\"sequence\":67,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":341}\r\nFILETREE_SMB_STEP {\"sequence\":68,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":342}\r\nFILETREE_SMB_STEP {\"sequence\":69,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":342}\r\nFILETREE_SMB_STEP {\"sequence\":70,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":342}\r\nFILETREE_SMB_STEP {\"sequence\":71,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":343}\r\nFILETREE_SMB_STEP {\"sequence\":72,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":366}\r\nFILETREE_SMB_STEP {\"sequence\":73,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":367}\r\nFILETREE_SMB_STEP {\"sequence\":74,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":367}\r\nFILETREE_SMB_STEP {\"sequence\":75,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":369}\r\nFILETREE_SMB_STEP {\"sequence\":76,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":369}\r\nFILETREE_SMB_STEP {\"sequence\":77,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":370}\r\nFILETREE_SMB_STEP {\"sequence\":78,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":370}\r\nFILETREE_SMB_STEP {\"sequence\":79,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":370}\r\nFILETREE_SMB_STEP {\"sequence\":80,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":371}\r\nFILETREE_SMB_STEP {\"sequence\":81,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":371}\r\nFILETREE_SMB_STEP {\"sequence\":82,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":372}\r\nFILETREE_SMB_STEP {\"sequence\":83,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":372}\r\nFILETREE_SMB_STEP {\"sequence\":84,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":372}\r\nFILETREE_SMB_STEP {\"sequence\":85,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":374}\r\nFILETREE_SMB_STEP {\"sequence\":86,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":374}\r\nFILETREE_SMB_STEP {\"sequence\":87,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":375}\r\nFILETREE_SMB_STEP {\"sequence\":88,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":375}\r\nFILETREE_SMB_STEP {\"sequence\":89,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":375}\r\nFILETREE_SMB_STEP {\"sequence\":90,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":376}\r\nFILETREE_SMB_STEP {\"sequence\":91,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":377}\r\nFILETREE_SMB_STEP {\"sequence\":92,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":378}\r\nFILETREE_SMB_STEP {\"sequence\":93,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":379}\r\nFILETREE_SMB_STEP {\"sequence\":94,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":380}\r\nFILETREE_SMB_STEP {\"sequence\":95,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":380}\r\nFILETREE_SMB_STEP {\"sequence\":96,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":381}\r\nFILETREE_SMB_STEP {\"sequence\":97,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":381}\r\nFILETREE_SMB_STEP {\"sequence\":98,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":382}\r\nFILETREE_SMB_STEP {\"sequence\":99,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":382}\r\nFILETREE_SMB_STEP {\"sequence\":100,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":383}\r\nFILETREE_SMB_STEP {\"sequence\":101,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":383}\r\nFILETREE_SMB_STEP {\"sequence\":102,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":430}\r\nFILETREE_SMB_STEP {\"sequence\":103,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":430}\r\nFILETREE_SMB_STEP {\"sequence\":104,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":431}\r\nFILETREE_SMB_STEP {\"sequence\":105,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":432}\r\nFILETREE_SMB_STEP {\"sequence\":106,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":432}\r\nFILETREE_SMB_STEP {\"sequence\":107,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":435}\r\nFILETREE_SMB_STEP {\"sequence\":108,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":436}\r\nFILETREE_SMB_STEP {\"sequence\":109,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":436}\r\nFILETREE_SMB_STEP {\"sequence\":110,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":437}\r\nFILETREE_SMB_STEP {\"sequence\":111,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":437}\r\nFILETREE_SMB_STEP {\"sequence\":112,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":437}\r\nFILETREE_SMB_STEP {\"sequence\":113,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":437}\r\nFILETREE_SMB_STEP {\"sequence\":114,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":439}\r\nFILETREE_SMB_STEP {\"sequence\":115,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":439}\r\nFILETREE_SMB_STEP {\"sequence\":116,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":439}\r\nFILETREE_SMB_STEP {\"sequence\":117,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":439}\r\nFILETREE_SMB_STEP {\"sequence\":118,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":443}\r\nFILETREE_SMB_STEP {\"sequence\":119,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":443}\r\nFILETREE_SMB_STEP {\"sequence\":120,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":444}\r\nFILETREE_SMB_STEP {\"sequence\":121,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":445}\r\nFILETREE_SMB_STEP {\"sequence\":122,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":445}\r\nFILETREE_SMB_STEP {\"sequence\":123,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":446}\r\nFILETREE_SMB_STEP {\"sequence\":124,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":446}\r\nFILETREE_SMB_STEP {\"sequence\":125,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":447}\r\nFILETREE_SMB_STEP {\"sequence\":126,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":447}\r\nFILETREE_SMB_STEP {\"sequence\":127,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":448}\r\nFILETREE_SMB_STEP {\"sequence\":128,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":448}\r\nFILETREE_SMB_STEP {\"sequence\":129,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":452}\r\nFILETREE_SMB_STEP {\"sequence\":130,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":452}\r\nFILETREE_SMB_STEP {\"sequence\":131,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":453}\r\nFILETREE_SMB_STEP {\"sequence\":132,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":454}\r\nFILETREE_SMB_STEP {\"sequence\":133,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":454}\r\nFILETREE_SMB_STEP {\"sequence\":134,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":454}\r\nFILETREE_SMB_STEP {\"sequence\":135,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":455}\r\nFILETREE_SMB_STEP {\"sequence\":136,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":455}\r\nFILETREE_SMB_STEP {\"sequence\":137,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":460}\r\nFILETREE_SMB_STEP {\"sequence\":138,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":461}\r\nFILETREE_SMB_STEP {\"sequence\":139,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":461}\r\nFILETREE_SMB_STEP {\"sequence\":140,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":461}\r\nFILETREE_SMB_STEP {\"sequence\":141,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":464}\r\nFILETREE_SMB_STEP {\"sequence\":142,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":464}\r\nFILETREE_SMB_STEP {\"sequence\":143,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":464}\r\nFILETREE_SMB_STEP {\"sequence\":144,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":464}\r\nFILETREE_SMB_STEP {\"sequence\":145,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":467}\r\nFILETREE_SMB_STEP {\"sequence\":146,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":468}\r\nFILETREE_SMB_STEP {\"sequence\":147,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":469}\r\nFILETREE_SMB_STEP {\"sequence\":148,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":470}\r\nFILETREE_SMB_STEP {\"sequence\":149,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":470}\r\nFILETREE_SMB_STEP {\"sequence\":150,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":471}\r\nFILETREE_SMB_STEP {\"sequence\":151,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":471}\r\nFILETREE_SMB_STEP {\"sequence\":152,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":472}\r\nFILETREE_SMB_STEP {\"sequence\":153,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":472}\r\nFILETREE_SMB_STEP {\"sequence\":154,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":473}\r\nFILETREE_SMB_STEP {\"sequence\":155,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":473}\r\nFILETREE_SMB_STEP {\"sequence\":156,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":499}\r\nFILETREE_SMB_STEP {\"sequence\":157,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":499}\r\nFILETREE_SMB_STEP {\"sequence\":158,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":500}\r\nFILETREE_SMB_STEP {\"sequence\":159,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":501}\r\nFILETREE_SMB_STEP {\"sequence\":160,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":501}\r\nFILETREE_SMB_STEP {\"sequence\":161,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":502}\r\nFILETREE_SMB_STEP {\"sequence\":162,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":502}\r\nFILETREE_SMB_STEP {\"sequence\":163,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":503}\r\nFILETREE_SMB_STEP {\"sequence\":164,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":503}\r\nFILETREE_SMB_STEP {\"sequence\":165,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":520}\r\nFILETREE_SMB_STEP {\"sequence\":166,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":521}\r\nFILETREE_SMB_STEP {\"sequence\":167,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":521}\r\nFILETREE_SMB_STEP {\"sequence\":168,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":522}\r\nFILETREE_SMB_STEP {\"sequence\":169,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":522}\r\nFILETREE_SMB_STEP {\"sequence\":170,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":525}\r\nFILETREE_SMB_STEP {\"sequence\":171,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":525}\r\nFILETREE_SMB_STEP {\"sequence\":172,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":530}\r\nFILETREE_SMB_STEP {\"sequence\":173,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":530}\r\nFILETREE_SMB_STEP {\"sequence\":174,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":532}\r\nFILETREE_SMB_STEP {\"sequence\":175,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":534}\r\nFILETREE_SMB_STEP {\"sequence\":176,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":534}\r\nFILETREE_SMB_STEP {\"sequence\":177,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":536}\r\nFILETREE_SMB_STEP {\"sequence\":178,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":536}\r\nFILETREE_SMB_STEP {\"sequence\":179,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":537}\r\nFILETREE_SMB_STEP {\"sequence\":180,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":538}\r\nFILETREE_SMB_STEP {\"sequence\":181,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":539}\r\nFILETREE_SMB_STEP {\"sequence\":182,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":540}\r\nFILETREE_SMB_STEP {\"sequence\":183,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":557}\r\nFILETREE_SMB_STEP {\"sequence\":184,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":557}\r\nFILETREE_SMB_STEP {\"sequence\":185,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":558}\r\nFILETREE_SMB_STEP {\"sequence\":186,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":559}\r\nFILETREE_SMB_STEP {\"sequence\":187,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":559}\r\nFILETREE_SMB_STEP {\"sequence\":188,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":559}\r\nFILETREE_SMB_STEP {\"sequence\":189,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":561}\r\nFILETREE_SMB_STEP {\"sequence\":190,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":563}\r\nFILETREE_SMB_STEP {\"sequence\":191,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":563}\r\nFILETREE_SMB_STEP {\"sequence\":192,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":563}\r\nFILETREE_SMB_STEP {\"sequence\":193,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":564}\r\nFILETREE_SMB_STEP {\"sequence\":194,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":564}\r\nFILETREE_SMB_STEP {\"sequence\":195,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":568}\r\nFILETREE_SMB_STEP {\"sequence\":196,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":568}\r\nFILETREE_SMB_STEP {\"sequence\":197,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":572}\r\nFILETREE_SMB_STEP {\"sequence\":198,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":572}\r\nFILETREE_SMB_STEP {\"sequence\":199,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":573}\r\nFILETREE_SMB_STEP {\"sequence\":200,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":573}\r\nFILETREE_SMB_STEP {\"sequence\":201,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":573}\r\nFILETREE_SMB_STEP {\"sequence\":202,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":575}\r\nFILETREE_SMB_STEP {\"sequence\":203,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":575}\r\nFILETREE_SMB_STEP {\"sequence\":204,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":577}\r\nFILETREE_SMB_STEP {\"sequence\":205,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":577}\r\nFILETREE_SMB_STEP {\"sequence\":206,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":578}\r\nFILETREE_SMB_STEP {\"sequence\":207,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":578}\r\nFILETREE_SMB_STEP {\"sequence\":208,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":582}\r\nFILETREE_SMB_STEP {\"sequence\":209,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":583}\r\nFILETREE_SMB_STEP {\"sequence\":210,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":584}\r\nFILETREE_SMB_STEP {\"sequence\":211,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":584}\r\nFILETREE_SMB_STEP {\"sequence\":212,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":588}\r\nFILETREE_SMB_STEP {\"sequence\":213,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":590}\r\nFILETREE_SMB_STEP {\"sequence\":214,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":590}\r\nFILETREE_SMB_STEP {\"sequence\":215,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":591}\r\nFILETREE_SMB_STEP {\"sequence\":216,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":591}\r\nFILETREE_SMB_STEP {\"sequence\":217,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":592}\r\nFILETREE_SMB_STEP {\"sequence\":218,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":592}\r\nFILETREE_SMB_STEP {\"sequence\":219,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":592}\r\nFILETREE_SMB_STEP {\"sequence\":220,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":594}\r\nFILETREE_SMB_STEP {\"sequence\":221,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":600}\r\nFILETREE_SMB_STEP {\"sequence\":222,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":601}\r\nFILETREE_SMB_STEP {\"sequence\":223,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":601}\r\nFILETREE_SMB_STEP {\"sequence\":224,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":603}\r\nFILETREE_SMB_STEP {\"sequence\":225,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":603}\r\nFILETREE_SMB_STEP {\"sequence\":226,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":604}\r\nFILETREE_SMB_STEP {\"sequence\":227,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":608}\r\nFILETREE_SMB_STEP {\"sequence\":228,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":608}\r\nFILETREE_SMB_STEP {\"sequence\":229,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":609}\r\nFILETREE_SMB_STEP {\"sequence\":230,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":609}\r\nFILETREE_SMB_STEP {\"sequence\":231,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":611}\r\nFILETREE_SMB_STEP {\"sequence\":232,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":611}\r\nFILETREE_SMB_STEP {\"sequence\":233,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":612}\r\nFILETREE_SMB_STEP {\"sequence\":234,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":612}\r\nFILETREE_SMB_STEP {\"sequence\":235,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":622}\r\nFILETREE_SMB_STEP {\"sequence\":236,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":623}\r\nFILETREE_SMB_STEP {\"sequence\":237,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":625}\r\nFILETREE_SMB_STEP {\"sequence\":238,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":626}\r\nFILETREE_SMB_STEP {\"sequence\":239,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":627}\r\nFILETREE_SMB_STEP {\"sequence\":240,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":628}\r\nFILETREE_SMB_STEP {\"sequence\":241,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":628}\r\nFILETREE_SMB_STEP {\"sequence\":242,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":629}\r\nFILETREE_SMB_STEP {\"sequence\":243,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":629}\r\nFILETREE_SMB_STEP {\"sequence\":244,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":630}\r\nFILETREE_SMB_STEP {\"sequence\":245,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":630}\r\nFILETREE_SMB_STEP {\"sequence\":246,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":630}\r\nFILETREE_SMB_STEP {\"sequence\":247,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":632}\r\nFILETREE_SMB_STEP {\"sequence\":248,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":632}\r\nFILETREE_SMB_STEP {\"sequence\":249,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":633}\r\nFILETREE_SMB_STEP {\"sequence\":250,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":633}\r\nFILETREE_TEST_PHASE {\"sequence\":9,\"phase\":\"run-case\",\"event\":\"completed\",\"elapsed_ms\":894}\r\n",
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "steps": [
+          {
+            "sequence": 187,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 559
+          },
+          {
+            "sequence": 188,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 559
+          },
+          {
+            "sequence": 189,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 561
+          },
+          {
+            "sequence": 190,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 563
+          },
+          {
+            "sequence": 191,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 563
+          },
+          {
+            "sequence": 192,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 563
+          },
+          {
+            "sequence": 193,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 564
+          },
+          {
+            "sequence": 194,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 564
+          },
+          {
+            "sequence": 195,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 568
+          },
+          {
+            "sequence": 196,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 568
+          },
+          {
+            "sequence": 197,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 572
+          },
+          {
+            "sequence": 198,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 572
+          },
+          {
+            "sequence": 199,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 573
+          },
+          {
+            "sequence": 200,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 573
+          },
+          {
+            "sequence": 201,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 573
+          },
+          {
+            "sequence": 202,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 575
+          },
+          {
+            "sequence": 203,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 575
+          },
+          {
+            "sequence": 204,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 577
+          },
+          {
+            "sequence": 205,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 577
+          },
+          {
+            "sequence": 206,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 578
+          },
+          {
+            "sequence": 207,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 578
+          },
+          {
+            "sequence": 208,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 582
+          },
+          {
+            "sequence": 209,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 583
+          },
+          {
+            "sequence": 210,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 584
+          },
+          {
+            "sequence": 211,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 584
+          },
+          {
+            "sequence": 212,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 588
+          },
+          {
+            "sequence": 213,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 590
+          },
+          {
+            "sequence": 214,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 590
+          },
+          {
+            "sequence": 215,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 591
+          },
+          {
+            "sequence": 216,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 591
+          },
+          {
+            "sequence": 217,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 592
+          },
+          {
+            "sequence": 218,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 592
+          },
+          {
+            "sequence": 219,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 592
+          },
+          {
+            "sequence": 220,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 594
+          },
+          {
+            "sequence": 221,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 600
+          },
+          {
+            "sequence": 222,
+            "step": "receipt-parse",
+            "event": "completed",
+            "elapsed_ms": 601
+          },
+          {
+            "sequence": 223,
+            "step": "receipt-identity",
+            "event": "started",
+            "elapsed_ms": 601
+          },
+          {
+            "sequence": 224,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 603
+          },
+          {
+            "sequence": 225,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 603
+          },
+          {
+            "sequence": 226,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 604
+          },
+          {
+            "sequence": 227,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 608
+          },
+          {
+            "sequence": 228,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 608
+          },
+          {
+            "sequence": 229,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 609
+          },
+          {
+            "sequence": 230,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 609
+          },
+          {
+            "sequence": 231,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 611
+          },
+          {
+            "sequence": 232,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 611
+          },
+          {
+            "sequence": 233,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 612
+          },
+          {
+            "sequence": 234,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 612
+          },
+          {
+            "sequence": 235,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 622
+          },
+          {
+            "sequence": 236,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 623
+          },
+          {
+            "sequence": 237,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 625
+          },
+          {
+            "sequence": 238,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 626
+          },
+          {
+            "sequence": 239,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 627
+          },
+          {
+            "sequence": 240,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 628
+          },
+          {
+            "sequence": 241,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 628
+          },
+          {
+            "sequence": 242,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 629
+          },
+          {
+            "sequence": 243,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 629
+          },
+          {
+            "sequence": 244,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 630
+          },
+          {
+            "sequence": 245,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 630
+          },
+          {
+            "sequence": 246,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 630
+          },
+          {
+            "sequence": 247,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 632
+          },
+          {
+            "sequence": 248,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 632
+          },
+          {
+            "sequence": 249,
+            "step": "receipt-parse",
+            "event": "completed",
+            "elapsed_ms": 633
+          },
+          {
+            "sequence": 250,
+            "step": "receipt-identity",
+            "event": "started",
+            "elapsed_ms": 633
+          }
+        ],
+        "invalid_step_records": 0,
+        "trace_complete": false,
+        "process_observation": {
+          "status": "not-sampled"
+        },
+        "clock": {
+          "status": "origin-only",
+          "origin": {
+            "pid": 62240,
+            "before_filetime_100ns": 134366758039034971,
+            "after_filetime_100ns": 134366758039034971
+          },
+          "assumption": "stable host UTC"
+        },
+        "shell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "case": "test/test_windows_share_script.py::test_receipt_staging_preserves_baseline_empty_invalid_and_utf8_semantics[powershell.exe]",
+        "mocked_smb": true,
+        "case_sha256": "931f8875fc574eb56a2ff65b16cece05f9a066606c4d193fa15b379ee10f0374",
+        "harness": {
+          "steps": [
+            {
+              "sequence": 1,
+              "phase": "entry",
+              "event": "completed",
+              "elapsed_ms": 20
+            },
+            {
+              "sequence": 2,
+              "phase": "import-modules",
+              "event": "started",
+              "elapsed_ms": 32
+            },
+            {
+              "sequence": 3,
+              "phase": "import-modules",
+              "event": "completed",
+              "elapsed_ms": 104
+            },
+            {
+              "sequence": 4,
+              "phase": "parse-source",
+              "event": "started",
+              "elapsed_ms": 105
+            },
+            {
+              "sequence": 5,
+              "phase": "parse-source",
+              "event": "completed",
+              "elapsed_ms": 133
+            },
+            {
+              "sequence": 6,
+              "phase": "extract-helpers",
+              "event": "started",
+              "elapsed_ms": 133
+            },
+            {
+              "sequence": 7,
+              "phase": "extract-helpers",
+              "event": "completed",
+              "elapsed_ms": 248
+            },
+            {
+              "sequence": 8,
+              "phase": "run-case",
+              "event": "started",
+              "elapsed_ms": 250
+            },
+            {
+              "sequence": 9,
+              "phase": "run-case",
+              "event": "completed",
+              "elapsed_ms": 894
+            }
+          ],
+          "invalid_records": 0,
+          "trace_complete": true,
+          "last_phase": {
+            "sequence": 9,
+            "phase": "run-case",
+            "event": "completed",
+            "elapsed_ms": 894
+          },
+          "runtime": "5.1.26100.9711",
+          "clock": {
+            "status": "origin-only",
+            "origin": {
+              "pid": 62240,
+              "before_filetime_100ns": 134366758036451637,
+              "after_filetime_100ns": 134366758036538858
+            },
+            "assumption": "stable host UTC"
+          }
+        }
+      }
+    },
+    {
+      "source_sha256": "2f1312991c72881c73109bc4ebcb2f96e6044bcaabb1f01b6d67576c998b7a23",
+      "record": {
+        "outcome": "completed",
+        "returncode": 0,
+        "timeout_seconds": 20,
+        "elapsed_seconds": 1.653217,
+        "stdout": "[{\"name\":\"valid\",\"same_receipt\":true,\"old_refused\":false,\"same_error\":true,\"new_refused\":false},{\"name\":\"bom\",\"same_receipt\":true,\"old_refused\":false,\"same_error\":true,\"new_refused\":false},{\"name\":\"unicode\",\"same_receipt\":true,\"old_refused\":false,\"same_error\":true,\"new_refused\":false},{\"name\":\"empty\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true},{\"name\":\"null\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true},{\"name\":\"array\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true},{\"name\":\"broken\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true},{\"name\":\"missing\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true},{\"name\":\"sid\",\"same_receipt\":true,\"old_refused\":true,\"same_error\":true,\"new_refused\":true}]\r\n",
+        "stderr": "FILETREE_TEST_CLOCK {\"pid\":72380,\"before_filetime_100ns\":134366758056654379,\"after_filetime_100ns\":134366758056834408}\r\nFILETREE_TEST_PHASE {\"sequence\":1,\"phase\":\"entry\",\"event\":\"completed\",\"elapsed_ms\":22}\r\nFILETREE_TEST_RUNTIME 7.6.6\r\nFILETREE_TEST_PHASE {\"sequence\":2,\"phase\":\"import-modules\",\"event\":\"started\",\"elapsed_ms\":29}\r\nFILETREE_TEST_PHASE {\"sequence\":3,\"phase\":\"import-modules\",\"event\":\"completed\",\"elapsed_ms\":202}\r\nFILETREE_TEST_PHASE {\"sequence\":4,\"phase\":\"parse-source\",\"event\":\"started\",\"elapsed_ms\":203}\r\nFILETREE_TEST_PHASE {\"sequence\":5,\"phase\":\"parse-source\",\"event\":\"completed\",\"elapsed_ms\":215}\r\nFILETREE_TEST_PHASE {\"sequence\":6,\"phase\":\"extract-helpers\",\"event\":\"started\",\"elapsed_ms\":215}\r\nFILETREE_TEST_PHASE {\"sequence\":7,\"phase\":\"extract-helpers\",\"event\":\"completed\",\"elapsed_ms\":273}\r\nFILETREE_SMB_CLOCK {\"pid\":72380,\"before_filetime_100ns\":134366758059589606,\"after_filetime_100ns\":134366758059590119}\r\nFILETREE_TEST_PHASE {\"sequence\":8,\"phase\":\"run-case\",\"event\":\"started\",\"elapsed_ms\":275}\r\nFILETREE_SMB_STEP {\"sequence\":1,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":32}\r\nFILETREE_SMB_STEP {\"sequence\":2,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":41}\r\nFILETREE_SMB_STEP {\"sequence\":3,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":42}\r\nFILETREE_SMB_STEP {\"sequence\":4,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":51}\r\nFILETREE_SMB_STEP {\"sequence\":5,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":51}\r\nFILETREE_SMB_STEP {\"sequence\":6,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":53}\r\nFILETREE_SMB_STEP {\"sequence\":7,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":53}\r\nFILETREE_SMB_STEP {\"sequence\":8,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":55}\r\nFILETREE_SMB_STEP {\"sequence\":9,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":55}\r\nFILETREE_SMB_STEP {\"sequence\":10,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":56}\r\nFILETREE_SMB_STEP {\"sequence\":11,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":57}\r\nFILETREE_SMB_STEP {\"sequence\":12,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":80}\r\nFILETREE_SMB_STEP {\"sequence\":13,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":84}\r\nFILETREE_SMB_STEP {\"sequence\":14,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":84}\r\nFILETREE_SMB_STEP {\"sequence\":15,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":85}\r\nFILETREE_SMB_STEP {\"sequence\":16,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":86}\r\nFILETREE_SMB_STEP {\"sequence\":17,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":87}\r\nFILETREE_SMB_STEP {\"sequence\":18,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":88}\r\nFILETREE_SMB_STEP {\"sequence\":19,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":88}\r\nFILETREE_SMB_STEP {\"sequence\":20,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":89}\r\nFILETREE_SMB_STEP {\"sequence\":21,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":89}\r\nFILETREE_SMB_STEP {\"sequence\":22,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":90}\r\nFILETREE_SMB_STEP {\"sequence\":23,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":90}\r\nFILETREE_SMB_STEP {\"sequence\":24,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":90}\r\nFILETREE_SMB_STEP {\"sequence\":25,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":91}\r\nFILETREE_SMB_STEP {\"sequence\":26,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":91}\r\nFILETREE_SMB_STEP {\"sequence\":27,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":91}\r\nFILETREE_SMB_STEP {\"sequence\":28,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":92}\r\nFILETREE_SMB_STEP {\"sequence\":29,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":92}\r\nFILETREE_SMB_STEP {\"sequence\":30,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":92}\r\nFILETREE_SMB_STEP {\"sequence\":31,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":107}\r\nFILETREE_SMB_STEP {\"sequence\":32,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":107}\r\nFILETREE_SMB_STEP {\"sequence\":33,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":107}\r\nFILETREE_SMB_STEP {\"sequence\":34,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":109}\r\nFILETREE_SMB_STEP {\"sequence\":35,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":109}\r\nFILETREE_SMB_STEP {\"sequence\":36,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":111}\r\nFILETREE_SMB_STEP {\"sequence\":37,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":111}\r\nFILETREE_SMB_STEP {\"sequence\":38,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":112}\r\nFILETREE_SMB_STEP {\"sequence\":39,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":112}\r\nFILETREE_SMB_STEP {\"sequence\":40,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":114}\r\nFILETREE_SMB_STEP {\"sequence\":41,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":114}\r\nFILETREE_SMB_STEP {\"sequence\":42,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":130}\r\nFILETREE_SMB_STEP {\"sequence\":43,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":130}\r\nFILETREE_SMB_STEP {\"sequence\":44,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":130}\r\nFILETREE_SMB_STEP {\"sequence\":45,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":130}\r\nFILETREE_SMB_STEP {\"sequence\":46,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":132}\r\nFILETREE_SMB_STEP {\"sequence\":47,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":132}\r\nFILETREE_SMB_STEP {\"sequence\":48,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":133}\r\nFILETREE_SMB_STEP {\"sequence\":49,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":133}\r\nFILETREE_SMB_STEP {\"sequence\":50,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":134}\r\nFILETREE_SMB_STEP {\"sequence\":51,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":134}\r\nFILETREE_SMB_STEP {\"sequence\":52,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":136}\r\nFILETREE_SMB_STEP {\"sequence\":53,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":136}\r\nFILETREE_SMB_STEP {\"sequence\":54,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":136}\r\nFILETREE_SMB_STEP {\"sequence\":55,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":137}\r\nFILETREE_SMB_STEP {\"sequence\":56,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":137}\r\nFILETREE_SMB_STEP {\"sequence\":57,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":138}\r\nFILETREE_SMB_STEP {\"sequence\":58,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":138}\r\nFILETREE_SMB_STEP {\"sequence\":59,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":138}\r\nFILETREE_SMB_STEP {\"sequence\":60,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":138}\r\nFILETREE_SMB_STEP {\"sequence\":61,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":139}\r\nFILETREE_SMB_STEP {\"sequence\":62,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":139}\r\nFILETREE_SMB_STEP {\"sequence\":63,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":140}\r\nFILETREE_SMB_STEP {\"sequence\":64,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":141}\r\nFILETREE_SMB_STEP {\"sequence\":65,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":141}\r\nFILETREE_SMB_STEP {\"sequence\":66,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":143}\r\nFILETREE_SMB_STEP {\"sequence\":67,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":143}\r\nFILETREE_SMB_STEP {\"sequence\":68,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":144}\r\nFILETREE_SMB_STEP {\"sequence\":69,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":144}\r\nFILETREE_SMB_STEP {\"sequence\":70,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":145}\r\nFILETREE_SMB_STEP {\"sequence\":71,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":145}\r\nFILETREE_SMB_STEP {\"sequence\":72,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":155}\r\nFILETREE_SMB_STEP {\"sequence\":73,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":156}\r\nFILETREE_SMB_STEP {\"sequence\":74,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":156}\r\nFILETREE_SMB_STEP {\"sequence\":75,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":156}\r\nFILETREE_SMB_STEP {\"sequence\":76,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":157}\r\nFILETREE_SMB_STEP {\"sequence\":77,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":157}\r\nFILETREE_SMB_STEP {\"sequence\":78,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":159}\r\nFILETREE_SMB_STEP {\"sequence\":79,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":159}\r\nFILETREE_SMB_STEP {\"sequence\":80,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":159}\r\nFILETREE_SMB_STEP {\"sequence\":81,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":159}\r\nFILETREE_SMB_STEP {\"sequence\":82,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":161}\r\nFILETREE_SMB_STEP {\"sequence\":83,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":161}\r\nFILETREE_SMB_STEP {\"sequence\":84,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":161}\r\nFILETREE_SMB_STEP {\"sequence\":85,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":86,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":87,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":88,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":89,\"step\":\"receipt-identity\",\"event\":\"completed\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":90,\"step\":\"owner-receipt\",\"event\":\"completed\",\"elapsed_ms\":162}\r\nFILETREE_SMB_STEP {\"sequence\":91,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":163}\r\nFILETREE_SMB_STEP {\"sequence\":92,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":163}\r\nFILETREE_SMB_STEP {\"sequence\":93,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":163}\r\nFILETREE_SMB_STEP {\"sequence\":94,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":164}\r\nFILETREE_SMB_STEP {\"sequence\":95,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":165}\r\nFILETREE_SMB_STEP {\"sequence\":96,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":166}\r\nFILETREE_SMB_STEP {\"sequence\":97,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":166}\r\nFILETREE_SMB_STEP {\"sequence\":98,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":166}\r\nFILETREE_SMB_STEP {\"sequence\":99,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":166}\r\nFILETREE_SMB_STEP {\"sequence\":100,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":168}\r\nFILETREE_SMB_STEP {\"sequence\":101,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":168}\r\nFILETREE_SMB_STEP {\"sequence\":102,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":181}\r\nFILETREE_SMB_STEP {\"sequence\":103,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":181}\r\nFILETREE_SMB_STEP {\"sequence\":104,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":182}\r\nFILETREE_SMB_STEP {\"sequence\":105,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":183}\r\nFILETREE_SMB_STEP {\"sequence\":106,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":183}\r\nFILETREE_SMB_STEP {\"sequence\":107,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":185}\r\nFILETREE_SMB_STEP {\"sequence\":108,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":185}\r\nFILETREE_SMB_STEP {\"sequence\":109,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":186}\r\nFILETREE_SMB_STEP {\"sequence\":110,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":186}\r\nFILETREE_SMB_STEP {\"sequence\":111,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":188}\r\nFILETREE_SMB_STEP {\"sequence\":112,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":188}\r\nFILETREE_SMB_STEP {\"sequence\":113,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":188}\r\nFILETREE_SMB_STEP {\"sequence\":114,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":189}\r\nFILETREE_SMB_STEP {\"sequence\":115,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":189}\r\nFILETREE_SMB_STEP {\"sequence\":116,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":189}\r\nFILETREE_SMB_STEP {\"sequence\":117,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":189}\r\nFILETREE_SMB_STEP {\"sequence\":118,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":191}\r\nFILETREE_SMB_STEP {\"sequence\":119,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":191}\r\nFILETREE_SMB_STEP {\"sequence\":120,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":192}\r\nFILETREE_SMB_STEP {\"sequence\":121,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":193}\r\nFILETREE_SMB_STEP {\"sequence\":122,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":196}\r\nFILETREE_SMB_STEP {\"sequence\":123,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":198}\r\nFILETREE_SMB_STEP {\"sequence\":124,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":198}\r\nFILETREE_SMB_STEP {\"sequence\":125,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":198}\r\nFILETREE_SMB_STEP {\"sequence\":126,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":198}\r\nFILETREE_SMB_STEP {\"sequence\":127,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":200}\r\nFILETREE_SMB_STEP {\"sequence\":128,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":200}\r\nFILETREE_SMB_STEP {\"sequence\":129,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":203}\r\nFILETREE_SMB_STEP {\"sequence\":130,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":203}\r\nFILETREE_SMB_STEP {\"sequence\":131,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":203}\r\nFILETREE_SMB_STEP {\"sequence\":132,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":205}\r\nFILETREE_SMB_STEP {\"sequence\":133,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":205}\r\nFILETREE_SMB_STEP {\"sequence\":134,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":206}\r\nFILETREE_SMB_STEP {\"sequence\":135,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":206}\r\nFILETREE_SMB_STEP {\"sequence\":136,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":207}\r\nFILETREE_SMB_STEP {\"sequence\":137,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":207}\r\nFILETREE_SMB_STEP {\"sequence\":138,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":208}\r\nFILETREE_SMB_STEP {\"sequence\":139,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":208}\r\nFILETREE_SMB_STEP {\"sequence\":140,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":208}\r\nFILETREE_SMB_STEP {\"sequence\":141,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":209}\r\nFILETREE_SMB_STEP {\"sequence\":142,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":209}\r\nFILETREE_SMB_STEP {\"sequence\":143,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":209}\r\nFILETREE_SMB_STEP {\"sequence\":144,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":209}\r\nFILETREE_SMB_STEP {\"sequence\":145,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":210}\r\nFILETREE_SMB_STEP {\"sequence\":146,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":210}\r\nFILETREE_SMB_STEP {\"sequence\":147,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":211}\r\nFILETREE_SMB_STEP {\"sequence\":148,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":212}\r\nFILETREE_SMB_STEP {\"sequence\":149,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":212}\r\nFILETREE_SMB_STEP {\"sequence\":150,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":213}\r\nFILETREE_SMB_STEP {\"sequence\":151,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":213}\r\nFILETREE_SMB_STEP {\"sequence\":152,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":213}\r\nFILETREE_SMB_STEP {\"sequence\":153,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":213}\r\nFILETREE_SMB_STEP {\"sequence\":154,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":214}\r\nFILETREE_SMB_STEP {\"sequence\":155,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":214}\r\nFILETREE_SMB_STEP {\"sequence\":156,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":217}\r\nFILETREE_SMB_STEP {\"sequence\":157,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":217}\r\nFILETREE_SMB_STEP {\"sequence\":158,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":217}\r\nFILETREE_SMB_STEP {\"sequence\":159,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":218}\r\nFILETREE_SMB_STEP {\"sequence\":160,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":218}\r\nFILETREE_SMB_STEP {\"sequence\":161,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":219}\r\nFILETREE_SMB_STEP {\"sequence\":162,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":220}\r\nFILETREE_SMB_STEP {\"sequence\":163,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":220}\r\nFILETREE_SMB_STEP {\"sequence\":164,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":220}\r\nFILETREE_SMB_STEP {\"sequence\":165,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":222}\r\nFILETREE_SMB_STEP {\"sequence\":166,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":222}\r\nFILETREE_SMB_STEP {\"sequence\":167,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":222}\r\nFILETREE_SMB_STEP {\"sequence\":168,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":223}\r\nFILETREE_SMB_STEP {\"sequence\":169,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":223}\r\nFILETREE_SMB_STEP {\"sequence\":170,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":223}\r\nFILETREE_SMB_STEP {\"sequence\":171,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":223}\r\nFILETREE_SMB_STEP {\"sequence\":172,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":224}\r\nFILETREE_SMB_STEP {\"sequence\":173,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":224}\r\nFILETREE_SMB_STEP {\"sequence\":174,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":225}\r\nFILETREE_SMB_STEP {\"sequence\":175,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":226}\r\nFILETREE_SMB_STEP {\"sequence\":176,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":226}\r\nFILETREE_SMB_STEP {\"sequence\":177,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":227}\r\nFILETREE_SMB_STEP {\"sequence\":178,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":227}\r\nFILETREE_SMB_STEP {\"sequence\":179,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":228}\r\nFILETREE_SMB_STEP {\"sequence\":180,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":228}\r\nFILETREE_SMB_STEP {\"sequence\":181,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":229}\r\nFILETREE_SMB_STEP {\"sequence\":182,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":229}\r\nFILETREE_SMB_STEP {\"sequence\":183,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":240}\r\nFILETREE_SMB_STEP {\"sequence\":184,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":240}\r\nFILETREE_SMB_STEP {\"sequence\":185,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":241}\r\nFILETREE_SMB_STEP {\"sequence\":186,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":242}\r\nFILETREE_SMB_STEP {\"sequence\":187,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":242}\r\nFILETREE_SMB_STEP {\"sequence\":188,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":189,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":190,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":191,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":244}\r\nFILETREE_SMB_STEP {\"sequence\":192,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":245}\r\nFILETREE_SMB_STEP {\"sequence\":193,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":245}\r\nFILETREE_SMB_STEP {\"sequence\":194,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":245}\r\nFILETREE_SMB_STEP {\"sequence\":195,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":246}\r\nFILETREE_SMB_STEP {\"sequence\":196,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":246}\r\nFILETREE_SMB_STEP {\"sequence\":197,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":247}\r\nFILETREE_SMB_STEP {\"sequence\":198,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":248}\r\nFILETREE_SMB_STEP {\"sequence\":199,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":248}\r\nFILETREE_SMB_STEP {\"sequence\":200,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":249}\r\nFILETREE_SMB_STEP {\"sequence\":201,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":249}\r\nFILETREE_SMB_STEP {\"sequence\":202,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":250}\r\nFILETREE_SMB_STEP {\"sequence\":203,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":250}\r\nFILETREE_SMB_STEP {\"sequence\":204,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":251}\r\nFILETREE_SMB_STEP {\"sequence\":205,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":251}\r\nFILETREE_SMB_STEP {\"sequence\":206,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":252}\r\nFILETREE_SMB_STEP {\"sequence\":207,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":252}\r\nFILETREE_SMB_STEP {\"sequence\":208,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":255}\r\nFILETREE_SMB_STEP {\"sequence\":209,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":255}\r\nFILETREE_SMB_STEP {\"sequence\":210,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":256}\r\nFILETREE_SMB_STEP {\"sequence\":211,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":257}\r\nFILETREE_SMB_STEP {\"sequence\":212,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":257}\r\nFILETREE_SMB_STEP {\"sequence\":213,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":259}\r\nFILETREE_SMB_STEP {\"sequence\":214,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":259}\r\nFILETREE_SMB_STEP {\"sequence\":215,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":260}\r\nFILETREE_SMB_STEP {\"sequence\":216,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":260}\r\nFILETREE_SMB_STEP {\"sequence\":217,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":262}\r\nFILETREE_SMB_STEP {\"sequence\":218,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":262}\r\nFILETREE_SMB_STEP {\"sequence\":219,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":262}\r\nFILETREE_SMB_STEP {\"sequence\":220,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":264}\r\nFILETREE_SMB_STEP {\"sequence\":221,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":264}\r\nFILETREE_SMB_STEP {\"sequence\":222,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":264}\r\nFILETREE_SMB_STEP {\"sequence\":223,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":264}\r\nFILETREE_SMB_STEP {\"sequence\":224,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":265}\r\nFILETREE_SMB_STEP {\"sequence\":225,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":265}\r\nFILETREE_SMB_STEP {\"sequence\":226,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":266}\r\nFILETREE_SMB_STEP {\"sequence\":227,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":267}\r\nFILETREE_SMB_STEP {\"sequence\":228,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":267}\r\nFILETREE_SMB_STEP {\"sequence\":229,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":268}\r\nFILETREE_SMB_STEP {\"sequence\":230,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":268}\r\nFILETREE_SMB_STEP {\"sequence\":231,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":268}\r\nFILETREE_SMB_STEP {\"sequence\":232,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":269}\r\nFILETREE_SMB_STEP {\"sequence\":233,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":270}\r\nFILETREE_SMB_STEP {\"sequence\":234,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":270}\r\nFILETREE_SMB_STEP {\"sequence\":235,\"step\":\"root-scope\",\"event\":\"started\",\"elapsed_ms\":282}\r\nFILETREE_SMB_STEP {\"sequence\":236,\"step\":\"root-scope\",\"event\":\"completed\",\"elapsed_ms\":282}\r\nFILETREE_SMB_STEP {\"sequence\":237,\"step\":\"owned-entry-1\",\"event\":\"started\",\"elapsed_ms\":282}\r\nFILETREE_SMB_STEP {\"sequence\":238,\"step\":\"owned-entry-1\",\"event\":\"completed\",\"elapsed_ms\":284}\r\nFILETREE_SMB_STEP {\"sequence\":239,\"step\":\"owned-entry-2\",\"event\":\"started\",\"elapsed_ms\":284}\r\nFILETREE_SMB_STEP {\"sequence\":240,\"step\":\"owned-entry-2\",\"event\":\"completed\",\"elapsed_ms\":285}\r\nFILETREE_SMB_STEP {\"sequence\":241,\"step\":\"owned-entry-3\",\"event\":\"started\",\"elapsed_ms\":285}\r\nFILETREE_SMB_STEP {\"sequence\":242,\"step\":\"owned-entry-3\",\"event\":\"completed\",\"elapsed_ms\":286}\r\nFILETREE_SMB_STEP {\"sequence\":243,\"step\":\"owned-entry-4\",\"event\":\"started\",\"elapsed_ms\":286}\r\nFILETREE_SMB_STEP {\"sequence\":244,\"step\":\"owned-entry-4\",\"event\":\"completed\",\"elapsed_ms\":287}\r\nFILETREE_SMB_STEP {\"sequence\":245,\"step\":\"owner-receipt\",\"event\":\"started\",\"elapsed_ms\":287}\r\nFILETREE_SMB_STEP {\"sequence\":246,\"step\":\"receipt-read\",\"event\":\"started\",\"elapsed_ms\":287}\r\nFILETREE_SMB_STEP {\"sequence\":247,\"step\":\"receipt-read\",\"event\":\"completed\",\"elapsed_ms\":288}\r\nFILETREE_SMB_STEP {\"sequence\":248,\"step\":\"receipt-parse\",\"event\":\"started\",\"elapsed_ms\":288}\r\nFILETREE_SMB_STEP {\"sequence\":249,\"step\":\"receipt-parse\",\"event\":\"completed\",\"elapsed_ms\":288}\r\nFILETREE_SMB_STEP {\"sequence\":250,\"step\":\"receipt-identity\",\"event\":\"started\",\"elapsed_ms\":288}\r\nFILETREE_TEST_PHASE {\"sequence\":9,\"phase\":\"run-case\",\"event\":\"completed\",\"elapsed_ms\":570}\r\n",
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "steps": [
+          {
+            "sequence": 187,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 242
+          },
+          {
+            "sequence": 188,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 244
+          },
+          {
+            "sequence": 189,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 244
+          },
+          {
+            "sequence": 190,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 244
+          },
+          {
+            "sequence": 191,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 244
+          },
+          {
+            "sequence": 192,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 245
+          },
+          {
+            "sequence": 193,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 245
+          },
+          {
+            "sequence": 194,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 245
+          },
+          {
+            "sequence": 195,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 246
+          },
+          {
+            "sequence": 196,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 246
+          },
+          {
+            "sequence": 197,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 247
+          },
+          {
+            "sequence": 198,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 248
+          },
+          {
+            "sequence": 199,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 248
+          },
+          {
+            "sequence": 200,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 249
+          },
+          {
+            "sequence": 201,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 249
+          },
+          {
+            "sequence": 202,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 250
+          },
+          {
+            "sequence": 203,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 250
+          },
+          {
+            "sequence": 204,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 251
+          },
+          {
+            "sequence": 205,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 251
+          },
+          {
+            "sequence": 206,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 252
+          },
+          {
+            "sequence": 207,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 252
+          },
+          {
+            "sequence": 208,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 255
+          },
+          {
+            "sequence": 209,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 255
+          },
+          {
+            "sequence": 210,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 256
+          },
+          {
+            "sequence": 211,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 257
+          },
+          {
+            "sequence": 212,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 257
+          },
+          {
+            "sequence": 213,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 259
+          },
+          {
+            "sequence": 214,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 259
+          },
+          {
+            "sequence": 215,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 260
+          },
+          {
+            "sequence": 216,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 260
+          },
+          {
+            "sequence": 217,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 262
+          },
+          {
+            "sequence": 218,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 262
+          },
+          {
+            "sequence": 219,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 262
+          },
+          {
+            "sequence": 220,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 264
+          },
+          {
+            "sequence": 221,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 264
+          },
+          {
+            "sequence": 222,
+            "step": "receipt-parse",
+            "event": "completed",
+            "elapsed_ms": 264
+          },
+          {
+            "sequence": 223,
+            "step": "receipt-identity",
+            "event": "started",
+            "elapsed_ms": 264
+          },
+          {
+            "sequence": 224,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 265
+          },
+          {
+            "sequence": 225,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 265
+          },
+          {
+            "sequence": 226,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 266
+          },
+          {
+            "sequence": 227,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 267
+          },
+          {
+            "sequence": 228,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 267
+          },
+          {
+            "sequence": 229,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 268
+          },
+          {
+            "sequence": 230,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 268
+          },
+          {
+            "sequence": 231,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 268
+          },
+          {
+            "sequence": 232,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 269
+          },
+          {
+            "sequence": 233,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 270
+          },
+          {
+            "sequence": 234,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 270
+          },
+          {
+            "sequence": 235,
+            "step": "root-scope",
+            "event": "started",
+            "elapsed_ms": 282
+          },
+          {
+            "sequence": 236,
+            "step": "root-scope",
+            "event": "completed",
+            "elapsed_ms": 282
+          },
+          {
+            "sequence": 237,
+            "step": "owned-entry-1",
+            "event": "started",
+            "elapsed_ms": 282
+          },
+          {
+            "sequence": 238,
+            "step": "owned-entry-1",
+            "event": "completed",
+            "elapsed_ms": 284
+          },
+          {
+            "sequence": 239,
+            "step": "owned-entry-2",
+            "event": "started",
+            "elapsed_ms": 284
+          },
+          {
+            "sequence": 240,
+            "step": "owned-entry-2",
+            "event": "completed",
+            "elapsed_ms": 285
+          },
+          {
+            "sequence": 241,
+            "step": "owned-entry-3",
+            "event": "started",
+            "elapsed_ms": 285
+          },
+          {
+            "sequence": 242,
+            "step": "owned-entry-3",
+            "event": "completed",
+            "elapsed_ms": 286
+          },
+          {
+            "sequence": 243,
+            "step": "owned-entry-4",
+            "event": "started",
+            "elapsed_ms": 286
+          },
+          {
+            "sequence": 244,
+            "step": "owned-entry-4",
+            "event": "completed",
+            "elapsed_ms": 287
+          },
+          {
+            "sequence": 245,
+            "step": "owner-receipt",
+            "event": "started",
+            "elapsed_ms": 287
+          },
+          {
+            "sequence": 246,
+            "step": "receipt-read",
+            "event": "started",
+            "elapsed_ms": 287
+          },
+          {
+            "sequence": 247,
+            "step": "receipt-read",
+            "event": "completed",
+            "elapsed_ms": 288
+          },
+          {
+            "sequence": 248,
+            "step": "receipt-parse",
+            "event": "started",
+            "elapsed_ms": 288
+          },
+          {
+            "sequence": 249,
+            "step": "receipt-parse",
+            "event": "completed",
+            "elapsed_ms": 288
+          },
+          {
+            "sequence": 250,
+            "step": "receipt-identity",
+            "event": "started",
+            "elapsed_ms": 288
+          }
+        ],
+        "invalid_step_records": 0,
+        "trace_complete": false,
+        "process_observation": {
+          "status": "not-sampled"
+        },
+        "clock": {
+          "status": "origin-only",
+          "origin": {
+            "pid": 72380,
+            "before_filetime_100ns": 134366758059589606,
+            "after_filetime_100ns": 134366758059590119
+          },
+          "assumption": "stable host UTC"
+        },
+        "shell": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.6.6.0_x64__8wekyb3d8bbwe\\pwsh.EXE",
+        "case": "test/test_windows_share_script.py::test_receipt_staging_preserves_baseline_empty_invalid_and_utf8_semantics[pwsh]",
+        "mocked_smb": true,
+        "case_sha256": "e5ac237e11d5c78c647f869fefeabfadb5395b6a10af53f0416b810bd697f25d",
+        "harness": {
+          "steps": [
+            {
+              "sequence": 1,
+              "phase": "entry",
+              "event": "completed",
+              "elapsed_ms": 22
+            },
+            {
+              "sequence": 2,
+              "phase": "import-modules",
+              "event": "started",
+              "elapsed_ms": 29
+            },
+            {
+              "sequence": 3,
+              "phase": "import-modules",
+              "event": "completed",
+              "elapsed_ms": 202
+            },
+            {
+              "sequence": 4,
+              "phase": "parse-source",
+              "event": "started",
+              "elapsed_ms": 203
+            },
+            {
+              "sequence": 5,
+              "phase": "parse-source",
+              "event": "completed",
+              "elapsed_ms": 215
+            },
+            {
+              "sequence": 6,
+              "phase": "extract-helpers",
+              "event": "started",
+              "elapsed_ms": 215
+            },
+            {
+              "sequence": 7,
+              "phase": "extract-helpers",
+              "event": "completed",
+              "elapsed_ms": 273
+            },
+            {
+              "sequence": 8,
+              "phase": "run-case",
+              "event": "started",
+              "elapsed_ms": 275
+            },
+            {
+              "sequence": 9,
+              "phase": "run-case",
+              "event": "completed",
+              "elapsed_ms": 570
+            }
+          ],
+          "invalid_records": 0,
+          "trace_complete": true,
+          "last_phase": {
+            "sequence": 9,
+            "phase": "run-case",
+            "event": "completed",
+            "elapsed_ms": 570
+          },
+          "runtime": "7.6.6",
+          "clock": {
+            "status": "origin-only",
+            "origin": {
+              "pid": 72380,
+              "before_filetime_100ns": 134366758056654379,
+              "after_filetime_100ns": 134366758056834408
+            },
+            "assumption": "stable host UTC"
+          }
+        }
+      }
+    }
+  ],
+  "controlled_native_owned_child": {
+    "controlled_fixture": "One owned sleeping Python child; no share or volume operations",
+    "modeled": false,
+    "fixture_source": "import json,os,sys,time\nfrom tools.windows_child_observer import _filetime\nbefore=_filetime()\nclock=time.monotonic()\nafter=_filetime()\nprint('FILETREE_SMB_CLOCK '+json.dumps({'pid':os.getpid(),'before_filetime_100ns':before,'after_filetime_100ns':after}),file=sys.stderr,flush=True)\ntime.sleep(3)\nprint('owned-clock-fixture',flush=True)\n",
+    "probe_timeout_seconds": 10,
+    "probe_sample_after_seconds": 0.1,
+    "helper_default_deadlines_exercised": false,
+    "record": {
+      "outcome": "completed",
+      "returncode": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 3.523625,
+      "stdout": "owned-clock-fixture\r\n",
+      "stderr": "FILETREE_SMB_CLOCK {\"pid\": 75844, \"before_filetime_100ns\": 134366759481177048, \"after_filetime_100ns\": 134366759481177112}\r\n",
+      "stdout_truncated": false,
+      "stderr_truncated": false,
+      "steps": [],
+      "invalid_step_records": 0,
+      "trace_complete": false,
+      "process_observation": {
+        "status": "observed",
+        "child_pid": 75844,
+        "returncode": 0,
+        "records": [
+          {
+            "event": "identity",
+            "pid": 75844,
+            "parent_pid": 20600,
+            "cpu": {
+              "created_100ns": 134366759476273748,
+              "exited_100ns": 0,
+              "kernel_100ns": 781250,
+              "user_100ns": 468750
+            },
+            "reported_threads": 3,
+            "emitted_filetime_100ns": 134366759484123531
+          },
+          {
+            "event": "threads",
+            "count": 3,
+            "truncated": false,
+            "emitted_filetime_100ns": 134366759485320992
+          },
+          {
+            "event": "chain",
+            "tid": 64472,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 75844,
+                "tid": 64472,
+                "wait_time_raw": 17552921,
+                "switches": 5
+              }
+            ],
+            "query_before_filetime_100ns": 134366759488126222,
+            "query_after_filetime_100ns": 134366759488535086,
+            "emitted_filetime_100ns": 134366759488535735
+          },
+          {
+            "event": "chain",
+            "tid": 68896,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 75844,
+                "tid": 68896,
+                "wait_time_raw": 17552922,
+                "switches": 385
+              }
+            ],
+            "query_before_filetime_100ns": 134366759488537980,
+            "query_after_filetime_100ns": 134366759489033231,
+            "emitted_filetime_100ns": 134366759489033759
+          },
+          {
+            "event": "chain",
+            "tid": 69768,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 75844,
+                "tid": 69768,
+                "wait_time_raw": 17552921,
+                "switches": 3
+              }
+            ],
+            "query_before_filetime_100ns": 134366759489035297,
+            "query_after_filetime_100ns": 134366759489426205,
+            "emitted_filetime_100ns": 134366759489426964
+          },
+          {
+            "event": "complete",
+            "cpu": {
+              "created_100ns": 134366759476273748,
+              "exited_100ns": 0,
+              "kernel_100ns": 781250,
+              "user_100ns": 468750
+            },
+            "emitted_filetime_100ns": 134366759489431839
+          }
+        ],
+        "stop_reason": null,
+        "invalid_records": 0,
+        "output_truncated": false,
+        "stderr": ""
+      },
+      "clock": {
+        "status": "aligned-origin",
+        "origin": {
+          "pid": 75844,
+          "before_filetime_100ns": 134366759481177048,
+          "after_filetime_100ns": 134366759481177112
+        },
+        "assumption": "stable host UTC",
+        "process_created_filetime_100ns": 134366759476273748,
+        "creation_to_origin_100ns": [
+          4903300,
+          4903364
+        ]
+      }
+    },
+    "helper_record_default_timeout_seconds": 30,
+    "timeout_label_source": "Explicit controlled probe configuration; helper_record default is not the probe deadline."
+  },
+  "validation": {
+    "full_junit": {
+      "path": "build/share-clock-full.xml",
+      "sha256": "4c1d316ae9bad49ee47b0a260c84f2e0abf9f3f76ff2029289def9c2dfa1f3f6",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "54",
+      "tests": "2415",
+      "time": "602.621",
+      "timestamp": "2026-10-17T09:47:51.355576+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 60536,
+      "utc": "2026-10-17T01:47:50.193042+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 60264,
+      "child_pid_role": "Popen process; may be a Windows venv launcher",
+      "returncode": 0,
+      "elapsed_seconds": 606.3481517999899
+    },
+    "focused_junit": {
+      "path": "build/share-clock-final-focused.xml",
+      "sha256": "f9efb9b8ea9a92008ab779a4db640ccd2ccde985cd38945464576d4c1b325ac7",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "88",
+      "time": "33.459",
+      "timestamp": "2026-10-17T09:44:35.200001+08:00",
+      "hostname": "LAPTOP-EKQMFLNE"
+    },
+    "logs": {
+      "build/share-clock-full/output.log": {
+        "sha256": "d6d98675840b2cd91fc3269176268dfbb9bbc8b126cf8c119b67536d2677b05c",
+        "bytes": 313519
+      },
+      "build/share-clock-full/phase-threads.txt": {
+        "sha256": "2cd0c6dfc99595caeb8b44c25c7e38819f2e7e1b00f98f114ee34e606ce4b819",
+        "bytes": 1891
+      },
+      "build/share-clock-ruff-global.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      },
+      "build/share-clock-ruff-pinned.log": {
+        "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+        "bytes": 20
+      }
+    }
+  },
+  "limits": [
+    "UTC samples bracket code execution but do not measure monotonic durations or clock accuracy.",
+    "Pre-clock activity includes runtime/script preparation and instrumentation; no timeout cause is established.",
+    "The controlled ten-second Python probe verifies clock/CPU/WCT correlation only, not native SMB behavior or default helper deadlines.",
+    "No memory dumps, environment values, object names, extra privileges or target-control operations are added."
+  ]
+}

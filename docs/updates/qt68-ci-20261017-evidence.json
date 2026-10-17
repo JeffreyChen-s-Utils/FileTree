@@ -1,0 +1,256 @@
+{
+  "schema": "filetree-qt68-ci-evidence/1",
+  "baseline_commit": "e9c897e0a2224f6470c40584ac3f55c59ad3b9de",
+  "baseline_ci": {
+    "run": 38984040133,
+    "status": "completed",
+    "conclusion": "failure",
+    "package_tests_macos": "success",
+    "failed_job": 117251229777,
+    "failed_step": "Validate fresh owned APFS capacity, recovery and cross-volume metadata",
+    "native_evidence": "apfs-20261017-repeated-busy.json"
+  },
+  "scope": "New independent Windows/Linux compatibility lane only; application sources and all existing jobs/regular locks unchanged.",
+  "files": [
+    {
+      "path": ".github/workflows/test.yml",
+      "sha256_lf": "70b8a391470578d7d0254c2957628122236be8913e9c8a38c11a0eada791f5a6",
+      "bytes": 17915
+    },
+    {
+      "path": ".github/requirements/qt68.in",
+      "sha256_lf": "1b84fa0a89821c922a00e9f642644387442469ef51a87c3ab38441b72daf149b",
+      "bytes": 174
+    },
+    {
+      "path": ".github/requirements/qt68.txt",
+      "sha256_lf": "d71dd507c7ae1fa63e3948fdc6a557671fd85d8b4751a1b9c7833b55ebc911ed",
+      "bytes": 62572
+    },
+    {
+      "path": "tools/compile_qt68_lock.py",
+      "sha256_lf": "2b8ae8109ac9de4fa6b0f1d92e3d9324ca65bd7597c818cdf0844c8e19f409df",
+      "bytes": 1907
+    },
+    {
+      "path": "test/test_grouped_list.py",
+      "sha256_lf": "0de36973d6c5eefebe722975b3c9b02176ac63436ae15828f2233e179b876e44",
+      "bytes": 16995
+    },
+    {
+      "path": "test/test_qt68_ci.py",
+      "sha256_lf": "9540b8ad24f5a404f7d5b1fe27d2c69e5133ae90597f3c3ebcbc32dec30cf4bd",
+      "bytes": 3200
+    }
+  ],
+  "runtime_step": {
+    "path": "build/qt68-ci-runtime-step.py",
+    "sha256_lf": "1f95c442c840f28a4c353100d02ac611caaf6c8e1ad173ff6546cd76a727fc37",
+    "bytes": 792,
+    "encoding": "utf-8-sig",
+    "text": "import hashlib\nimport json\nimport sys\nfrom pathlib import Path\nimport PySide6\nfrom PySide6.QtCore import qVersion\nfrom PySide6.QtWidgets import QTreeView\n\nrecord = {\n    \"python\": sys.version,\n    \"pyside6\": PySide6.__version__,\n    \"qt\": qVersion(),\n    \"update_threshold_available\": hasattr(QTreeView, \"setUpdateThreshold\"),\n    \"requirements_sha256_lf\": hashlib.sha256(\n        Path(\".github/requirements/qt68.txt\").read_bytes().replace(b\"\\r\\n\", b\"\\n\")\n    ).hexdigest(),\n}\nPath(\"build\").mkdir(exist_ok=True)\nPath(\"build/qt68-runtime.json\").write_text(json.dumps(record, indent=2) + \"\\n\", encoding=\"utf-8\")\nif record[\"pyside6\"] != \"6.8.3\" or record[\"qt\"] != \"6.8.3\" or record[\"update_threshold_available\"]:\n    raise SystemExit(\"The compatibility lane must execute the pinned Qt 6.8 path\")"
+  },
+  "accepted_native_runtime": {
+    "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+    "pyside6": "6.8.3",
+    "qt": "6.8.3",
+    "update_threshold_available": false,
+    "requirements_sha256_lf": "d71dd507c7ae1fa63e3948fdc6a557671fd85d8b4751a1b9c7833b55ebc911ed"
+  },
+  "rejected_modern_runtime": {
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "pyside6": "6.11.2",
+    "qt": "6.11.2",
+    "update_threshold_available": true,
+    "requirements_sha256_lf": "d71dd507c7ae1fa63e3948fdc6a557671fd85d8b4751a1b9c7833b55ebc911ed"
+  },
+  "validation": {
+    "full_junit": {
+      "path": "build/qt68-ci-full-diagnostic.xml",
+      "sha256_lf": "eeac5d4729b71b5d56786d3a63edf87b1c4907224bfa6bcee268c9a835304fc1",
+      "bytes": 354541
+    },
+    "full_summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "54",
+      "tests": "2341",
+      "time": "392.026",
+      "timestamp": "2026-10-17T08:16:24.414885+08:00"
+    },
+    "full_log": {
+      "path": "build/qt68-ci-full-diagnostic.log",
+      "sha256_lf": "3689084a819d2b2baad233d1dba42c45a5d9639657c84c86680f13c86a499ac6",
+      "bytes": 291185
+    },
+    "new_cases": [
+      {
+        "classname": "test.test_grouped_list",
+        "name": "test_size_updates_avoid_synchronous_wide_view_index_walks",
+        "time": "0.166"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_compatibility_lock_only_changes_qt_distributions",
+        "time": "0.015"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_base_constraints_keep_markers_and_drop_only_qt",
+        "time": "0.003"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_missing_base_pins_are_refused[]",
+        "time": "0.003"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_missing_base_pins_are_refused[# only comments\\n]",
+        "time": "0.004"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_missing_base_pins_are_refused[pyside6==6.12.0\\n]",
+        "time": "0.005"
+      },
+      {
+        "classname": "test.test_qt68_ci",
+        "name": "test_compatibility_matrix_and_failure_evidence_are_independent",
+        "time": "0.005"
+      }
+    ],
+    "native_qt68_junit": {
+      "path": "build/qt68-ci-tests.xml",
+      "sha256_lf": "8859f375b9bfcf1d9693e779c181b2ac28b3f3e2cbccaf8fffd5fca9781939dc",
+      "bytes": 8370,
+      "encoding": "utf-8-sig",
+      "text": "<?xml version=\"1.0\" encoding=\"utf-8\"?><testsuites name=\"pytest tests\"><testsuite name=\"pytest\" errors=\"0\" failures=\"0\" skipped=\"0\" tests=\"57\" time=\"12.123\" timestamp=\"2026-10-17T08:09:11.896124+08:00\" hostname=\"LAPTOP-EKQMFLNE\"><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[cleanup-unit]\" time=\"0.075\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[cleanup-language]\" time=\"0.053\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[exact-unit]\" time=\"0.034\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[exact-language]\" time=\"0.029\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[photos-unit]\" time=\"0.625\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_preference_change_preserves_selected_rows_geometry_and_captured_members[photos-language]\" time=\"0.080\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_photo_refresh_preserves_the_total_member_cap_and_omitted_source_rows[unit-photos]\" time=\"0.244\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_photo_refresh_preserves_the_total_member_cap_and_omitted_source_rows[language-photos]\" time=\"0.051\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_display_change_keeps_the_estimate_worker_and_latest_preferences[unit-exact]\" time=\"0.064\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_display_change_keeps_the_estimate_worker_and_latest_preferences[language-exact]\" time=\"0.086\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_empty_panel_preferences_keep_initial_column_geometry_and_reject_invalid_units[CleanupPanel]\" time=\"0.005\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_empty_panel_preferences_keep_initial_column_geometry_and_reject_invalid_units[DuplicatesPanel]\" time=\"0.006\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_window_preference_entry_points_keep_grouped_selection_after_font_changes[unit]\" time=\"0.264\" /><testcase classname=\"test.test_grouped_display_refresh\" name=\"test_window_preference_entry_points_keep_grouped_selection_after_font_changes[language]\" time=\"0.236\" /><testcase classname=\"test.test_grouped_list\" name=\"test_complete_group_shape_and_roles\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_capture_is_lazy_and_freezes_membership\" time=\"0.013\" /><testcase classname=\"test.test_grouped_list\" name=\"test_kept_label_font_and_photo_icon_are_cell_roles\" time=\"0.002\" /><testcase classname=\"test.test_grouped_list\" name=\"test_fill_expands_groups_and_selection_keeps_real_nodes\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_wide_view_formats_visible_cells_only_and_releases_old_rows\" time=\"0.129\" /><testcase classname=\"test.test_grouped_list\" name=\"test_group_labels_preserve_captured_rows_roles_and_persistent_indexes\" time=\"6.420\" /><testcase classname=\"test.test_grouped_list\" name=\"test_wrong_group_label_count_leaves_existing_data_intact[labels0]\" time=\"0.004\" /><testcase classname=\"test.test_grouped_list\" name=\"test_wrong_group_label_count_leaves_existing_data_intact[labels1]\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_empty_group_labels_need_no_model_notification\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_keeper_updates_only_matching_name_cells_without_replacing_members[old]\" time=\"0.013\" /><testcase classname=\"test.test_grouped_list\" name=\"test_keeper_updates_only_matching_name_cells_without_replacing_members[none]\" time=\"0.007\" /><testcase classname=\"test.test_grouped_list\" name=\"test_keeper_updates_only_matching_name_cells_without_replacing_members[same]\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_keeper_updates_only_matching_name_cells_without_replacing_members[outside]\" time=\"0.020\" /><testcase classname=\"test.test_grouped_list\" name=\"test_invalid_keeper_group_leaves_the_model_unchanged[-1]\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_invalid_keeper_group_leaves_the_model_unchanged[1]\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_foreign_keeper_is_refused_before_existing_roles_change\" time=\"0.003\" /><testcase classname=\"test.test_grouped_list\" name=\"test_large_keeper_change_uses_captured_identities_without_formatting_members\" time=\"0.014\" /><testcase classname=\"test.test_grouped_list\" name=\"test_unit_change_notifies_size_cells_and_retains_empty_groups_and_persistent_indexes\" time=\"0.007\" /><testcase classname=\"test.test_grouped_list\" name=\"test_unit_change_is_lazy_and_invalid_or_unchanged_units_leave_captured_state\" time=\"0.029\" /><testcase classname=\"test.test_grouped_list\" name=\"test_retranslation_notifies_headers_and_every_repeated_keeper_name_only\" time=\"0.004\" /><testcase classname=\"test.test_grouped_list\" name=\"test_size_updates_avoid_synchronous_wide_view_index_walks\" time=\"0.377\" /><testcase classname=\"test.test_duplicate_keeper_refresh\" name=\"test_choose_keeper_preserves_view_and_rechecks_the_updated_decision[90]\" time=\"0.085\" /><testcase classname=\"test.test_duplicate_keeper_refresh\" name=\"test_choose_keeper_preserves_view_and_rechecks_the_updated_decision[119]\" time=\"0.112\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_late_estimate_is_ignored_after_root_replacement\" time=\"0.047\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_user_can_keep_a_newer_copy_and_pruning_never_chooses_a_replacement\" time=\"0.113\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_finishing_estimate_preserves_selection_current_row_and_view_state\" time=\"0.064\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_estimate_labels_follow_the_displayed_group_bound[0]\" time=\"0.005\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_estimate_labels_follow_the_displayed_group_bound[1]\" time=\"0.005\" /><testcase classname=\"test.test_duplicate_savings_panel\" name=\"test_estimate_labels_follow_the_displayed_group_bound[1001]\" time=\"0.143\" /><testcase classname=\"test.test_similar_photos_gui\" name=\"test_similar_mode_has_thumbnails_but_no_exact_keeper_or_extra_selection\" time=\"0.057\" /><testcase classname=\"test.test_similar_photos_gui\" name=\"test_captured_threshold_and_stop_ignore_late_photo_result\" time=\"0.032\" /><testcase classname=\"test.test_list_transfer\" name=\"test_copy_is_quoted_tsv_and_escapes_formula_text\" time=\"0.003\" /><testcase classname=\"test.test_list_transfer\" name=\"test_model_capture_yields_and_aborts_after_reset\" time=\"0.012\" /><testcase classname=\"test.test_list_transfer\" name=\"test_grouped_capture_preserves_headers_children_and_proxy_sorting\" time=\"0.024\" /><testcase classname=\"test.test_list_transfer\" name=\"test_group_label_refresh_aborts_mixed_capture_and_new_capture_uses_current_labels\" time=\"0.046\" /><testcase classname=\"test.test_list_transfer\" name=\"test_grouped_display_change_aborts_mixed_capture_and_refreshes_exported_cells[unit]\" time=\"0.048\" /><testcase classname=\"test.test_list_transfer\" name=\"test_grouped_display_change_aborts_mixed_capture_and_refreshes_exported_cells[language]\" time=\"0.074\" /><testcase classname=\"test.test_list_transfer\" name=\"test_ctrl_c_copies_only_selected_rows_in_model_order\" time=\"0.029\" /><testcase classname=\"test.test_list_transfer\" name=\"test_stream_is_bounded_and_cancel_preserves_target\" time=\"0.007\" /><testcase classname=\"test.test_list_transfer\" name=\"test_streamed_worker_writes_all_rows_off_gui_thread\" time=\"0.215\" /><testcase classname=\"test.test_list_transfer\" name=\"test_cancel_while_writer_waits_for_a_batch_preserves_the_existing_file\" time=\"0.068\" /><testcase classname=\"test.test_list_transfer\" name=\"test_current_list_exports_filtered_display_order_and_all_tabs\" time=\"0.318\" /><testcase classname=\"test.test_list_transfer\" name=\"test_close_cancels_producer_before_joining_stream_writer\" time=\"0.220\" /></testsuite></testsuites>"
+    },
+    "native_summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "57",
+      "time": "12.123",
+      "timestamp": "2026-10-17T08:09:11.896124+08:00"
+    },
+    "negative_control_junit": {
+      "path": "build/qt68-ci-negative-control.xml",
+      "sha256_lf": "11b2cdae58ee80d003deb29f09f5e8f78f17a9a3435bb0c53717127f5e30e2d9",
+      "bytes": 1875,
+      "encoding": "utf-8-sig",
+      "text": "<?xml version=\"1.0\" encoding=\"utf-8\"?><testsuites name=\"pytest tests\"><testsuite name=\"pytest\" errors=\"0\" failures=\"1\" skipped=\"0\" tests=\"1\" time=\"2.008\" timestamp=\"2026-10-17T08:07:51.227203+08:00\" hostname=\"LAPTOP-EKQMFLNE\"><testcase classname=\"test.test_grouped_list\" name=\"test_size_updates_avoid_synchronous_wide_view_index_walks\" time=\"1.631\"><failure message=\"assert 79950 &lt; 200&#10; +  where 79950 = len([True, True, True, True, True, True, ...])\">qapp = &lt;PySide6.QtWidgets.QApplication(0x176fc541bb0) at 0x00000176FFBBDF00&gt;\nmonkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000176FF43B6F0&gt;\n\n    def test_size_updates_avoid_synchronous_wide_view_index_walks(qapp, monkeypatch):\n        model = GroupedListModel()\n        view = grouped_list.build_view(model)\n        view.setAttribute(Qt.WA_DontShowOnScreen)\n        view.resize(900, 400)\n        nodes = [Node(str(row), False, size=1536) for row in range(20_000)]\n        try:\n            grouped_list.fill(model, view, [(\"first\", nodes[:10_000]), (\"second\", nodes[10_000:])], \"auto\")\n            view.show()\n            qapp.processEvents()\n            current = model.index(9999, 0, model.index(1, 0))\n            view.setCurrentIndex(current)\n            pinned = QPersistentModelIndex(current)\n            qapp.processEvents()\n            calls = []\n            original = model.index\n    \n            def counted(*args, **kwargs):\n                calls.append(True)\n                return original(*args, **kwargs)\n    \n            monkeypatch.setattr(model, \"index\", counted)\n            model.set_unit(\"MB\")\n&gt;           assert len(calls) &lt; 200\nE           assert 79950 &lt; 200\nE            +  where 79950 = len([True, True, True, True, True, True, ...])\n\ntest\\test_grouped_list.py:335: AssertionError</failure></testcase></testsuite></testsuites>"
+    },
+    "negative_summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "0",
+      "tests": "1",
+      "time": "2.008",
+      "timestamp": "2026-10-17T08:07:51.227203+08:00"
+    },
+    "logs": [
+      {
+        "path": "build/qt68-ci-locked-install.log",
+        "sha256_lf": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "encoding": "utf-8-sig",
+        "text": ""
+      },
+      {
+        "path": "build/qt68-ci-pip-check.log",
+        "sha256_lf": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+        "bytes": 31,
+        "encoding": "utf-8-sig",
+        "text": "No broken requirements found.\n"
+      },
+      {
+        "path": "build/qt68-ci-tests.log",
+        "sha256_lf": "c23d647836053be2bef5d1f1b5aecedc880ce09cb513035ae51ab127ba2c2f46",
+        "bytes": 102,
+        "encoding": "utf-8-sig",
+        "text": ".........................................................                [100%]\n57 passed in 12.18s\n"
+      },
+      {
+        "path": "build/qt68-ci-negative-control.log",
+        "sha256_lf": "d90b7fc7de2697f5d582fa712c030ef7190be8a8c40993325641da3dfb0c1b2b",
+        "bytes": 1789,
+        "encoding": "utf-8-sig",
+        "text": "F                                                                        [100%]\n================================== FAILURES ===================================\n__________ test_size_updates_avoid_synchronous_wide_view_index_walks __________\n\nqapp = <PySide6.QtWidgets.QApplication(0x176fc541bb0) at 0x00000176FFBBDF00>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000176FF43B6F0>\n\n    def test_size_updates_avoid_synchronous_wide_view_index_walks(qapp, monkeypatch):\n        model = GroupedListModel()\n        view = grouped_list.build_view(model)\n        view.setAttribute(Qt.WA_DontShowOnScreen)\n        view.resize(900, 400)\n        nodes = [Node(str(row), False, size=1536) for row in range(20_000)]\n        try:\n            grouped_list.fill(model, view, [(\"first\", nodes[:10_000]), (\"second\", nodes[10_000:])], \"auto\")\n            view.show()\n            qapp.processEvents()\n            current = model.index(9999, 0, model.index(1, 0))\n            view.setCurrentIndex(current)\n            pinned = QPersistentModelIndex(current)\n            qapp.processEvents()\n            calls = []\n            original = model.index\n    \n            def counted(*args, **kwargs):\n                calls.append(True)\n                return original(*args, **kwargs)\n    \n            monkeypatch.setattr(model, \"index\", counted)\n            model.set_unit(\"MB\")\n>           assert len(calls) < 200\nE           assert 79950 < 200\nE            +  where 79950 = len([True, True, True, True, True, True, ...])\n\ntest\\test_grouped_list.py:335: AssertionError\n=========================== short test summary info ===========================\nFAILED test/test_grouped_list.py::test_size_updates_avoid_synchronous_wide_view_index_walks\n1 failed in 2.06s\n"
+      },
+      {
+        "path": "build/qt68-ci-modern-refusal.log",
+        "sha256_lf": "06f0a1f1b2cf42b30ed59c372fbe747b73a305130f25e4ff253b2710441e9839",
+        "bytes": 60,
+        "encoding": "utf-8-sig",
+        "text": "The compatibility lane must execute the pinned Qt 6.8 path\n"
+      },
+      {
+        "path": "build/qt68-ci-focused.log",
+        "sha256_lf": "374a223786fa0e6bdd2a5659c79ae9b99dafde9d80b23b9041d69f757568a573",
+        "bytes": 101,
+        "encoding": "utf-8-sig",
+        "text": ".........................................................                [100%]\n57 passed in 7.71s\n"
+      },
+      {
+        "path": "build/qt68-ci-ruff-global.log",
+        "sha256_lf": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "bytes": 20,
+        "encoding": "utf-8-sig",
+        "text": "All checks passed!\n"
+      },
+      {
+        "path": "build/qt68-ci-ruff-pinned.log",
+        "sha256_lf": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "bytes": 20,
+        "encoding": "utf-8-sig",
+        "text": "All checks passed!\n"
+      }
+    ]
+  },
+  "negative_control": "An isolated process substitutes the ordinary Qt 6.8 QTreeView for the compatibility view; the new case observes 79,950 synchronous index callbacks and fails the <200 bound. This is a test of the known visibility-walk path, not a reproduction of an owner hang.",
+  "first_full_run_native_termination": {
+    "log": {
+      "path": "build/qt68-ci-full-pytest.log",
+      "sha256_lf": "9edb44723edd4ea2f12d3fcf112ca00d22b87ca55a08b738f3f00ecaf49764ca",
+      "bytes": 851,
+      "encoding": "utf-8-sig",
+      "text": "..................................s..s.................ssss............. [  3%]\n....................................................ssssssss............ [  6%]\n.............................s..............................s........... [  9%]\n........................................................................ [ 12%]\n........................................................................ [ 15%]\n........................................................................ [ 18%]\n.s...................................................................... [ 21%]\n...............ssssss................................................... [ 24%]\n........................................................................ [ 27%]\n.............................s..s....................................... [ 30%]\n.......................................\n"
+    },
+    "observed_tool_exit_code": 1,
+    "junit_produced": false,
+    "native_event": {
+      "Time": "2026-10-17T08:11:27.8767987+08:00",
+      "EventId": 1000,
+      "Fields": {
+        "ModuleTimeStamp": "6a7cf959",
+        "ProcessCreationTime": "0x1dd5dcbcc19d61d",
+        "AppName": "python.exe",
+        "ModuleName": "Qt6Core.dll",
+        "PackageRelativeAppId": null,
+        "ProcessId": "0xdb34",
+        "AppPath": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "ExceptionCode": "c0000409",
+        "ModuleVersion": "6.11.2.0",
+        "AppVersion": "3.14.4150.1013",
+        "IntegratorReportId": "fb40a784-5667-4e9c-be8c-dc46c17f6cda",
+        "AppTimeStamp": "69d511dd",
+        "FaultingOffset": "000000000001c8d8",
+        "ModulePath": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\PySide6\\Qt6Core.dll",
+        "PackageFullName": null
+      }
+    },
+    "correlation": "Native process creation time 2026-10-17 08:09:37 local matches the owned run creation window; no active case or Python/native caller stack was captured.",
+    "boundary": "The detailed full rerun passes, but verbosity/diagnostics may change timing. No cause or correction is claimed; retain open item #104."
+  },
+  "remaining_gates": [
+    "Hosted Qt 6.8 Windows/Linux results for this stage",
+    "#104 native Qt termination context",
+    "#96 repeated native APFS busy holder and successful recovery cleanup",
+    "#100/#99 timeout observations"
+  ]
+}

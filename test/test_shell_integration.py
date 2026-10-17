@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QPoint
-from PySide6.QtWidgets import QDialog, QMenu, QMessageBox
+from PySide6.QtWidgets import QDialog, QMenu
 
-from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
+from test_gui import _wait, window as window  # noqa: PLC0414 - explicit pytest fixture re-export
 from je_file_tree.core.scanner import scan
 from je_file_tree.gui import shell_integration as shell
 from je_file_tree.gui.i18n import tr
@@ -107,15 +107,24 @@ def test_source_launcher_bootstraps_outside_checkout(monkeypatch, tmp_path):
 
 
 def test_dialog_reads_without_writes_cancel_and_failed_save(qapp, monkeypatch):
-    changes, warnings = [], []
+    changes = []
     monkeypatch.setattr(shell, "installed", lambda: False)
     monkeypatch.setattr(shell, "set_enabled", lambda *args: changes.append(args))
     dialog = ShellIntegrationDialog()
+    _wait(qapp, dialog.enabled.isEnabled)
     assert not changes and not dialog.enabled.isChecked()
     dialog.enabled.setChecked(True)
     dialog.reject()
     assert not changes
     dialog.accept()
+    assert not changes
+    dialog.deleteLater()
+
+    dialog = ShellIntegrationDialog()
+    _wait(qapp, dialog.enabled.isEnabled)
+    dialog.enabled.setChecked(True)
+    dialog.accept()
+    _wait(qapp, lambda: dialog.result() == QDialog.DialogCode.Accepted)
     assert changes == [(True, tr("shell_scan"))]
     assert dialog.result() == QDialog.DialogCode.Accepted
     dialog.deleteLater()
@@ -124,11 +133,32 @@ def test_dialog_reads_without_writes_cancel_and_failed_save(qapp, monkeypatch):
         raise PermissionError("denied")
 
     monkeypatch.setattr(shell, "set_enabled", fail)
-    monkeypatch.setattr(QMessageBox, "warning", lambda *_args: warnings.append(_args[-1]))
     dialog = ShellIntegrationDialog()
+    _wait(qapp, dialog.enabled.isEnabled)
     dialog.accept()
-    assert dialog.result() != QDialog.DialogCode.Accepted and "denied" in warnings[0]
+    _wait(qapp, lambda: "denied" in dialog.status.text())
+    assert dialog.result() != QDialog.DialogCode.Accepted and dialog.enabled.isEnabled()
+    monkeypatch.setattr(shell, "set_enabled", lambda *args: changes.append(args))
+    dialog.accept()
+    _wait(qapp, lambda: dialog.result() == QDialog.DialogCode.Accepted)
     dialog.deleteLater()
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_dialog_native_worker_changes_only_the_isolated_registry_key(qapp, registry_key, enabled):
+    if not enabled:
+        shell.set_enabled(True, "owned fixture")
+    dialog = ShellIntegrationDialog()
+    try:
+        _wait(qapp, dialog.enabled.isEnabled)
+        assert dialog.enabled.isChecked() is not enabled
+        dialog.enabled.setChecked(enabled)
+        dialog.accept()
+        _wait(qapp, lambda: dialog.result() == QDialog.DialogCode.Accepted)
+        assert shell.installed() is enabled
+    finally:
+        dialog.shutdown()
+        dialog.deleteLater()
 
 
 def test_properties_sets_correct_native_structure_and_fixed_verb(monkeypatch, tmp_path):

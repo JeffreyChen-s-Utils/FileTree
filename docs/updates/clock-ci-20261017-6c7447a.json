@@ -1,0 +1,3071 @@
+{
+  "schema": 1,
+  "baseline_commit": "6c7447a1510d40d21e87220c06590c0b1997c945",
+  "run_url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/38991089842",
+  "run": {
+    "conclusion": "failure",
+    "headSha": "6c7447a1510d40d21e87220c06590c0b1997c945",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "databaseId": 117273441421,
+        "name": "Windows owned MSI installation",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441574,
+        "name": "Lint (ruff)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441638,
+        "name": "Linux native Trash restore",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441649,
+        "name": "macOS arm64 / Python 3.12",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441664,
+        "name": "Windows / Python 3.13",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441688,
+        "name": "Windows private NTFS volume",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441702,
+        "name": "Linux / Python 3.12",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441706,
+        "name": "Qt 6.8 compatibility / windows-latest",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441721,
+        "name": "FreeBSD native nullfs boundaries",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441724,
+        "name": "Windows / Python 3.11",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441733,
+        "name": "Windows owned SMB loopback",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441734,
+        "name": "Qt 6.8 compatibility / ubuntu-latest",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441735,
+        "name": "Windows / Python 3.10",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441757,
+        "name": "Windows / Python 3.12",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 117273441758,
+        "name": "Linux desktop / X11 and D-Bus",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "databaseId": 117273441930,
+        "name": "Windows / Python 3.14",
+        "status": "completed"
+      }
+    ],
+    "status": "completed"
+  },
+  "artifacts": [
+    {
+      "archive_download_url": "https://api.github.com/repos/JeffreyChen-s-Utils/FileTree/actions/artifacts/12085127562/zip",
+      "digest": "sha256:da981ddb00dcfe370ee0b26ed34df9608fe4f26cba9a5a9225e367e53bb7e216",
+      "id": 12085127562,
+      "name": "windows-mocked-share-script-3.14",
+      "size_in_bytes": 15633
+    },
+    {
+      "archive_download_url": "https://api.github.com/repos/JeffreyChen-s-Utils/FileTree/actions/artifacts/12084854780/zip",
+      "digest": "sha256:9533cc3a810f2c76501370fa78dde535090f01a927220be71d75178a9eeec527",
+      "id": 12084854780,
+      "name": "macos-native-sources",
+      "size_in_bytes": 1652222
+    },
+    {
+      "archive_download_url": "https://api.github.com/repos/JeffreyChen-s-Utils/FileTree/actions/artifacts/12084739104/zip",
+      "digest": "sha256:1ab9a10a408c2da1415d50aae9ef13405e9a82c15f5c61a922c106968f710df7",
+      "id": 12084739104,
+      "name": "pytest-context-windows-3.14",
+      "size_in_bytes": 49401
+    }
+  ],
+  "literal_backend": {
+    "artifact_path": "literal-open-file.json",
+    "source_sha256": "1c9ea3e20f046af59af8204ff29118eeac4d3cd019f808251aacabea55672dc6",
+    "proof": {
+      "phase": "verified",
+      "pid": 26489,
+      "mounts_created": false,
+      "busy_cause_established": false,
+      "owned_fixture_cleanup": true,
+      "owned_file": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-lsof-owned-jzv9z8cx",
+      "lsof": {
+        "returncode": 0,
+        "timed_out": false,
+        "stdout_captured_sha256": "f80965e6b72ae04b8a23cb5c7f5b4e469385c0149c6314461095f5037fcfe984",
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stderr_base64": "",
+        "stdout_base64": "cDI2NDg5AGNQeXRob24ACmYzAHRSRUcAbi9wcml2YXRlL3Zhci9mb2xkZXJzL25qL3Z0dzh6ZDJqMzFkMWdkcnRudGM1eTQ2MDAwMDBnbi9UL2ZpbGV0cmVlLWxzb2Ytb3duZWQtanp2OXo4Y3gACg=="
+      },
+      "own_pid_reported": true,
+      "source_preserved": true
+    },
+    "decoded_field_records": [
+      "p26489",
+      "cPython",
+      "\nf3",
+      "tREG",
+      "n/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-lsof-owned-jzv9z8cx",
+      "\n"
+    ]
+  },
+  "apfs": [
+    {
+      "artifact_path": "apfs/proof.json",
+      "source_sha256": "019240a8c786515a93edbc69db50baa99832be2d3e650a1937b41ab60cb9a954",
+      "proof": {
+        "phase": "complete",
+        "owned": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-ap7nrlh9",
+        "host_bins_modified": false,
+        "finder_automation": false,
+        "cleanup_verified": true,
+        "device": "/dev/disk5",
+        "volume_uuid": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+        "capacity": {
+          "ledger": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0,
+            "named_allocated": 50479104,
+            "unique_allocated": 33701888,
+            "hard_link_overcount": 16777216,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "allocation_exceeds_used",
+            "unaccounted": null,
+            "measured_at": 1792201051.797156,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 92340224,
+              "known_folders": 4,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "native_before": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "native_after": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "fixtures": {
+            "plain": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "alias": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-a": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-b": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "sparse": {
+              "identity": [
+                16777239,
+                24
+              ],
+              "links": 1,
+              "logical": 33554432,
+              "allocated": 16384,
+              "flags": 0,
+              "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+            },
+            "compression-source": {
+              "identity": [
+                16777239,
+                19
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "compressed": {
+              "identity": [
+                16777239,
+                25
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 65536,
+              "flags": 32,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "clone": {
+              "identity": [
+                16777239,
+                27
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "bin": {
+              "identity": [
+                16777239,
+                30
+              ],
+              "links": 1,
+              "logical": 65536,
+              "allocated": 65536,
+              "flags": 0,
+              "sha256": "cf8a80d5cd4787875c19ba5ea05b6cf250bf60620b1092fc8c46bc383bfd2254"
+            }
+          },
+          "bin_inventory": {
+            "size": 65536,
+            "count": 1,
+            "complete": true,
+            "error": ""
+          },
+          "bin_scope": "fresh image current uid only",
+          "independent_shared_extent_bytes": null,
+          "independent_reserved_bytes": null,
+          "scan_errors": [],
+          "native_volume": {
+            "APFSContainerFree": 1045012480,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 25333760,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s1",
+            "DeviceNode": "/dev/disk6s1",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": true,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-0058cdab5ecb4194ad78912ded9dc103",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-ap7nrlh9/volume",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeAllocationBlockSize": 4096,
+            "VolumeName": "FileTree-0058cdab5ecb4194ad78912ded9dc103",
+            "VolumeSize": 0,
+            "VolumeUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": true
+          }
+        },
+        "recovery": [
+          {
+            "case": "one_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 0,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "alias": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "last_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "plain": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "all_hard_links",
+            "estimate": {
+              "logical": 16777216,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1053401088,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "all-a": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              },
+              "all-b": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "sparse",
+            "estimate": {
+              "logical": 33554432,
+              "allocated": 16384,
+              "recoverable_min": 0,
+              "recoverable_max": 16384,
+              "free_now": 1061789696,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              16384,
+              16384,
+              16384,
+              16384
+            ],
+            "selected_before": {
+              "sparse": {
+                "identity": [
+                  16777239,
+                  24
+                ],
+                "links": 1,
+                "logical": 33554432,
+                "allocated": 16384,
+                "flags": 0,
+                "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "compressed",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 65536,
+              "recoverable_min": 0,
+              "recoverable_max": 65536,
+              "free_now": 1061806080,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              65536,
+              65536,
+              65536,
+              65536
+            ],
+            "selected_before": {
+              "compressed": {
+                "identity": [
+                  16777239,
+                  25
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 65536,
+                "flags": 32,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_first",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "clone": {
+                "identity": [
+                  16777239,
+                  27
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_last",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "compression-source": {
+                "identity": [
+                  16777239,
+                  19
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          }
+        ],
+        "cross_volume": {
+          "copy": "native_fcopyfile_verified",
+          "copy_scope": "cross-volume",
+          "source_preserved_after_copy": true,
+          "empty_folder_preserved": true,
+          "duplicate_link": "native_verified",
+          "before": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612925
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201058899067427,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612923
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201058898665886,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "after": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612923
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201058898665886,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612923
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201058898665886,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "source_device": 16777229,
+          "target_device": 16777239,
+          "finder_automation": false,
+          "trash_invoked": false
+        },
+        "reservation": {
+          "configured_reserve": 16777216,
+          "configured_quota": 67108864,
+          "native_usage": "Usage:  diskutil apfs addVolume <containerRefDisk> <fs> <name>\n        [-passprompt | -passphrase <passphrase> | -stdinpassphrase]\n        [-passphraseHint <passHint>]\n        [-reserve <reserveSize>] [-quota <quotaSize>]\n        [-role <roles>]\n        [-group[With] | -sibling <apfsVolumeDisk>]\n        [-nomount | -mountpoint <mountPoint>]\n        where <containerRefDisk> = Container Reference DiskIdentifier\n              <fs> = an APFS file system personality: e.g. \"APFS\", \"APFSX\"\n              <name> = a volume name\n              <passphrase> = optionally create an encrypted volume (disk user)\n              <passHint> = some string that can be shown even while locked\n              <reserveSize> = optional minimum guaranteed file data capacity\n              <quotaSize> = optional maximum file data usage limit\n              <roles> = \"0\" or one or more of B|R|V|I|T|S|D|E|X|H|C|Y\n              <apfsVolumeDisk> = another APFS Volume in the same Container\n              <mountPoint> = \"your\" mount point (root only) (dir must exist)\nAdd a new APFS Volume to an existing APFS Container. If you specify a\npassphrase, it will be encrypted with the \"disk\" user and that passphrase.\nOwnership of the affected disks is required.\nExample:  diskutil apfs addVolume disk5 APFS Foo1\n          diskutil apfs addVolume disk5 APFS FooSecure2 -passphrase hello\n          diskutil apfs addVolume disk5 APFS Foo3 -quota 10g -reserve 5g\n",
+          "native_initial": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "ED18AED9-B44E-4AEF-91D5-BA5CD6C206DD",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "F27C4C01-E3BC-422B-8BAD-3C0EFEA37A55",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-0058cdab5ecb4194ad78912ded9dc103",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "3E4AA991-9035-4170-A8A7-4DE02F147CA7",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-53bf9780f4854db48020e99a79aca1d0",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "native_after": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "ED18AED9-B44E-4AEF-91D5-BA5CD6C206DD",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "F27C4C01-E3BC-422B-8BAD-3C0EFEA37A55",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-0058cdab5ecb4194ad78912ded9dc103",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "3E4AA991-9035-4170-A8A7-4DE02F147CA7",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-53bf9780f4854db48020e99a79aca1d0",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "peer_volume": {
+            "APFSContainerFree": 1053392896,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 16777216,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s2",
+            "DeviceNode": "/dev/disk6s2",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "3E4AA991-9035-4170-A8A7-4DE02F147CA7",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": false,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-quota-53bf9780f4854db48020e99a79aca1d0",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeName": "FileTree-quota-53bf9780f4854db48020e99a79aca1d0",
+            "VolumeSize": 0,
+            "VolumeUUID": "3E4AA991-9035-4170-A8A7-4DE02F147CA7",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": false
+          },
+          "primary_before": {
+            "total": 1073700864,
+            "used": 3506176,
+            "free": 1070194688,
+            "unavailable_free": 0
+          },
+          "primary_after": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0
+          },
+          "primary_ledger": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0,
+            "named_allocated": 131072,
+            "unique_allocated": 131072,
+            "hard_link_overcount": 0,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "estimated",
+            "unaccounted": 3379200,
+            "measured_at": 1792201060.0386329,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 116736,
+              "known_folders": 7,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "peer_capacity": null,
+          "peer_ledger": null,
+          "peer_mounted": false,
+          "independent_reserved_bytes": null,
+          "independent_shared_extent_bytes": null,
+          "capacity_rows_are_not_additive": true,
+          "host_containers_modified": false
+        },
+        "detach_attempts": [
+          {
+            "attempt": 1,
+            "device": "/dev/disk5",
+            "phase": "verified",
+            "attachment": {
+              "image": {
+                "image-path": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-ap7nrlh9/FileTree-0058cdab5ecb4194ad78912ded9dc103.sparseimage"
+              },
+              "entity_count": 5,
+              "entities_truncated": false,
+              "entities": [
+                {
+                  "dev-entry": "/dev/disk5",
+                  "content-hint": "GUID_partition_scheme"
+                },
+                {
+                  "dev-entry": "/dev/disk5s1",
+                  "content-hint": "7C3457EF-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6",
+                  "content-hint": "EF57347C-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6s1",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC",
+                  "mount-point": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-ap7nrlh9/volume"
+                },
+                {
+                  "dev-entry": "/dev/disk6s2",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC"
+                }
+              ],
+              "captured_image_identity": [
+                16777229,
+                3612901
+              ],
+              "captured_scratch_identity": [
+                16777229,
+                3612893
+              ]
+            },
+            "checked_volume": {
+              "DeviceIdentifier": "disk6s1",
+              "DeviceNode": "/dev/disk6s1",
+              "VolumeUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+              "DiskUUID": "759B4ECA-7D87-45BF-BDF9-64BB87F9D032",
+              "VolumeName": "FileTree-0058cdab5ecb4194ad78912ded9dc103",
+              "FilesystemType": "apfs",
+              "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-ap7nrlh9/volume",
+              "ParentWholeDisk": "disk6",
+              "APFSContainerReference": "disk6",
+              "physical_store_count": 1,
+              "physical_stores_truncated": false,
+              "APFSPhysicalStores": [
+                {
+                  "APFSPhysicalStore": "disk5s1"
+                }
+              ]
+            },
+            "native_succeeded": true
+          }
+        ]
+      }
+    },
+    {
+      "artifact_path": "apfs/sample-2/proof.json",
+      "source_sha256": "306ca6997d263e048dfc8aa270dd92df1c9cb19c0099450b2745812a84eab81c",
+      "proof": {
+        "phase": "complete",
+        "owned": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-6e0gj2w6",
+        "host_bins_modified": false,
+        "finder_automation": false,
+        "cleanup_verified": true,
+        "device": "/dev/disk5",
+        "volume_uuid": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+        "capacity": {
+          "ledger": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0,
+            "named_allocated": 50479104,
+            "unique_allocated": 33701888,
+            "hard_link_overcount": 16777216,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "allocation_exceeds_used",
+            "unaccounted": null,
+            "measured_at": 1792201062.828435,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 92340224,
+              "known_folders": 4,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "native_before": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "native_after": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "fixtures": {
+            "plain": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "alias": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-a": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-b": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "sparse": {
+              "identity": [
+                16777239,
+                24
+              ],
+              "links": 1,
+              "logical": 33554432,
+              "allocated": 16384,
+              "flags": 0,
+              "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+            },
+            "compression-source": {
+              "identity": [
+                16777239,
+                19
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "compressed": {
+              "identity": [
+                16777239,
+                25
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 65536,
+              "flags": 32,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "clone": {
+              "identity": [
+                16777239,
+                27
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "bin": {
+              "identity": [
+                16777239,
+                30
+              ],
+              "links": 1,
+              "logical": 65536,
+              "allocated": 65536,
+              "flags": 0,
+              "sha256": "cf8a80d5cd4787875c19ba5ea05b6cf250bf60620b1092fc8c46bc383bfd2254"
+            }
+          },
+          "bin_inventory": {
+            "size": 65536,
+            "count": 1,
+            "complete": true,
+            "error": ""
+          },
+          "bin_scope": "fresh image current uid only",
+          "independent_shared_extent_bytes": null,
+          "independent_reserved_bytes": null,
+          "scan_errors": [],
+          "native_volume": {
+            "APFSContainerFree": 1045012480,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 25333760,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s1",
+            "DeviceNode": "/dev/disk6s1",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": true,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-a3737851305143f29feabffdd25a9a77",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-6e0gj2w6/volume",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeAllocationBlockSize": 4096,
+            "VolumeName": "FileTree-a3737851305143f29feabffdd25a9a77",
+            "VolumeSize": 0,
+            "VolumeUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": true
+          }
+        },
+        "recovery": [
+          {
+            "case": "one_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 0,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "alias": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "last_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "plain": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "all_hard_links",
+            "estimate": {
+              "logical": 16777216,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1053401088,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "all-a": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              },
+              "all-b": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "sparse",
+            "estimate": {
+              "logical": 33554432,
+              "allocated": 16384,
+              "recoverable_min": 0,
+              "recoverable_max": 16384,
+              "free_now": 1061789696,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              16384,
+              16384,
+              16384,
+              16384
+            ],
+            "selected_before": {
+              "sparse": {
+                "identity": [
+                  16777239,
+                  24
+                ],
+                "links": 1,
+                "logical": 33554432,
+                "allocated": 16384,
+                "flags": 0,
+                "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "compressed",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 65536,
+              "recoverable_min": 0,
+              "recoverable_max": 65536,
+              "free_now": 1061806080,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              65536,
+              65536,
+              65536,
+              65536
+            ],
+            "selected_before": {
+              "compressed": {
+                "identity": [
+                  16777239,
+                  25
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 65536,
+                "flags": 32,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_first",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "clone": {
+                "identity": [
+                  16777239,
+                  27
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_last",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "compression-source": {
+                "identity": [
+                  16777239,
+                  19
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          }
+        ],
+        "cross_volume": {
+          "copy": "native_fcopyfile_verified",
+          "copy_scope": "cross-volume",
+          "source_preserved_after_copy": true,
+          "empty_folder_preserved": true,
+          "duplicate_link": "native_verified",
+          "before": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612957
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201069934070927,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612955
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201069933707011,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "after": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612955
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201069933707011,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612955
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201069933707011,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "source_device": 16777229,
+          "target_device": 16777239,
+          "finder_automation": false,
+          "trash_invoked": false
+        },
+        "reservation": {
+          "configured_reserve": 16777216,
+          "configured_quota": 67108864,
+          "native_usage": "Usage:  diskutil apfs addVolume <containerRefDisk> <fs> <name>\n        [-passprompt | -passphrase <passphrase> | -stdinpassphrase]\n        [-passphraseHint <passHint>]\n        [-reserve <reserveSize>] [-quota <quotaSize>]\n        [-role <roles>]\n        [-group[With] | -sibling <apfsVolumeDisk>]\n        [-nomount | -mountpoint <mountPoint>]\n        where <containerRefDisk> = Container Reference DiskIdentifier\n              <fs> = an APFS file system personality: e.g. \"APFS\", \"APFSX\"\n              <name> = a volume name\n              <passphrase> = optionally create an encrypted volume (disk user)\n              <passHint> = some string that can be shown even while locked\n              <reserveSize> = optional minimum guaranteed file data capacity\n              <quotaSize> = optional maximum file data usage limit\n              <roles> = \"0\" or one or more of B|R|V|I|T|S|D|E|X|H|C|Y\n              <apfsVolumeDisk> = another APFS Volume in the same Container\n              <mountPoint> = \"your\" mount point (root only) (dir must exist)\nAdd a new APFS Volume to an existing APFS Container. If you specify a\npassphrase, it will be encrypted with the \"disk\" user and that passphrase.\nOwnership of the affected disks is required.\nExample:  diskutil apfs addVolume disk5 APFS Foo1\n          diskutil apfs addVolume disk5 APFS FooSecure2 -passphrase hello\n          diskutil apfs addVolume disk5 APFS Foo3 -quota 10g -reserve 5g\n",
+          "native_initial": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "D62E46E2-8FC2-480F-B293-55C3242EC980",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "5E464D0B-59CA-4EA5-B845-384555869EF8",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-a3737851305143f29feabffdd25a9a77",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "4ECB2AB7-9801-49B6-8834-BEDEF040654E",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-0177c312576a45628aa0bc72cf07c7d6",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "native_after": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "D62E46E2-8FC2-480F-B293-55C3242EC980",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "5E464D0B-59CA-4EA5-B845-384555869EF8",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-a3737851305143f29feabffdd25a9a77",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "4ECB2AB7-9801-49B6-8834-BEDEF040654E",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-0177c312576a45628aa0bc72cf07c7d6",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "peer_volume": {
+            "APFSContainerFree": 1053392896,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 16777216,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s2",
+            "DeviceNode": "/dev/disk6s2",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "4ECB2AB7-9801-49B6-8834-BEDEF040654E",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": false,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-quota-0177c312576a45628aa0bc72cf07c7d6",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeName": "FileTree-quota-0177c312576a45628aa0bc72cf07c7d6",
+            "VolumeSize": 0,
+            "VolumeUUID": "4ECB2AB7-9801-49B6-8834-BEDEF040654E",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": false
+          },
+          "primary_before": {
+            "total": 1073700864,
+            "used": 3506176,
+            "free": 1070194688,
+            "unavailable_free": 0
+          },
+          "primary_after": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0
+          },
+          "primary_ledger": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0,
+            "named_allocated": 131072,
+            "unique_allocated": 131072,
+            "hard_link_overcount": 0,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "estimated",
+            "unaccounted": 3379200,
+            "measured_at": 1792201071.035291,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 116736,
+              "known_folders": 7,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "peer_capacity": null,
+          "peer_ledger": null,
+          "peer_mounted": false,
+          "independent_reserved_bytes": null,
+          "independent_shared_extent_bytes": null,
+          "capacity_rows_are_not_additive": true,
+          "host_containers_modified": false
+        },
+        "detach_attempts": [
+          {
+            "attempt": 1,
+            "device": "/dev/disk5",
+            "phase": "verified",
+            "attachment": {
+              "image": {
+                "image-path": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-6e0gj2w6/FileTree-a3737851305143f29feabffdd25a9a77.sparseimage"
+              },
+              "entity_count": 5,
+              "entities_truncated": false,
+              "entities": [
+                {
+                  "dev-entry": "/dev/disk5",
+                  "content-hint": "GUID_partition_scheme"
+                },
+                {
+                  "dev-entry": "/dev/disk5s1",
+                  "content-hint": "7C3457EF-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6",
+                  "content-hint": "EF57347C-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6s1",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC",
+                  "mount-point": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-6e0gj2w6/volume"
+                },
+                {
+                  "dev-entry": "/dev/disk6s2",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC"
+                }
+              ],
+              "captured_image_identity": [
+                16777229,
+                3612941
+              ],
+              "captured_scratch_identity": [
+                16777229,
+                3612937
+              ]
+            },
+            "checked_volume": {
+              "DeviceIdentifier": "disk6s1",
+              "DeviceNode": "/dev/disk6s1",
+              "VolumeUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+              "DiskUUID": "C6800625-5532-4E20-B4EA-ABD256315FC5",
+              "VolumeName": "FileTree-a3737851305143f29feabffdd25a9a77",
+              "FilesystemType": "apfs",
+              "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-6e0gj2w6/volume",
+              "ParentWholeDisk": "disk6",
+              "APFSContainerReference": "disk6",
+              "physical_store_count": 1,
+              "physical_stores_truncated": false,
+              "APFSPhysicalStores": [
+                {
+                  "APFSPhysicalStore": "disk5s1"
+                }
+              ]
+            },
+            "native_succeeded": true
+          }
+        ]
+      }
+    },
+    {
+      "artifact_path": "apfs/sample-3/proof.json",
+      "source_sha256": "2d784f055eb6bb725e55e378289df33089e6b55b9a40fbb3dcf747ffbe25b9a5",
+      "proof": {
+        "phase": "complete",
+        "owned": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-213k3ren",
+        "host_bins_modified": false,
+        "finder_automation": false,
+        "cleanup_verified": true,
+        "device": "/dev/disk5",
+        "volume_uuid": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+        "capacity": {
+          "ledger": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0,
+            "named_allocated": 50479104,
+            "unique_allocated": 33701888,
+            "hard_link_overcount": 16777216,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "allocation_exceeds_used",
+            "unaccounted": null,
+            "measured_at": 1792201073.823663,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 92340224,
+              "known_folders": 4,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "native_before": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "native_after": {
+            "total": 1073700864,
+            "used": 28688384,
+            "free": 1045012480,
+            "unavailable_free": 0
+          },
+          "fixtures": {
+            "plain": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "alias": {
+              "identity": [
+                16777239,
+                17
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-a": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "all-b": {
+              "identity": [
+                16777239,
+                18
+              ],
+              "links": 2,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "sparse": {
+              "identity": [
+                16777239,
+                24
+              ],
+              "links": 1,
+              "logical": 33554432,
+              "allocated": 16384,
+              "flags": 0,
+              "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+            },
+            "compression-source": {
+              "identity": [
+                16777239,
+                19
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "compressed": {
+              "identity": [
+                16777239,
+                25
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 65536,
+              "flags": 32,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "clone": {
+              "identity": [
+                16777239,
+                27
+              ],
+              "links": 1,
+              "logical": 8388608,
+              "allocated": 8388608,
+              "flags": 0,
+              "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+            },
+            "bin": {
+              "identity": [
+                16777239,
+                30
+              ],
+              "links": 1,
+              "logical": 65536,
+              "allocated": 65536,
+              "flags": 0,
+              "sha256": "cf8a80d5cd4787875c19ba5ea05b6cf250bf60620b1092fc8c46bc383bfd2254"
+            }
+          },
+          "bin_inventory": {
+            "size": 65536,
+            "count": 1,
+            "complete": true,
+            "error": ""
+          },
+          "bin_scope": "fresh image current uid only",
+          "independent_shared_extent_bytes": null,
+          "independent_reserved_bytes": null,
+          "scan_errors": [],
+          "native_volume": {
+            "APFSContainerFree": 1045012480,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 25333760,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s1",
+            "DeviceNode": "/dev/disk6s1",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": true,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-2e438b7983de4cbea1dbd88aecf91c98",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-213k3ren/volume",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeAllocationBlockSize": 4096,
+            "VolumeName": "FileTree-2e438b7983de4cbea1dbd88aecf91c98",
+            "VolumeSize": 0,
+            "VolumeUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": true
+          }
+        },
+        "recovery": [
+          {
+            "case": "one_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 0,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "alias": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "last_hard_link",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1045012480,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "plain": {
+                "identity": [
+                  16777239,
+                  17
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "all_hard_links",
+            "estimate": {
+              "logical": 16777216,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1053401088,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "all-a": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              },
+              "all-b": {
+                "identity": [
+                  16777239,
+                  18
+                ],
+                "links": 2,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "sparse",
+            "estimate": {
+              "logical": 33554432,
+              "allocated": 16384,
+              "recoverable_min": 0,
+              "recoverable_max": 16384,
+              "free_now": 1061789696,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              16384,
+              16384,
+              16384,
+              16384
+            ],
+            "selected_before": {
+              "sparse": {
+                "identity": [
+                  16777239,
+                  24
+                ],
+                "links": 1,
+                "logical": 33554432,
+                "allocated": 16384,
+                "flags": 0,
+                "sha256": "19dd699bb3aac36d4decc164f57eecea0de9f548acaddadb91974659f7b7ea08"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "compressed",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 65536,
+              "recoverable_min": 0,
+              "recoverable_max": 65536,
+              "free_now": 1061806080,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              65536,
+              65536,
+              65536,
+              65536
+            ],
+            "selected_before": {
+              "compressed": {
+                "identity": [
+                  16777239,
+                  25
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 65536,
+                "flags": 32,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_first",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "selected_before": {
+              "clone": {
+                "identity": [
+                  16777239,
+                  27
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          },
+          {
+            "case": "clone_last",
+            "estimate": {
+              "logical": 8388608,
+              "allocated": 8388608,
+              "recoverable_min": 0,
+              "recoverable_max": 8388608,
+              "free_now": 1061871616,
+              "uncertain": true
+            },
+            "native_free_change_samples": [
+              8388608,
+              8388608,
+              8388608,
+              8388608
+            ],
+            "selected_before": {
+              "compression-source": {
+                "identity": [
+                  16777239,
+                  19
+                ],
+                "links": 1,
+                "logical": 8388608,
+                "allocated": 8388608,
+                "flags": 0,
+                "sha256": "1e0d523a7b808c938cdb364a98ac4fa0a1ac05ce07102b6f3c56d8e5be441d11"
+              }
+            },
+            "unselected_sources_preserved": true,
+            "independent_shared_extent_bytes": null,
+            "directory_metadata_bytes": null,
+            "delta_scope": "OS free change includes deferred reclamation and filesystem metadata"
+          }
+        ],
+        "cross_volume": {
+          "copy": "native_fcopyfile_verified",
+          "copy_scope": "cross-volume",
+          "source_preserved_after_copy": true,
+          "empty_folder_preserved": true,
+          "duplicate_link": "native_verified",
+          "before": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612991
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201081559139552,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612989
+              ],
+              "links": 1,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201081558288427,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "after": {
+            "\u984d\u5916\u8907\u672c.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612989
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201081558288427,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            },
+            "\u4fdd\u7559.bin": {
+              "sha256": "f8f460a05740874f800de4d7ad9d433ad2d1fbdac56a72df987b02c58793b368",
+              "identity": [
+                16777229,
+                3612989
+              ],
+              "links": 2,
+              "bytes": 25600,
+              "mode": 33184,
+              "modified_ns": 1792201081558288427,
+              "attributes": {
+                "com.apple.ResourceFork": {
+                  "bytes": 2432,
+                  "sha256": "29d9a5de2fc6a53b594a1bcdcb9311e037afdc01797c7c03fd229e95dc9c2138"
+                },
+                "com.filetree.validation": {
+                  "bytes": 448,
+                  "sha256": "2600dcb159e1ccb368dfc1f096c0d02f08359a4ee9cdc864432a207ca5ff5359"
+                }
+              }
+            }
+          },
+          "source_device": 16777229,
+          "target_device": 16777239,
+          "finder_automation": false,
+          "trash_invoked": false
+        },
+        "reservation": {
+          "configured_reserve": 16777216,
+          "configured_quota": 67108864,
+          "native_usage": "Usage:  diskutil apfs addVolume <containerRefDisk> <fs> <name>\n        [-passprompt | -passphrase <passphrase> | -stdinpassphrase]\n        [-passphraseHint <passHint>]\n        [-reserve <reserveSize>] [-quota <quotaSize>]\n        [-role <roles>]\n        [-group[With] | -sibling <apfsVolumeDisk>]\n        [-nomount | -mountpoint <mountPoint>]\n        where <containerRefDisk> = Container Reference DiskIdentifier\n              <fs> = an APFS file system personality: e.g. \"APFS\", \"APFSX\"\n              <name> = a volume name\n              <passphrase> = optionally create an encrypted volume (disk user)\n              <passHint> = some string that can be shown even while locked\n              <reserveSize> = optional minimum guaranteed file data capacity\n              <quotaSize> = optional maximum file data usage limit\n              <roles> = \"0\" or one or more of B|R|V|I|T|S|D|E|X|H|C|Y\n              <apfsVolumeDisk> = another APFS Volume in the same Container\n              <mountPoint> = \"your\" mount point (root only) (dir must exist)\nAdd a new APFS Volume to an existing APFS Container. If you specify a\npassphrase, it will be encrypted with the \"disk\" user and that passphrase.\nOwnership of the affected disks is required.\nExample:  diskutil apfs addVolume disk5 APFS Foo1\n          diskutil apfs addVolume disk5 APFS FooSecure2 -passphrase hello\n          diskutil apfs addVolume disk5 APFS Foo3 -quota 10g -reserve 5g\n",
+          "native_initial": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "DC28B9C1-233A-45F6-AB81-3AAF192B44FE",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "74262076-3E37-40E7-AADB-1AF900644623",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-2e438b7983de4cbea1dbd88aecf91c98",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "E614F1FE-3352-4130-A3C0-60946E9814F3",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-fe561494941d4fb4b698b87194d74d97",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "native_after": {
+            "Containers": [
+              {
+                "APFSContainerUUID": "DC28B9C1-233A-45F6-AB81-3AAF192B44FE",
+                "CapacityCeiling": 1073700864,
+                "CapacityFree": 1053392896,
+                "ContainerReference": "disk6",
+                "DesignatedPhysicalStore": "disk5s1",
+                "Fusion": false,
+                "PhysicalStores": [
+                  {
+                    "DeviceIdentifier": "disk5s1",
+                    "DiskUUID": "74262076-3E37-40E7-AADB-1AF900644623",
+                    "Size": 1073700864
+                  }
+                ],
+                "Volumes": [
+                  {
+                    "APFSVolumeUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+                    "CapacityInUse": 151552,
+                    "CapacityQuota": 0,
+                    "CapacityReserve": 0,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s1",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-2e438b7983de4cbea1dbd88aecf91c98",
+                    "Roles": []
+                  },
+                  {
+                    "APFSVolumeUUID": "E614F1FE-3352-4130-A3C0-60946E9814F3",
+                    "CapacityInUse": 16777216,
+                    "CapacityQuota": 67108864,
+                    "CapacityReserve": 16777216,
+                    "CryptoMigrationOn": false,
+                    "DeviceIdentifier": "disk6s2",
+                    "Encryption": false,
+                    "FileVault": false,
+                    "Locked": false,
+                    "Name": "FileTree-quota-fe561494941d4fb4b698b87194d74d97",
+                    "Roles": []
+                  }
+                ]
+              }
+            ]
+          },
+          "peer_volume": {
+            "APFSContainerFree": 1053392896,
+            "APFSContainerReference": "disk6",
+            "APFSContainerSize": 1073700864,
+            "APFSPhysicalStores": [
+              {
+                "APFSPhysicalStore": "disk5s1"
+              }
+            ],
+            "APFSSnapshot": false,
+            "Bootable": true,
+            "BusProtocol": "Disk Image",
+            "CanBeMadeBootable": false,
+            "CanBeMadeBootableRequiresDestroy": false,
+            "CapacityInUse": 16777216,
+            "Content": "41504653-0000-11AA-AA11-00306543ECAC",
+            "DeviceBlockSize": 4096,
+            "DeviceIdentifier": "disk6s2",
+            "DeviceNode": "/dev/disk6s2",
+            "DeviceTreePath": "IODeviceTree:/",
+            "DiskUUID": "E614F1FE-3352-4130-A3C0-60946E9814F3",
+            "Ejectable": true,
+            "EjectableMediaAutomaticUnderSoftwareControl": true,
+            "EjectableOnly": true,
+            "Encryption": false,
+            "EncryptionThisVolumeProper": false,
+            "FileVault": false,
+            "FilesystemName": "APFS",
+            "FilesystemType": "apfs",
+            "FilesystemUserVisibleName": "APFS",
+            "FreeSpace": 0,
+            "Fusion": false,
+            "GlobalPermissionsEnabled": false,
+            "IOKitSize": 1073700864,
+            "IORegistryEntryName": "FileTree-quota-fe561494941d4fb4b698b87194d74d97",
+            "Internal": false,
+            "Locked": false,
+            "MediaName": "",
+            "MediaType": "Generic",
+            "MountPoint": "",
+            "OSInternalMedia": false,
+            "ParentWholeDisk": "disk6",
+            "PartitionMapPartition": false,
+            "RAIDMaster": false,
+            "RAIDSlice": false,
+            "Removable": true,
+            "RemovableMedia": true,
+            "RemovableMediaOrExternalDevice": true,
+            "SMARTDeviceSpecificKeysMayVaryNotGuaranteed": {},
+            "SMARTStatus": "Not Supported",
+            "Sealed": "No",
+            "Size": 1073700864,
+            "SupportsGlobalPermissionsDisable": true,
+            "SystemImage": false,
+            "TotalSize": 1073700864,
+            "VolumeName": "FileTree-quota-fe561494941d4fb4b698b87194d74d97",
+            "VolumeSize": 0,
+            "VolumeUUID": "E614F1FE-3352-4130-A3C0-60946E9814F3",
+            "WholeDisk": false,
+            "Writable": true,
+            "WritableMedia": true,
+            "WritableVolume": false
+          },
+          "primary_before": {
+            "total": 1073700864,
+            "used": 3506176,
+            "free": 1070194688,
+            "unavailable_free": 0
+          },
+          "primary_after": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0
+          },
+          "primary_ledger": {
+            "total": 1056923648,
+            "used": 3510272,
+            "free": 1053413376,
+            "unavailable_free": 0,
+            "named_allocated": 131072,
+            "unique_allocated": 131072,
+            "hard_link_overcount": 0,
+            "recycle_bin_seen": 65536,
+            "recycle_bin_complete": true,
+            "mounted_folders": 0,
+            "foreign_allocated_seen": 0,
+            "status": "estimated",
+            "unaccounted": 3379200,
+            "measured_at": 1792201083.795475,
+            "metadata_bytes": null,
+            "omitted_bytes": null,
+            "other_volumes_bytes": null,
+            "coverage": {
+              "known_bytes": 116736,
+              "known_folders": 7,
+              "skipped_folders": 0,
+              "inaccessible_folders": 0,
+              "pending_folders": 0,
+              "unsafe_folders": 0
+            }
+          },
+          "peer_capacity": null,
+          "peer_ledger": null,
+          "peer_mounted": false,
+          "independent_reserved_bytes": null,
+          "independent_shared_extent_bytes": null,
+          "capacity_rows_are_not_additive": true,
+          "host_containers_modified": false
+        },
+        "detach_attempts": [
+          {
+            "attempt": 1,
+            "device": "/dev/disk5",
+            "phase": "verified",
+            "attachment": {
+              "image": {
+                "image-path": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-213k3ren/FileTree-2e438b7983de4cbea1dbd88aecf91c98.sparseimage"
+              },
+              "entity_count": 5,
+              "entities_truncated": false,
+              "entities": [
+                {
+                  "dev-entry": "/dev/disk5",
+                  "content-hint": "GUID_partition_scheme"
+                },
+                {
+                  "dev-entry": "/dev/disk5s1",
+                  "content-hint": "7C3457EF-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6",
+                  "content-hint": "EF57347C-0000-11AA-AA11-00306543ECAC"
+                },
+                {
+                  "dev-entry": "/dev/disk6s1",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC",
+                  "mount-point": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-213k3ren/volume"
+                },
+                {
+                  "dev-entry": "/dev/disk6s2",
+                  "content-hint": "41504653-0000-11AA-AA11-00306543ECAC"
+                }
+              ],
+              "captured_image_identity": [
+                16777229,
+                3612972
+              ],
+              "captured_scratch_identity": [
+                16777229,
+                3612968
+              ]
+            },
+            "checked_volume": {
+              "DeviceIdentifier": "disk6s1",
+              "DeviceNode": "/dev/disk6s1",
+              "VolumeUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+              "DiskUUID": "8A739397-45CD-45D0-B636-DE780C32FFC0",
+              "VolumeName": "FileTree-2e438b7983de4cbea1dbd88aecf91c98",
+              "FilesystemType": "apfs",
+              "MountPoint": "/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/filetree-apfs-owned-213k3ren/volume",
+              "ParentWholeDisk": "disk6",
+              "APFSContainerReference": "disk6",
+              "physical_store_count": 1,
+              "physical_stores_truncated": false,
+              "APFSPhysicalStores": [
+                {
+                  "APFSPhysicalStore": "disk5s1"
+                }
+              ]
+            },
+            "native_succeeded": true
+          }
+        ]
+      }
+    }
+  ],
+  "mocked_timeout": {
+    "artifact_path": "test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands-power-77543e8962f94c2580807d22054c9f44.json",
+    "source_sha256": "6a53e4b062d224c40bd7159a6efcb5af373d8d341950f2081e2157d14a2e9dec",
+    "record": {
+      "outcome": "timeout",
+      "returncode": null,
+      "timeout_seconds": 20,
+      "elapsed_seconds": 20.035482,
+      "stdout": "",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false,
+      "steps": [],
+      "invalid_step_records": 0,
+      "trace_complete": false,
+      "process_observation": {
+        "status": "observed",
+        "child_pid": 3744,
+        "returncode": 0,
+        "records": [
+          {
+            "event": "identity",
+            "pid": 3744,
+            "parent_pid": 7632,
+            "cpu": {
+              "created_100ns": 134366747289200496,
+              "exited_100ns": 0,
+              "kernel_100ns": 1093750,
+              "user_100ns": 781250
+            },
+            "reported_threads": 13
+          },
+          {
+            "event": "threads",
+            "count": 13,
+            "truncated": false
+          },
+          {
+            "event": "chain",
+            "tid": 264,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 264,
+                "wait_time_raw": 53787,
+                "switches": 104
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 512,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 512,
+                "wait_time_raw": 53788,
+                "switches": 114
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 1028,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 3744,
+                "tid": 1028,
+                "wait_time_raw": 53629,
+                "switches": 4
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 1484,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 3744,
+                "tid": 1484,
+                "wait_time_raw": 53785,
+                "switches": 20
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 1956,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 3744,
+                "tid": 1956,
+                "wait_time_raw": 53462,
+                "switches": 8
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 2612,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 2612,
+                "wait_time_raw": 53629,
+                "switches": 3
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 4144,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 3744,
+                "tid": 4144,
+                "wait_time_raw": 53629,
+                "switches": 2
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 4160,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 4160,
+                "wait_time_raw": 53629,
+                "switches": 2
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 6244,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 6244,
+                "wait_time_raw": 53464,
+                "switches": 2
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 7184,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 2,
+                "pid": 3744,
+                "tid": 7184,
+                "wait_time_raw": 53462,
+                "switches": 4
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 7224,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 7224,
+                "wait_time_raw": 53787,
+                "switches": 347
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 8104,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 8104,
+                "wait_time_raw": 53629,
+                "switches": 2
+              }
+            ]
+          },
+          {
+            "event": "chain",
+            "tid": 8240,
+            "complete": true,
+            "error": 0,
+            "cycle": false,
+            "required_nodes": 1,
+            "nodes": [
+              {
+                "kind": 8,
+                "status": 3,
+                "pid": 3744,
+                "tid": 8240,
+                "wait_time_raw": 53593,
+                "switches": 11
+              }
+            ]
+          },
+          {
+            "event": "complete",
+            "cpu": {
+              "created_100ns": 134366747289200496,
+              "exited_100ns": 0,
+              "kernel_100ns": 1562500,
+              "user_100ns": 1093750
+            }
+          }
+        ],
+        "stop_reason": null,
+        "invalid_records": 0,
+        "output_truncated": false,
+        "stderr": ""
+      },
+      "shell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "case": "test/test_windows_share_script.py::test_owned_share_steps_keep_exact_checks_and_do_not_repeat_native_commands[powershell.exe-none]",
+      "mocked_smb": true,
+      "case_sha256": "a27086bac7137506f59656d18638957206d94e051ebf46b8a224d684830e233b",
+      "exception_type": "TimeoutExpired",
+      "harness": {
+        "steps": [],
+        "invalid_records": 0,
+        "trace_complete": false,
+        "last_phase": null,
+        "runtime": null
+      }
+    },
+    "new_parser_on_legacy_capture": {
+      "status": "missing"
+    }
+  },
+  "pytest_context": {
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 9036,
+      "utc": "2026-10-17T01:31:13.589625+00:00",
+      "python": "3.14.8 (tags/v3.14.8:8e6e75d, Sep 30 2026, 18:19:33) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 7632,
+      "child_pid_role": "Popen process; may be a Windows venv launcher",
+      "returncode": 1,
+      "elapsed_seconds": 538.0142132000001
+    },
+    "active": {
+      "schema": 1,
+      "pid": 7632,
+      "phase": "session-finished",
+      "nodeid": "",
+      "nodeid_truncated": false,
+      "outcome": "1",
+      "utc": "2026-10-17T01:40:10.346294+00:00",
+      "monotonic_ns": 916595867200
+    },
+    "files": {
+      "process.json": {
+        "sha256": "f2cb799500324f01c6ab9009318a68e564cc96292c362bc2ffc5c475aca2bba5",
+        "bytes": 455
+      },
+      "active.json": {
+        "sha256": "35d1b2dfd597699312f12d45fa07b4fdb95fdf83ae8953b0a5445c3324162d0e",
+        "bytes": 214
+      },
+      "output.log": {
+        "sha256": "7b71005a33cb8c2950ecd5af2ea1958825c8e19acec7a9d5ae092a9e70d78410",
+        "bytes": 309069
+      },
+      "phase-threads.txt": {
+        "sha256": "cfc034104546cbf1d1a1223f737255733de5f957b59179007d980d34c6ffd90f",
+        "bytes": 1828
+      }
+    }
+  },
+  "limits": [
+    "The native literal-file probe verifies one owned ordinary file, not final-busy image/device observations.",
+    "All three APFS samples use ordinary successful detach; the final-busy observer did not run.",
+    "The timeout has no captured phase/step/clock origin. Empty output does not establish startup or a receipt wait.",
+    "The legacy WCT sample has thread-only nodes without query UTC windows; no syscall or blocked owner is identified.",
+    "A healthy retry or a passing platform cannot establish either prior timeout cause or APFS recovery cleanup."
+  ]
+}

@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from PySide6.QtCore import QItemSelectionModel, QSize, Signal
 
-from PySide6.QtGui import QIcon, QImage, QPixmap, QStandardItemModel
+from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -49,7 +49,7 @@ class DuplicatesPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.unit = AUTO_UNIT
-        self.model = QStandardItemModel(self)
+        self.model = grouped_list.GroupedListModel(self)
         self.folder_matches = QListWidget()
         self.folder_matches.setMaximumHeight(110)
         self.folder_matches.setVisible(False)
@@ -177,18 +177,14 @@ class DuplicatesPanel(QWidget):
 
     def select_extra_copies(self) -> None:
         """Select extras only in explicitly chosen groups that passed every metadata/protection check."""
-        if self.running or self._savings is None:
+        savings = self._savings
+        if self.running or savings is None:
             return
-        self.view.clearSelection()
-        flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
-        for row, group in enumerate(self._groups[:LISTED_GROUPS]):
-            if row >= len(self._savings.issues) or self._savings.issues[row] is not None:
-                continue
-            parent = self.model.index(row, 0)
-            for index in range(self.model.rowCount(parent)):
-                item = self.model.index(index, 0, parent)
-                if item.data(NODE_ROLE) is not group.kept:
-                    self.view.selectionModel().select(item, flags)
+        keepers = {row: group.kept for row, group in enumerate(self._groups[:LISTED_GROUPS])
+                   if row < len(savings.issues) and savings.issues[row] is None}
+        # 10k rows: individual selects took 156 s; two ranges and one update took 9–20 ms.
+        selection = self.model.extra_selection(keepers)
+        self.view.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
         self.view.setFocus()
 
     def choose_kept_copy(self) -> None:
@@ -200,7 +196,9 @@ class DuplicatesPanel(QWidget):
             return
         self._groups[row] = replace(self._groups[row], kept=node)
         self._savings = None
-        self._rebuild()
+        # Native 100k-member choice: 811 ms rebuilding versus 15 ms in place (U-20261017-22).
+        self.model.set_group_keeper(row, node)
+        self._refresh_group_labels()
         self._start_estimate()
 
     def decisions_for(self, nodes: list[Node]) -> list[DuplicateGroup]:
@@ -222,8 +220,11 @@ class DuplicatesPanel(QWidget):
 
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
+        format_size(0, unit)
         self.unit = unit
-        self._rebuild()
+        self.model.set_unit(unit)
+        self._refresh_group_labels()
+        self._folder_lines()
         self._update()
 
     def retranslate(self) -> None:
@@ -254,7 +255,9 @@ class DuplicatesPanel(QWidget):
         self.keep_selected.setText(tr("duplicates_keep_selected"))
         self.link_extra.setText(tr("link_title"))
         self.link_extra.setToolTip(tr("link_hint"))
-        self._rebuild()
+        self.model.retranslate()
+        self._refresh_group_labels()
+        self._folder_lines()
         self._update()
 
     # --- building ---------------------------------------------------------
@@ -298,19 +301,27 @@ class DuplicatesPanel(QWidget):
         groups = [(self._group_title(position, group),
                    sorted(group.files, key=lambda file: (file.modified, file.path)))
                   for position, group in enumerate(self._groups[:LISTED_GROUPS])]
-        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups])
-        for row, (_title, files) in enumerate(groups):
-            kept = self._groups[row].kept
-            for index, node in enumerate(files):
-                if node is kept:
-                    item = self.model.item(row).child(index, 0)
-                    item.setText(tr("duplicates_kept_name", name=node.name))
-                    font = item.font()
-                    font.setBold(True)
-                    item.setFont(font)
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups],
+                          keepers=[group.kept for group in self._groups[:LISTED_GROUPS]])
         self._folder_lines()
 
     def _rebuild_photos(self) -> None:
+        photos = self._photos
+        groups = self._photo_groups()
+        icons = {}
+        if photos is not None:
+            for _title, files in groups:
+                for node in files:
+                    if data := photos.thumbnails.get(node):
+                        icons[node] = QIcon(QPixmap.fromImage(QImage.fromData(data)))
+        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr("photos_hint")] * len(groups),
+                          icons=icons)
+        self.view.setUniformRowHeights(False)
+        self.view.setIconSize(QSize(64, 64))
+        self.folder_matches.clear()
+        self.folder_matches.hide()
+
+    def _photo_groups(self) -> list[tuple[str, list[Node]]]:
         photos = self._photos
         groups, remaining = [], LISTED_GROUPS
         if photos is not None:
@@ -321,17 +332,7 @@ class DuplicatesPanel(QWidget):
                 title = tr("photos_group", count=format_count(len(group.files)), distance=photos.distance)
                 groups.append((title, files))
                 remaining -= len(files)
-        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr("photos_hint")] * len(groups))
-        self.view.setUniformRowHeights(False)
-        self.view.setIconSize(QSize(64, 64))
-        if photos is not None:
-            for row, (_title, files) in enumerate(groups):
-                for index, node in enumerate(files):
-                    data = photos.thumbnails.get(node)
-                    if data:
-                        self.model.item(row).child(index, 0).setIcon(QIcon(QPixmap.fromImage(QImage.fromData(data))))
-        self.folder_matches.clear()
-        self.folder_matches.hide()
+        return groups
 
     def _folder_lines(self) -> None:
         self.folder_matches.clear()
@@ -418,8 +419,16 @@ class DuplicatesPanel(QWidget):
     def _show_savings(self, savings: DuplicateSavings) -> None:
         self._estimator = None
         self._savings = savings
-        self._rebuild()
+        self._refresh_group_labels()
         self._update()
+
+    def _refresh_group_labels(self) -> None:
+        if self.kind.currentData() == "photos":
+            labels = [(title, tr("photos_hint")) for title, _files in self._photo_groups()]
+        else:
+            titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]
+            labels = [(title, title) for title in titles]
+        self.model.set_group_labels(labels)
 
     def _savings_text(self, value: Savings) -> str:
         maximum = value.recoverable_max
