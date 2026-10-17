@@ -1,0 +1,5276 @@
+{
+  "schema": 1,
+  "update": "U-20261017-42",
+  "baseline_commit": "37c48f763e3ee65345800cbf1191e9cbbe82840e",
+  "sources": [
+    {
+      "path": "tools\\observed_process.py",
+      "bytes": 7834,
+      "sha256": "26d97bc8cbe973ada941e4cbc2e6090ae6256f0612bc76be9eb75751258976ad"
+    },
+    {
+      "path": "tools\\windows_child_observer.py",
+      "bytes": 8051,
+      "sha256": "d1c987f8ddfa3a41f2d02424dd9c6d605db8e4c693c857a93c5190f6b35f4e30"
+    },
+    {
+      "path": "test\\test_observed_process.py",
+      "bytes": 16493,
+      "sha256": "9487ef283c5ba1a2f7e8c701ee25582e73cae621ea066451d527fd84fb859156"
+    },
+    {
+      "path": "test\\test_observed_timeline.py",
+      "bytes": 5372,
+      "sha256": "e84bb23b0fbf56a4b889f41afa5013fef6bb47c5ece1eebb2f286d8b40960ba3"
+    },
+    {
+      "path": "build\\observed_process_before_later_samples.py",
+      "bytes": 6879,
+      "sha256": "6bcff4a769c30bb19fdcbad09bb87287752f173a7ec41dadc45036398984cc19"
+    },
+    {
+      "path": "build\\probe_later_observer.py",
+      "bytes": 3826,
+      "sha256": "954921cf860e0966eaa485edefe4c21c30d63afa05d66665b80dd86d1afd2f38"
+    },
+    {
+      "path": "build\\probe_later_observer_initial.py",
+      "bytes": 3326,
+      "sha256": "9dfc49a695b4144977e395adac715a2af3478cb71a48f31c7b2e54a6bf5ca9f0"
+    },
+    {
+      "path": "build\\probe_observer_venv_fixture.py",
+      "bytes": 1373,
+      "sha256": "e29f980bbd3e55d1b535720dd496d92b9c0c060a8c3931b8b6287140f038f0f1"
+    },
+    {
+      "path": "build\\run_later_observer_baseline.py",
+      "bytes": 439,
+      "sha256": "21ab537c465022d7eaf6b758b9f14adf5dd86b3964dd9ddfa615e694324cbc91"
+    },
+    {
+      "path": "build\\seal_later_observer_stage.py",
+      "bytes": 11654,
+      "sha256": "19a33350f98860216de7a418cb324e8769f5f23a92f41cf14b9d9de5093741df"
+    }
+  ],
+  "checks": {
+    "focused-final": {
+      "path": "build\\later-observer-focused-final.xml",
+      "bytes": 18241,
+      "sha256": "366ba633672a75519c0d1dd5b3b60d87465e1fa4cdde2efdca90f56971a7c9ca",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "100",
+          "time": "7.697",
+          "timestamp": "2026-10-17T13:31:15.159188+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    "py313-final": {
+      "path": "build\\later-observer-py313-final.xml",
+      "bytes": 18241,
+      "sha256": "fca37685ba6a8a6bc05ca16f5ab2fe1cdaba800436cf255d9333c0f2b02e8b1a",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "100",
+          "time": "6.777",
+          "timestamp": "2026-10-17T13:31:15.106424+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    "full-final": {
+      "path": "build\\later-observer-full-final.xml",
+      "bytes": 381964,
+      "sha256": "5043bbacd65ef6fd0cc9e3ddc6401238720f273bac638ed3adabb9c60ef4cd38",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "54",
+          "tests": "2514",
+          "time": "381.957",
+          "timestamp": "2026-10-17T13:31:31.484652+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    }
+  },
+  "negative_checks": [
+    {
+      "path": "build\\later-observer-red.xml",
+      "bytes": 10871,
+      "sha256": "3830f1505ea4a96f775e68d481b5c1fa1028d3f2b411ad965c9d34d8c7b82c24",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "7",
+          "skipped": "0",
+          "tests": "10",
+          "time": "1.276",
+          "timestamp": "2026-10-17T13:25:30.254385+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    {
+      "path": "build\\later-observer-baseline-red.xml",
+      "bytes": 10042,
+      "sha256": "b8c075b54a72d299f50f6994835eadd2b88b286ec043604804c0e2852f236213",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "7",
+          "skipped": "0",
+          "tests": "10",
+          "time": "1.403",
+          "timestamp": "2026-10-17T13:28:22.314108+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    {
+      "path": "build\\later-observer-py313.xml",
+      "bytes": 24471,
+      "sha256": "4afdde6cf0980875c939f487ec5392cad86fa0c6de307b758556329f24999c76",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "1",
+          "skipped": "0",
+          "tests": "100",
+          "time": "6.755",
+          "timestamp": "2026-10-17T13:29:26.294256+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    }
+  ],
+  "native": [
+    {
+      "artifact": {
+        "path": "build\\later-observer-native-modern-complete.json",
+        "bytes": 23447,
+        "sha256": "400eb1b526d83ffa0512926e83f7c5fc9c257477702d4e0dc7a11f5859335e9b"
+      },
+      "record": {
+        "mode": "complete",
+        "outcome": "completed",
+        "elapsed_seconds": 16.308587999956217,
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "parent_pid": 77152,
+        "timeout": 20,
+        "phases": [
+          {
+            "phase": "early",
+            "pid": 71672,
+            "filetime": 134366884718376225
+          },
+          {
+            "phase": "late",
+            "pid": 71672,
+            "filetime": 134366884799201093
+          },
+          {
+            "phase": "complete",
+            "pid": 71672,
+            "filetime": 134366884879313096
+          }
+        ],
+        "observation": {
+          "status": "observed",
+          "child_pid": 71672,
+          "returncode": 0,
+          "records": [
+            {
+              "event": "identity",
+              "pid": 71672,
+              "parent_pid": 77152,
+              "cpu": {
+                "created_100ns": 134366884716575493,
+                "exited_100ns": 0,
+                "kernel_100ns": 1250000,
+                "user_100ns": 1562500
+              },
+              "reported_threads": 27,
+              "emitted_filetime_100ns": 134366884768485552
+            },
+            {
+              "event": "threads",
+              "count": 27,
+              "truncated": true,
+              "emitted_filetime_100ns": 134366884768998888
+            },
+            {
+              "event": "chain",
+              "tid": 17464,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 17464,
+                  "wait_time_raw": 18354442,
+                  "switches": 26
+                }
+              ],
+              "query_before_filetime_100ns": 134366884771452790,
+              "query_after_filetime_100ns": 134366884771650952,
+              "emitted_filetime_100ns": 134366884771651601
+            },
+            {
+              "event": "chain",
+              "tid": 18700,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 18700,
+                  "wait_time_raw": 18354442,
+                  "switches": 17
+                }
+              ],
+              "query_before_filetime_100ns": 134366884771652449,
+              "query_after_filetime_100ns": 134366884771842544,
+              "emitted_filetime_100ns": 134366884771843075
+            },
+            {
+              "event": "chain",
+              "tid": 21328,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 21328,
+                  "wait_time_raw": 18354443,
+                  "switches": 34
+                }
+              ],
+              "query_before_filetime_100ns": 134366884771843924,
+              "query_after_filetime_100ns": 134366884772025040,
+              "emitted_filetime_100ns": 134366884772025486
+            },
+            {
+              "event": "chain",
+              "tid": 29276,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 29276,
+                  "wait_time_raw": 18354439,
+                  "switches": 11
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772026141,
+              "query_after_filetime_100ns": 134366884772206608,
+              "emitted_filetime_100ns": 134366884772206990
+            },
+            {
+              "event": "chain",
+              "tid": 53056,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 53056,
+                  "wait_time_raw": 18354443,
+                  "switches": 42
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772207681,
+              "query_after_filetime_100ns": 134366884772413005,
+              "emitted_filetime_100ns": 134366884772413557
+            },
+            {
+              "event": "chain",
+              "tid": 57860,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 57860,
+                  "wait_time_raw": 18354439,
+                  "switches": 6
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772414440,
+              "query_after_filetime_100ns": 134366884772611043,
+              "emitted_filetime_100ns": 134366884772611434
+            },
+            {
+              "event": "chain",
+              "tid": 63204,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 63204,
+                  "wait_time_raw": 18354442,
+                  "switches": 34
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772612116,
+              "query_after_filetime_100ns": 134366884772795372,
+              "emitted_filetime_100ns": 134366884772795763
+            },
+            {
+              "event": "chain",
+              "tid": 65056,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 65056,
+                  "wait_time_raw": 18354439,
+                  "switches": 95
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772796419,
+              "query_after_filetime_100ns": 134366884772992017,
+              "emitted_filetime_100ns": 134366884772992443
+            },
+            {
+              "event": "chain",
+              "tid": 65288,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 65288,
+                  "wait_time_raw": 18354436,
+                  "switches": 3
+                }
+              ],
+              "query_before_filetime_100ns": 134366884772993277,
+              "query_after_filetime_100ns": 134366884773194209,
+              "emitted_filetime_100ns": 134366884773194805
+            },
+            {
+              "event": "chain",
+              "tid": 66400,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 66400,
+                  "wait_time_raw": 18354570,
+                  "switches": 15
+                }
+              ],
+              "query_before_filetime_100ns": 134366884773195945,
+              "query_after_filetime_100ns": 134366884773427288,
+              "emitted_filetime_100ns": 134366884773427807
+            },
+            {
+              "event": "chain",
+              "tid": 68904,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 71672,
+                  "tid": 68904,
+                  "wait_time_raw": 18354432,
+                  "switches": 4
+                }
+              ],
+              "query_before_filetime_100ns": 134366884773428667,
+              "query_after_filetime_100ns": 134366884773641805,
+              "emitted_filetime_100ns": 134366884773642200
+            },
+            {
+              "event": "chain",
+              "tid": 69948,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 71672,
+                  "tid": 69948,
+                  "wait_time_raw": 18354434,
+                  "switches": 24
+                }
+              ],
+              "query_before_filetime_100ns": 134366884773643072,
+              "query_after_filetime_100ns": 134366884773833597,
+              "emitted_filetime_100ns": 134366884773834449
+            },
+            {
+              "event": "chain",
+              "tid": 71044,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 71044,
+                  "wait_time_raw": 18354439,
+                  "switches": 48
+                }
+              ],
+              "query_before_filetime_100ns": 134366884773835962,
+              "query_after_filetime_100ns": 134366884774052469,
+              "emitted_filetime_100ns": 134366884774052977
+            },
+            {
+              "event": "chain",
+              "tid": 72076,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 72076,
+                  "wait_time_raw": 18354442,
+                  "switches": 79
+                }
+              ],
+              "query_before_filetime_100ns": 134366884774053830,
+              "query_after_filetime_100ns": 134366884774257098,
+              "emitted_filetime_100ns": 134366884774257572
+            },
+            {
+              "event": "chain",
+              "tid": 72768,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 71672,
+                  "tid": 72768,
+                  "wait_time_raw": 18354432,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884774258468,
+              "query_after_filetime_100ns": 134366884774445403,
+              "emitted_filetime_100ns": 134366884774445796
+            },
+            {
+              "event": "chain",
+              "tid": 72828,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 71672,
+                  "tid": 72828,
+                  "wait_time_raw": 18354441,
+                  "switches": 3
+                }
+              ],
+              "query_before_filetime_100ns": 134366884774446642,
+              "query_after_filetime_100ns": 134366884774656975,
+              "emitted_filetime_100ns": 134366884774657335
+            },
+            {
+              "event": "complete",
+              "cpu": {
+                "created_100ns": 134366884716575493,
+                "exited_100ns": 0,
+                "kernel_100ns": 1250000,
+                "user_100ns": 1562500
+              },
+              "emitted_filetime_100ns": 134366884774658192
+            }
+          ],
+          "stop_reason": null,
+          "invalid_records": 0,
+          "output_truncated": false,
+          "stderr": "",
+          "later_samples": [
+            {
+              "status": "observed",
+              "child_pid": 71672,
+              "returncode": 0,
+              "records": [
+                {
+                  "event": "identity",
+                  "pid": 71672,
+                  "parent_pid": 77152,
+                  "cpu": {
+                    "created_100ns": 134366884716575493,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 1250000,
+                    "user_100ns": 1562500
+                  },
+                  "reported_threads": 27,
+                  "emitted_filetime_100ns": 134366884868589237
+                },
+                {
+                  "event": "threads",
+                  "count": 27,
+                  "truncated": true,
+                  "emitted_filetime_100ns": 134366884869040995
+                },
+                {
+                  "event": "chain",
+                  "tid": 17464,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 17464,
+                      "wait_time_raw": 18354442,
+                      "switches": 26
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884871540297,
+                  "query_after_filetime_100ns": 134366884871889519,
+                  "emitted_filetime_100ns": 134366884871890158
+                },
+                {
+                  "event": "chain",
+                  "tid": 18700,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 18700,
+                      "wait_time_raw": 18354442,
+                      "switches": 17
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884871891065,
+                  "query_after_filetime_100ns": 134366884872142084,
+                  "emitted_filetime_100ns": 134366884872142591
+                },
+                {
+                  "event": "chain",
+                  "tid": 21328,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 21328,
+                      "wait_time_raw": 18354443,
+                      "switches": 34
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884872143424,
+                  "query_after_filetime_100ns": 134366884872405546,
+                  "emitted_filetime_100ns": 134366884872406059
+                },
+                {
+                  "event": "chain",
+                  "tid": 29276,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 29276,
+                      "wait_time_raw": 18355082,
+                      "switches": 13
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884872407133,
+                  "query_after_filetime_100ns": 134366884872691702,
+                  "emitted_filetime_100ns": 134366884872692156
+                },
+                {
+                  "event": "chain",
+                  "tid": 53056,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 53056,
+                      "wait_time_raw": 18354443,
+                      "switches": 42
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884872693107,
+                  "query_after_filetime_100ns": 134366884872960692,
+                  "emitted_filetime_100ns": 134366884872961232
+                },
+                {
+                  "event": "chain",
+                  "tid": 57860,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 57860,
+                      "wait_time_raw": 18355082,
+                      "switches": 16
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884872962143,
+                  "query_after_filetime_100ns": 134366884873228050,
+                  "emitted_filetime_100ns": 134366884873228507
+                },
+                {
+                  "event": "chain",
+                  "tid": 63204,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 63204,
+                      "wait_time_raw": 18354442,
+                      "switches": 34
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884873229296,
+                  "query_after_filetime_100ns": 134366884873414611,
+                  "emitted_filetime_100ns": 134366884873415046
+                },
+                {
+                  "event": "chain",
+                  "tid": 65056,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 65056,
+                      "wait_time_raw": 18355406,
+                      "switches": 97
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884873415837,
+                  "query_after_filetime_100ns": 134366884873614867,
+                  "emitted_filetime_100ns": 134366884873615325
+                },
+                {
+                  "event": "chain",
+                  "tid": 65288,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 65288,
+                      "wait_time_raw": 18354436,
+                      "switches": 3
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884873616134,
+                  "query_after_filetime_100ns": 134366884873863770,
+                  "emitted_filetime_100ns": 134366884873864235
+                },
+                {
+                  "event": "chain",
+                  "tid": 66400,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 66400,
+                      "wait_time_raw": 18354570,
+                      "switches": 15
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884873864935,
+                  "query_after_filetime_100ns": 134366884874061556,
+                  "emitted_filetime_100ns": 134366884874062168
+                },
+                {
+                  "event": "chain",
+                  "tid": 68904,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 71672,
+                      "tid": 68904,
+                      "wait_time_raw": 18354432,
+                      "switches": 4
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884874063132,
+                  "query_after_filetime_100ns": 134366884874252726,
+                  "emitted_filetime_100ns": 134366884874253113
+                },
+                {
+                  "event": "chain",
+                  "tid": 69948,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 71672,
+                      "tid": 69948,
+                      "wait_time_raw": 18354434,
+                      "switches": 24
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884874253918,
+                  "query_after_filetime_100ns": 134366884874424087,
+                  "emitted_filetime_100ns": 134366884874424446
+                },
+                {
+                  "event": "chain",
+                  "tid": 71044,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 71044,
+                      "wait_time_raw": 18355082,
+                      "switches": 56
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884874425159,
+                  "query_after_filetime_100ns": 134366884874612416,
+                  "emitted_filetime_100ns": 134366884874612822
+                },
+                {
+                  "event": "chain",
+                  "tid": 72076,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 72076,
+                      "wait_time_raw": 18354442,
+                      "switches": 79
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884874613495,
+                  "query_after_filetime_100ns": 134366884874820249,
+                  "emitted_filetime_100ns": 134366884874820582
+                },
+                {
+                  "event": "chain",
+                  "tid": 72768,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 71672,
+                      "tid": 72768,
+                      "wait_time_raw": 18354432,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884874821241,
+                  "query_after_filetime_100ns": 134366884875035513,
+                  "emitted_filetime_100ns": 134366884875036058
+                },
+                {
+                  "event": "chain",
+                  "tid": 72828,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 71672,
+                      "tid": 72828,
+                      "wait_time_raw": 18355406,
+                      "switches": 7
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366884875037245,
+                  "query_after_filetime_100ns": 134366884875263555,
+                  "emitted_filetime_100ns": 134366884875264015
+                },
+                {
+                  "event": "complete",
+                  "cpu": {
+                    "created_100ns": 134366884716575493,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 1250000,
+                    "user_100ns": 1562500
+                  },
+                  "emitted_filetime_100ns": 134366884875265153
+                }
+              ],
+              "stop_reason": null,
+              "invalid_records": 0,
+              "output_truncated": false,
+              "stderr": ""
+            }
+          ]
+        },
+        "validated": true,
+        "stdout": "{\"phase\":\"early\",\"pid\":71672,\"filetime\":134366884718376225}\r\n{\"phase\":\"late\",\"pid\":71672,\"filetime\":134366884799201093}\r\n{\"phase\":\"complete\",\"pid\":71672,\"filetime\":134366884879313096}\r\n",
+        "stderr": "#< CLIXML\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+        "returncode": 0,
+        "bounds": "At most two native observations, five-second observer timer, 16 threads and 16 nodes; no retries.",
+        "limits": "Controlled Start-Sleep phases do not reproduce the independent CI import/helper/native SMB timeout."
+      }
+    },
+    {
+      "artifact": {
+        "path": "build\\later-observer-native-modern-timeout.json",
+        "bytes": 22874,
+        "sha256": "b16f82f131d0494f8e4991432e55879aae8b987cd93c5ea743b9199afcf4703a"
+      },
+      "record": {
+        "mode": "timeout",
+        "outcome": "timeout",
+        "elapsed_seconds": 20.02333619998535,
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "parent_pid": 19904,
+        "timeout": 20,
+        "phases": [
+          {
+            "phase": "early",
+            "pid": 58568,
+            "filetime": 134366884882967608
+          },
+          {
+            "phase": "late",
+            "pid": 58568,
+            "filetime": 134366884963630917
+          }
+        ],
+        "observation": {
+          "status": "observed",
+          "child_pid": 58568,
+          "returncode": 0,
+          "records": [
+            {
+              "event": "identity",
+              "pid": 58568,
+              "parent_pid": 19904,
+              "cpu": {
+                "created_100ns": 134366884881101789,
+                "exited_100ns": 0,
+                "kernel_100ns": 2343750,
+                "user_100ns": 2031250
+              },
+              "reported_threads": 27,
+              "emitted_filetime_100ns": 134366884933077833
+            },
+            {
+              "event": "threads",
+              "count": 27,
+              "truncated": true,
+              "emitted_filetime_100ns": 134366884933512564
+            },
+            {
+              "event": "chain",
+              "tid": 24396,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 24396,
+                  "wait_time_raw": 18355623,
+                  "switches": 12
+                }
+              ],
+              "query_before_filetime_100ns": 134366884935952083,
+              "query_after_filetime_100ns": 134366884936241480,
+              "emitted_filetime_100ns": 134366884936241996
+            },
+            {
+              "event": "chain",
+              "tid": 27012,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 27012,
+                  "wait_time_raw": 18355495,
+                  "switches": 52
+                }
+              ],
+              "query_before_filetime_100ns": 134366884936242781,
+              "query_after_filetime_100ns": 134366884936446495,
+              "emitted_filetime_100ns": 134366884936446846
+            },
+            {
+              "event": "chain",
+              "tid": 28900,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 28900,
+                  "wait_time_raw": 18355486,
+                  "switches": 8
+                }
+              ],
+              "query_before_filetime_100ns": 134366884936447459,
+              "query_after_filetime_100ns": 134366884936661057,
+              "emitted_filetime_100ns": 134366884936661379
+            },
+            {
+              "event": "chain",
+              "tid": 34188,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 34188,
+                  "wait_time_raw": 18355496,
+                  "switches": 144
+                }
+              ],
+              "query_before_filetime_100ns": 134366884936662087,
+              "query_after_filetime_100ns": 134366884936848318,
+              "emitted_filetime_100ns": 134366884936848636
+            },
+            {
+              "event": "chain",
+              "tid": 45880,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 45880,
+                  "wait_time_raw": 18355496,
+                  "switches": 63
+                }
+              ],
+              "query_before_filetime_100ns": 134366884936849250,
+              "query_after_filetime_100ns": 134366884937050983,
+              "emitted_filetime_100ns": 134366884937051470
+            },
+            {
+              "event": "chain",
+              "tid": 52568,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 52568,
+                  "wait_time_raw": 18355485,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884937052293,
+              "query_after_filetime_100ns": 134366884937276086,
+              "emitted_filetime_100ns": 134366884937276506
+            },
+            {
+              "event": "chain",
+              "tid": 56152,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 56152,
+                  "wait_time_raw": 18355492,
+                  "switches": 180
+                }
+              ],
+              "query_before_filetime_100ns": 134366884937277233,
+              "query_after_filetime_100ns": 134366884937503921,
+              "emitted_filetime_100ns": 134366884937504275
+            },
+            {
+              "event": "chain",
+              "tid": 61036,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 61036,
+                  "wait_time_raw": 18355485,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884937504917,
+              "query_after_filetime_100ns": 134366884937724150,
+              "emitted_filetime_100ns": 134366884937724613
+            },
+            {
+              "event": "chain",
+              "tid": 66344,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 66344,
+                  "wait_time_raw": 18355493,
+                  "switches": 10
+                }
+              ],
+              "query_before_filetime_100ns": 134366884937725431,
+              "query_after_filetime_100ns": 134366884937935607,
+              "emitted_filetime_100ns": 134366884937936279
+            },
+            {
+              "event": "chain",
+              "tid": 67908,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 67908,
+                  "wait_time_raw": 18355486,
+                  "switches": 21
+                }
+              ],
+              "query_before_filetime_100ns": 134366884937937346,
+              "query_after_filetime_100ns": 134366884938189295,
+              "emitted_filetime_100ns": 134366884938189789
+            },
+            {
+              "event": "chain",
+              "tid": 69952,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 69952,
+                  "wait_time_raw": 18355489,
+                  "switches": 8
+                }
+              ],
+              "query_before_filetime_100ns": 134366884938190700,
+              "query_after_filetime_100ns": 134366884938428867,
+              "emitted_filetime_100ns": 134366884938429294
+            },
+            {
+              "event": "chain",
+              "tid": 70456,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 70456,
+                  "wait_time_raw": 18355493,
+                  "switches": 67
+                }
+              ],
+              "query_before_filetime_100ns": 134366884938430209,
+              "query_after_filetime_100ns": 134366884938723988,
+              "emitted_filetime_100ns": 134366884938724470
+            },
+            {
+              "event": "chain",
+              "tid": 71744,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 71744,
+                  "wait_time_raw": 18355483,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884938725399,
+              "query_after_filetime_100ns": 134366884938981609,
+              "emitted_filetime_100ns": 134366884938982068
+            },
+            {
+              "event": "chain",
+              "tid": 72180,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 72180,
+                  "wait_time_raw": 18355485,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884938983055,
+              "query_after_filetime_100ns": 134366884939229653,
+              "emitted_filetime_100ns": 134366884939230130
+            },
+            {
+              "event": "chain",
+              "tid": 72400,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 58568,
+                  "tid": 72400,
+                  "wait_time_raw": 18355498,
+                  "switches": 48
+                }
+              ],
+              "query_before_filetime_100ns": 134366884939231222,
+              "query_after_filetime_100ns": 134366884939602925,
+              "emitted_filetime_100ns": 134366884939603418
+            },
+            {
+              "event": "chain",
+              "tid": 72528,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 58568,
+                  "tid": 72528,
+                  "wait_time_raw": 18355488,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366884939604363,
+              "query_after_filetime_100ns": 134366884939839893,
+              "emitted_filetime_100ns": 134366884939840351
+            },
+            {
+              "event": "complete",
+              "cpu": {
+                "created_100ns": 134366884881101789,
+                "exited_100ns": 0,
+                "kernel_100ns": 2343750,
+                "user_100ns": 2031250
+              },
+              "emitted_filetime_100ns": 134366884939877065
+            }
+          ],
+          "stop_reason": null,
+          "invalid_records": 0,
+          "output_truncated": false,
+          "stderr": "",
+          "later_samples": [
+            {
+              "status": "observed",
+              "child_pid": 58568,
+              "returncode": 0,
+              "records": [
+                {
+                  "event": "identity",
+                  "pid": 58568,
+                  "parent_pid": 19904,
+                  "cpu": {
+                    "created_100ns": 134366884881101789,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 2343750,
+                    "user_100ns": 2031250
+                  },
+                  "reported_threads": 27,
+                  "emitted_filetime_100ns": 134366885032861171
+                },
+                {
+                  "event": "threads",
+                  "count": 27,
+                  "truncated": true,
+                  "emitted_filetime_100ns": 134366885033416056
+                },
+                {
+                  "event": "chain",
+                  "tid": 24396,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 24396,
+                      "wait_time_raw": 18355623,
+                      "switches": 12
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885035840712,
+                  "query_after_filetime_100ns": 134366885036029613,
+                  "emitted_filetime_100ns": 134366885036030041
+                },
+                {
+                  "event": "chain",
+                  "tid": 27012,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 27012,
+                      "wait_time_raw": 18355495,
+                      "switches": 52
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036030667,
+                  "query_after_filetime_100ns": 134366885036199375,
+                  "emitted_filetime_100ns": 134366885036199758
+                },
+                {
+                  "event": "chain",
+                  "tid": 28900,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 28900,
+                      "wait_time_raw": 18355486,
+                      "switches": 8
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036200362,
+                  "query_after_filetime_100ns": 134366885036370751,
+                  "emitted_filetime_100ns": 134366885036371098
+                },
+                {
+                  "event": "chain",
+                  "tid": 34188,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 34188,
+                      "wait_time_raw": 18355496,
+                      "switches": 144
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036371783,
+                  "query_after_filetime_100ns": 134366885036537136,
+                  "emitted_filetime_100ns": 134366885036537528
+                },
+                {
+                  "event": "chain",
+                  "tid": 45880,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 45880,
+                      "wait_time_raw": 18355496,
+                      "switches": 63
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036538271,
+                  "query_after_filetime_100ns": 134366885036736531,
+                  "emitted_filetime_100ns": 134366885036736953
+                },
+                {
+                  "event": "chain",
+                  "tid": 52568,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 52568,
+                      "wait_time_raw": 18356446,
+                      "switches": 3
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036737526,
+                  "query_after_filetime_100ns": 134366885036929865,
+                  "emitted_filetime_100ns": 134366885036930158
+                },
+                {
+                  "event": "chain",
+                  "tid": 56152,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 56152,
+                      "wait_time_raw": 18355492,
+                      "switches": 180
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885036930672,
+                  "query_after_filetime_100ns": 134366885037123718,
+                  "emitted_filetime_100ns": 134366885037124131
+                },
+                {
+                  "event": "chain",
+                  "tid": 61036,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 61036,
+                      "wait_time_raw": 18355485,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885037124808,
+                  "query_after_filetime_100ns": 134366885037302452,
+                  "emitted_filetime_100ns": 134366885037302838
+                },
+                {
+                  "event": "chain",
+                  "tid": 66344,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 66344,
+                      "wait_time_raw": 18355493,
+                      "switches": 10
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885037303529,
+                  "query_after_filetime_100ns": 134366885037478065,
+                  "emitted_filetime_100ns": 134366885037478581
+                },
+                {
+                  "event": "chain",
+                  "tid": 67908,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 67908,
+                      "wait_time_raw": 18355486,
+                      "switches": 21
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885037479428,
+                  "query_after_filetime_100ns": 134366885037655114,
+                  "emitted_filetime_100ns": 134366885037655520
+                },
+                {
+                  "event": "chain",
+                  "tid": 69952,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 69952,
+                      "wait_time_raw": 18355489,
+                      "switches": 8
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885037656270,
+                  "query_after_filetime_100ns": 134366885037839065,
+                  "emitted_filetime_100ns": 134366885037839555
+                },
+                {
+                  "event": "chain",
+                  "tid": 70456,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 70456,
+                      "wait_time_raw": 18356458,
+                      "switches": 68
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885037840491,
+                  "query_after_filetime_100ns": 134366885038029517,
+                  "emitted_filetime_100ns": 134366885038029922
+                },
+                {
+                  "event": "chain",
+                  "tid": 71744,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 71744,
+                      "wait_time_raw": 18355483,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885038030615,
+                  "query_after_filetime_100ns": 134366885038239435,
+                  "emitted_filetime_100ns": 134366885038239819
+                },
+                {
+                  "event": "chain",
+                  "tid": 72180,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 72180,
+                      "wait_time_raw": 18355485,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885038240520,
+                  "query_after_filetime_100ns": 134366885038429747,
+                  "emitted_filetime_100ns": 134366885038430188
+                },
+                {
+                  "event": "chain",
+                  "tid": 72400,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 58568,
+                      "tid": 72400,
+                      "wait_time_raw": 18356010,
+                      "switches": 51
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885038431087,
+                  "query_after_filetime_100ns": 134366885038644683,
+                  "emitted_filetime_100ns": 134366885038645213
+                },
+                {
+                  "event": "chain",
+                  "tid": 72528,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 58568,
+                      "tid": 72528,
+                      "wait_time_raw": 18355488,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885038645924,
+                  "query_after_filetime_100ns": 134366885038838002,
+                  "emitted_filetime_100ns": 134366885038838819
+                },
+                {
+                  "event": "complete",
+                  "cpu": {
+                    "created_100ns": 134366884881101789,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 2343750,
+                    "user_100ns": 2031250
+                  },
+                  "emitted_filetime_100ns": 134366885038840129
+                }
+              ],
+              "stop_reason": null,
+              "invalid_records": 0,
+              "output_truncated": false,
+              "stderr": ""
+            }
+          ]
+        },
+        "validated": true,
+        "stdout": "{\"phase\":\"early\",\"pid\":58568,\"filetime\":134366884882967608}\r\n{\"phase\":\"late\",\"pid\":58568,\"filetime\":134366884963630917}\r\n",
+        "stderr": "#< CLIXML\r\n",
+        "returncode": null,
+        "bounds": "At most two native observations, five-second observer timer, 16 threads and 16 nodes; no retries.",
+        "limits": "Controlled Start-Sleep phases do not reproduce the independent CI import/helper/native SMB timeout."
+      }
+    },
+    {
+      "artifact": {
+        "path": "build\\later-observer-native-py313-complete.json",
+        "bytes": 23428,
+        "sha256": "863172a2301ca26260796c369d8c7edc419442171512f10512e47d091baf0d82"
+      },
+      "record": {
+        "mode": "complete",
+        "outcome": "completed",
+        "elapsed_seconds": 16.28566230001161,
+        "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+        "parent_pid": 67256,
+        "timeout": 20,
+        "phases": [
+          {
+            "phase": "early",
+            "pid": 67200,
+            "filetime": 134366885084204432
+          },
+          {
+            "phase": "late",
+            "pid": 67200,
+            "filetime": 134366885164954343
+          },
+          {
+            "phase": "complete",
+            "pid": 67200,
+            "filetime": 134366885245031546
+          }
+        ],
+        "observation": {
+          "status": "observed",
+          "child_pid": 67200,
+          "returncode": 0,
+          "records": [
+            {
+              "event": "identity",
+              "pid": 67200,
+              "parent_pid": 67256,
+              "cpu": {
+                "created_100ns": 134366885082500536,
+                "exited_100ns": 0,
+                "kernel_100ns": 781250,
+                "user_100ns": 1562500
+              },
+              "reported_threads": 27,
+              "emitted_filetime_100ns": 134366885133856211
+            },
+            {
+              "event": "threads",
+              "count": 27,
+              "truncated": true,
+              "emitted_filetime_100ns": 134366885134305976
+            },
+            {
+              "event": "chain",
+              "tid": 9400,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 9400,
+                  "wait_time_raw": 18356911,
+                  "switches": 15
+                }
+              ],
+              "query_before_filetime_100ns": 134366885136851033,
+              "query_after_filetime_100ns": 134366885137111685,
+              "emitted_filetime_100ns": 134366885137112947
+            },
+            {
+              "event": "chain",
+              "tid": 35932,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 35932,
+                  "wait_time_raw": 18356783,
+                  "switches": 44
+                }
+              ],
+              "query_before_filetime_100ns": 134366885137114121,
+              "query_after_filetime_100ns": 134366885137380594,
+              "emitted_filetime_100ns": 134366885137381056
+            },
+            {
+              "event": "chain",
+              "tid": 51220,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 51220,
+                  "wait_time_raw": 18356775,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885137381947,
+              "query_after_filetime_100ns": 134366885137629515,
+              "emitted_filetime_100ns": 134366885137629931
+            },
+            {
+              "event": "chain",
+              "tid": 55520,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 55520,
+                  "wait_time_raw": 18356781,
+                  "switches": 4
+                }
+              ],
+              "query_before_filetime_100ns": 134366885137630909,
+              "query_after_filetime_100ns": 134366885137876993,
+              "emitted_filetime_100ns": 134366885137877498
+            },
+            {
+              "event": "chain",
+              "tid": 57468,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 57468,
+                  "wait_time_raw": 18356786,
+                  "switches": 41
+                }
+              ],
+              "query_before_filetime_100ns": 134366885137878364,
+              "query_after_filetime_100ns": 134366885138077781,
+              "emitted_filetime_100ns": 134366885138078234
+            },
+            {
+              "event": "chain",
+              "tid": 63472,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 63472,
+                  "wait_time_raw": 18356781,
+                  "switches": 8
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138078928,
+              "query_after_filetime_100ns": 134366885138242886,
+              "emitted_filetime_100ns": 134366885138243453
+            },
+            {
+              "event": "chain",
+              "tid": 63656,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 63656,
+                  "wait_time_raw": 18356776,
+                  "switches": 13
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138244364,
+              "query_after_filetime_100ns": 134366885138420575,
+              "emitted_filetime_100ns": 134366885138420955
+            },
+            {
+              "event": "chain",
+              "tid": 64128,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 64128,
+                  "wait_time_raw": 18356777,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138421942,
+              "query_after_filetime_100ns": 134366885138588592,
+              "emitted_filetime_100ns": 134366885138589625
+            },
+            {
+              "event": "chain",
+              "tid": 65844,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 65844,
+                  "wait_time_raw": 18356779,
+                  "switches": 5
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138590733,
+              "query_after_filetime_100ns": 134366885138742145,
+              "emitted_filetime_100ns": 134366885138742454
+            },
+            {
+              "event": "chain",
+              "tid": 68568,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 68568,
+                  "wait_time_raw": 18356783,
+                  "switches": 9
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138743218,
+              "query_after_filetime_100ns": 134366885138909917,
+              "emitted_filetime_100ns": 134366885138910337
+            },
+            {
+              "event": "chain",
+              "tid": 68924,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 68924,
+                  "wait_time_raw": 18356774,
+                  "switches": 4
+                }
+              ],
+              "query_before_filetime_100ns": 134366885138910938,
+              "query_after_filetime_100ns": 134366885139072808,
+              "emitted_filetime_100ns": 134366885139073115
+            },
+            {
+              "event": "chain",
+              "tid": 69744,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 69744,
+                  "wait_time_raw": 18356781,
+                  "switches": 16
+                }
+              ],
+              "query_before_filetime_100ns": 134366885139073772,
+              "query_after_filetime_100ns": 134366885139236487,
+              "emitted_filetime_100ns": 134366885139236835
+            },
+            {
+              "event": "chain",
+              "tid": 70072,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 70072,
+                  "wait_time_raw": 18356781,
+                  "switches": 9
+                }
+              ],
+              "query_before_filetime_100ns": 134366885139237420,
+              "query_after_filetime_100ns": 134366885139397516,
+              "emitted_filetime_100ns": 134366885139397858
+            },
+            {
+              "event": "chain",
+              "tid": 70852,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 70852,
+                  "wait_time_raw": 18356781,
+                  "switches": 11
+                }
+              ],
+              "query_before_filetime_100ns": 134366885139398508,
+              "query_after_filetime_100ns": 134366885139561991,
+              "emitted_filetime_100ns": 134366885139562305
+            },
+            {
+              "event": "chain",
+              "tid": 71552,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 67200,
+                  "tid": 71552,
+                  "wait_time_raw": 18356774,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885139562887,
+              "query_after_filetime_100ns": 134366885139730739,
+              "emitted_filetime_100ns": 134366885139731142
+            },
+            {
+              "event": "chain",
+              "tid": 72352,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 67200,
+                  "tid": 72352,
+                  "wait_time_raw": 18356774,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885139732064,
+              "query_after_filetime_100ns": 134366885139917057,
+              "emitted_filetime_100ns": 134366885139917526
+            },
+            {
+              "event": "complete",
+              "cpu": {
+                "created_100ns": 134366885082500536,
+                "exited_100ns": 0,
+                "kernel_100ns": 781250,
+                "user_100ns": 1562500
+              },
+              "emitted_filetime_100ns": 134366885139918587
+            }
+          ],
+          "stop_reason": null,
+          "invalid_records": 0,
+          "output_truncated": false,
+          "stderr": "",
+          "later_samples": [
+            {
+              "status": "observed",
+              "child_pid": 67200,
+              "returncode": 0,
+              "records": [
+                {
+                  "event": "identity",
+                  "pid": 67200,
+                  "parent_pid": 67256,
+                  "cpu": {
+                    "created_100ns": 134366885082500536,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 781250,
+                    "user_100ns": 1562500
+                  },
+                  "reported_threads": 27,
+                  "emitted_filetime_100ns": 134366885233506734
+                },
+                {
+                  "event": "threads",
+                  "count": 27,
+                  "truncated": true,
+                  "emitted_filetime_100ns": 134366885233942573
+                },
+                {
+                  "event": "chain",
+                  "tid": 9400,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 9400,
+                      "wait_time_raw": 18356911,
+                      "switches": 15
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885236362304,
+                  "query_after_filetime_100ns": 134366885236556611,
+                  "emitted_filetime_100ns": 134366885236557636
+                },
+                {
+                  "event": "chain",
+                  "tid": 35932,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 35932,
+                      "wait_time_raw": 18356783,
+                      "switches": 44
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885236558560,
+                  "query_after_filetime_100ns": 134366885236733844,
+                  "emitted_filetime_100ns": 134366885236734416
+                },
+                {
+                  "event": "chain",
+                  "tid": 51220,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 51220,
+                      "wait_time_raw": 18356775,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885236735146,
+                  "query_after_filetime_100ns": 134366885236917565,
+                  "emitted_filetime_100ns": 134366885236917981
+                },
+                {
+                  "event": "chain",
+                  "tid": 55520,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 55520,
+                      "wait_time_raw": 18357423,
+                      "switches": 5
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885236918975,
+                  "query_after_filetime_100ns": 134366885237110909,
+                  "emitted_filetime_100ns": 134366885237111262
+                },
+                {
+                  "event": "chain",
+                  "tid": 57468,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 57468,
+                      "wait_time_raw": 18357299,
+                      "switches": 42
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885237111892,
+                  "query_after_filetime_100ns": 134366885237305197,
+                  "emitted_filetime_100ns": 134366885237305584
+                },
+                {
+                  "event": "chain",
+                  "tid": 63472,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 63472,
+                      "wait_time_raw": 18357746,
+                      "switches": 9
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885237306279,
+                  "query_after_filetime_100ns": 134366885237508000,
+                  "emitted_filetime_100ns": 134366885237508344
+                },
+                {
+                  "event": "chain",
+                  "tid": 63656,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 63656,
+                      "wait_time_raw": 18356776,
+                      "switches": 13
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885237508973,
+                  "query_after_filetime_100ns": 134366885237688035,
+                  "emitted_filetime_100ns": 134366885237688371
+                },
+                {
+                  "event": "chain",
+                  "tid": 64128,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 64128,
+                      "wait_time_raw": 18356777,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885237689072,
+                  "query_after_filetime_100ns": 134366885237872482,
+                  "emitted_filetime_100ns": 134366885237872852
+                },
+                {
+                  "event": "chain",
+                  "tid": 65844,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 65844,
+                      "wait_time_raw": 18356779,
+                      "switches": 5
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885237873657,
+                  "query_after_filetime_100ns": 134366885238069450,
+                  "emitted_filetime_100ns": 134366885238069973
+                },
+                {
+                  "event": "chain",
+                  "tid": 68568,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 68568,
+                      "wait_time_raw": 18356783,
+                      "switches": 9
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238070900,
+                  "query_after_filetime_100ns": 134366885238239289,
+                  "emitted_filetime_100ns": 134366885238239652
+                },
+                {
+                  "event": "chain",
+                  "tid": 68924,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 68924,
+                      "wait_time_raw": 18356774,
+                      "switches": 4
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238240292,
+                  "query_after_filetime_100ns": 134366885238398542,
+                  "emitted_filetime_100ns": 134366885238398857
+                },
+                {
+                  "event": "chain",
+                  "tid": 69744,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 69744,
+                      "wait_time_raw": 18357423,
+                      "switches": 17
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238399599,
+                  "query_after_filetime_100ns": 134366885238565418,
+                  "emitted_filetime_100ns": 134366885238565775
+                },
+                {
+                  "event": "chain",
+                  "tid": 70072,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 70072,
+                      "wait_time_raw": 18357423,
+                      "switches": 10
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238566443,
+                  "query_after_filetime_100ns": 134366885238747104,
+                  "emitted_filetime_100ns": 134366885238747622
+                },
+                {
+                  "event": "chain",
+                  "tid": 70852,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 70852,
+                      "wait_time_raw": 18356781,
+                      "switches": 11
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238748465,
+                  "query_after_filetime_100ns": 134366885238909965,
+                  "emitted_filetime_100ns": 134366885238910376
+                },
+                {
+                  "event": "chain",
+                  "tid": 71552,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 67200,
+                      "tid": 71552,
+                      "wait_time_raw": 18356774,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885238911119,
+                  "query_after_filetime_100ns": 134366885239106065,
+                  "emitted_filetime_100ns": 134366885239106431
+                },
+                {
+                  "event": "chain",
+                  "tid": 72352,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 67200,
+                      "tid": 72352,
+                      "wait_time_raw": 18356774,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885239107169,
+                  "query_after_filetime_100ns": 134366885239310067,
+                  "emitted_filetime_100ns": 134366885239310578
+                },
+                {
+                  "event": "complete",
+                  "cpu": {
+                    "created_100ns": 134366885082500536,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 781250,
+                    "user_100ns": 1562500
+                  },
+                  "emitted_filetime_100ns": 134366885239311479
+                }
+              ],
+              "stop_reason": null,
+              "invalid_records": 0,
+              "output_truncated": false,
+              "stderr": ""
+            }
+          ]
+        },
+        "validated": true,
+        "stdout": "{\"phase\":\"early\",\"pid\":67200,\"filetime\":134366885084204432}\r\n{\"phase\":\"late\",\"pid\":67200,\"filetime\":134366885164954343}\r\n{\"phase\":\"complete\",\"pid\":67200,\"filetime\":134366885245031546}\r\n",
+        "stderr": "#< CLIXML\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+        "returncode": 0,
+        "bounds": "At most two native observations, five-second observer timer, 16 threads and 16 nodes; no retries.",
+        "limits": "Controlled Start-Sleep phases do not reproduce the independent CI import/helper/native SMB timeout."
+      }
+    },
+    {
+      "artifact": {
+        "path": "build\\later-observer-native-py313-timeout.json",
+        "bytes": 22872,
+        "sha256": "918e51663fcc90c5f984cab65caa9a5bec66d32762ff21d6071666df7272ef40"
+      },
+      "record": {
+        "mode": "timeout",
+        "outcome": "timeout",
+        "elapsed_seconds": 20.03778890002286,
+        "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+        "parent_pid": 61748,
+        "timeout": 20,
+        "phases": [
+          {
+            "phase": "early",
+            "pid": 66552,
+            "filetime": 134366885248059668
+          },
+          {
+            "phase": "late",
+            "pid": 66552,
+            "filetime": 134366885328765122
+          }
+        ],
+        "observation": {
+          "status": "observed",
+          "child_pid": 66552,
+          "returncode": 0,
+          "records": [
+            {
+              "event": "identity",
+              "pid": 66552,
+              "parent_pid": 61748,
+              "cpu": {
+                "created_100ns": 134366885246385326,
+                "exited_100ns": 0,
+                "kernel_100ns": 2187500,
+                "user_100ns": 1250000
+              },
+              "reported_threads": 26,
+              "emitted_filetime_100ns": 134366885297472589
+            },
+            {
+              "event": "threads",
+              "count": 26,
+              "truncated": true,
+              "emitted_filetime_100ns": 134366885297912858
+            },
+            {
+              "event": "chain",
+              "tid": 5504,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 5504,
+                  "wait_time_raw": 18357832,
+                  "switches": 297
+                }
+              ],
+              "query_before_filetime_100ns": 134366885300282681,
+              "query_after_filetime_100ns": 134366885300469660,
+              "emitted_filetime_100ns": 134366885300470197
+            },
+            {
+              "event": "chain",
+              "tid": 23572,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 23572,
+                  "wait_time_raw": 18357832,
+                  "switches": 27
+                }
+              ],
+              "query_before_filetime_100ns": 134366885300471011,
+              "query_after_filetime_100ns": 134366885300664300,
+              "emitted_filetime_100ns": 134366885300664706
+            },
+            {
+              "event": "chain",
+              "tid": 30288,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 30288,
+                  "wait_time_raw": 18357829,
+                  "switches": 25
+                }
+              ],
+              "query_before_filetime_100ns": 134366885300665339,
+              "query_after_filetime_100ns": 134366885300848404,
+              "emitted_filetime_100ns": 134366885300848804
+            },
+            {
+              "event": "chain",
+              "tid": 34240,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 66552,
+                  "tid": 34240,
+                  "wait_time_raw": 18357823,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885300849445,
+              "query_after_filetime_100ns": 134366885301048485,
+              "emitted_filetime_100ns": 134366885301048866
+            },
+            {
+              "event": "chain",
+              "tid": 40748,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 40748,
+                  "wait_time_raw": 18357823,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885301049737,
+              "query_after_filetime_100ns": 134366885301254995,
+              "emitted_filetime_100ns": 134366885301255539
+            },
+            {
+              "event": "chain",
+              "tid": 44188,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 66552,
+                  "tid": 44188,
+                  "wait_time_raw": 18357827,
+                  "switches": 7
+                }
+              ],
+              "query_before_filetime_100ns": 134366885301256414,
+              "query_after_filetime_100ns": 134366885301455941,
+              "emitted_filetime_100ns": 134366885301456376
+            },
+            {
+              "event": "chain",
+              "tid": 53228,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 53228,
+                  "wait_time_raw": 18357829,
+                  "switches": 196
+                }
+              ],
+              "query_before_filetime_100ns": 134366885301457252,
+              "query_after_filetime_100ns": 134366885301644480,
+              "emitted_filetime_100ns": 134366885301644816
+            },
+            {
+              "event": "chain",
+              "tid": 57024,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 57024,
+                  "wait_time_raw": 18357835,
+                  "switches": 55
+                }
+              ],
+              "query_before_filetime_100ns": 134366885301645436,
+              "query_after_filetime_100ns": 134366885301838855,
+              "emitted_filetime_100ns": 134366885301839235
+            },
+            {
+              "event": "chain",
+              "tid": 63112,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 63112,
+                  "wait_time_raw": 18357832,
+                  "switches": 172
+                }
+              ],
+              "query_before_filetime_100ns": 134366885301839936,
+              "query_after_filetime_100ns": 134366885302041468,
+              "emitted_filetime_100ns": 134366885302041874
+            },
+            {
+              "event": "chain",
+              "tid": 63684,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 66552,
+                  "tid": 63684,
+                  "wait_time_raw": 18357824,
+                  "switches": 5
+                }
+              ],
+              "query_before_filetime_100ns": 134366885302042730,
+              "query_after_filetime_100ns": 134366885302248147,
+              "emitted_filetime_100ns": 134366885302248489
+            },
+            {
+              "event": "chain",
+              "tid": 64984,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 64984,
+                  "wait_time_raw": 18357832,
+                  "switches": 28
+                }
+              ],
+              "query_before_filetime_100ns": 134366885302249156,
+              "query_after_filetime_100ns": 134366885302417544,
+              "emitted_filetime_100ns": 134366885302417869
+            },
+            {
+              "event": "chain",
+              "tid": 67640,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 67640,
+                  "wait_time_raw": 18357829,
+                  "switches": 173
+                }
+              ],
+              "query_before_filetime_100ns": 134366885302418465,
+              "query_after_filetime_100ns": 134366885302622246,
+              "emitted_filetime_100ns": 134366885302622607
+            },
+            {
+              "event": "chain",
+              "tid": 69020,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 69020,
+                  "wait_time_raw": 18357826,
+                  "switches": 3
+                }
+              ],
+              "query_before_filetime_100ns": 134366885302623239,
+              "query_after_filetime_100ns": 134366885302822295,
+              "emitted_filetime_100ns": 134366885302822633
+            },
+            {
+              "event": "chain",
+              "tid": 70156,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 3,
+                  "pid": 66552,
+                  "tid": 70156,
+                  "wait_time_raw": 18357831,
+                  "switches": 3
+                }
+              ],
+              "query_before_filetime_100ns": 134366885302823236,
+              "query_after_filetime_100ns": 134366885303010807,
+              "emitted_filetime_100ns": 134366885303011323
+            },
+            {
+              "event": "chain",
+              "tid": 71480,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 66552,
+                  "tid": 71480,
+                  "wait_time_raw": 18357823,
+                  "switches": 4
+                }
+              ],
+              "query_before_filetime_100ns": 134366885303012210,
+              "query_after_filetime_100ns": 134366885303195453,
+              "emitted_filetime_100ns": 134366885303195782
+            },
+            {
+              "event": "chain",
+              "tid": 71732,
+              "complete": true,
+              "error": 0,
+              "cycle": false,
+              "required_nodes": 1,
+              "nodes": [
+                {
+                  "kind": 8,
+                  "status": 2,
+                  "pid": 66552,
+                  "tid": 71732,
+                  "wait_time_raw": 18357823,
+                  "switches": 2
+                }
+              ],
+              "query_before_filetime_100ns": 134366885303196517,
+              "query_after_filetime_100ns": 134366885303386700,
+              "emitted_filetime_100ns": 134366885303387176
+            },
+            {
+              "event": "complete",
+              "cpu": {
+                "created_100ns": 134366885246385326,
+                "exited_100ns": 0,
+                "kernel_100ns": 2187500,
+                "user_100ns": 1250000
+              },
+              "emitted_filetime_100ns": 134366885303388508
+            }
+          ],
+          "stop_reason": null,
+          "invalid_records": 0,
+          "output_truncated": false,
+          "stderr": "",
+          "later_samples": [
+            {
+              "status": "observed",
+              "child_pid": 66552,
+              "returncode": 0,
+              "records": [
+                {
+                  "event": "identity",
+                  "pid": 66552,
+                  "parent_pid": 61748,
+                  "cpu": {
+                    "created_100ns": 134366885246385326,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 2187500,
+                    "user_100ns": 1250000
+                  },
+                  "reported_threads": 26,
+                  "emitted_filetime_100ns": 134366885397515299
+                },
+                {
+                  "event": "threads",
+                  "count": 26,
+                  "truncated": true,
+                  "emitted_filetime_100ns": 134366885397945491
+                },
+                {
+                  "event": "chain",
+                  "tid": 5504,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 5504,
+                      "wait_time_raw": 18357832,
+                      "switches": 297
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885400360655,
+                  "query_after_filetime_100ns": 134366885400521810,
+                  "emitted_filetime_100ns": 134366885400522202
+                },
+                {
+                  "event": "chain",
+                  "tid": 23572,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 23572,
+                      "wait_time_raw": 18357832,
+                      "switches": 27
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885400522836,
+                  "query_after_filetime_100ns": 134366885400678419,
+                  "emitted_filetime_100ns": 134366885400678781
+                },
+                {
+                  "event": "chain",
+                  "tid": 30288,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 30288,
+                      "wait_time_raw": 18358472,
+                      "switches": 26
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885400679343,
+                  "query_after_filetime_100ns": 134366885400858301,
+                  "emitted_filetime_100ns": 134366885400858674
+                },
+                {
+                  "event": "chain",
+                  "tid": 34240,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 66552,
+                      "tid": 34240,
+                      "wait_time_raw": 18357823,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885400859375,
+                  "query_after_filetime_100ns": 134366885401036929,
+                  "emitted_filetime_100ns": 134366885401037422
+                },
+                {
+                  "event": "chain",
+                  "tid": 40748,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 40748,
+                      "wait_time_raw": 18358784,
+                      "switches": 3
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401038327,
+                  "query_after_filetime_100ns": 134366885401212008,
+                  "emitted_filetime_100ns": 134366885401212440
+                },
+                {
+                  "event": "chain",
+                  "tid": 44188,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 66552,
+                      "tid": 44188,
+                      "wait_time_raw": 18357827,
+                      "switches": 7
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401213201,
+                  "query_after_filetime_100ns": 134366885401383292,
+                  "emitted_filetime_100ns": 134366885401383616
+                },
+                {
+                  "event": "chain",
+                  "tid": 53228,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 53228,
+                      "wait_time_raw": 18358472,
+                      "switches": 197
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401384293,
+                  "query_after_filetime_100ns": 134366885401541155,
+                  "emitted_filetime_100ns": 134366885401541672
+                },
+                {
+                  "event": "chain",
+                  "tid": 57024,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 57024,
+                      "wait_time_raw": 18358347,
+                      "switches": 56
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401542455,
+                  "query_after_filetime_100ns": 134366885401715192,
+                  "emitted_filetime_100ns": 134366885401715534
+                },
+                {
+                  "event": "chain",
+                  "tid": 63112,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 63112,
+                      "wait_time_raw": 18357832,
+                      "switches": 172
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401716126,
+                  "query_after_filetime_100ns": 134366885401870825,
+                  "emitted_filetime_100ns": 134366885401871130
+                },
+                {
+                  "event": "chain",
+                  "tid": 63684,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 66552,
+                      "tid": 63684,
+                      "wait_time_raw": 18357824,
+                      "switches": 5
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885401871693,
+                  "query_after_filetime_100ns": 134366885402023071,
+                  "emitted_filetime_100ns": 134366885402023350
+                },
+                {
+                  "event": "chain",
+                  "tid": 64984,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 64984,
+                      "wait_time_raw": 18357832,
+                      "switches": 28
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402023974,
+                  "query_after_filetime_100ns": 134366885402174121,
+                  "emitted_filetime_100ns": 134366885402174444
+                },
+                {
+                  "event": "chain",
+                  "tid": 67640,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 67640,
+                      "wait_time_raw": 18357829,
+                      "switches": 173
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402175037,
+                  "query_after_filetime_100ns": 134366885402355050,
+                  "emitted_filetime_100ns": 134366885402355588
+                },
+                {
+                  "event": "chain",
+                  "tid": 69020,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 69020,
+                      "wait_time_raw": 18357826,
+                      "switches": 3
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402356766,
+                  "query_after_filetime_100ns": 134366885402533060,
+                  "emitted_filetime_100ns": 134366885402533379
+                },
+                {
+                  "event": "chain",
+                  "tid": 70156,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 3,
+                      "pid": 66552,
+                      "tid": 70156,
+                      "wait_time_raw": 18358795,
+                      "switches": 7
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402533963,
+                  "query_after_filetime_100ns": 134366885402725256,
+                  "emitted_filetime_100ns": 134366885402725588
+                },
+                {
+                  "event": "chain",
+                  "tid": 71480,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 66552,
+                      "tid": 71480,
+                      "wait_time_raw": 18357823,
+                      "switches": 4
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402726196,
+                  "query_after_filetime_100ns": 134366885402885657,
+                  "emitted_filetime_100ns": 134366885402885990
+                },
+                {
+                  "event": "chain",
+                  "tid": 71732,
+                  "complete": true,
+                  "error": 0,
+                  "cycle": false,
+                  "required_nodes": 1,
+                  "nodes": [
+                    {
+                      "kind": 8,
+                      "status": 2,
+                      "pid": 66552,
+                      "tid": 71732,
+                      "wait_time_raw": 18357823,
+                      "switches": 2
+                    }
+                  ],
+                  "query_before_filetime_100ns": 134366885402886711,
+                  "query_after_filetime_100ns": 134366885403038290,
+                  "emitted_filetime_100ns": 134366885403038604
+                },
+                {
+                  "event": "complete",
+                  "cpu": {
+                    "created_100ns": 134366885246385326,
+                    "exited_100ns": 0,
+                    "kernel_100ns": 2187500,
+                    "user_100ns": 1250000
+                  },
+                  "emitted_filetime_100ns": 134366885403039464
+                }
+              ],
+              "stop_reason": null,
+              "invalid_records": 0,
+              "output_truncated": false,
+              "stderr": ""
+            }
+          ]
+        },
+        "validated": true,
+        "stdout": "{\"phase\":\"early\",\"pid\":66552,\"filetime\":134366885248059668}\r\n{\"phase\":\"late\",\"pid\":66552,\"filetime\":134366885328765122}\r\n",
+        "stderr": "#< CLIXML\r\n",
+        "returncode": null,
+        "bounds": "At most two native observations, five-second observer timer, 16 threads and 16 nodes; no retries.",
+        "limits": "Controlled Start-Sleep phases do not reproduce the independent CI import/helper/native SMB timeout."
+      }
+    }
+  ],
+  "native_fixture_comparison": [
+    {
+      "mode": "venv-launcher",
+      "target_pid": 70740,
+      "parent_pid": 73656,
+      "executable": "D:\\Codes\\tests\\filetree-qt68-locked-0070a8dd891e4e65b5aefd9b04efd79f\\Scripts\\python.exe",
+      "returncode": 1,
+      "stdout": "{\"event\":\"error\",\"type\":\"RuntimeError\",\"message\":\"Target is not a child of the observer's parent\",\"emitted_filetime_100ns\":134366886597239468}\r\n",
+      "stderr": ""
+    },
+    {
+      "mode": "base-interpreter",
+      "target_pid": 60504,
+      "parent_pid": 73656,
+      "executable": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "returncode": 0,
+      "stdout": "{\"event\":\"identity\",\"pid\":60504,\"parent_pid\":73656,\"cpu\":{\"created_100ns\":134366886597431304,\"exited_100ns\":0,\"kernel_100ns\":312500,\"user_100ns\":468750},\"reported_threads\":4,\"emitted_filetime_100ns\":134366886598355019}\r\n{\"event\":\"threads\",\"count\":4,\"truncated\":false,\"emitted_filetime_100ns\":134366886598825496}\r\n{\"event\":\"chain\",\"tid\":26984,\"complete\":true,\"error\":0,\"cycle\":false,\"required_nodes\":1,\"nodes\":[{\"kind\":8,\"status\":2,\"pid\":60504,\"tid\":26984,\"wait_time_raw\":18366467,\"switches\":3}],\"query_before_filetime_100ns\":134366886601286506,\"query_after_filetime_100ns\":134366886601506540,\"emitted_filetime_100ns\":134366886601507051}\r\n{\"event\":\"chain\",\"tid\":62916,\"complete\":true,\"error\":0,\"cycle\":false,\"required_nodes\":1,\"nodes\":[{\"kind\":8,\"status\":3,\"pid\":60504,\"tid\":62916,\"wait_time_raw\":18366468,\"switches\":20}],\"query_before_filetime_100ns\":134366886601508187,\"query_after_filetime_100ns\":134366886601717513,\"emitted_filetime_100ns\":134366886601717895}\r\n{\"event\":\"chain\",\"tid\":69104,\"complete\":true,\"error\":0,\"cycle\":false,\"required_nodes\":1,\"nodes\":[{\"kind\":8,\"status\":2,\"pid\":60504,\"tid\":69104,\"wait_time_raw\":18366467,\"switches\":3}],\"query_before_filetime_100ns\":134366886601718505,\"query_after_filetime_100ns\":134366886601909843,\"emitted_filetime_100ns\":134366886601910270}\r\n{\"event\":\"chain\",\"tid\":71904,\"complete\":true,\"error\":0,\"cycle\":false,\"required_nodes\":1,\"nodes\":[{\"kind\":8,\"status\":2,\"pid\":60504,\"tid\":71904,\"wait_time_raw\":18366467,\"switches\":3}],\"query_before_filetime_100ns\":134366886601911058,\"query_after_filetime_100ns\":134366886602104772,\"emitted_filetime_100ns\":134366886602105117}\r\n{\"event\":\"complete\",\"cpu\":{\"created_100ns\":134366886597431304,\"exited_100ns\":0,\"kernel_100ns\":312500,\"user_100ns\":468750},\"emitted_filetime_100ns\":134366886602106069}\r\n",
+      "stderr": ""
+    }
+  ],
+  "initial_native_harness_failure": {
+    "stage": "first modern complete probe",
+    "exit_code": 1,
+    "failed_assertion": "result.stderr == b''",
+    "known": "Native stderr was nonempty; the initial harness did not save it before this assertion, so its content/cause is unavailable. Target and both observer validation assertions preceding this point passed.",
+    "source_path": "build/probe_later_observer_initial.py"
+  },
+  "intentional_prior_full_stop": {
+    "record": {
+      "reason": "Intentional stop before fixing the newly found native venv test fixture; not an application or Qt termination",
+      "target": {
+        "ProcessId": 58288,
+        "ParentProcessId": 72768,
+        "CreationDate": "2026-10-17T13:29:26.162949+08:00",
+        "CommandLine": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe -m pytest -v -ra --tb=short --junitxml=build/later-observer-full.xml --basetemp D:/Codes/tests/filetree-later-observer-full-29aa4ce1ae1a469f8bbfc67f5abb70a4 -o cache_dir=D:/Codes/tests/.pytest_cache -p tools.pytest_context --capture=tee-sys -o faulthandler_timeout=60"
+      },
+      "direct_children": 0,
+      "phase": {
+        "schema": 1,
+        "pid": 58288,
+        "phase": "setup",
+        "nodeid": "test/test_history_gui.py::test_history_save_failure_preserves_completed_scan_and_disabled_history_saves_nothing",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T13:30:58.753148+08:00",
+        "monotonic_ns": 286981080105500
+      },
+      "utc": "2026-10-17T05:30:58.7769344Z"
+    },
+    "process": {
+      "schema": 1,
+      "state": "exited",
+      "parent_pid": 72768,
+      "utc": "2026-10-17T05:29:26.157686+00:00",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "capture": "tee-sys",
+      "qt_force_stderr_logging": true,
+      "fault_timeout_seconds": 60,
+      "child_pid": 58288,
+      "child_pid_role": "Popen process; may be a Windows venv launcher",
+      "returncode": 4294967295,
+      "elapsed_seconds": 92.71444970002631
+    },
+    "active": {
+      "schema": 1,
+      "pid": 58288,
+      "phase": "setup",
+      "nodeid": "test/test_history_gui.py::test_history_save_failure_preserves_completed_scan_and_disabled_history_saves_nothing",
+      "nodeid_truncated": false,
+      "outcome": "",
+      "utc": "2026-10-17T05:30:58.753148+00:00",
+      "monotonic_ns": 286981080105500
+    },
+    "wrapper_exit": "1"
+  },
+  "final_process": {
+    "schema": 1,
+    "state": "exited",
+    "parent_pid": 75820,
+    "utc": "2026-10-17T05:31:30.931137+00:00",
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "capture": "tee-sys",
+    "qt_force_stderr_logging": true,
+    "fault_timeout_seconds": 60,
+    "child_pid": 21100,
+    "child_pid_role": "Popen process; may be a Windows venv launcher",
+    "returncode": 0,
+    "elapsed_seconds": 384.1332223000354
+  },
+  "final_phase": {
+    "schema": 1,
+    "pid": 21100,
+    "phase": "session-finished",
+    "nodeid": "",
+    "nodeid_truncated": false,
+    "outcome": "0",
+    "utc": "2026-10-17T05:37:53.451642+00:00",
+    "monotonic_ns": 287395778604500
+  },
+  "logs": [
+    {
+      "path": "build\\later-observer-focused.log",
+      "bytes": 183,
+      "sha256": "8d1b9f7f67bb8882848f318e904d953e692b155c9043dab77d826d4d0d3e6eb7"
+    },
+    {
+      "path": "build\\later-observer-focused-final.log",
+      "bytes": 183,
+      "sha256": "11b46614181c3a613db29edf78ea62d4451b689288c122449b988f36460a90f3"
+    },
+    {
+      "path": "build\\later-observer-red.log",
+      "bytes": 9446,
+      "sha256": "7870f89414adbeaa2d068b0aacf7975934805119df1a6f221b6461a9c8ea5f2c"
+    },
+    {
+      "path": "build\\later-observer-baseline-red.log",
+      "bytes": 8995,
+      "sha256": "044eb736be6f8d0629c58b3d54c182ef009498aaadd2afa0c26447cada1da868"
+    },
+    {
+      "path": "build\\later-observer-py313.log",
+      "bytes": 6493,
+      "sha256": "27c77f79ac060bb5ac3b39fdc5fc9abc83f5f7f3009a6bb16fbf69bec18c5866"
+    },
+    {
+      "path": "build\\later-observer-py313-final.log",
+      "bytes": 183,
+      "sha256": "bc6446fa903bd4d49a416ecd328263f0e17b11915218866b705d56c57cef5442"
+    },
+    {
+      "path": "build\\later-observer-ruff-global.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "build\\later-observer-ruff-pinned.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "build\\later-observer-full.log",
+      "bytes": 93498,
+      "sha256": "5ecba39c8ac3f1777f20b4ad7e91813ddb45480266ff81ea617dac7f075da925"
+    },
+    {
+      "path": "build\\later-observer-full-context\\output.log",
+      "bytes": 93293,
+      "sha256": "1433f4711a6a8b7be75ee9a34c5e46f0a9b47de1de5000f34ee6eceddafb6faa"
+    },
+    {
+      "path": "build\\later-observer-full-final.log",
+      "bytes": 326496,
+      "sha256": "0f1a7c217ae04ece173a9ce226de60ab53d88fd846dec511e4cf015433531df4"
+    },
+    {
+      "path": "build\\later-observer-full-final-context\\output.log",
+      "bytes": 326004,
+      "sha256": "885571b73c5d612c128f5072ee7092625f46b9f6aec2fec2dd3e28ee08f39070"
+    }
+  ],
+  "prior_ci": {
+    "artifact": {
+      "path": "build\\37c48f7-run-observation.json",
+      "bytes": 39871,
+      "sha256": "eea9c61481908248f814e29de4f0ec19515420f6617aefb5b033968926fe815c"
+    },
+    "metadata": {
+      "conclusion": "success",
+      "databaseId": 39006059647,
+      "headSha": "37c48f763e3ee65345800cbf1191e9cbbe82840e",
+      "jobs": [
+        {
+          "completedAt": "2026-10-17T05:23:40Z",
+          "conclusion": "success",
+          "databaseId": 117318674204,
+          "name": "Windows owned MSI installation",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:08Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:24Z",
+              "conclusion": "success",
+              "name": "Install the pinned MSI compiler",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:36Z",
+              "conclusion": "success",
+              "name": "Validate only owned installer fixtures in the disposable runner",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:36Z",
+              "conclusion": "success",
+              "name": "Preserve native installer evidence",
+              "number": 6,
+              "startedAt": "2026-10-17T05:23:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:37Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 11,
+              "startedAt": "2026-10-17T05:23:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:39Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 12,
+              "startedAt": "2026-10-17T05:23:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:39Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-10-17T05:23:39Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674204"
+        },
+        {
+          "completedAt": "2026-10-17T05:32:41Z",
+          "conclusion": "success",
+          "databaseId": 117318674282,
+          "name": "macOS arm64 / Python 3.12",
+          "startedAt": "2026-10-17T05:23:14Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:19Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:19Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:37Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:41Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:43Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:31:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:45Z",
+              "conclusion": "success",
+              "name": "Validate owned native metadata and cocoa rendering",
+              "number": 7,
+              "startedAt": "2026-10-17T05:31:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:45Z",
+              "conclusion": "success",
+              "name": "Validate owned native startup metadata without a login entry",
+              "number": 8,
+              "startedAt": "2026-10-17T05:31:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:54Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history and cocoa tray lifetime",
+              "number": 9,
+              "startedAt": "2026-10-17T05:31:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:34Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned APFS capacity, recovery and cross-volume metadata",
+              "number": 10,
+              "startedAt": "2026-10-17T05:31:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:34Z",
+              "conclusion": "success",
+              "name": "Verify literal open-file reporting on an owned temporary file",
+              "number": 11,
+              "startedAt": "2026-10-17T05:32:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:36Z",
+              "conclusion": "success",
+              "name": "Preserve macOS evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:32:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:37Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 23,
+              "startedAt": "2026-10-17T05:32:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:37Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 24,
+              "startedAt": "2026-10-17T05:32:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:38Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 25,
+              "startedAt": "2026-10-17T05:32:37Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674282"
+        },
+        {
+          "completedAt": "2026-10-17T05:23:49Z",
+          "conclusion": "success",
+          "databaseId": 117318674301,
+          "name": "Windows owned SMB loopback",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:43Z",
+              "conclusion": "success",
+              "name": "Validate only a fresh owned share and temporary mapping",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:45Z",
+              "conclusion": "success",
+              "name": "Preserve native SMB proof including failures",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:45Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 9,
+              "startedAt": "2026-10-17T05:23:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:47Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:23:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:47Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:23:47Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674301"
+        },
+        {
+          "completedAt": "2026-10-17T05:23:21Z",
+          "conclusion": "success",
+          "databaseId": 117318674304,
+          "name": "Lint (ruff)",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:10Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:12Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:12Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Install ruff",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:18Z",
+              "conclusion": "success",
+              "name": "ruff",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:18Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 9,
+              "startedAt": "2026-10-17T05:23:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:18Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:23:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:18Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:23:18Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674304"
+        },
+        {
+          "completedAt": "2026-10-17T05:24:00Z",
+          "conclusion": "success",
+          "databaseId": 117318674315,
+          "name": "Linux desktop / X11 and D-Bus",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:08Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:10Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:51Z",
+              "conclusion": "success",
+              "name": "Build isolated desktop probe",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:58Z",
+              "conclusion": "success",
+              "name": "Test native desktop behavior",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:58Z",
+              "conclusion": "success",
+              "name": "Preserve desktop evidence",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:59Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:23:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:59Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:23:59Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674315"
+        },
+        {
+          "completedAt": "2026-10-17T05:24:03Z",
+          "conclusion": "success",
+          "databaseId": 117318674320,
+          "name": "FreeBSD native nullfs boundaries",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:10Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:00Z",
+              "conclusion": "success",
+              "name": "Validate only fresh nullfs fixtures in a disposable FreeBSD guest",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:01Z",
+              "conclusion": "success",
+              "name": "Preserve native FreeBSD proof including failures",
+              "number": 4,
+              "startedAt": "2026-10-17T05:24:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:01Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 8,
+              "startedAt": "2026-10-17T05:24:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:01Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 9,
+              "startedAt": "2026-10-17T05:24:01Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674320"
+        },
+        {
+          "completedAt": "2026-10-17T05:31:16Z",
+          "conclusion": "success",
+          "databaseId": 117318674322,
+          "name": "Windows / Python 3.11",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.11",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:48Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:58Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:59Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:30:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:00Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:30:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:01Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:31:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:02Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:31:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:03Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:31:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:09Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:31:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:10Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:31:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:12Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:31:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:13Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:31:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:13Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.11",
+              "number": 27,
+              "startedAt": "2026-10-17T05:31:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:15Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:31:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:15Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:31:15Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674322"
+        },
+        {
+          "completedAt": "2026-10-17T05:29:06Z",
+          "conclusion": "success",
+          "databaseId": 117318674334,
+          "name": "Linux / Python 3.12",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:11Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:11Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:27Z",
+              "conclusion": "success",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:39Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:54Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 6,
+              "startedAt": "2026-10-17T05:23:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:55Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:28:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:00Z",
+              "conclusion": "success",
+              "name": "Validate isolated ext4 capacity and recovery",
+              "number": 8,
+              "startedAt": "2026-10-17T05:28:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:00Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native changes and external hard-link aliases",
+              "number": 9,
+              "startedAt": "2026-10-17T05:29:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:00Z",
+              "conclusion": "success",
+              "name": "Validate owned native startup metadata without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:29:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:01Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 11,
+              "startedAt": "2026-10-17T05:29:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:03Z",
+              "conclusion": "success",
+              "name": "Preserve volume evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:29:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:03Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 23,
+              "startedAt": "2026-10-17T05:29:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:03Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 24,
+              "startedAt": "2026-10-17T05:29:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:03Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 25,
+              "startedAt": "2026-10-17T05:29:03Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674334"
+        },
+        {
+          "completedAt": "2026-10-17T05:24:20Z",
+          "conclusion": "success",
+          "databaseId": 117318674358,
+          "name": "Qt 6.8 compatibility / ubuntu-latest",
+          "startedAt": "2026-10-17T05:23:08Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:10Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:12Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:12Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:27Z",
+              "conclusion": "success",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:47Z",
+              "conclusion": "success",
+              "name": "Install locked compatibility dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:47Z",
+              "conclusion": "success",
+              "name": "Capture and verify the pinned Qt runtime",
+              "number": 6,
+              "startedAt": "2026-10-17T05:23:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:13Z",
+              "conclusion": "success",
+              "name": "Verify grouped display, owned workers and native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:23:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:15Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 8,
+              "startedAt": "2026-10-17T05:24:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:16Z",
+              "conclusion": "success",
+              "name": "Preserve compatibility runtime and test evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:24:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:16Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 17,
+              "startedAt": "2026-10-17T05:24:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:16Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-10-17T05:24:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:16Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-10-17T05:24:16Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674358"
+        },
+        {
+          "completedAt": "2026-10-17T05:24:42Z",
+          "conclusion": "success",
+          "databaseId": 117318674362,
+          "name": "Windows private NTFS volume",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:44Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:01Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned VHDX, private NTFS bin and detached compaction",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:44Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:10Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned VHD, private NTFS bin and detached compaction",
+              "number": 6,
+              "startedAt": "2026-10-17T05:24:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:11Z",
+              "conclusion": "success",
+              "name": "Preserve private volume evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:24:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:28Z",
+              "conclusion": "success",
+              "name": "Compare raw MFT metadata on a new private NTFS image",
+              "number": 8,
+              "startedAt": "2026-10-17T05:24:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:29Z",
+              "conclusion": "success",
+              "name": "Preserve raw MFT metadata evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:24:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:37Z",
+              "conclusion": "success",
+              "name": "Compare sparse Trash lengths on a fresh owned larger NTFS volume",
+              "number": 10,
+              "startedAt": "2026-10-17T05:24:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:38Z",
+              "conclusion": "success",
+              "name": "Preserve sparse Trash size-boundary evidence",
+              "number": 11,
+              "startedAt": "2026-10-17T05:24:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:38Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 21,
+              "startedAt": "2026-10-17T05:24:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:40Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 22,
+              "startedAt": "2026-10-17T05:24:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:40Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 23,
+              "startedAt": "2026-10-17T05:24:40Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674362"
+        },
+        {
+          "completedAt": "2026-10-17T05:30:50Z",
+          "conclusion": "success",
+          "databaseId": 117318674386,
+          "name": "Windows / Python 3.10",
+          "startedAt": "2026-10-17T05:23:08Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.10",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:51Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:33Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:34Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:30:33Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:34Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:30:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:36Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:30:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:36Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:30:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:37Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:30:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:44Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:30:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:44Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:30:44Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:45Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:30:44Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:46Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:30:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:46Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.10",
+              "number": 27,
+              "startedAt": "2026-10-17T05:30:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:48Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:30:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:48Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:30:48Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674386"
+        },
+        {
+          "completedAt": "2026-10-17T05:32:21Z",
+          "conclusion": "success",
+          "databaseId": 117318674408,
+          "name": "Windows / Python 3.14",
+          "startedAt": "2026-10-17T05:23:06Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:10Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:24Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:24Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.14",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:25:08Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:59Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:25:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:00Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:31:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:01Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:32:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:02Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:32:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:03Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:32:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:03Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:32:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:16Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:32:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:17Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:32:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:17Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:32:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:18Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:32:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:18Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.14",
+              "number": 27,
+              "startedAt": "2026-10-17T05:32:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:20Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:32:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:32:20Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:32:20Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674408"
+        },
+        {
+          "completedAt": "2026-10-17T05:24:06Z",
+          "conclusion": "success",
+          "databaseId": 117318674411,
+          "name": "Qt 6.8 compatibility / windows-latest",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:08Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:15Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:15Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:15Z",
+              "conclusion": "skipped",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:37Z",
+              "conclusion": "success",
+              "name": "Install locked compatibility dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:41Z",
+              "conclusion": "success",
+              "name": "Capture and verify the pinned Qt runtime",
+              "number": 6,
+              "startedAt": "2026-10-17T05:23:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:01Z",
+              "conclusion": "success",
+              "name": "Verify grouped display, owned workers and native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:23:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:02Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 8,
+              "startedAt": "2026-10-17T05:24:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:03Z",
+              "conclusion": "success",
+              "name": "Preserve compatibility runtime and test evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:24:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:03Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 17,
+              "startedAt": "2026-10-17T05:24:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:05Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-10-17T05:24:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:24:05Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-10-17T05:24:05Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674411"
+        },
+        {
+          "completedAt": "2026-10-17T05:29:03Z",
+          "conclusion": "success",
+          "databaseId": 117318674414,
+          "name": "Windows / Python 3.12",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:08Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:14Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:14Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:39Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:49Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:50Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:28:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:51Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:28:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:52Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:28:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:52Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:28:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:52Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:28:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:57Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:28:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:58Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:28:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:28:59Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:28:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:00Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:28:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:00Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 27,
+              "startedAt": "2026-10-17T05:29:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:02Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:29:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:29:02Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:29:02Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674414"
+        },
+        {
+          "completedAt": "2026-10-17T05:31:04Z",
+          "conclusion": "success",
+          "databaseId": 117318674416,
+          "name": "Windows / Python 3.13",
+          "startedAt": "2026-10-17T05:23:07Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:17Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:46Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:49Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:50Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:30:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:50Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:30:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:52Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:30:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:52Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:30:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:53Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:30:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:30:59Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:30:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:00Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:30:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:00Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:31:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:01Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:31:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:01Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 27,
+              "startedAt": "2026-10-17T05:31:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:03Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:31:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:31:03Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:31:03Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674416"
+        },
+        {
+          "completedAt": "2026-10-17T05:23:15Z",
+          "conclusion": "success",
+          "databaseId": 117318674434,
+          "name": "Linux native Trash restore",
+          "startedAt": "2026-10-17T05:23:08Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:23:09Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:23:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:11Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:23:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:11Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:23:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:11Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned restore fixtures",
+              "number": 4,
+              "startedAt": "2026-10-17T05:23:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:13Z",
+              "conclusion": "success",
+              "name": "Preserve restore evidence",
+              "number": 5,
+              "startedAt": "2026-10-17T05:23:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:13Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 9,
+              "startedAt": "2026-10-17T05:23:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:13Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:23:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:23:13Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:23:13Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647/job/117318674434"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39006059647"
+    }
+  },
+  "limits": [
+    "At most two observations. Each retains the unchanged five-second timer, 32 records, 16 threads, 16 nodes and 64 KiB per stream.",
+    "No new target retry, descendant traversal, privilege, native wait flag or ownership relaxation. Original target deadline is used in every wait.",
+    "Native Windows PowerShell Start-Sleep phase fixtures verify two samples and real timeouts, not the cause of the independent CI import/SMB waits.",
+    "UTC phase ordering assumes a stable host UTC clock and is not a monotonic duration or proof of a blocking syscall.",
+    "Initial native harness discarded nonempty stderr before saving; its content cannot be recovered. Corrected probes retain CLIXML progress messages.",
+    "One first full run was intentionally stopped by exact owned PID/parent/command binding with zero direct children before a discovered venv fixture fix. It is not evidence of Qt failure."
+  ]
+}

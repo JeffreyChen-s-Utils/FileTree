@@ -125,26 +125,48 @@ def _finish(observer: _Observer) -> dict:
         return {"status": "observation-failed", "type": type(error).__name__, "message": str(error)[:512]}
 
 
+def _finish_samples(observers: list[_Observer]) -> dict:
+    records = [_finish(observer) for observer in observers]
+    if not records:
+        return {"status": "not-sampled"}
+    return records[0] if len(records) == 1 else {**records[0], "later_samples": records[1:]}
+
+
+def _communicate(process: subprocess.Popen, started: float, timeout: float,
+                 sample_after: float, observers: list[_Observer]) -> tuple[bytes, bytes]:
+    # Leave each fixed five-second observer bound intact; collect it only after the target exits.
+    times = [sample_after]
+    if timeout-5 >= sample_after+5:
+        times.append(timeout-5)
+    for when in times:
+        if when >= timeout:
+            break
+        try:
+            return process.communicate(timeout=max(0, when-(time.monotonic()-started)))
+        except subprocess.TimeoutExpired:
+            if sys.platform == "win32" and process.poll() is None and time.monotonic()-started < timeout:
+                observers.append(_Observer(process.pid))
+    return process.communicate(timeout=max(0, timeout-(time.monotonic()-started)))
+
+
 def run_observed(command: list[str], *, timeout: float, env: dict[str, str] | None = None,
                  check: bool = False, sample_after: float = 5) -> subprocess.CompletedProcess:
-    """Run once; sample only a still-live slow Windows child and retain its actual output/outcome."""
+    """Run once; take at most two still-live Windows samples within the original target deadline.
+
+    Keep the first sample's report shape; an optional later_samples list holds the final-window
+    observation. Result collection follows target exit; every wait uses the original deadline's remainder.
+    """
     started = time.monotonic()
-    observer = None
+    observers: list[_Observer] = []
     observation = {"status": "not-sampled"}
     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env) as process:  # noqa: S603
         try:
-            try:
-                stdout, stderr = process.communicate(timeout=min(timeout, sample_after))
-            except subprocess.TimeoutExpired:
-                if sys.platform == "win32" and process.poll() is None and time.monotonic()-started < timeout:
-                    observer = _Observer(process.pid)
-                stdout, stderr = process.communicate(timeout=max(0, timeout-(time.monotonic()-started)))
+            stdout, stderr = _communicate(process, started, timeout, sample_after, observers)
         except subprocess.TimeoutExpired:
             process.kill()
             stdout, stderr = process.communicate()
             error = subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr)
-            if observer is not None:
-                observation = _finish(observer)
+            observation = _finish_samples(observers)
             error.process_observation = observation
             raise error from None
         except BaseException:
@@ -153,8 +175,8 @@ def run_observed(command: list[str], *, timeout: float, env: dict[str, str] | No
             process.wait()
             raise
         finally:
-            if observer is not None and observation["status"] == "not-sampled":
-                observation = _finish(observer)
+            if observers and observation["status"] == "not-sampled":
+                observation = _finish_samples(observers)
         result = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
         result.process_observation = observation
         if check and result.returncode:

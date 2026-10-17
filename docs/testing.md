@@ -187,7 +187,14 @@ offsets include runtime/script preparation before instrumentation and assume a s
 they are not monotonic durations or proof of a blocking syscall. Raw WCT wait-time fields remain raw.
 
 Both helpers still launch once with their original 30/20-second deadline; the observer starts after
-five seconds and retains its five-second bound, thread/node caps and ownership checks. No permissions,
+five seconds and retains its five-second bound, thread/node caps and ownership checks. A still-live
+target receives at most one later observation five seconds before its original deadline, provided
+the scheduled samples are at least five seconds apart. Deduplicate short schedules and honor the
+requested initial delay. Every communicate subtracts elapsed monotonic time, including observer
+startup; perform normal final observation collection/cleanup only after target exit so pipe joins
+do not delay target termination. Existing partial-start failure cleanup remains synchronous, with
+its cost included in the remaining target budget. Keep the first report unchanged and attach a one-entry `later_samples` list only when
+a second sample actually starts. Caps apply per observer (at most twice the original retained bytes). No permissions,
 cross-process flags, object names, dumps, retries or target-control operations are added. A passing
 run cannot resolve a prior intermittent timeout; the next reproduced failure must supply aligned data.
 
@@ -212,6 +219,19 @@ reader; caller interruptions receive the same cleanup and are re-raised. Tests c
 20-thread Windows child without an early `communicate`, a real 200,000-byte producer on each stream,
 exact retention boundaries, partial read/start errors, interruption and both stop reasons. The existing
 five-second observer timer, 32-record/16-thread/16-node caps, target deadlines and ownership remain.
+
+`test_observed_timeline.py` uses a controlled monotonic clock to exercise both sample windows,
+successful/failed/timeout outcomes, exact retained streams, one launch, no deadline reset, startup
+cost, slow cleanup after target exit, interruption during later startup, short/disabled schedules
+and the maximum two-sample bound. Native PowerShell fixtures bracket early/late sleep phases with
+UTC samples and require two complete sibling observations of the same live process birth under
+Python 3.14 and a Python 3.13 virtual environment, including real 20-second timeouts. These fixtures
+verify later observation capability, not the cause of #100's import wait or #99's native SMB timeout.
+
+The direct native mutex test launches both its target and observer with the base interpreter, so
+the retained Popen PID is the actual waiting process. A separate native comparison retains the
+virtual-environment launcher refusal and the successful direct sibling identities. The original
+production ownership guard remains unchanged.
 
 ## Owned-child timeout fixtures
 

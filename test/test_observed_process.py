@@ -87,9 +87,9 @@ def test_observation_error_does_not_replace_timeout(monkeypatch):
     assert caught.value.stdout == b"" and caught.value.stderr == b""
 
 
-def test_second_wait_uses_remaining_deadline_and_preserves_first_partial_output(monkeypatch):
+def test_all_waits_use_remaining_deadline_and_preserve_first_partial_output(monkeypatch):
     waits, killed = [], []
-    ticks = iter([0, 2, 3, 8])
+    ticks = iter([0, 0, 2, 3, 15, 16])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(ticks))
     monkeypatch.setattr(runner.sys, "platform", "win32")
     monkeypatch.setattr(runner, "_Observer", lambda _pid: SimpleNamespace(finish=lambda: {"status": "test"}))
@@ -119,7 +119,7 @@ def test_second_wait_uses_remaining_deadline_and_preserves_first_partial_output(
     monkeypatch.setattr(runner.subprocess, "Popen", lambda *_args, **_kwargs: Child())
     with pytest.raises(subprocess.TimeoutExpired) as caught:
         runner.run_observed(["owned"], timeout=20)
-    assert waits == [5, 17, None] and killed == [True]
+    assert waits == [5, 12, 4, None] and killed == [True]
     assert caught.value.stdout == b"partial-final" and caught.value.timeout == 20
 
 
@@ -184,6 +184,7 @@ def test_thread_and_node_output_caps_and_native_errors_remain_visible(monkeypatc
 def test_native_observer_reads_only_owned_live_child_and_balances_wait_session():
     assert ctypes.sizeof(native._WaitNode) == 280 and native._WaitNode.object.offset == 8
     script = Path(native.__file__).resolve()
+    executable = getattr(sys, "_base_executable", None) or sys.executable
     child_script = """
 import ctypes as c, sys, threading
 from ctypes import wintypes as w
@@ -204,10 +205,10 @@ worker.join()
 k.CloseHandle(mutex)
 """
     with subprocess.Popen(  # noqa: S603 - fixed owned mutex fixture; no share or existing process touched
-            [sys.executable, "-c", child_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as child:
+            [executable, "-c", child_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as child:
         try:
             result = subprocess.run(  # noqa: S603 - fixed read-only observer and captured owned child
-                [sys.executable, str(script), "--pid", str(child.pid)], capture_output=True, timeout=10, check=True)
+                [executable, str(script), "--pid", str(child.pid)], capture_output=True, timeout=10, check=True)
             records = [json.loads(line) for line in result.stdout.splitlines()]
             assert records[0]["event"] == "identity" and records[0]["pid"] == child.pid
             assert records[0]["parent_pid"] == os.getpid() and records[0]["cpu"]["exited_100ns"] == 0

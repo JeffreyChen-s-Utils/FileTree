@@ -1333,8 +1333,12 @@ never change the existing exit/timeout or step-completion verdict. Receipt read,
 identity comparison have separate markers; buffering zero/one raw outputs preserves the original
 pipeline semantics, guarded by a frozen pre-change function and real PowerShell 5/7 parity cases.
 Both helpers now use `tools/observed_process.run_observed`: one captured child, unchanged 30/20-second
-deadlines and no retry. Only after five seconds of waiting on a still-live Windows child, start a
-separate fixed Python observer using the runtime's base interpreter when available. This avoids a
+deadlines and no retry. After five seconds of waiting on a still-live Windows child, start a
+fixed Python observer. If the target remains live, take at most one later sample five seconds before
+the original deadline, only when at least five seconds separate the scheduled samples. Every wait
+subtracts elapsed monotonic time. Collect observer results only after the target exits, preserving
+the first report shape and adding an optional one-entry `later_samples` list. Both observers use the
+runtime's base interpreter when available. This avoids a
 Windows virtual-environment launcher's extra parent; the observer uses only the standard library.
 Two readers drain its stdout/stderr concurrently, retaining at most 64 KiB per stream and discarding
 overflow while reporting truncation; this prevents pipe capacity from stopping the bounded capture.
@@ -1348,7 +1352,7 @@ querying, refusing recycled/foreign IDs. Use no cross-process traversal flags, o
 memory dumps, privilege changes, debugger attachment or target mutation. The observer emits each
 record immediately and has its own five-second kill timer, so a stalled native diagnostic cannot
 hold up helper termination. Retain partial/error/truncation status separately from actual helper
-exit, output and timeout; the second communicate uses only the original deadline's remainder.
+exit, output and timeout; every communicate uses only the original deadline's remainder.
 Access-denied, unsupported waits and missing observations remain unknown, never successful proof.
 WCT query entry/return and record emission also carry UTC FILETIME samples, allowing later phase
 correlation without interpreting `wait_time_raw` as elapsed wall time. UTC resolution, clock changes
