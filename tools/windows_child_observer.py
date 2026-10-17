@@ -8,11 +8,13 @@ from ctypes import wintypes as w
 import json
 import os
 import sys
+import time
 
 _THREAD_LIMIT = 16
 _NODE_LIMIT = 16
 _NO_MORE_FILES = 18
 _THREAD_KIND = 8
+_UNIX_EPOCH_FILETIME = 116444736000000000
 
 
 class _ProcessEntry(c.Structure):
@@ -120,8 +122,10 @@ def _chain(native: _Native, session: int, pid: int, tid: int) -> dict:
 def _wait(native: _Native, session: int, tid: int) -> dict:
     nodes = (_WaitNode * _NODE_LIMIT)()
     count, cycle = w.DWORD(_NODE_LIMIT), w.BOOL()
+    before = _filetime()
     complete = bool(native.wait(session, 0, 0, tid, c.byref(count), nodes, c.byref(cycle)))
     error = 0 if complete else c.get_last_error()
+    after = _filetime()
     records = []
     for node in nodes[:min(count.value, _NODE_LIMIT)] if complete or error in (234, 565) else []:
         record = {"kind": node.kind, "status": node.status}
@@ -130,7 +134,8 @@ def _wait(native: _Native, session: int, tid: int) -> dict:
             record.update(pid=thread.pid, tid=thread.tid, wait_time_raw=thread.wait_ms, switches=thread.switches)
         records.append(record)
     return {"tid": tid, "complete": complete, "error": error, "cycle": bool(cycle.value),
-            "required_nodes": count.value, "nodes": records}
+            "required_nodes": count.value, "nodes": records,
+            "query_before_filetime_100ns": before, "query_after_filetime_100ns": after}
 
 
 def observe(pid: int) -> None:
@@ -158,8 +163,12 @@ def observe(pid: int) -> None:
 
 
 def _emit(value: dict) -> None:
-    sys.stdout.write(json.dumps(value, separators=(",", ":")) + "\n")
+    sys.stdout.write(json.dumps({**value, "emitted_filetime_100ns": _filetime()}, separators=(",", ":")) + "\n")
     sys.stdout.flush()
+
+
+def _filetime() -> int:
+    return _UNIX_EPOCH_FILETIME + time.time_ns() // 100
 
 
 def main() -> None:

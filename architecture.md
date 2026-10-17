@@ -1303,6 +1303,13 @@ matrix always uploads `windows-mocked-share-script-<python>` for seven days. Its
 runs once with a 20-second deadline, explicit module imports and SMB-command mocks; complete markers
 cannot turn a timeout into success. A missing first marker only establishes that no harness-entry
 marker was captured. These records do not establish the cause of a native SMB disconnect wait.
+`Start-DisconnectClock` and the mocked harness bracket their separate Stopwatch starts with UTC
+FILETIME samples in `FILETREE_SMB_CLOCK` / `FILETREE_TEST_CLOCK` records. `windows_trace_clock`
+keeps missing/invalid/ambiguous origins explicit and computes creation-to-origin integer offsets
+only when the already observed child PID, identity PID and creation time agree. Clock failures
+never change the existing exit/timeout or step-completion verdict. Receipt read, JSON parse and
+identity comparison have separate markers; buffering zero/one raw outputs preserves the original
+pipeline semantics, guarded by a frozen pre-change function and real PowerShell 5/7 parity cases.
 Both helpers now use `tools/observed_process.run_observed`: one captured child, unchanged 30/20-second
 deadlines and no retry. Only after five seconds of waiting on a still-live Windows child, start a
 separate fixed Python observer. Its Toolhelp parent check accepts only a sibling child of the same
@@ -1314,6 +1321,9 @@ record immediately and has its own five-second kill timer, so a stalled native d
 hold up helper termination. Retain partial/error/truncation status separately from actual helper
 exit, output and timeout; the second communicate uses only the original deadline's remainder.
 Access-denied, unsupported waits and missing observations remain unknown, never successful proof.
+WCT query entry/return and record emission also carry UTC FILETIME samples, allowing later phase
+correlation without interpreting `wait_time_raw` as elapsed wall time. UTC resolution, clock changes
+and instrumentation overhead limit that correlation; deadlines still use the original monotonic clock.
 Reviewed native SMB proof at `5034a0c` records four complete UNC/mapped one/four-worker parity
 cases across 1,026 files, matching 4,096-byte allocation units, four denied-listing cases, and a
 real share removal after six files were observed. The latter records 254 errors/incomplete coverage

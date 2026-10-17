@@ -15,6 +15,7 @@ import pytest
 
 from tools import windows_share_probe as probe
 from tools.observed_process import run_observed
+from tools.windows_trace_clock import trace_clock
 
 _SOURCE = Path(__file__).resolve().parents[1] / "tools/validate_windows_share.ps1"
 _PHASE_PREFIX = "FILETREE_TEST_PHASE "
@@ -24,7 +25,12 @@ _EXPECTED_PHASES = [("entry", "completed"), ("import-modules", "started"), ("imp
                     ("run-case", "started"), ("run-case", "completed")]
 _PREAMBLE = r"""
 $ErrorActionPreference = 'Stop'
+$script:TestClockBefore = [DateTime]::UtcNow.ToFileTimeUtc()
 $script:TestClock = [Diagnostics.Stopwatch]::StartNew()
+$script:TestClockAfter = [DateTime]::UtcNow.ToFileTimeUtc()
+$script:TestOrigin = 'FILETREE_TEST_CLOCK {{"pid":{0},"before_filetime_100ns":{1},"after_filetime_100ns":{2}}}' -f (
+    $PID, $script:TestClockBefore, $script:TestClockAfter)
+[Console]::Error.WriteLine($script:TestOrigin)
 $script:TestSequence = 0
 function Write-TestPhase([string]$phase, [string]$event) {
     $script:TestSequence += 1
@@ -45,7 +51,7 @@ $ast = [Management.Automation.Language.Parser]::ParseFile(SOURCE, [ref]$tokens, 
 if ($parseErrors.Count) { throw $parseErrors[0] }
 Write-TestPhase 'parse-source' 'completed'
 Write-TestPhase 'extract-helpers' 'started'
-$wanted = @('Write-DisconnectStep', 'Confirm-OwnedRoot', 'Remove-OwnedShare', 'Invoke-Probe')
+$wanted = @('Start-DisconnectClock', 'Write-DisconnectStep', 'Confirm-OwnedRoot', 'Remove-OwnedShare', 'Invoke-Probe')
 foreach ($name in $wanted) {
     $definition = $ast.FindAll({ param($item)
         $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -eq $name
@@ -56,7 +62,7 @@ foreach ($name in $wanted) {
 Write-TestPhase 'extract-helpers' 'completed'
 $DisconnectOnly = $true
 $script:DisconnectSequence = 0
-$script:DisconnectClock = [Diagnostics.Stopwatch]::StartNew()
+Start-DisconnectClock
 Write-TestPhase 'run-case' 'started'
 """
 
@@ -133,6 +139,7 @@ def _run(shell, script, evidence):
         if isinstance(failure, OSError):
             record["start_error"] = str(failure)[:2048]
     record["harness"] = _phase_record(record["stderr"])
+    record["harness"]["clock"] = trace_clock(record["stderr"], "FILETREE_TEST_CLOCK ", record["process_observation"])
     data = None
     if record["outcome"] == "completed":
         try:
@@ -188,13 +195,15 @@ catch { $refused = $true }
     assert data == {"refused": changed != "none", "lookups": 0 if changed == "sid" else 1,
                     "removals": 1 if changed == "none" else 0}
     assert not record["invalid_step_records"]
+    assert record["clock"]["status"] in ("origin-only", "aligned-origin")
+    assert record["harness"]["clock"]["status"] in ("origin-only", "aligned-origin")
     if changed == "none":
         assert record["trace_complete"]
         assert [step["event"] for step in record["steps"] if step["step"] == "remove-owned-share"] == [
             "started", "completed"]
     else:
         assert record["steps"][-1]["event"] == "started"
-        assert record["steps"][-1]["step"] == ("owner-receipt" if changed == "sid" else "share-ownership")
+        assert record["steps"][-1]["step"] == ("receipt-identity" if changed == "sid" else "share-ownership")
 
 
 @pytest.mark.parametrize("status", [0, 7])
@@ -221,3 +230,66 @@ try { Invoke-Probe 'disconnect' } catch { $refused = $true }
     assert data["refused"] is bool(status) and data["saves"] == 1 and data["preference"] is True
     assert data["proof"]["phase"] == ("failed" if status else "disconnect")
     assert data["proof"]["disconnect"]["helper"]["outcome"] == "timeout"
+
+
+def test_receipt_staging_preserves_baseline_empty_invalid_and_utf8_semantics(shell, tmp_path, evidence):
+    parent = tmp_path / "receipt space's"
+    root = parent / ("filetree-smb-" + uuid.uuid4().hex)
+    (root / "sources").mkdir(parents=True)
+    share = "ftscan-" + root.name.removeprefix("filetree-smb-")
+    valid = {"root": str(root), "share": share, "sid": "runner"}
+    payloads = {"valid": json.dumps(valid), "bom": "\ufeff" + json.dumps(valid),
+                "unicode": json.dumps({**valid, "note": "\u6536\u64da"}, ensure_ascii=False),
+                "empty": "", "null": "null", "array": "[]", "broken": "{", "missing": "{}",
+                "sid": json.dumps({**valid, "sid": "different"})}
+    cases = ",\n".join("@{ name=" + _literal(name) + "; text=" + _literal(text) + " }"
+                        for name, text in payloads.items())
+    baseline = _SOURCE.parents[1] / "test/fixtures/windows_confirm_owned_root_before_clock.ps1"
+    assert hashlib.sha256(baseline.read_bytes().replace(b"\r\n", b"\n")).hexdigest() == (
+        "dc3c357f85918d18b9b9e47727eec1871c0c004ae50d44c01cd53a37a686299a")
+    script = r"""
+$env:RUNNER_TEMP = PARENT
+$identity = [pscustomobject]@{ User = [pscustomobject]@{ Value = 'runner' } }
+$fixture = ROOT
+$tokens = $null; $errors = $null
+$old = [Management.Automation.Language.Parser]::ParseFile(BASELINE, [ref]$tokens, [ref]$errors)
+if ($errors.Count) { throw 'Invalid baseline function' }
+$definition = $old.FindAll({ param($item)
+    $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -eq 'Confirm-OwnedRoot'
+}, $true)
+if ($definition.Count -ne 1) { throw 'Ambiguous baseline function' }
+. ([scriptblock]::Create($definition[0].Extent.Text.Replace('function Confirm-OwnedRoot(',
+                                                         'function Confirm-OwnedRootBaseline(')))
+$results = foreach ($case in @(CASES)) {
+    [IO.File]::WriteAllText((Join-Path $fixture 'owner.json'), $case.text, [Text.UTF8Encoding]::new($false))
+    $oldError = ''; $newError = ''; $oldReceipt = $null; $newReceipt = $null
+    try { $oldReceipt = Confirm-OwnedRootBaseline $fixture } catch { $oldError = $_.Exception.GetType().FullName }
+    try { $newReceipt = Confirm-OwnedRoot $fixture } catch { $newError = $_.Exception.GetType().FullName }
+    @{ name=$case.name; old_refused=($oldError -ne ''); new_refused=($newError -ne '')
+       same_error=($oldError -eq $newError)
+       same_receipt=(($oldReceipt | ConvertTo-Json -Compress) -eq ($newReceipt | ConvertTo-Json -Compress)) }
+}
+ConvertTo-Json -InputObject @($results) -Compress
+"""
+    values = {"PARENT": _literal(parent), "ROOT": _literal(root), "BASELINE": _literal(baseline), "CASES": cases}
+    script = re.sub(r"\b(PARENT|ROOT|BASELINE|CASES)\b", lambda match: values[match[0]], script)
+    data, _record = _run(shell, script, evidence)
+    assert len(data) == len(payloads)
+    for result in data:
+        assert result["same_error"] and result["same_receipt"]
+        assert result["old_refused"] is result["new_refused"] is (result["name"] not in {"valid", "bom", "unicode"})
+
+
+def test_native_clock_brackets_match_same_process_birth_units(shell, evidence):
+    script = r"""
+$process = [Diagnostics.Process]::GetCurrentProcess()
+try {
+    @{ pid=$PID; created_filetime_100ns=$process.StartTime.ToUniversalTime().ToFileTimeUtc() } |
+        ConvertTo-Json -Compress
+} finally { $process.Dispose() }
+"""
+    data, record = _run(shell, script, evidence)
+    for clock in (record["clock"], record["harness"]["clock"]):
+        origin = clock["origin"]
+        assert origin["pid"] == data["pid"]
+        assert data["created_filetime_100ns"] <= origin["before_filetime_100ns"] <= origin["after_filetime_100ns"]

@@ -193,6 +193,8 @@ k.CloseHandle(mutex)
             records = [json.loads(line) for line in result.stdout.splitlines()]
             assert records[0]["event"] == "identity" and records[0]["pid"] == child.pid
             assert records[0]["parent_pid"] == os.getpid() and records[0]["cpu"]["exited_100ns"] == 0
+            created = records[0]["cpu"]["created_100ns"]
+            assert all(record["emitted_filetime_100ns"] >= created for record in records)
             assert records[1]["count"] > 0
             chains = [record for record in records if record["event"] == "chain"]
             assert chains or records[-1]["event"] == "wait-session-error"
@@ -200,6 +202,9 @@ k.CloseHandle(mutex)
                 if chain.get("nodes"):
                     assert chain["nodes"][0]["pid"] == child.pid
                 assert len(chain.get("nodes", [])) <= 16
+                if "query_before_filetime_100ns" in chain:
+                    assert created <= chain["query_before_filetime_100ns"] <= chain["query_after_filetime_100ns"]
+                    assert chain["query_after_filetime_100ns"] <= chain["emitted_filetime_100ns"]
         finally:
             stdout, _stderr = child.communicate(b"release\n", timeout=5)
         assert stdout.strip() == b"ready" and child.returncode == 0

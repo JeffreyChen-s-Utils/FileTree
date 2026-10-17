@@ -83,3 +83,32 @@ native output, verifies bytes/identity and records cleanup even on failure. It r
 The macOS CI job runs it after the original three APFS samples, including when an earlier step fails,
 and retains `macos-evidence/literal-open-file.json`. This verifies the native query backend without
 warming or mounting an image before those samples; actual final-busy capture and recovery remain #96.
+
+## PowerShell clock evidence
+
+The native disconnect helper emits `FILETREE_SMB_CLOCK`; the mocked helper harness additionally emits
+`FILETREE_TEST_CLOCK`. Each contains the actual shell PID and UTC samples immediately before/after
+its own Stopwatch start. Existing step/phase record schemas stay intact. Receipt processing now has
+separate `receipt-read`, `receipt-parse` and `receipt-identity` markers. The same Get-Content options,
+JSON conversion and ownership comparisons remain, with zero/one raw outputs captured before parsing.
+A frozen original function verifies empty, null, array, malformed, missing, wrong-SID, ordinary,
+BOM and Unicode receipts on each available PowerShell runtime. SMB commands remain mocked in tests.
+
+`windows_trace_clock` reports missing/invalid/ambiguous origins explicitly. It supplies integer
+`creation_to_origin_100ns` offsets only when the previously captured owned-child observation and
+identity PID match the clock PID and include a valid creation time. A sample without birth metadata
+retains its origin without inventing startup time. An origin before creation is inconsistent.
+Clock metadata does not change native exit/timeout or existing trace-completion decisions.
+
+The wait observer records UTC samples around each WCT query and at record emission. These share the
+[Windows FILETIME epoch used by DateTime](https://learn.microsoft.com/en-us/dotnet/api/system.datetime.tofiletimeutc)
+and [process creation times](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesstimes).
+The Python observer converts integer Unix nanoseconds to those units. Units do not imply measurement
+precision: UTC changes/resolution and diagnostic overhead can limit ordering. Creation-to-clock
+offsets include runtime/script preparation before instrumentation and assume a stable host UTC clock;
+they are not monotonic durations or proof of a blocking syscall. Raw WCT wait-time fields remain raw.
+
+Both helpers still launch once with their original 30/20-second deadline; the observer starts after
+five seconds and retains its five-second bound, thread/node caps and ownership checks. No permissions,
+cross-process flags, object names, dumps, retries or target-control operations are added. A passing
+run cannot resolve a prior intermittent timeout; the next reproduced failure must supply aligned data.

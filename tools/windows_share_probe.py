@@ -22,12 +22,14 @@ from je_file_tree.core.coverage import coverage_of  # noqa: E402
 from je_file_tree.core.scanner import ACCESS_DENIED, ScanOptions, ScanResult, scan  # noqa: E402
 from tools.windows_owned_volume import require  # noqa: E402
 from tools.observed_process import run_observed  # noqa: E402
+from tools.windows_trace_clock import trace_clock  # noqa: E402
 
 _BRANCHES = 256
 _OPTIONS = ScanOptions(workers=1, file_times=True, exact_windows_allocation=True)
 _OUTPUT_LIMIT = 65536
 _STEP_PREFIX = "FILETREE_SMB_STEP "
 _STEP_NAMES = {"runner-guard", "identity-check", "root-scope", "owner-receipt", "share-presence",
+               "receipt-read", "receipt-parse", "receipt-identity",
                "owned-share-lookup", "share-ownership", "remove-owned-share", "helper-complete",
                *(f"owned-entry-{number}" for number in range(1, 5))}
 
@@ -83,7 +85,9 @@ def _helper_record(result, started: float) -> dict:
             "elapsed_seconds": round(time.monotonic()-started, 6), "stdout": stdout, "stderr": stderr,
             "stdout_truncated": out_truncated, "stderr_truncated": err_truncated,
             "steps": steps, "invalid_step_records": invalid, "trace_complete": complete,
-            "process_observation": getattr(result, "process_observation", {"status": "not-sampled"})}
+            "process_observation": getattr(result, "process_observation", {"status": "not-sampled"}),
+            "clock": trace_clock(stderr, "FILETREE_SMB_CLOCK ",
+                                 getattr(result, "process_observation", {"status": "not-sampled"}))}
 
 
 def _owned(args) -> Path:

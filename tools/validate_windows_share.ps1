@@ -6,7 +6,15 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $script:DisconnectSequence = 0
-if ($DisconnectOnly) { $script:DisconnectClock = [Diagnostics.Stopwatch]::StartNew() }
+function Start-DisconnectClock {
+    $before = [DateTime]::UtcNow.ToFileTimeUtc()
+    $script:DisconnectClock = [Diagnostics.Stopwatch]::StartNew()
+    $after = [DateTime]::UtcNow.ToFileTimeUtc()
+    $line = 'FILETREE_SMB_CLOCK {{"pid":{0},"before_filetime_100ns":{1},"after_filetime_100ns":{2}}}' -f (
+        $PID, $before, $after)
+    [Console]::Error.WriteLine($line)
+}
+if ($DisconnectOnly) { Start-DisconnectClock }
 function Write-DisconnectStep([string]$step, [string]$event) {
     if (-not $DisconnectOnly) { return }
     $script:DisconnectSequence += 1
@@ -45,11 +53,18 @@ function Confirm-OwnedRoot([string]$root) {
         Write-DisconnectStep ('owned-entry-' + $entryNumber) 'completed'
     }
     Write-DisconnectStep 'owner-receipt' 'started'
-    $receipt = Get-Content -LiteralPath (Join-Path $resolved 'owner.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    Write-DisconnectStep 'receipt-read' 'started'
+    $receiptText = @(Get-Content -LiteralPath (Join-Path $resolved 'owner.json') -Raw -Encoding UTF8)
+    Write-DisconnectStep 'receipt-read' 'completed'
+    Write-DisconnectStep 'receipt-parse' 'started'
+    $receipt = $receiptText | ConvertFrom-Json
+    Write-DisconnectStep 'receipt-parse' 'completed'
+    Write-DisconnectStep 'receipt-identity' 'started'
     if ($receipt.root -ne $resolved -or $receipt.sid -ne $identity.User.Value -or
         $receipt.share -ne ('ftscan-' + [IO.Path]::GetFileName($resolved).Substring(13))) {
         throw 'SMB fixture receipt differs.'
     }
+    Write-DisconnectStep 'receipt-identity' 'completed'
     Write-DisconnectStep 'owner-receipt' 'completed'
     return $receipt
 }
