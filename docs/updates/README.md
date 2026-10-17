@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-71 | 2026-10-17 | Hosted confirmation: UTF-8 clipboard publication and PowerShell warm-up | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261017-70 | 2026-10-17 | Publish copied rows as UTF-8 bytes instead of a converted string | #snapshot #performance #gui #clipboard | [2026-10-d](2026-10-d.md) |
 | U-20261017-69 | 2026-10-17 | Warm-up without SYSTEMROOT off Windows | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-68 | 2026-10-17 | macOS unit tests never read the host's unified log | #incident #tests #ci #macos | [2026-10-d](2026-10-d.md) |
