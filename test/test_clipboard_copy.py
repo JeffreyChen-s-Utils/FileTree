@@ -285,6 +285,7 @@ def test_a_copy_started_by_a_publication_observer_survives_the_older_completion(
 
 def test_clipboard_change_during_row_encoding_does_not_write_to_closed_buffer(qapp, monkeypatch, clipboard):
     from je_file_tree.gui import clipboard_copy
+    monkeypatch.setattr(transfer, '_CHUNK_SECONDS', 10)  # reach a row even if the heading uses the real budget
     view, _model = _view(100)
     capture = _start(view)
     original, armed = clipboard_copy.spreadsheet_text, [True]

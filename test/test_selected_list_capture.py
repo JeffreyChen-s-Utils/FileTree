@@ -206,7 +206,8 @@ def test_change_while_preparing_ranges_discards_stream_and_preserves_existing_fi
     view.deleteLater()
 
 
-def test_reentrant_data_change_cannot_repopulate_canceled_rows_or_restart_timer(qapp):
+def test_reentrant_data_change_cannot_repopulate_canceled_rows_or_restart_timer(qapp, monkeypatch):
+    monkeypatch.setattr(transfer, '_CHUNK_SECONDS', 10)  # one chunk must reach the row on a slow runner too
     class Changing(QStandardItemModel):
         armed = False
 
