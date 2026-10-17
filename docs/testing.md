@@ -308,9 +308,10 @@ class, failure and residual window is recorded in `cleanup`.
 If scope cannot be verified before Qt destruction, the fresh helper reports failure and exits without
 Qt finalization or station switching; the outer driver retains that nonzero result. Reserving a new
 report path prevents overwriting old evidence. The always-run artifact step retains JSON/logs even
-on native failure; the job/step bounds remain 10/3 minutes. Native proof is pending #111 until the
-hosted artifacts establish all these assertions. Modeled boundary tests and offscreen recording
-tests are not native proof, interactive clipboard-manager contention, settled frames, or input latency.
+on native failure; the job/step bounds remain 10/3 minutes. Hosted runs 39037318629 and 39038187983
+established all these assertions for both widths (U-20261017-53). Modeled boundary tests and
+offscreen recording tests are not native proof, interactive clipboard-manager contention, settled
+frames, or input latency.
 
 ## Workflow command scalars
 
