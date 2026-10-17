@@ -1542,6 +1542,16 @@ Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI tes
 match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
 one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
 
+An independent Qt 6.8 compatibility matrix runs the grouped display, keeper/estimate, photo and
+list-capture regressions on Windows and Linux with Python 3.13. Its wheel-only hash lock is
+`.github/requirements/qt68.txt`; `tools/compile_qt68_lock.py` regenerates it from the regular test
+pins, preserving non-Qt versions and markers while applying the four explicit Qt 6.8.3 overrides.
+The regular test/runtime locks keep their current Qt. A preflight writes the observed Python/Qt
+versions, threshold capability and lock digest, then refuses a mismatched or modern Qt runtime.
+Always-run artifacts retain that observation and JUnit results on both runners. The two-group,
+20k-member regression bounds synchronous index callbacks before allowing Qt's event-pass layout;
+it therefore catches the old visibility walk rather than depending on wall-clock timing.
+
 ## 7. Design constraints
 
 - Scanning speed, measured on an SSD with a warm cache: 62,000 files in 0.67 s with 4 threads (1.27 s with

@@ -307,3 +307,36 @@ def test_retranslation_notifies_headers_and_every_repeated_keeper_name_only(qapp
         assert model.index(1, 0, model.index(0, 0)).data() == extra.name
     finally:
         i18n.set_language(language)
+
+
+def test_size_updates_avoid_synchronous_wide_view_index_walks(qapp, monkeypatch):
+    model = GroupedListModel()
+    view = grouped_list.build_view(model)
+    view.setAttribute(Qt.WA_DontShowOnScreen)
+    view.resize(900, 400)
+    nodes = [Node(str(row), False, size=1536) for row in range(20_000)]
+    try:
+        grouped_list.fill(model, view, [("first", nodes[:10_000]), ("second", nodes[10_000:])], "auto")
+        view.show()
+        qapp.processEvents()
+        current = model.index(9999, 0, model.index(1, 0))
+        view.setCurrentIndex(current)
+        pinned = QPersistentModelIndex(current)
+        qapp.processEvents()
+        calls = []
+        original = model.index
+
+        def counted(*args, **kwargs):
+            calls.append(True)
+            return original(*args, **kwargs)
+
+        monkeypatch.setattr(model, "index", counted)
+        model.set_unit("MB")
+        assert len(calls) < 200
+        qapp.processEvents()
+        assert pinned.isValid() and view.currentIndex() == pinned and pinned.data(NODE_ROLE) is nodes[-1]
+        assert model.index(9999, 1, model.index(1, 0)).data() == "0.0 MB"
+        assert model.rowCount(model.index(0, 0)) == model.rowCount(model.index(1, 0)) == 10_000
+    finally:
+        view.setModel(None)
+        view.close()
