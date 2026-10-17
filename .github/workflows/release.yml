@@ -100,7 +100,7 @@ jobs:
           git push origin "v$NEW"
 
       - name: Keep the PyPI files for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: pypi-dist
           path: dist/
@@ -233,7 +233,7 @@ jobs:
           publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
 
       - name: Keep the MSI for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-msi
           path: FileTree-*-windows-x64.msi
@@ -250,14 +250,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Package draft archive failed.' }
 
       - name: Keep review drafts without submitting to package stores
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-package-drafts
           path: FileTree-*-package-drafts.zip
           if-no-files-found: error
 
       - name: Keep the standalone ZIP for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-standalone
           path: FileTree-*-windows-standalone.zip

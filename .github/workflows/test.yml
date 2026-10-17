@@ -38,7 +38,7 @@ jobs:
         exit $LASTEXITCODE
     - name: Preserve private clipboard proof including refusals
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-private-clipboard
         path: |
@@ -62,7 +62,7 @@ jobs:
       run: python -m tools.measure_powershell_startup --output powershell-startup.json
     - name: Preserve start-up samples
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-powershell-startup
         path: powershell-startup.json
@@ -87,7 +87,7 @@ jobs:
       run: ./tools/validate_msi.ps1 -DisposableRunner
     - name: Preserve native installer evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-msi
         path: |
@@ -117,7 +117,7 @@ jobs:
         run: python3.11 tools/validate_freebsd_mounts.py --disposable-vm --output freebsd-mounts.json
     - name: Preserve native FreeBSD proof including failures
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: freebsd-native-mounts
         path: freebsd-mounts.json
@@ -144,7 +144,7 @@ jobs:
       run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
     - name: Preserve pytest native context
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: pytest-context-macos
         path: build/pytest-context/
@@ -189,7 +189,7 @@ jobs:
       run: python -m tools.validate_macos_busy_observer --output macos-evidence/literal-open-file.json
     - name: Preserve macOS evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: macos-native-sources
         path: macos-evidence/
@@ -219,7 +219,7 @@ jobs:
       run: python tools/validate_windows_volume.py --kind vhd --output windows-volume-vhd.json
     - name: Preserve private volume evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-private-volume
         path: |
@@ -233,7 +233,7 @@ jobs:
       run: python tools/validate_mft.py --output windows-mft.json
     - name: Preserve raw MFT metadata evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-mft
         path: windows-mft.json
@@ -245,7 +245,7 @@ jobs:
       run: python tools/validate_windows_sparse_trash.py --output windows-sparse-trash-2gib.json
     - name: Preserve sparse Trash size-boundary evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-sparse-trash-2gib
         path: windows-sparse-trash-2gib.json
@@ -266,7 +266,7 @@ jobs:
       run: ./tools/validate_windows_share.ps1 -DisposableRunner
     - name: Preserve native SMB proof including failures
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-native-share
         path: windows-share.json
@@ -288,7 +288,7 @@ jobs:
       run: python tools/validate_linux_restore.py --output linux-restore.json
     - name: Preserve restore evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: linux-native-restore
         path: linux-restore.json
@@ -311,7 +311,7 @@ jobs:
         docker run --rm --user "$(id -u):$(id -g)" --memory=1g --cpus=2 -v "$PWD:/workspace:ro" -v "$PWD/desktop-evidence:/evidence" filetree-desktop-probe 2>&1 | tee desktop-evidence/probe.log
     - name: Preserve desktop evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: linux-desktop-evidence
         path: desktop-evidence/
@@ -363,7 +363,7 @@ jobs:
       run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
     - name: Preserve pytest native context
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: pytest-context-windows-${{ matrix.python-version }}
         path: build/pytest-context/
@@ -372,7 +372,7 @@ jobs:
 
     - name: Preserve mocked PowerShell helper evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-mocked-share-script-${{ matrix.python-version }}
         path: build/share-script-evidence/
@@ -389,7 +389,7 @@ jobs:
       run: python tools/validate_background.py --evidence background-evidence
     - name: Preserve native background evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-background-${{ matrix.python-version }}
         path: background-evidence/
@@ -397,7 +397,7 @@ jobs:
         retention-days: 7
     - name: Preserve native change-feed evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-change-watch-${{ matrix.python-version }}
         path: |
@@ -407,7 +407,7 @@ jobs:
         retention-days: 7
     - name: Preserve compression evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: windows-compression-${{ matrix.python-version }}
         path: windows-compression.json
@@ -474,7 +474,7 @@ jobs:
         test/test_pytest_context.py test/test_measure_grouped_layout.py
     - name: Preserve pytest native context
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: pytest-context-qt68-${{ matrix.os }}
         path: build/pytest-context/
@@ -482,7 +482,7 @@ jobs:
         retention-days: 7
     - name: Preserve compatibility runtime and test evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: qt68-${{ matrix.os }}
         path: |
@@ -516,7 +516,7 @@ jobs:
       run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
     - name: Preserve pytest native context
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: pytest-context-linux
         path: build/pytest-context/
@@ -530,7 +530,7 @@ jobs:
       run: python tools/validate_autostart.py --output autostart.json
     - name: Preserve native change-feed evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: linux-change-watch
         path: |
@@ -540,7 +540,7 @@ jobs:
         retention-days: 7
     - name: Preserve volume evidence
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: linux-volume-evidence
         path: volume-evidence/
