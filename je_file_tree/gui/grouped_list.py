@@ -26,6 +26,8 @@ from je_file_tree.gui.tree_model import NODE_ROLE
 COLUMNS = ("column_name", "column_size", "column_folder", "column_modified")
 _COLUMN_WIDTHS = {0: 200, 1: 80, 3: 125}
 _FOLDER_COLUMN = 2
+# Native 500/1k uniform text groups benefit; few/thumbnail groups can be slower (U-20261017-32).
+_BATCHED_EXPANSION_MINIMUM = 500
 _RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 _GROUP_FLAGS = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 _ENTRY_FLAGS = _GROUP_FLAGS | Qt.ItemFlag.ItemNeverHasChildren
@@ -288,6 +290,8 @@ def fill(model: GroupedListModel, view: QTreeView, groups: Sequence[tuple[str, S
     for column, width in _COLUMN_WIDTHS.items():
         view.setColumnWidth(column, width)
     view.header().setSectionResizeMode(_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
+    if icons is None and view.uniformRowHeights() and model.rowCount() >= _BATCHED_EXPANSION_MINIMUM:
+        view.scheduleDelayedItemsLayout()
     for row in range(model.rowCount()):
         view.expand(model.index(row, 0))
 

@@ -36,24 +36,39 @@ def test_checked_failure_preserves_observation_and_actual_exit(monkeypatch):
     assert _helper_record(caught.value, time.monotonic())["process_observation"] is observed
 
 
-def test_timeout_keeps_all_output_once_reaps_child_and_does_not_retry(monkeypatch):
+@pytest.mark.parametrize("startup_delay", [0, .7])
+def test_timeout_keeps_all_output_once_reaps_child_and_does_not_retry(monkeypatch, tmp_path, startup_delay):
     seen = []
     original = runner.subprocess.Popen
+    ready = tmp_path / "output-flushed"
+    command = [sys.executable, "-c", "import time,sys;from pathlib import Path;time.sleep(float(sys.argv[2]));"
+               "print('once',flush=True);print('error',file=sys.stderr,flush=True);"
+               "Path(sys.argv[1]).touch();time.sleep(30)", str(ready), str(startup_delay)]
+    # Prepare emitted bytes before the runner's unchanged .5 s communication deadline.
+    with original(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as child:  # noqa: S603
+        try:
+            deadline = time.monotonic() + 10
+            while not ready.exists():
+                assert child.poll() is None and time.monotonic() < deadline, "Owned child never signaled flushed output"
+                time.sleep(.01)
 
-    def launch(*args, **kwargs):
-        process = original(*args, **kwargs)
-        seen.append(process)
-        return process
+            def launch(actual_command, **kwargs):
+                assert actual_command == command
+                assert kwargs == {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE, "env": None}
+                seen.append(child)
+                return child
 
-    monkeypatch.setattr(runner.subprocess, "Popen", launch)
-    monkeypatch.setattr(runner, "_Observer", lambda _pid: SimpleNamespace(finish=lambda: {"status": "test"}))
-    command = [sys.executable, "-c", "import time,sys;print('once',flush=True);"
-               "print('error',file=sys.stderr,flush=True);time.sleep(30)"]
-    with pytest.raises(subprocess.TimeoutExpired) as caught:
-        runner.run_observed(command, timeout=.5, sample_after=.1)
-    assert caught.value.timeout == .5
-    assert caught.value.stdout.strip() == b"once" and caught.value.stderr.strip() == b"error"
-    assert len(seen) == 1 and seen[0].poll() is not None
+            monkeypatch.setattr(runner.subprocess, "Popen", launch)
+            monkeypatch.setattr(runner, "_Observer", lambda _pid: SimpleNamespace(finish=lambda: {"status": "test"}))
+            with pytest.raises(subprocess.TimeoutExpired) as caught:
+                runner.run_observed(command, timeout=.5, sample_after=.1)
+            assert caught.value.timeout == .5
+            assert caught.value.stdout.strip() == b"once" and caught.value.stderr.strip() == b"error"
+            assert len(seen) == 1 and seen[0].poll() is not None
+        finally:
+            if child.poll() is None:
+                child.kill()
+            child.wait()
 
 
 def test_observation_error_does_not_replace_timeout(monkeypatch):
@@ -67,6 +82,7 @@ def test_observation_error_does_not_replace_timeout(monkeypatch):
         runner.run_observed([sys.executable, "-c", "import time;time.sleep(30)"], timeout=.3, sample_after=.05)
     record = _helper_record(caught.value, time.monotonic())
     assert record["outcome"] == "timeout" and record["process_observation"]["status"] == "observation-failed"
+    assert caught.value.stdout == b"" and caught.value.stderr == b""
 
 
 def test_second_wait_uses_remaining_deadline_and_preserves_first_partial_output(monkeypatch):

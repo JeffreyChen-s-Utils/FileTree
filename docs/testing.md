@@ -28,6 +28,12 @@ or an input-latency guarantee. The tool checks source identities, every row, mem
 current/persistent indexes, collapsed first group, name-column width and scroll clamping. It returns
 nonzero on a failed check, detaches its view and restores the previous language even if an update fails.
 
+Record native header and viewport geometry independently before/after translation. They can change
+with the translated text's native size hint; macOS has reported header height 19 → 16 with a matching
+viewport adjustment. Equal geometry is not a platform-independent invariant. Tests compare recorded
+geometry with actual native observations and deliberately resize the header to guard this case;
+they retain callback counting, complete-row/state checks and ordinary Qt layout behavior.
+
 Qt's native header notification can schedule a full item layout even when visible geometry stays
 unchanged: see [the Qt 6.8 connection](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview.cpp),
 [private layout scheduling](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview_p.h)
@@ -149,3 +155,17 @@ Both helpers still launch once with their original 30/20-second deadline; the ob
 five seconds and retains its five-second bound, thread/node caps and ownership checks. No permissions,
 cross-process flags, object names, dumps, retries or target-control operations are added. A passing
 run cannot resolve a prior intermittent timeout; the next reproduced failure must supply aligned data.
+
+## Owned-child timeout fixtures
+
+The post-output timeout test prepares one real child and waits, for at most ten seconds, for its owned
+receipt written after both output streams are flushed. It then supplies that captured child once at
+the Popen boundary, keeping the tested 0.5-second communication deadline and 0.1-second sample point.
+It checks exact launch arguments, exact streams, one request and reaping, with cleanup even on fixture
+failure. A deliberate 0.7-second first-emission delay verifies that preparation is independent of
+the communication deadline. A separate real no-output child must retain empty streams and its timeout.
+
+This corrects an unsynchronized test assumption; empty historical stdout alone does not establish a
+startup delay or output loss. The production runner still starts its clock before Popen, launches
+once and uses the remaining deadline. Its modeled remaining-time checks and native helpers' original
+30/20-second execution bounds and five-second observation bounds remain unchanged.

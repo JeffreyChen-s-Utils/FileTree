@@ -5,7 +5,7 @@ from __future__ import annotations
 import weakref
 
 import pytest
-from PySide6.QtCore import QPersistentModelIndex, Qt
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtTest import QAbstractItemModelTester
 
@@ -337,6 +337,111 @@ def test_size_updates_avoid_synchronous_wide_view_index_walks(qapp, monkeypatch)
         assert pinned.isValid() and view.currentIndex() == pinned and pinned.data(NODE_ROLE) is nodes[-1]
         assert model.index(9999, 1, model.index(1, 0)).data() == "0.0 MB"
         assert model.rowCount(model.index(0, 0)) == model.rowCount(model.index(1, 0)) == 10_000
+    finally:
+        view.setModel(None)
+        view.close()
+
+
+class _CountedFillModel(GroupedListModel):
+    def __init__(self):
+        super().__init__()
+        self.index_calls = 0
+
+    def index(self, row, column, parent=QModelIndex()):  # noqa: B008
+        self.index_calls += 1
+        return super().index(row, column, parent)
+
+
+@pytest.mark.parametrize("shown", [False, True])
+def test_group_expansion_batches_layout_without_dropping_rows_or_notifications(qapp, shown):
+    model = _CountedFillModel()
+    view = grouped_list.build_view(model)
+    view.setAttribute(Qt.WA_DontShowOnScreen)
+    view.resize(900, 400)
+    group_count, members = 500, 40
+    groups = [(str(group), [Node(f"{group}-{row}", False) for row in range(members)])
+              for group in range(group_count)]
+    expanded = []
+    view.expanded.connect(lambda index: expanded.append(index.row()))
+    try:
+        if shown:
+            view.show()
+            qapp.processEvents()
+        for _ in range(2):
+            previous = QPersistentModelIndex(model.index(members - 1, 0, model.index(group_count - 1, 0)))
+            expanded.clear()
+            model.index_calls = 0
+            grouped_list.fill(model, view, groups, "auto")
+            handler_calls = model.index_calls
+            assert handler_calls < group_count * members
+            assert expanded == list(range(group_count))
+            assert all(view.isExpanded(model.index(row, 0)) for row in range(group_count))
+            view.show()
+            qapp.processEvents()
+            assert not previous.isValid()
+            assert model.rowCount() == group_count
+            assert all(model.rowCount(model.index(row, 0)) == members for row in range(group_count))
+            last = model.index(members - 1, 0, model.index(group_count - 1, 0))
+            assert last.data(NODE_ROLE) is groups[-1][1][-1]
+            assert all(view.isFirstColumnSpanned(row, QModelIndex()) for row in range(group_count))
+            view.scrollTo(last)
+            qapp.processEvents()
+            assert view.visualRect(last).intersects(view.viewport().rect())
+    finally:
+        view.setModel(None)
+        view.close()
+
+
+def test_group_expansion_keeps_reentrant_native_geometry_and_collapse_requests(qapp):
+    model = GroupedListModel()
+    view = grouped_list.build_view(model)
+    view.setAttribute(Qt.WA_DontShowOnScreen)
+    view.show()
+    qapp.processEvents()
+    calls = []
+
+    def expanded(index):
+        calls.append(index.row())
+        view.visualRect(index)
+        if index.row() == 499:
+            view.collapse(model.index(0, 0))
+
+    view.expanded.connect(expanded)
+    try:
+        nodes = [Node(str(row), False) for row in range(4)]
+        groups = [("first", nodes[:2]), *[(str(row), []) for row in range(1, 499)], ("last", nodes[2:])]
+        grouped_list.fill(model, view, groups, "MB")
+        assert calls == list(range(500))
+        assert not view.isExpanded(model.index(0, 0)) and view.isExpanded(model.index(499, 0))
+        qapp.processEvents()
+        assert not view.isExpanded(model.index(0, 0)) and view.isExpanded(model.index(499, 0))
+        assert model.index(1, 0, model.index(499, 0)).data(NODE_ROLE) is nodes[-1]
+        grouped_list.fill(model, view, [], "auto")
+        qapp.processEvents()
+        assert model.rowCount() == 0 and calls == list(range(500))
+    finally:
+        view.setModel(None)
+        view.close()
+
+
+@pytest.mark.parametrize("group_count,uniform,icons", [
+    (0, True, None), (1, True, None), (2, True, None), (3, True, None), (500, False, None), (500, True, {}),
+])
+def test_unbatched_groups_keep_original_expansion(qapp, monkeypatch, group_count, uniform, icons):
+    model = GroupedListModel()
+    view = grouped_list.build_view(model)
+    view.setUniformRowHeights(uniform)
+
+    def unexpected():
+        pytest.fail("Small/variable-height/thumbnail groups do not justify extra delayed layout")
+
+    monkeypatch.setattr(view, "scheduleDelayedItemsLayout", unexpected)
+    try:
+        grouped_list.fill(model, view, [(str(row), [Node(str(row), False)]) for row in range(group_count)],
+                          "B", icons=icons)
+        assert model.rowCount() == group_count
+        assert all(view.isExpanded(model.index(row, 0)) for row in range(group_count))
+        qapp.processEvents()
     finally:
         view.setModel(None)
         view.close()

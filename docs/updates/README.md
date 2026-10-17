@@ -68,6 +68,9 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-34 | 2026-10-17 | Synchronize emitted-output timeout fixtures without extending deadlines | #incident #testing #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-33 | 2026-10-17 | Retain native header geometry changes in the layout diagnostic | #incident #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-32 | 2026-10-17 | Coalesce native layout while opening grouped results | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-31 | 2026-10-17 | Isolate grouped header layout work across native Qt runtimes | #snapshot #performance #qt | [2026-10-d](2026-10-d.md) |
 | U-20261017-30 | 2026-10-17 | Verify native literal-file reporting and retain an empty helper timeout | #snapshot #ci #apfs #windows | [2026-10-d](2026-10-d.md) |
 | U-20261017-29 | 2026-10-17 | Align PowerShell phase origins with owned-child timing | #snapshot #diagnostics #windows | [2026-10-d](2026-10-d.md) |

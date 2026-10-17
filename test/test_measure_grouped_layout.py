@@ -34,6 +34,13 @@ def test_probe_counts_deferred_queries_on_the_actual_view_model(qapp, monkeypatc
 
     apply = probe._apply
     queried = []
+    geometry = probe._geometry
+    observed_geometry = []
+
+    def capture_geometry(view):
+        result = geometry(view)
+        observed_geometry.append(result)
+        return result
 
     def delayed_query(model, operation, captured):
         apply(model, operation, captured)
@@ -45,10 +52,29 @@ def test_probe_counts_deferred_queries_on_the_actual_view_model(qapp, monkeypatc
         QTimer.singleShot(0, query)
 
     monkeypatch.setattr(probe, "_apply", delayed_query)
+    monkeypatch.setattr(probe, "_geometry", capture_geometry)
     headers = measure(qapp, "headers", 2, 20)
     assert headers["handler_calls"] == {"index": 0, "flags": 0}
     assert headers["event_passes"][0]["cumulative_calls"]["index"] >= 1 and len(queried) == 1
-    assert headers["geometry_before"] == headers["geometry_after"]
+    assert [headers["geometry_before"], headers["geometry_after"]] == observed_geometry
+
+
+def test_probe_records_native_header_height_changes_without_clamping_the_view(qapp, monkeypatch):
+    from tools import measure_grouped_layout as probe
+
+    apply = probe._apply
+
+    def grow_header(model, operation, captured):
+        captured.view.header().setMinimumHeight(captured.view.header().height() + 9)
+        apply(model, operation, captured)
+
+    monkeypatch.setattr(probe, "_apply", grow_header)
+    result = measure(qapp, "headers", 2, 9)
+    before, after = result["geometry_before"], result["geometry_after"]
+    assert after["header"][3] >= before["header"][3] + 9
+    assert after["viewport"][1] > before["viewport"][1]
+    assert after["viewport"][3] < before["viewport"][3]
+    assert result["verified"] and result["notifications"] == {"headers": 1, "data": 0, "resets": 0}
 
 
 def test_uncounted_probe_uses_ordinary_model_and_preserves_single_group_selection(qapp):
