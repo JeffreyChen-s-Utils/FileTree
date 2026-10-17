@@ -40,7 +40,7 @@ def _consumer(scope: PrivateStation) -> subprocess.Popen:
 
 
 def _instrument(app, scope: PrivateStation, state: dict) -> object:
-    from PySide6.QtCore import QMimeData, QObject, QTimer, Signal  # noqa: PLC0415 - only after scope verification
+    from PySide6.QtCore import QObject, QTimer, Signal  # noqa: PLC0415 - import only after scope verification
     from PySide6.QtWidgets import QApplication  # noqa: PLC0415
 
     scope.check()
@@ -49,20 +49,13 @@ def _instrument(app, scope: PrivateStation, state: dict) -> object:
     class Publication(QObject):
         dataChanged = Signal()  # noqa: N815 - QClipboard-compatible proxy over the real private clipboard
 
-        def setText(self, text):  # noqa: N802
+        def setMimeData(self, mime):  # noqa: N802
             scope.check()
-            print("FILETREE_CLIPBOARD_PHASE set-text-start", flush=True)
-            # QClipboard.setText is setMimeData with a text QMimeData; timing the halves separately
-            # attributes the pause to Qt string conversion or native publication (#95).
+            print("FILETREE_CLIPBOARD_PHASE publish-start", flush=True)
             started = time.perf_counter()
-            mime = QMimeData()
-            mime.setText(text)
-            converted = time.perf_counter()
-            board.setMimeData(mime)  # the clipboard takes ownership
-            finished = time.perf_counter()
-            state.update(set_text_ms=(finished-started)*1000, mime_text_ms=(converted-started)*1000,
-                         publish_ms=(finished-converted)*1000, text=text, characters=len(text))
-            print("FILETREE_CLIPBOARD_PHASE set-text-complete", flush=True)
+            board.setMimeData(mime)  # the clipboard takes ownership; its bytes are read only in _verify
+            state.update(publish_ms=(time.perf_counter()-started)*1000, published=mime)
+            print("FILETREE_CLIPBOARD_PHASE publish-complete", flush=True)
             QTimer.singleShot(0, state["start_consumer"])
 
     proxy = Publication(app)
@@ -84,11 +77,11 @@ def _capture_class(state: dict):
             super()._chunk()
             state["callbacks_ms"].append((time.perf_counter()-started)*1000)
 
-        def encoded_text(self):
+        def encoded_utf8(self):
             started = time.perf_counter()
-            text = super().encoded_text()
+            data = super().encoded_utf8()
             state["extract_ms"] = (time.perf_counter()-started)*1000
-            return text
+            return data
 
     return TimedCapture
 
@@ -124,7 +117,13 @@ def _read_result(process: subprocess.Popen, state: dict, scope: PrivateStation) 
 
 def _verify(state: dict, model, root, nodes) -> None:
     from je_file_tree.core.export import spreadsheet_text  # noqa: PLC0415
+    from je_file_tree.gui.clipboard_copy import UTF8_TEXT  # noqa: PLC0415
 
+    # Read the published bytes only now, after the timed loop, so decoding never shows as a GUI pause.
+    published = state.get("published")
+    require(published is not None and published.formats() == [UTF8_TEXT], "Copy was not published as UTF-8 text")
+    state["text"] = bytes(published.data(UTF8_TEXT)).decode("utf-8")
+    state["characters"] = len(state["text"])
     expected = (state["header"], *state["rows"])
     reader = csv.reader(io.StringIO(state["text"]), delimiter="\t")
     count = 0
@@ -162,7 +161,7 @@ def _clear(app, scope, state, view, proxy, readers) -> None:
 
 def _public_state(state: dict) -> dict:
     return {key: value for key, value in state.items() if key not in
-            {"board", "text", "rows", "header", "start_consumer"}}
+            {"board", "text", "rows", "header", "start_consumer", "published"}}
 
 
 def _timers(loop, pulse):

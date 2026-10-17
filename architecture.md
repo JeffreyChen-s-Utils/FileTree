@@ -508,13 +508,17 @@ and never restarts a timer or publishes partial text. Current-list CSV sends tex
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
 Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
 before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
-`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row during the existing
-cooperative capture turns. One application-owned controller supersedes pending copies across all
+`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row as UTF-8 bytes during the
+existing cooperative capture turns and publishes them as `text/plain;charset=utf-8` through
+`QClipboard.setMimeData`, so no multi-megabyte `str` is converted to a QString on the GUI thread;
+Qt decodes the bytes only for a reader that asks (U-20261017-70). An `atexit` hook hands a copy that is
+still on the clipboard back to Qt as text before interpreter shutdown: Qt destroying the Python-created
+QMimeData during finalization would otherwise crash the process. One application-owned controller supersedes pending copies across all
 views, rejects stale/reentrant replies, and publishes only complete current results on the GUI thread.
 Observed clipboard changes, application exit, view/ancestor close and explicit top-level hide cancel
 pending preparation; the temporary event filter never consumes events. Finished/canceled captures
 close their text buffers. The public synchronous `copy_table` helper retains its original contract.
-Final string extraction and native clipboard access remain synchronous and cannot be preempted;
+Final byte extraction and native clipboard access remain synchronous and cannot be preempted;
 yielding preparation does not establish that the whole operation or custom callbacks are pause-free.
 
 Native clipboard measurement is isolated in `tools.measure_clipboard_tail` and

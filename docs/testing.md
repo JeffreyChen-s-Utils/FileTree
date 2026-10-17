@@ -125,7 +125,7 @@ exercise deep ancestors and parent columns, and check cancellation preserves exi
 them in both pinned Qt 6.8 lanes as well as the full matrix.
 
 The time budget is cooperative: an individual model/Qt API, opaque custom selection callback,
-final string extraction or native clipboard access may still block. Native performance probes must run
+final byte extraction or native clipboard access may still block. Native performance probes must run
 sequentially without a concurrent local full test suite, retain rejected prototypes and every sample,
 and distinguish first-turn/one-heartbeat observations from total capture and end-to-end input latency.
 
@@ -346,13 +346,12 @@ Python lpDesktop attribute is not used. A desktop-metadata-only local probe veri
 under both Python runtimes; it calls no clipboard API and is not private clipboard readback proof.
 Compare the complete text hash after Windows CRLF normalization and decode/check every quoted,
 formula-safe Unicode row against the capture. Preserve source identities/selection and all rows.
-Record every capture callback and 5 ms heartbeat interval, final StringIO extraction, native Qt
-setText call (split into `mime_text_ms` for the QMimeData text conversion and `publish_ms` for
-`QClipboard.setMimeData`, which is what `setText` does), consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
+Record every capture callback and 5 ms heartbeat interval, final UTF-8 byte extraction
+(`extract_ms`), the native `QClipboard.setMimeData` publication (`publish_ms`), consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
 reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
 deadline apply only to the probe and do not change production copy behavior. Keep partial output,
 return codes and cleanup failures; nonempty diagnostic stderr alone is not failure. A reader start
-that setText queued but that runs only after cleanup began is recorded as `late_consumer_start` and
+that publication queued but that runs only after cleanup began is recorded as `late_consumer_start` and
 never launched, so no reader outlives the probe unreported.
 
 Stop/join only the retained reader, clear only the guarded private clipboard, destroy Qt while the
