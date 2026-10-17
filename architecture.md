@@ -1364,7 +1364,9 @@ reaps the observer and closes both pipes; caller interruptions are cleaned up an
 Its Toolhelp parent check still accepts only a sibling child of the same
 parent, whose original Popen handle is still retained. Read process CPU/creation times and at most
 16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
-querying, refusing recycled/foreign IDs. Use no cross-process traversal flags, object names,
+querying, refusing recycled/foreign IDs. Before the wait chains, name at most the newest 160 loaded
+modules in load order from a read-only Toolhelp module snapshot (file names only, U-20261017-54), so
+a stall's pending load is visible. Use no cross-process traversal flags, object names,
 memory dumps, privilege changes, debugger attachment or target mutation. The observer emits each
 record immediately and has its own five-second kill timer, so a stalled native diagnostic cannot
 hold up helper termination. Retain partial/error/truncation status separately from actual helper

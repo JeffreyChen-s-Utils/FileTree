@@ -186,6 +186,12 @@ precision: UTC changes/resolution and diagnostic overhead can limit ordering. Cr
 offsets include runtime/script preparation before instrumentation and assume a stable host UTC clock;
 they are not monotonic durations or proof of a blocking syscall. Raw WCT wait-time fields remain raw.
 
+Each sample also emits one `modules` record after the thread list: the count and at most the newest
+160 module file names in load order from a read-only Toolhelp snapshot, with `truncated` and any
+native `error` kept. #100's reproduction (U-20261017-51) stalled idle at start-up and in the first
+`ConvertFrom-Json` with no WCT-attributable owner; the newest names show what was loading then. A
+module name is an observation, not a cause: loading can finish between the snapshot and the wait.
+
 Both helpers still launch once with their original 30/20-second deadline; the observer starts after
 five seconds and retains its five-second bound, thread/node caps and ownership checks. A still-live
 target receives at most one later observation five seconds before its original deadline, provided

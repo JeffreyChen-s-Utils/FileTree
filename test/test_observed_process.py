@@ -172,17 +172,51 @@ def test_thread_and_node_output_caps_and_native_errors_remain_visible(monkeypatc
     monkeypatch.setattr(native, "_entries", lambda _api, threads: (
         [(123, tid) for tid in range(100)] if threads else [(123, os.getppid(), 100)]))
     monkeypatch.setattr(native, "_cpu", lambda *_args: {"error": 5})
+    monkeypatch.setattr(native, "_modules", lambda _api, pid: {"event": "modules", "error": 5, "pid": pid})
     monkeypatch.setattr(native, "_emit", emitted.append)
     monkeypatch.setattr(native, "_chain", lambda _api, _session, _pid, tid: queried.append(tid) or {"error": 5})
     native.observe(123)
     assert queried == list(range(16))
     assert emitted[1] == {"event": "threads", "count": 100, "truncated": True}
+    assert emitted[2] == {"event": "modules", "error": 5, "pid": 123}  # before any wait query
     assert emitted[0]["cpu"] == {"error": 5} and emitted[-1]["event"] == "complete"
+
+
+def _module_api(names, error):
+    state = {"position": 0, "closed": []}
+
+    def step(_handle, entry):
+        if state["position"] >= len(names):
+            return 0
+        entry._obj.name = names[state["position"]]
+        state["position"] += 1
+        return 1
+    api = SimpleNamespace(snapshot=lambda flags, pid: 77 if (flags, pid) == (0x18, 123) else 0,
+                          module_first=step, module_next=step, close=state["closed"].append)
+    return api, state
+
+
+@pytest.mark.parametrize(("count", "error", "extra"), [(3, 18, {}), (170, 18, {}), (2, 299, {"error": 299})])
+def test_module_snapshot_keeps_newest_names_and_reports_native_errors(monkeypatch, count, error, extra):
+    names = [f"m{index}.dll" for index in range(count)]
+    api, state = _module_api(names, error)
+    monkeypatch.setattr(native.c, "get_last_error", lambda: error, raising=False)
+    record = native._modules(api, 123)
+    assert record == {"event": "modules", "count": count, "truncated": count > 160, "names": names[-160:], **extra}
+    assert state["closed"] == [77]
+
+
+def test_module_snapshot_failure_is_recorded_without_reading_entries(monkeypatch):
+    monkeypatch.setattr(native.c, "get_last_error", lambda: 5, raising=False)
+    api = SimpleNamespace(snapshot=lambda *_args: ctypes.c_void_p(-1).value,
+                          module_first=lambda *_args: pytest.fail("Read an unopened snapshot"))
+    assert native._modules(api, 123) == {"event": "modules", "error": 5}
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="native Windows owned-child wait-chain ABI")
 def test_native_observer_reads_only_owned_live_child_and_balances_wait_session():
     assert ctypes.sizeof(native._WaitNode) == 280 and native._WaitNode.object.offset == 8
+    assert ctypes.sizeof(native._ModuleEntry) == (1080 if ctypes.sizeof(ctypes.c_void_p) == 8 else 1064)
     script = Path(native.__file__).resolve()
     executable = getattr(sys, "_base_executable", None) or sys.executable
     child_script = """
@@ -215,6 +249,9 @@ k.CloseHandle(mutex)
             created = records[0]["cpu"]["created_100ns"]
             assert all(record["emitted_filetime_100ns"] >= created for record in records)
             assert records[1]["count"] > 0
+            modules = records[2]
+            assert modules["event"] == "modules" and "error" not in modules and not modules["truncated"]
+            assert any(name.lower().startswith("python") for name in modules["names"])
             chains = [record for record in records if record["event"] == "chain"]
             assert chains or records[-1]["event"] == "wait-session-error"
             for chain in chains:

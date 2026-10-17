@@ -11,6 +11,8 @@ import sys
 import time
 
 _THREAD_LIMIT = 16
+_MODULE_LIMIT = 160  # newest names in load order; a stall's pending load is at the end
+_SNAP_MODULES = 0x8 | 0x10  # TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32
 _NODE_LIMIT = 16
 _NO_MORE_FILES = 18
 _THREAD_KIND = 8
@@ -26,6 +28,12 @@ class _ProcessEntry(c.Structure):
 class _ThreadEntry(c.Structure):
     _fields_ = [("size", w.DWORD), ("usage", w.DWORD), ("tid", w.DWORD), ("pid", w.DWORD),
                 ("priority", w.LONG), ("delta", w.LONG), ("flags", w.DWORD)]
+
+
+class _ModuleEntry(c.Structure):
+    _fields_ = [("size", w.DWORD), ("module_id", w.DWORD), ("pid", w.DWORD), ("global_usage", w.DWORD),
+                ("process_usage", w.DWORD), ("base", c.c_void_p), ("base_size", w.DWORD), ("handle", w.HMODULE),
+                ("name", w.WCHAR * 256), ("path", w.WCHAR * 260)]
 
 
 class _Lock(c.Structure):
@@ -60,6 +68,8 @@ class _Native:
         self.process_next = _api(kernel, "Process32NextW", [w.HANDLE, c.POINTER(_ProcessEntry)], w.BOOL)
         self.thread_first = _api(kernel, "Thread32First", [w.HANDLE, c.POINTER(_ThreadEntry)], w.BOOL)
         self.thread_next = _api(kernel, "Thread32Next", [w.HANDLE, c.POINTER(_ThreadEntry)], w.BOOL)
+        self.module_first = _api(kernel, "Module32FirstW", [w.HANDLE, c.POINTER(_ModuleEntry)], w.BOOL)
+        self.module_next = _api(kernel, "Module32NextW", [w.HANDLE, c.POINTER(_ModuleEntry)], w.BOOL)
         self.open_process = _api(kernel, "OpenProcess", [w.DWORD, w.BOOL, w.DWORD], w.HANDLE)
         self.open_thread = _api(kernel, "OpenThread", [w.DWORD, w.BOOL, w.DWORD], w.HANDLE)
         self.thread_pid = _api(kernel, "GetProcessIdOfThread", [w.HANDLE], w.DWORD)
@@ -89,6 +99,26 @@ def _entries(native: _Native, threads: bool) -> list:
     finally:
         native.close(handle)
     return values
+
+
+def _modules(native: _Native, pid: int) -> dict:
+    """Name the target's loaded modules, in load order, from a read-only Toolhelp snapshot."""
+    handle = native.snapshot(_SNAP_MODULES, pid)
+    if handle == c.c_void_p(-1).value:
+        return {"event": "modules", "error": c.get_last_error()}
+    entry = _ModuleEntry()
+    entry.size = c.sizeof(entry)
+    names = []
+    try:
+        exists = native.module_first(handle, c.byref(entry))
+        while exists:
+            names.append(entry.name)
+            exists = native.module_next(handle, c.byref(entry))
+        error = c.get_last_error()
+    finally:
+        native.close(handle)
+    return {"event": "modules", "count": len(names), "truncated": len(names) > _MODULE_LIMIT,
+            "names": names[-_MODULE_LIMIT:], **({"error": error} if error != _NO_MORE_FILES else {})}
 
 
 def _cpu(native: _Native, pid: int) -> dict:
@@ -150,6 +180,7 @@ def observe(pid: int) -> None:
            "reported_threads": matches[0][2]})
     tids = sorted(tid for owner, tid in _entries(native, True) if owner == pid)
     _emit({"event": "threads", "count": len(tids), "truncated": len(tids) > _THREAD_LIMIT})
+    _emit(_modules(native, pid))
     session = native.open_wait(0, None)
     if not session:
         _emit({"event": "wait-session-error", "error": c.get_last_error()})

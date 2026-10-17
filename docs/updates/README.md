@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-54 | 2026-10-17 | Name the loaded modules in each slow-child sample | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-53 | 2026-10-17 | Native private-station clipboard tail verified on hosted Windows | #done #clipboard #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261017-52 | 2026-10-17 | Make the WINFUNCTYPE import test portable | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-51 | 2026-10-17 | #100 reproduced: idle native wait at start-up and in receipt-parse | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
