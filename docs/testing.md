@@ -167,6 +167,17 @@ follows descendants or accepts a grandparent in place of the actual parent. Test
 Windows environment and a base-interpreter target held until observation ends, requiring its actual
 controller PID in the native identity record. A healthy observation does not establish a timeout cause.
 
+Observer stdout and stderr are drained concurrently from launch, with at most 64 KiB retained for each
+stream. Readers keep draining overflow so the child cannot block on an anonymous pipe before its
+bounded WCT capture finishes; truncation stays explicit. Finish joins the observer, both readers and
+its canceled timer, closes the pipes and retains partial records without inventing completion.
+Read errors are reported separately in `capture_errors`, preserving the observer's actual exit.
+Partial reader-start failure reaps only that observer and closes both streams, including an unstarted
+reader; caller interruptions receive the same cleanup and are re-raised. Tests cover a real owned
+20-thread Windows child without an early `communicate`, a real 200,000-byte producer on each stream,
+exact retention boundaries, partial read/start errors, interruption and both stop reasons. The existing
+five-second observer timer, 32-record/16-thread/16-node caps, target deadlines and ownership remain.
+
 ## Owned-child timeout fixtures
 
 The post-output timeout test prepares one real child and waits, for at most ten seconds, for its owned

@@ -1,6 +1,7 @@
 """Owned-child diagnostics preserve native outcomes and cannot extend/retry helper execution."""
 
 import ctypes
+import io
 import json
 import os
 from pathlib import Path
@@ -247,11 +248,15 @@ def test_observer_start_failure_keeps_helper_outcome(monkeypatch):
 def test_observer_output_caps_invalid_json_and_cancellation_do_not_invent_completion(monkeypatch):
     killed = []
     process = SimpleNamespace(poll=lambda: None, kill=lambda: killed.append(True), returncode=-1,
-                              communicate=lambda: (b'bad\n[]\n{"event":"identity"}\n' + b'x'*70000, b'e'*70000))
+                              wait=lambda: -1)
     observer = runner._Observer.__new__(runner._Observer)
     observer.pid = 123
-    observer.process, observer.timer = process, SimpleNamespace(cancel=lambda: None)
+    observer.process, observer.timer = process, SimpleNamespace(cancel=lambda: None, ident=None)
     observer.stop_reason = None
+    observer.captures = [runner._PipeCapture(io.BytesIO(data)) for data in
+                         (b'bad\n[]\n{"event":"identity"}\n' + b'x'*70000, b'e'*70000)]
+    for capture in observer.captures:
+        capture.thread.start()
     record = observer.finish()
     assert killed == [True] and record["stop_reason"] == "parent-finished"
     assert record["records"] == [{"event": "identity"}] and record["invalid_records"] == 3
@@ -280,7 +285,7 @@ with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, st
     observer = None
     try:
         observer = _Observer(target.pid)
-        observer.process.communicate(timeout=10)
+        observer.process.wait(timeout=10)
         observation = observer.finish()
         print(json.dumps({'parent_pid': os.getpid(), 'target_pid': target.pid,
                           'executable': sys.executable, 'base_executable': sys._base_executable,
@@ -315,10 +320,11 @@ def test_observer_uses_runtime_base_executable_with_original_hidden_flags_and_ti
 
     def launch(command, **kwargs):
         calls.append((command, kwargs))
-        return SimpleNamespace(poll=lambda: 0, returncode=0, communicate=lambda: (b"", b""))
+        return SimpleNamespace(poll=lambda: 0, returncode=0, wait=lambda: 0,
+                               stdout=io.BytesIO(), stderr=io.BytesIO())
 
     def timer(seconds, callback, args):
-        result = SimpleNamespace(start=lambda: None, cancel=lambda: None)
+        result = SimpleNamespace(start=lambda: None, cancel=lambda: None, ident=None)
         timers.append((seconds, callback, args, result))
         return result
 

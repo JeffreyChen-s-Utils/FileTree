@@ -1320,6 +1320,11 @@ Both helpers now use `tools/observed_process.run_observed`: one captured child, 
 deadlines and no retry. Only after five seconds of waiting on a still-live Windows child, start a
 separate fixed Python observer using the runtime's base interpreter when available. This avoids a
 Windows virtual-environment launcher's extra parent; the observer uses only the standard library.
+Two readers drain its stdout/stderr concurrently, retaining at most 64 KiB per stream and discarding
+overflow while reporting truncation; this prevents pipe capacity from stopping the bounded capture.
+Finish cancels/joins the timer, stops/joins only the observer if still live, joins readers and closes
+their streams, retaining partial output and separate read errors. Partial reader-start failure also
+reaps the observer and closes both pipes; caller interruptions are cleaned up and re-raised.
 Its Toolhelp parent check still accepts only a sibling child of the same
 parent, whose original Popen handle is still retained. Read process CPU/creation times and at most
 16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
