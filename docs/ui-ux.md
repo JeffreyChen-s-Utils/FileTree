@@ -32,6 +32,12 @@ waiting without inventing a completion percentage or implying that an incomplete
   minimum widths do not squeeze the chart's tree pane; the active page retains its control minimum.
   Selected-folder list scope stays above the views. A short hint explains when whole-scan analysis
   lists will become available.
+- **Result lists:** folder columns in Largest files, Search, type locations, Clean up and Duplicates
+  elide from the left so the nearest folders stay visible; names keep middle elision to retain their
+  extension, and full paths remain in tooltips. Share bars use a more opaque highlight on dark surfaces.
+  Empty lists explain themselves: Problems says a complete scan read every entry (nothing while
+  scanning or after a stop, which did not read everything), and Largest files says nothing matches a
+  filter or type/age focus. Chart breadcrumbs draw on the pane's own background.
 - **Chart legends:** keep each color marker and translated category/age label in one nonwrapping
   label and flow complete entries onto new rows as the pane narrows. Inherit fonts and theme ink;
   expose literal accessible names. Do not add invisible word joiners to labels: they trigger slow
@@ -71,6 +77,8 @@ traversal or disk queries. `ResultNavigation` copies at most nine page labels/vi
 timer remain on the GUI thread; scanning, discovery, validation and analysis retain their workers.
 No nested event loop, blocking join, new storage query or native filesystem call is added by these
 presentation components. Existing worker cancellation and source-operation exclusion remain intact.
+`EmptyHint` reads only its view's row count when the model announces a change, and its label is
+transparent to the mouse, so the view keeps every click, selection and context menu.
 
 `test/test_ui_ux.py` covers five-language counters, unit changes, stopped/unreadable coverage,
 keyboard/sidebar/dropdown synchronization, comparison visibility, selected-folder scope, slow-read

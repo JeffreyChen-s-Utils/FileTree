@@ -20,6 +20,7 @@ from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QTreeView
 
 from je_file_tree.core.formatting import format_size, format_time
 from je_file_tree.core.node import Node
+from je_file_tree.gui.delegates import PathTailDelegate
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.tree_model import NODE_ROLE
 
@@ -272,6 +273,7 @@ def build_view(model: GroupedListModel) -> QTreeView:
     view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
     view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
     view.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+    view.setItemDelegateForColumn(_FOLDER_COLUMN, PathTailDelegate(view))
     view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     view.header().setStretchLastSection(False)
     # Qt 6.9+: repaint the bounded viewport instead of inspecting every changed row (U-20261017-23).

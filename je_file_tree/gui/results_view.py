@@ -67,7 +67,8 @@ from je_file_tree.gui.age_colours import AGE_COLOURS, UNKNOWN_AGE_COLOUR
 from je_file_tree.gui.charts import MODES as CHART_MODES
 from je_file_tree.gui.charts import SUNBURST, TREE, TREEMAP, ChartStack
 from je_file_tree.gui.chart_legend import ChartLegend
-from je_file_tree.gui.delegates import ShareBarDelegate
+from je_file_tree.gui.delegates import PathTailDelegate, ShareBarDelegate
+from je_file_tree.gui.empty_hint import EmptyHint
 from je_file_tree.gui.breadcrumbs import Breadcrumbs
 from je_file_tree.gui.cleanup_panel import CleanupPanel
 from je_file_tree.gui.duplicates_panel import DuplicatesPanel
@@ -625,7 +626,8 @@ class ResultsView(QWidget):
         for column, width in _LARGEST_COLUMN_WIDTHS.items():
             table.setColumnWidth(column, width)
         header.setSectionResizeMode(_LARGEST_FOLDER_COLUMN, QHeaderView.ResizeMode.Stretch)
-        table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # the end of a path says the most
+        table.setTextElideMode(Qt.TextElideMode.ElideMiddle)  # names keep their extension
+        table.setItemDelegateForColumn(_LARGEST_FOLDER_COLUMN, PathTailDelegate(table))  # the nearest folders
         table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         return table, proxy
 
@@ -725,6 +727,8 @@ class ResultsView(QWidget):
         self.changes.failed.connect(self.compare_failed)
         self._problems_bar = _row(self._problems_hint, self._elevate_button)
         self.tabs.addTab(_column(self._problems_bar, self.problems_table), "")
+        self._empty_hints = (EmptyHint(self.problems_table, self._problems_empty_text),
+                             EmptyHint(self.largest_table, self._largest_empty_text))
         self.tabs.addTab(self.users, "")
         self.tabs.currentChanged.connect(lambda index: self.users.set_active(index == USERS_TAB))
         for view in (self.tree, self.largest_table, self.search_table, self.types_table, self.age_table,
@@ -807,7 +811,7 @@ class ResultsView(QWidget):
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column, width in ((1, 95), (2, 60), (3, 80)):
             self.type_locations_table.setColumnWidth(column, width)
-        self.type_locations_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self.type_locations_table.setItemDelegateForColumn(0, PathTailDelegate(self.type_locations_table))
         self._type_locations_label = QLabel()
         self._type_locations_pane = _column(self._type_locations_label, self.type_locations_table)
         self._type_locations_pane.hide()
@@ -1084,6 +1088,17 @@ class ResultsView(QWidget):
         self._legend.set_items(self._legend_items())
         self.summary.setText(self._summary_text())
         self._update_overview()
+        for hint in self._empty_hints:
+            hint.refresh()
+
+    def _problems_empty_text(self) -> str:
+        """Reassure only about a complete scan: a running or stopped one has not read everything."""
+        return tr("problems_none") if self._outcome is not None and not self._outcome.partial else ""
+
+    def _largest_empty_text(self) -> str:
+        if self._largest_filter.text() or self._focus is not None:
+            return tr("search_none")
+        return tr("largest_none") if self._outcome is not None else ""
 
     def _summary_text(self) -> str:
         outcome = self._outcome

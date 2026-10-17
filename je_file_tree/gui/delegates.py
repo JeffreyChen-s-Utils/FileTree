@@ -6,9 +6,27 @@ from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QPainter
 from PySide6.QtWidgets import QApplication, QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
+from je_file_tree.gui.colours import luminance
 from je_file_tree.gui.tree_model import SHARE_ROLE
 
 _BAR_MARGIN = 3
+# A translucent highlight fades into a dark surface; dark themes need a more opaque bar.
+_BAR_ALPHA_LIGHT, _BAR_ALPHA_DARK = 110, 190
+_DARK_SURFACE_LUMINANCE = .2
+
+
+def bar_alpha(surface: QColor) -> int:
+    """The share bar's opacity over ``surface``: stronger on dark surfaces so the bar stays visible."""
+    return _BAR_ALPHA_DARK if luminance(surface) < _DARK_SURFACE_LUMINANCE else _BAR_ALPHA_LIGHT
+
+
+class PathTailDelegate(QStyledItemDelegate):
+    """Elides a folder path from the left, keeping its nearest folders; the tooltip keeps the whole path."""
+
+    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex) -> None:
+        """Qt: the usual cell options, eliding at the start instead of the view's mode."""
+        super().initStyleOption(option, index)
+        option.textElideMode = Qt.TextElideMode.ElideLeft
 
 
 class ShareBarDelegate(QStyledItemDelegate):
@@ -24,7 +42,7 @@ class ShareBarDelegate(QStyledItemDelegate):
             area = QRectF(option.rect).adjusted(_BAR_MARGIN, _BAR_MARGIN, -_BAR_MARGIN, -_BAR_MARGIN)
             area.setWidth(max(1.0, area.width() * min(share, 1.0)))
             colour = QColor(option.palette.highlight().color())
-            colour.setAlpha(110)
+            colour.setAlpha(bar_alpha(option.palette.base().color()))
             painter.save()
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             painter.setPen(Qt.PenStyle.NoPen)
