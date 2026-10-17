@@ -166,6 +166,17 @@ and retains `macos-evidence/literal-open-file.json`. This verifies the native qu
 warming or mounting an image before those samples. A final-busy capture with a backing-image helper
 association still cannot establish the busy cause; identifying it and verifying recovery remain #96.
 
+The 143 hosted samples of 2026-10-16/17 (`docs/updates/apfs-cleanup-survey-20261017.json`) show the
+verbose refusal: the disk-image driver is already quiet, the APFS volume is already unmounted, and
+only the whole-disk eject reports `Resource busy`. Within the original bounds 134 samples detach on
+the first attempt and 3 recover on the second or third; 6 exhaust them, none after run 39000091134.
+`lsof` cannot see kernel or other-user holders, so any detach with a busy refusal now also keeps a
+`refusal_log` on its last attempt: `log show --style ndjson` for DiskArbitration entries and entries
+naming the device, from two seconds before the first refusal to two seconds after the last attempt.
+It runs only after the attempts end (its own 20-second bound, at most 200 parsed entries), so delays,
+attempts and outcomes are unchanged. DiskArbitration names the dissenter of a refused eject; an entry
+is an observation, not an established cause, and a missing or refused log read changes nothing.
+
 ## PowerShell clock evidence
 
 The native disconnect helper emits `FILETREE_SMB_CLOCK`; the mocked helper harness additionally emits

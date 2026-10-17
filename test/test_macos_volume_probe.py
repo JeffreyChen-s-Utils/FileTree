@@ -119,8 +119,10 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
     image.device, image.attached = "/dev/disk9", True
     calls = []
     monkeypatch.setattr(image, "check", lambda: calls.append("check"))
-    monkeypatch.setattr(owned, "time", SimpleNamespace(sleep=lambda delay: calls.append(("sleep", delay))),
-                        raising=False)
+    monkeypatch.setattr(owned, "time", SimpleNamespace(sleep=lambda delay: calls.append(("sleep", delay)),
+                                                       time=lambda: 1000.0), raising=False)
+    monkeypatch.setattr(owned, "refusal_log", lambda device, first, finished: {"device": device,
+                                                                               "window": [first, finished]})
 
     def detach(args):
         assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
@@ -138,6 +140,7 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
     assert image.detach_attempts[0]["native_error"]["returncode"] == 16
     assert image.detach_attempts[1]["phase"] == "verified"
     assert image.detach_attempts[1]["native_succeeded"] is True
+    assert image.detach_attempts[1]["refusal_log"] == {"device": "/dev/disk9", "window": [1000.0, 1000.0]}
 
 
 @pytest.mark.parametrize("code", [16, 5])

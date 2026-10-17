@@ -15,7 +15,7 @@ import time
 import uuid
 
 from tools.macos_detach_identity import VolumeBinding, registration, volume_binding
-from tools.macos_busy_observer import observe_busy_image
+from tools.macos_busy_observer import observe_busy_image, refusal_log
 
 _PLIST_LIMIT = 8 * 1024 * 1024
 _DEVICE = re.compile(r"/dev/disk[0-9]+\Z")
@@ -332,6 +332,7 @@ class OwnedImage:
     def detach(self) -> None:
         """Bound checked verbose detach attempts; retain native output and any later refusal."""
         self.detach_attempts = []
+        self._first_busy = None
         for attempt in range(_DETACH_ATTEMPTS):
             record: dict[str, object] = {"attempt": attempt + 1, "device": self.device, "phase": "checking"}
             self.detach_attempts.append(record)
@@ -343,6 +344,7 @@ class OwnedImage:
                 self._check_detach(record, previous_busy)
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
                 _detach_failure(record, "ownership-refused", error)
+                self._record_refusal_log(record)
                 raise
             try:
                 output = command(["/usr/bin/hdiutil", "detach", "-verbose", self.device])
@@ -350,11 +352,14 @@ class OwnedImage:
                 record["native_stdout_truncated"] = len(output) > _NATIVE_ERROR_LIMIT
             except subprocess.CalledProcessError as error:
                 _detach_failure(record, "native-refused", error)
+                if error.returncode == _DEVICE_BUSY and self._first_busy is None:
+                    self._first_busy = time.time()
                 if error.returncode != _DEVICE_BUSY or attempt == _DETACH_ATTEMPTS - 1:
                     if error.returncode == _DEVICE_BUSY:
                         record["busy_observation"] = observe_busy_image(
                             getattr(self, "image", None), self.device, getattr(self, "_detach_binding", None),
                             getattr(self, "_mountpoints", set()), self._image_check)
+                    self._record_refusal_log(record)
                     raise
                 delay = .5 * (attempt + 1)
                 record["retry_delay_seconds"] = delay
@@ -375,6 +380,12 @@ class OwnedImage:
             raise
         record["phase"] = "verified"
         self.attached = False
+        self._record_refusal_log(record)
+
+    def _record_refusal_log(self, record: dict) -> None:
+        """After the attempts end, keep DiskArbitration's account of any busy refusal in this detach."""
+        if getattr(self, "_first_busy", None) is not None:
+            record["refusal_log"] = refusal_log(self.device, self._first_busy, time.time())
 
     def cleanup(self) -> None:
         """Remove disposable fixture metadata only after verified detach; uncertain attachments are retained."""

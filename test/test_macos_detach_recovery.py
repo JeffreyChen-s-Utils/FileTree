@@ -27,7 +27,7 @@ def captured_image(tmp_path, monkeypatch):
         if entry.get("mount-point"):
             entry["mount-point"] = str(image.root)
     state = {"phase": 0, "commands": [], "reads": [], "mounted": mounted, "unmounted": unmounted,
-             "busy_observations": []}
+             "busy_observations": [], "refusal_logs": []}
 
     def information(args):
         state["reads"].append(args)
@@ -56,6 +56,8 @@ def captured_image(tmp_path, monkeypatch):
     monkeypatch.setattr(owned, "command", detach)
     monkeypatch.setattr(owned, "observe_busy_image", lambda *args:
                         state["busy_observations"].append(args) or {"status": "modeled", "incomplete": True})
+    monkeypatch.setattr(owned, "refusal_log", lambda device, first, finished: state["refusal_logs"].append(
+        (device, first, finished, len(state["commands"]))) or {"status": "modeled"})
     monkeypatch.setattr(owned.time, "sleep", lambda _delay: None)
     monkeypatch.setattr(owned.os.path, "ismount", lambda _path: state["phase"] == 0)
     return image, state
@@ -68,6 +70,10 @@ def test_captured_native_busy_then_unmounted_binding_can_finish_normal_detach(ca
     assert image.detach_attempts[0]["native_error"]["returncode"] == 16
     assert image.detach_attempts[1]["unmounted_identity_rechecked"] is True
     assert image.detach_attempts[1]["native_succeeded"] and image.detach_attempts[1]["phase"] == "verified"
+    [(device, first, finished, commands)] = state["refusal_logs"]  # once, after the last native attempt
+    assert device == image.device and first <= finished and commands == 2
+    assert image.detach_attempts[1]["refusal_log"] == {"status": "modeled"}
+    assert "refusal_log" not in image.detach_attempts[0]
 
 
 @pytest.mark.parametrize("field,value", [
@@ -166,6 +172,8 @@ def test_unmounted_retries_share_the_existing_three_attempt_limit(captured_image
         assert image.attached
     assert len(state["commands"]) == 3 and len(image.detach_attempts) == 3
     assert len(state["busy_observations"]) == int(not succeeds)
+    assert [entry[3] for entry in state["refusal_logs"]] == [3]  # after the third attempt, success or not
+    assert image.detach_attempts[-1]["refusal_log"] == {"status": "modeled"}
     assert all(args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device] for args in state["commands"])
 
 
@@ -232,3 +240,17 @@ def test_incomplete_or_oversized_topology_cannot_become_detach_authority(capture
     with pytest.raises(RuntimeError):
         image.detach()
     assert image.attached and len(state["commands"]) == 1
+
+
+def test_a_detach_without_busy_refusal_reads_no_refusal_log(captured_image, monkeypatch):
+    image, state = captured_image
+    original = owned.command
+
+    def detach(args):
+        state["commands"].append(args)
+        state["phase"] = 2
+        return b""
+    monkeypatch.setattr(owned, "command", lambda args: detach(args) if state["phase"] == 0 else original(args))
+    image.detach()
+    assert not image.attached and not state["refusal_logs"]
+    assert "refusal_log" not in image.detach_attempts[-1]

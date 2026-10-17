@@ -1390,6 +1390,8 @@ private image/device/mountpoint before each call. Each ordinary detach includes 
 diagnostics, with the same target, three-attempt bound and 60-second per-command timeout. Successful
 stdout is retained up to 64 KiB with explicit truncation; failures keep capped stdout/stderr. This
 human-readable output is never ownership, device-selection or cleanup authority.
+A detach that met any exit 16 then keeps `refusal_log` (DiskArbitration unified-log entries and
+entries naming the device around the refusals) on its last attempt, read only after the attempts end.
 Other native failures and ownership changes refuse
 immediately; no force option or host unmount is used. Native image absence and unmounted fixture root
 must still be verified before cleanup. Failed APFS cleanup retains bounded native stdout/stderr and
