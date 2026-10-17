@@ -1366,7 +1366,10 @@ parent, whose original Popen handle is still retained. Read process CPU/creation
 16 thread wait chains of 16 nodes through WCT; pin each thread handle and verify its process before
 querying, refusing recycled/foreign IDs. Before the wait chains, name at most the newest 160 loaded
 modules in load order from a read-only Toolhelp module snapshot (file names only, U-20261017-54), so
-a stall's pending load is visible. Use no cross-process traversal flags, object names,
+a stall's pending load is visible. A `thread-states` record then reads one `SystemProcessInformation`
+snapshot: process I/O counters and, oldest thread first (at most 48), kernel state, wait reason,
+context switches and the module of each thread's own start address, queried through a pinned,
+process-verified thread handle (U-20261017-59). Use no cross-process traversal flags, object names,
 memory dumps, privilege changes, debugger attachment or target mutation. The observer emits each
 record immediately and has its own five-second kill timer, so a stalled native diagnostic cannot
 hold up helper termination. Retain partial/error/truncation status separately from actual helper

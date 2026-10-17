@@ -172,13 +172,15 @@ def test_thread_and_node_output_caps_and_native_errors_remain_visible(monkeypatc
     monkeypatch.setattr(native, "_entries", lambda _api, threads: (
         [(123, tid) for tid in range(100)] if threads else [(123, os.getppid(), 100)]))
     monkeypatch.setattr(native, "_cpu", lambda *_args: {"error": 5})
-    monkeypatch.setattr(native, "_modules", lambda _api, pid: {"event": "modules", "error": 5, "pid": pid})
+    monkeypatch.setattr(native, "_modules", lambda _api, pid, _ranges: {"event": "modules", "error": 5, "pid": pid})
+    monkeypatch.setattr(native, "_thread_states", lambda _api, pid, _ranges: {"event": "thread-states", "pid": pid})
     monkeypatch.setattr(native, "_emit", emitted.append)
     monkeypatch.setattr(native, "_chain", lambda _api, _session, _pid, tid: queried.append(tid) or {"error": 5})
     native.observe(123)
     assert queried == list(range(16))
     assert emitted[1] == {"event": "threads", "count": 100, "truncated": True}
     assert emitted[2] == {"event": "modules", "error": 5, "pid": 123}  # before any wait query
+    assert emitted[3] == {"event": "thread-states", "pid": 123}
     assert emitted[0]["cpu"] == {"error": 5} and emitted[-1]["event"] == "complete"
 
 
@@ -204,6 +206,64 @@ def test_module_snapshot_keeps_newest_names_and_reports_native_errors(monkeypatc
     record = native._modules(api, 123)
     assert record == {"event": "modules", "count": count, "truncated": count > 160, "names": names[-160:], **extra}
     assert state["closed"] == [77]
+
+
+def _process_buffer(processes):
+    """Synthetic x64 SystemProcessInformation: ``processes`` is ``[(pid, [(tid, created, state, reason, start)])]``."""
+    size = sum(0x100 + 0x50 * len(threads) for _pid, threads in processes)
+    buffer, offset = ctypes.create_string_buffer(size), 0
+    for number, (pid, threads) in enumerate(processes):
+        length = 0x100 + 0x50 * len(threads)
+        ctypes.c_ulong.from_buffer(buffer, offset).value = 0 if number == len(processes) - 1 else length
+        ctypes.c_ulong.from_buffer(buffer, offset + 4).value = len(threads)
+        ctypes.c_void_p.from_buffer(buffer, offset + 0x50).value = pid
+        ctypes.c_ulonglong.from_buffer(buffer, offset + 0xD0).value = 11  # read operations
+        ctypes.c_ulonglong.from_buffer(buffer, offset + 0xE8).value = 4096  # read bytes
+        for index, (tid, created, state, reason, start) in enumerate(threads):
+            record = native._SystemThread.from_buffer(buffer, offset + 0x100 + 0x50 * index)
+            record.tid, record.created, record.start = tid, created, start
+            record.state, record.wait_reason, record.switches = state, reason, tid
+        offset += length
+    return buffer
+
+
+def test_thread_states_lead_with_the_main_thread_and_map_start_modules(monkeypatch):
+    threads = [(30 + index, 1000 - index, 5, 15, 0) for index in range(60)] + [(7, 1, 5, 6, 0)]
+    buffer = _process_buffer([(99, [(1, 1, 2, 0, 0)]), (123, threads)])
+    starts = {7: 0x1010, 89: 0x2008}
+    api = SimpleNamespace(system_information=lambda _cls, target, size, _needed: (
+        ctypes.memmove(target, buffer, min(size, len(buffer))) and 0))
+    monkeypatch.setattr(native, "_win32_start", lambda _api, pid, tid: starts.get(tid) if pid == 123 else None)
+    record = native._thread_states(api, 123, [(0x1000, 0x100, "powershell.exe"), (0x2000, 0x10, "clr.dll")])
+    assert record["count"] == 61 and record["truncated"] and len(record["threads"]) == 48
+    assert record["io"]["read_operations"] == 11 and record["io"]["read_bytes"] == 4096
+    main = record["threads"][0]
+    assert main == {"tid": 7, "created_100ns": 1, "state": 5, "wait_reason": 6, "switches": 7, "wait_time_raw": 0,
+                    "start_module": "powershell.exe", "start_offset": 0x10}
+    assert {"start_module": "clr.dll", "start_offset": 8}.items() <= next(
+        thread for thread in record["threads"] if thread["tid"] == 89).items()
+    assert record["threads"][1]["created_100ns"] <= record["threads"][2]["created_100ns"]
+    assert next(thread for thread in record["threads"] if thread["tid"] == 80)["start_module"] is None
+
+
+@pytest.mark.parametrize(("status", "expected"), [(-1073741790, 0xC0000022), (0, "process not in snapshot")])
+def test_thread_state_errors_are_recorded_not_guessed(monkeypatch, status, expected):
+    buffer = _process_buffer([(99, [])])
+    api = SimpleNamespace(system_information=lambda _cls, target, size, _needed: (
+        ctypes.memmove(target, buffer, len(buffer)) and status))
+    assert native._thread_states(api, 123, []) == {"event": "thread-states", "error": expected}
+
+
+def test_growing_snapshot_buffer_stops_at_its_limit(monkeypatch):
+    sizes = []
+
+    def mismatch(_cls, _target, size, needed):
+        sizes.append(size)
+        needed._obj.value = size + 1
+        return native._INFO_LENGTH_MISMATCH
+    monkeypatch.setattr(native, "_PROCESS_BUFFER_LIMIT", 1 << 22)
+    assert native._process_snapshot(SimpleNamespace(system_information=mismatch)) == native._INFO_LENGTH_MISMATCH
+    assert sizes == [1 << 20, 1 << 21, 1 << 22]
 
 
 def test_module_snapshot_failure_is_recorded_without_reading_entries(monkeypatch):
@@ -252,6 +312,11 @@ k.CloseHandle(mutex)
             modules = records[2]
             assert modules["event"] == "modules" and "error" not in modules and not modules["truncated"]
             assert any(name.lower().startswith("python") for name in modules["names"])
+            states = records[3]
+            assert states["event"] == "thread-states" and "error" not in states and states["count"] >= 2
+            assert states["threads"][0]["start_module"].lower().startswith("python")  # the main thread leads
+            assert all(isinstance(thread["wait_reason"], int) for thread in states["threads"])
+            assert states["io"]["read_bytes"] >= 0
             chains = [record for record in records if record["event"] == "chain"]
             assert chains or records[-1]["event"] == "wait-session-error"
             for chain in chains:

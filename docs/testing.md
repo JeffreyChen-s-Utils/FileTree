@@ -196,6 +196,14 @@ native `error` kept. #100's reproduction (U-20261017-51) stalled idle at start-u
 `ConvertFrom-Json` with no WCT-attributable owner; the newest names show what was loading then. A
 module name is an observation, not a cause: loading can finish between the snapshot and the wait.
 
+A `thread-states` record follows: one read-only `SystemProcessInformation` snapshot gives the
+process's I/O operation/byte counters and, for at most 48 threads ordered by creation time (so the
+main thread leads), the kernel thread state, `KWAIT_REASON`, context switches and raw wait time. Each
+thread's own start routine (`ThreadQuerySetWin32StartAddress`, through a handle pinned to the target
+process) is reported as module plus offset. Two samples per timeout show whether the main thread is
+blocked in user requests, executive (I/O) waits or ALPC, and whether I/O counters still move. The
+x64 layout is fixed; other layouts record an explicit error instead of guessed fields.
+
 Both helpers still launch once with their original 30/20-second deadline; the observer starts after
 five seconds and retains its five-second bound, thread/node caps and ownership checks. A still-live
 target receives at most one later observation five seconds before its original deadline, provided

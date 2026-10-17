@@ -11,12 +11,22 @@ import sys
 import time
 
 _THREAD_LIMIT = 16
+_STATE_LIMIT = 48  # thread-state records, oldest first: the main thread always leads
 _MODULE_LIMIT = 160  # newest names in load order; a stall's pending load is at the end
 _SNAP_MODULES = 0x8 | 0x10  # TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32
 _NODE_LIMIT = 16
 _NO_MORE_FILES = 18
 _THREAD_KIND = 8
 _UNIX_EPOCH_FILETIME = 116444736000000000
+_SYSTEM_PROCESS_INFORMATION = 5
+_INFO_LENGTH_MISMATCH = 0xC0000004 - (1 << 32)  # NTSTATUS as a signed 32-bit value
+_PROCESS_BUFFER_START, _PROCESS_BUFFER_LIMIT = 1 << 20, 64 << 20
+# x64 SYSTEM_PROCESS_INFORMATION: thread count, I/O counters, process ID and the thread array.
+_PROCESS_THREADS, _PROCESS_ID, _PROCESS_THREAD_ARRAY = 4, 0x50, 0x100
+_PROCESS_IO = {"read_operations": 0xD0, "write_operations": 0xD8, "other_operations": 0xE0,
+               "read_bytes": 0xE8, "write_bytes": 0xF0, "other_bytes": 0xF8}
+_THREAD_WIN32_START = 9  # ThreadQuerySetWin32StartAddress
+_X64_POINTER = 8  # the offsets above are the x64 layout
 
 
 class _ProcessEntry(c.Structure):
@@ -34,6 +44,13 @@ class _ModuleEntry(c.Structure):
     _fields_ = [("size", w.DWORD), ("module_id", w.DWORD), ("pid", w.DWORD), ("global_usage", w.DWORD),
                 ("process_usage", w.DWORD), ("base", c.c_void_p), ("base_size", w.DWORD), ("handle", w.HMODULE),
                 ("name", w.WCHAR * 256), ("path", w.WCHAR * 260)]
+
+
+class _SystemThread(c.Structure):
+    _fields_ = [("kernel", c.c_longlong), ("user", c.c_longlong), ("created", c.c_longlong),
+                ("wait_time", w.ULONG), ("start", c.c_void_p), ("pid", c.c_void_p), ("tid", c.c_void_p),
+                ("priority", w.LONG), ("base_priority", w.LONG), ("switches", w.ULONG),
+                ("state", w.ULONG), ("wait_reason", w.ULONG)]
 
 
 class _Lock(c.Structure):
@@ -68,6 +85,11 @@ class _Native:
         self.process_next = _api(kernel, "Process32NextW", [w.HANDLE, c.POINTER(_ProcessEntry)], w.BOOL)
         self.thread_first = _api(kernel, "Thread32First", [w.HANDLE, c.POINTER(_ThreadEntry)], w.BOOL)
         self.thread_next = _api(kernel, "Thread32Next", [w.HANDLE, c.POINTER(_ThreadEntry)], w.BOOL)
+        ntdll = c.WinDLL("ntdll")
+        self.system_information = _api(ntdll, "NtQuerySystemInformation",
+                                       [w.ULONG, c.c_void_p, w.ULONG, c.POINTER(w.ULONG)], w.LONG)
+        self.thread_information = _api(ntdll, "NtQueryInformationThread",
+                                       [w.HANDLE, w.ULONG, c.c_void_p, w.ULONG, c.POINTER(w.ULONG)], w.LONG)
         self.module_first = _api(kernel, "Module32FirstW", [w.HANDLE, c.POINTER(_ModuleEntry)], w.BOOL)
         self.module_next = _api(kernel, "Module32NextW", [w.HANDLE, c.POINTER(_ModuleEntry)], w.BOOL)
         self.open_process = _api(kernel, "OpenProcess", [w.DWORD, w.BOOL, w.DWORD], w.HANDLE)
@@ -101,8 +123,11 @@ def _entries(native: _Native, threads: bool) -> list:
     return values
 
 
-def _modules(native: _Native, pid: int) -> dict:
-    """Name the target's loaded modules, in load order, from a read-only Toolhelp snapshot."""
+def _modules(native: _Native, pid: int, ranges: list | None = None) -> dict:
+    """Name the target's loaded modules, in load order, from a read-only Toolhelp snapshot.
+
+    ``ranges`` (when given) also receives every module's ``(base, size, name)`` for address lookups.
+    """
     handle = native.snapshot(_SNAP_MODULES, pid)
     if handle == c.c_void_p(-1).value:
         return {"event": "modules", "error": c.get_last_error()}
@@ -113,12 +138,86 @@ def _modules(native: _Native, pid: int) -> dict:
         exists = native.module_first(handle, c.byref(entry))
         while exists:
             names.append(entry.name)
+            if ranges is not None:
+                ranges.append((entry.base or 0, entry.base_size, entry.name))
             exists = native.module_next(handle, c.byref(entry))
         error = c.get_last_error()
     finally:
         native.close(handle)
     return {"event": "modules", "count": len(names), "truncated": len(names) > _MODULE_LIMIT,
             "names": names[-_MODULE_LIMIT:], **({"error": error} if error != _NO_MORE_FILES else {})}
+
+
+def _process_snapshot(native: _Native) -> c.Array | int:
+    """All processes' kernel thread records (``SystemProcessInformation``), or the failing NTSTATUS."""
+    size = _PROCESS_BUFFER_START
+    while size <= _PROCESS_BUFFER_LIMIT:
+        buffer, needed = c.create_string_buffer(size), w.ULONG()
+        status = native.system_information(_SYSTEM_PROCESS_INFORMATION, buffer, size, c.byref(needed))
+        if status != _INFO_LENGTH_MISMATCH:
+            return buffer if status >= 0 else status
+        size = max(size * 2, needed.value + (64 << 10))
+    return _INFO_LENGTH_MISMATCH
+
+
+def _process_entry(buffer: c.Array, pid: int) -> int | None:
+    """Offset of ``pid``'s entry in a process snapshot."""
+    offset = 0
+    while True:
+        if c.c_void_p.from_buffer(buffer, offset + _PROCESS_ID).value == pid:
+            return offset
+        step = w.ULONG.from_buffer(buffer, offset).value
+        if not step:
+            return None
+        offset += step
+
+
+def _module_at(address: int | None, ranges: list) -> dict:
+    for base, size, name in ranges:
+        if address and base <= address < base + size:
+            return {"start_module": name, "start_offset": address - base}
+    return {"start_module": None}
+
+
+def _win32_start(native: _Native, pid: int, tid: int) -> int | None:
+    """The thread's own start routine; the kernel record usually shows only ntdll's thunk."""
+    handle = native.open_thread(0x0040 | 0x0800, False, tid)  # THREAD_QUERY_(LIMITED_)INFORMATION
+    if not handle:
+        return None
+    try:
+        if native.thread_pid(handle) != pid:  # pinned handle: refuse a recycled thread ID
+            return None
+        start = c.c_void_p()
+        status = native.thread_information(handle, _THREAD_WIN32_START, c.byref(start), c.sizeof(start), None)
+        return start.value if status >= 0 else None
+    finally:
+        native.close(handle)
+
+
+def _thread_states(native: _Native, pid: int, ranges: list) -> dict:
+    """Kernel state, wait reason and start module of the oldest threads plus process I/O counters.
+
+    Read-only: one ``SystemProcessInformation`` snapshot and per-thread start-address queries.
+    """
+    if c.sizeof(c.c_void_p) != _X64_POINTER:
+        return {"event": "thread-states", "error": "x64 layout only"}
+    buffer = _process_snapshot(native)
+    if isinstance(buffer, int):
+        return {"event": "thread-states", "error": buffer & 0xFFFFFFFF}
+    offset = _process_entry(buffer, pid)
+    if offset is None:
+        return {"event": "thread-states", "error": "process not in snapshot"}
+    count = w.ULONG.from_buffer(buffer, offset + _PROCESS_THREADS).value
+    io = {name: c.c_ulonglong.from_buffer(buffer, offset + field).value for name, field in _PROCESS_IO.items()}
+    first, size = offset + _PROCESS_THREAD_ARRAY, c.sizeof(_SystemThread)
+    records = sorted((_SystemThread.from_buffer(buffer, first + index * size) for index in range(count)),
+                     key=lambda record: record.created)
+    threads = [{"tid": record.tid or 0, "created_100ns": record.created, "state": record.state,
+                "wait_reason": record.wait_reason, "switches": record.switches, "wait_time_raw": record.wait_time,
+                **_module_at(_win32_start(native, pid, record.tid or 0), ranges)}
+               for record in records[:_STATE_LIMIT]]
+    return {"event": "thread-states", "count": count, "truncated": count > _STATE_LIMIT, "io": io,
+            "threads": threads}
 
 
 def _cpu(native: _Native, pid: int) -> dict:
@@ -180,7 +279,9 @@ def observe(pid: int) -> None:
            "reported_threads": matches[0][2]})
     tids = sorted(tid for owner, tid in _entries(native, True) if owner == pid)
     _emit({"event": "threads", "count": len(tids), "truncated": len(tids) > _THREAD_LIMIT})
-    _emit(_modules(native, pid))
+    ranges: list = []
+    _emit(_modules(native, pid, ranges))
+    _emit(_thread_states(native, pid, ranges))
     session = native.open_wait(0, None)
     if not session:
         _emit({"event": "wait-session-error", "error": c.get_last_error()})
