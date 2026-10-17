@@ -214,11 +214,11 @@ def _process_buffer(processes):
     buffer, offset = ctypes.create_string_buffer(size), 0
     for number, (pid, threads) in enumerate(processes):
         length = 0x100 + 0x50 * len(threads)
-        ctypes.c_ulong.from_buffer(buffer, offset).value = 0 if number == len(processes) - 1 else length
-        ctypes.c_ulong.from_buffer(buffer, offset + 4).value = len(threads)
+        ctypes.c_uint32.from_buffer(buffer, offset).value = 0 if number == len(processes) - 1 else length
+        ctypes.c_uint32.from_buffer(buffer, offset + 4).value = len(threads)
         ctypes.c_void_p.from_buffer(buffer, offset + 0x50).value = pid
-        ctypes.c_ulonglong.from_buffer(buffer, offset + 0xD0).value = 11  # read operations
-        ctypes.c_ulonglong.from_buffer(buffer, offset + 0xE8).value = 4096  # read bytes
+        ctypes.c_uint64.from_buffer(buffer, offset + 0xD0).value = 11  # read operations
+        ctypes.c_uint64.from_buffer(buffer, offset + 0xE8).value = 4096  # read bytes
         for index, (tid, created, state, reason, start) in enumerate(threads):
             record = native._SystemThread.from_buffer(buffer, offset + 0x100 + 0x50 * index)
             record.tid, record.created, record.start = tid, created, start
@@ -228,6 +228,7 @@ def _process_buffer(processes):
 
 
 def test_thread_states_lead_with_the_main_thread_and_map_start_modules(monkeypatch):
+    assert ctypes.sizeof(native._SystemThread) == 0x50  # the x64 record on every host, not only Windows
     threads = [(30 + index, 1000 - index, 5, 15, 0) for index in range(60)] + [(7, 1, 5, 6, 0)]
     buffer = _process_buffer([(99, [(1, 1, 2, 0, 0)]), (123, threads)])
     starts = {7: 0x1010, 89: 0x2008}

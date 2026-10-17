@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-61 | 2026-10-17 | Fix the thread-state record layout on 64-bit POSIX test hosts | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-60 | 2026-10-17 | APFS cleanup survey and DiskArbitration refusal logs | #snapshot #diagnostics #macos | [2026-10-d](2026-10-d.md) |
 | U-20261017-59 | 2026-10-17 | Add kernel thread states and I/O counters to slow-child samples | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
 | U-20261017-58 | 2026-10-17 | Stop the welcome drive test from scanning a real drive | #incident #tests #ci | [2026-10-d](2026-10-d.md) |

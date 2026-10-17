@@ -47,10 +47,11 @@ class _ModuleEntry(c.Structure):
 
 
 class _SystemThread(c.Structure):
-    _fields_ = [("kernel", c.c_longlong), ("user", c.c_longlong), ("created", c.c_longlong),
-                ("wait_time", w.ULONG), ("start", c.c_void_p), ("pid", c.c_void_p), ("tid", c.c_void_p),
-                ("priority", w.LONG), ("base_priority", w.LONG), ("switches", w.ULONG),
-                ("state", w.ULONG), ("wait_reason", w.ULONG)]
+    # Fixed-width fields: Windows ULONG is 32-bit, while ctypes' c_ulong is 64-bit on LP64 test hosts.
+    _fields_ = [("kernel", c.c_int64), ("user", c.c_int64), ("created", c.c_int64),
+                ("wait_time", c.c_uint32), ("start", c.c_void_p), ("pid", c.c_void_p), ("tid", c.c_void_p),
+                ("priority", c.c_int32), ("base_priority", c.c_int32), ("switches", c.c_uint32),
+                ("state", c.c_uint32), ("wait_reason", c.c_uint32)]
 
 
 class _Lock(c.Structure):
@@ -166,7 +167,7 @@ def _process_entry(buffer: c.Array, pid: int) -> int | None:
     while True:
         if c.c_void_p.from_buffer(buffer, offset + _PROCESS_ID).value == pid:
             return offset
-        step = w.ULONG.from_buffer(buffer, offset).value
+        step = c.c_uint32.from_buffer(buffer, offset).value
         if not step:
             return None
         offset += step
@@ -207,8 +208,8 @@ def _thread_states(native: _Native, pid: int, ranges: list) -> dict:
     offset = _process_entry(buffer, pid)
     if offset is None:
         return {"event": "thread-states", "error": "process not in snapshot"}
-    count = w.ULONG.from_buffer(buffer, offset + _PROCESS_THREADS).value
-    io = {name: c.c_ulonglong.from_buffer(buffer, offset + field).value for name, field in _PROCESS_IO.items()}
+    count = c.c_uint32.from_buffer(buffer, offset + _PROCESS_THREADS).value
+    io = {name: c.c_uint64.from_buffer(buffer, offset + field).value for name, field in _PROCESS_IO.items()}
     first, size = offset + _PROCESS_THREAD_ARRAY, c.sizeof(_SystemThread)
     records = sorted((_SystemThread.from_buffer(buffer, first + index * size) for index in range(count)),
                      key=lambda record: record.created)
