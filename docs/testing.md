@@ -14,7 +14,7 @@ py -3 -m tools.measure_grouped_layout unit --groups 3 --members 33334
 The tool builds the production grouped view over owned in-memory Node objects. It never scans,
 opens or changes source files. All members remain exposed, including those outside the viewport.
 The default is 1,000 groups of 100 members; refuse more than 1,000 groups or 1,000,000 total members.
-`headers` isolates the native header notification; `language` additionally updates keeper names.
+`headers` isolates the production title refresh (`model.titles.retranslate()`); `language` additionally updates keeper names.
 `unit`, `labels`, `keeper` and `noop` isolate the other model updates. These are synthetic model/view
 measurements, not full-panel or whole-window interaction tests.
 
@@ -38,8 +38,13 @@ Qt's native header notification can schedule a full item layout even when visibl
 unchanged: see [the Qt 6.8 connection](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview.cpp),
 [private layout scheduling](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview_p.h)
 and [tree layout/accessibility updates](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qtreeview.cpp).
-Retain those notifications and native handling. This tool diagnoses the remaining #95 pause; it does
-not fix it or establish the owner's original hanging path.
+Grouped views therefore give their header its own title model, `grouped_list.HeaderTitles`
+(U-20261017-73): the header reads and is notified of titles there, while the grouped model still
+answers `headerData` for other readers but no longer emits header notifications to its tree view.
+Natively, 100,000 grouped rows went from 609 to 3.2 ms after a title refresh and from 593 to 15.3 ms
+after a language change, with every state check passing. List captures also abort on the header
+model's notifications. This measures the model/view path; it does not establish the owner's
+original hanging path.
 
 ## Pytest native context
 

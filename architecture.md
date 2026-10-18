@@ -1186,12 +1186,13 @@ place; membership changes still use their existing rebuilds.
 
 Grouped-list preference changes retain captured membership. `GroupedListModel.set_unit` validates
 the unit and emits size-column display ranges for nonempty groups; `retranslate` notifies the
-column headings and each explicit keeper name. Neither resets the model. CleanupPanel shares
+column headings through `titles`, the header's own `HeaderTitles` model (so a title change never relays
+out the tree; U-20261017-73), and each explicit keeper name. Neither resets the model. CleanupPanel shares
 title/explanation formatting between its initial rebuild and preference updates; its constructor
 keeps the initial column geometry. DuplicatesPanel refreshes bounded exact/photo labels, folder
 matches and status without re-sorting members, rebuilding thumbnails or replacing a running worker.
 `_photo_groups` shares the existing group/member cap between initial capture and label refresh.
-Normal Qt data/header notifications still cancel mixed-format list captures. Selection, current
+Normal Qt data/header notifications, including the header model's, still cancel mixed-format list captures. Selection, current
 and persistent indexes, collapsed groups and column widths survive; viewport resize can clamp scroll.
 
 For Qt 6.9+, `build_view` sets the [native update threshold](https://doc.qt.io/qt-6/qabstractitemview.html#updateThreshold-prop) to zero so grouped size ranges repaint

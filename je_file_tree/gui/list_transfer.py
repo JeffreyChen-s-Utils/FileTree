@@ -13,7 +13,7 @@ import time
 from collections.abc import Generator, Iterator
 
 from PySide6.QtCore import QAbstractItemModel, QItemSelectionModel, QModelIndex, QObject, Qt, QTimer, Signal, Slot
-from PySide6.QtWidgets import QAbstractItemView, QApplication
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QTreeView
 
 from je_file_tree.core.export import spreadsheet_text
 from je_file_tree.gui.i18n import tr
@@ -171,6 +171,10 @@ class ListCapture(QObject):
                        self.model.columnsAboutToBeInserted, self.model.columnsAboutToBeRemoved,
                        self.model.columnsAboutToBeMoved):
             signal.connect(self.abort)
+        # A view whose header has its own title model (grouped lists) announces new titles there.
+        header = view.header() if isinstance(view, QTreeView) else getattr(view, 'horizontalHeader', lambda: None)()
+        if header is not None and header.model() is not None and header.model() is not self.model:
+            header.model().headerDataChanged.connect(self.abort)
         view.destroyed.connect(self.abort)
         if selected:
             self.selection_model.selectionChanged.connect(self.abort)
