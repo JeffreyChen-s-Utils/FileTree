@@ -1306,7 +1306,9 @@ README/Nuitka parity and generated screenshots cover all five languages; OS font
 locale_font chooses installed Japanese/Korean UI families on each retranslation while preserving
 the captured system size/style, restoring that base for other languages. `apply_language_font` sets
 it as the application font, so widgets created later and dialogs get it too: under an application
-style sheet Qt no longer passes a window's font on to children created after it. It neither bundles nor
+style sheet Qt no longer passes a window's font on to children created after it. Bold, scaled
+labels use `emphasise`, which marks them so `apply_language_font` re-applies their font: on macOS a
+widget with a font of its own does not take later application-font changes. It neither bundles nor
 installs fonts; missing families retain normal system fallback across workspace and result tabs.
 
 ## 5. Extension points

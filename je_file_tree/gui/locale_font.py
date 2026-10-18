@@ -32,15 +32,22 @@ def language_font(language: str, base: QFont) -> QFont:
     return font
 
 
-def emphasis_font(widget: QWidget, scale: float = 1.0) -> QFont:
-    """A bold font ``scale`` times the widget's size that sets nothing else, so its family keeps
-    following the application (language) font.
+_EMPHASIS = "_filetree_emphasis"  # widget property: the size factor of its bold application font
 
-    Copying ``widget.font()`` would also pin its family where the platform marks every attribute of
-    the application font as set (macOS), and the label would ignore later language changes.
+
+def emphasise(widget: QWidget, scale: float = 1.0) -> None:
+    """Show ``widget`` in a bold copy of the application font, ``scale`` times its size, kept in step.
+
+    A widget with a font of its own does not follow later application-font changes on every platform
+    (macOS keeps its family), so ``apply_language_font`` re-applies this font to every marked widget.
     """
-    font = QFont()
-    font.setPointSizeF(widget.font().pointSizeF() * scale)
+    widget.setProperty(_EMPHASIS, float(scale))
+    widget.setFont(_emphasis_font(scale))
+
+
+def _emphasis_font(scale: float) -> QFont:
+    font = QFont(QApplication.font())
+    font.setPointSizeF(font.pointSizeF() * scale)
     font.setBold(True)
     return font
 
@@ -61,4 +68,8 @@ def apply_language_font(language: str) -> QFont:
     font = language_font(language, base)
     if font != app.font():
         app.setFont(font)
+        for widget in QApplication.allWidgets():
+            scale = widget.property(_EMPHASIS)
+            if scale is not None:
+                widget.setFont(_emphasis_font(float(scale)))
     return font

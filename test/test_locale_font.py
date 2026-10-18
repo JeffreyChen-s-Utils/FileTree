@@ -52,18 +52,18 @@ def test_language_font_reaches_widgets_created_later_under_the_theme(window, qap
         theme_controller().apply("system")
 
 
-def _family_bits() -> int:
-    """The resolve-mask bits a family sets, taken from Qt itself (their values differ between versions)."""
-    one, many = QFont(), QFont()
-    one.setFamily("Courier New")
-    many.setFamilies(["Courier New"])
-    return one.resolveMask() | many.resolveMask()
-
-
-def test_emphasis_font_sets_only_size_and_weight_so_the_family_follows(qapp):
+def test_emphasised_widgets_follow_every_language_font_change(qapp, monkeypatch):
     label = QLabel()
-    label.setFont(QFont("Courier New", 13))  # an explicitly set family, as macOS reports its fonts
-    assert label.font().resolveMask() & _family_bits()  # copying this font would have kept the family
-    font = locale_font.emphasis_font(label, 2)
-    assert font.pointSizeF() == 26 and font.bold()
-    assert font.resolveMask() & _family_bits() == 0
+    locale_font.emphasise(label, 2)
+    base_size = QApplication.font().pointSizeF()
+    assert label.font().bold() and label.font().pointSizeF() == 2 * base_size
+    chosen = QFont(QApplication.font())
+    chosen.setFamily("Courier New")  # stands in for a language's family, whatever the platform has
+    monkeypatch.setattr(locale_font, "language_font", lambda _language, _base: chosen)
+    try:
+        locale_font.apply_language_font("xx")
+        assert label.font().family() == "Courier New"  # re-applied, even where own fonts stop following
+        assert label.font().bold() and label.font().pointSizeF() == 2 * base_size
+    finally:
+        monkeypatch.undo()
+        locale_font.apply_language_font("en")

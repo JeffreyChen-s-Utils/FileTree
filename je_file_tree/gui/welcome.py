@@ -24,7 +24,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
-from je_file_tree.gui.locale_font import emphasis_font
+from je_file_tree.gui.locale_font import emphasise
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.worker_lifecycle import after_threads
 
@@ -213,7 +213,7 @@ class WelcomePage(QWidget):
         self._fill_recent()
 
     def _decorate(self) -> None:
-        self._title.setFont(emphasis_font(self._title, 1.8))
+        emphasise(self._title, 1.8)
         self._subtitle.setWordWrap(True)
         self._choose.setMinimumHeight(44)
         self.scan_all.setMinimumHeight(44)  # both ways to start sit on one line, at one height
@@ -228,7 +228,7 @@ class WelcomePage(QWidget):
             label.setTextFormat(Qt.TextFormat.PlainText)
             label.setWordWrap(True)
         for label in (self._drives_title, self._recent_title):
-            label.setFont(emphasis_font(label))
+            emphasise(label)
 
     def _build(self) -> None:
         self._decorate()
@@ -338,7 +338,7 @@ class DriveCard(QFrame):
         self.button, self.bar, self.free = button, bar, free
         button.setProperty("role", "list")  # a left-aligned title that still scans the drive on click
         button.setFlat(True)
-        button.setFont(emphasis_font(button))
+        emphasise(button)
         free.setProperty("role", "caption")
         self.bin_label = QLabel()
         self.bin_label.setWordWrap(True)

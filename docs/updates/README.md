@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-89 | 2026-10-18 | Emphasised labels follow the language font on macOS | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-88 | 2026-10-18 | Welcome page drives as cards | #gui #ux | [2026-10-d](2026-10-d.md) |
 | U-20261018-87 | 2026-10-18 | Flat, theme-aware treemap tiles | #gui #ux #charts | [2026-10-d](2026-10-d.md) |
