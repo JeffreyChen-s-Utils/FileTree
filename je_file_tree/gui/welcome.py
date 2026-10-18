@@ -217,16 +217,12 @@ class WelcomePage(QWidget):
         self._choose.setMinimumHeight(44)
         self.scan_all.setMinimumHeight(44)  # both ways to start sit on one line, at one height
         self._choose.setDefault(True)
-        self._choose.setStyleSheet("QPushButton { background: palette(highlight);"
-                                   " color: palette(highlighted-text); padding: 8px 20px; border-radius: 6px; }"
-                                   "QPushButton:disabled { background: palette(button);"
-                                   " color: palette(placeholder-text); }"
-                                   "QPushButton:focus { border: 2px solid palette(text); }")
+        self._choose.setProperty("role", "primary")
         self._choose.clicked.connect(self.choose_folder_requested)
         self._tip.setWordWrap(True)
-        self._tip.setStyleSheet("color: palette(placeholder-text);")
+        self._tip.setProperty("role", "caption")
         self._workflow.setWordWrap(True)
-        self._workflow.setStyleSheet("color: palette(placeholder-text);")
+        self._workflow.setProperty("role", "caption")
         for label in (self._title, self._subtitle, self._workflow, self._tip):
             label.setTextFormat(Qt.TextFormat.PlainText)
             label.setWordWrap(True)
@@ -290,7 +286,7 @@ class WelcomePage(QWidget):
             bin_label.setWordWrap(True)
             bin_label.setTextFormat(Qt.TextFormat.PlainText)
             bin_label.setToolTip(tr("bin_labels_hint"))
-            bin_label.setStyleSheet("color: palette(placeholder-text);")  # a caption of the drive above
+            bin_label.setProperty("role", "caption")  # a caption of the drive above
             self._bin_labels[bin_key(volume.root)] = (volume.root, bin_label)
             self._drives.addWidget(bin_label, row * 2 + 1, 1, 1, 2)
         self._drives.setColumnStretch(1, 1)
@@ -332,7 +328,7 @@ class WelcomePage(QWidget):
             button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             button.setAccessibleName(folder)
             button.setFlat(True)
-            button.setStyleSheet("text-align: left;")
+            button.setProperty("role", "list")
             button.setToolTip(tr("welcome_drive_tip", path=folder))
             button.clicked.connect(lambda _checked=False, path=folder: self.scan_requested.emit(path))
             self._recent_box.addWidget(button)

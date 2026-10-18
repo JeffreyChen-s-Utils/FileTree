@@ -760,7 +760,7 @@ class ResultsView(QWidget):
         self._analysis_hint = QLabel()
         self._analysis_hint.setWordWrap(True)
         self._analysis_hint.setTextFormat(Qt.TextFormat.PlainText)
-        self._analysis_hint.setStyleSheet("color: palette(placeholder-text);")
+        self._analysis_hint.setProperty("role", "caption")
         header = QWidget()
         row = QHBoxLayout(header)
         row.setContentsMargins(0, 0, 0, 0)

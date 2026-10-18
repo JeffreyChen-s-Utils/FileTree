@@ -32,10 +32,7 @@ class ResultNavigation(QWidget):
         self.tabs = tabs
         self.list = QListWidget()
         self.list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.list.setStyleSheet("QListWidget { background: palette(base); border: 0; border-radius: 6px; }"
-                                "QListWidget::item { padding: 6px 10px; margin: 1px 4px; border-radius: 4px; }"
-                                "QListWidget::item:selected { background: palette(highlight);"
-                                " color: palette(highlighted-text); }")
+        self.list.setObjectName("result_navigation")
         self.combo = QComboBox()
         self.list.currentRowChanged.connect(tabs.setCurrentIndex)
         self.combo.currentIndexChanged.connect(self._choose)

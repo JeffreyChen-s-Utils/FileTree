@@ -44,9 +44,6 @@ class ResultOverview(QWidget):
         layout.setSpacing(8)
         layout.addLayout(row)
         layout.addLayout(self._grid)
-        self.setStyleSheet("QFrame#scan_metric { background: palette(base); border: 1px solid palette(mid);"
-                           " border-radius: 6px; }"
-                           "QLabel#metric_caption { color: palette(placeholder-text); }")
         self._arrange()
         self.retranslate()
 

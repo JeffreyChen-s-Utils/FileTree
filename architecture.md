@@ -473,9 +473,13 @@ checks and explicit current-user opt-in remain in the unchanged native helper.
 The window tracks settings dialogs independently from source-operation reviews, preserving existing
 scan/live-monitor readers while settings are open; shutdown retains both kinds until their workers join.
 
-`themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
-palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice
-and startup restores it before constructing windows. Palette/style events discard chart caches.
+`themes` owns one QApplication controller. Light/Dark, and System resolved from the platform's
+colour scheme (re-applied when it changes), use `fluent_style`: Fluent tokens fitted to the platform
+accent captured at start-up, a complete palette, `FluentStyle` (Fusion with drawn close/clear glyphs)
+and one application style sheet; widgets opt in through `role` properties or object names and carry
+no style sheet of their own. System under high contrast keeps the native style and an empty palette.
+Explicit themes also request the matching platform colour scheme (Qt 6.8+) for the title bar.
+ThemeMenu persists the choice and startup restores it before constructing windows. Palette/style events discard chart caches.
 `colours` selects label ink by sRGB contrast; treemap shading is retained only when its endpoints
 meet the same minimum contrast. Sunburst/age labels share this logic; bars use palette text roles.
 

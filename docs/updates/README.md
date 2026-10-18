@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-84 | 2026-10-18 | Fluent theme system for every theme | #gui #ux #theme | [2026-10-d](2026-10-d.md) |
 | U-20261018-83 | 2026-10-18 | Close #96 (APFS refusal no longer reproduces) and #113 (PowerShell warm-up) | #ci #diagnostics #done | [2026-10-d](2026-10-d.md) |
 | U-20261018-82 | 2026-10-18 | Hosted tallies: PowerShell warm-up and APFS image detach | #snapshot #ci #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261018-81 | 2026-10-18 | Properties and settings native calls audited; #95 closed | #snapshot #performance #gui #done | [2026-10-d](2026-10-d.md) |

@@ -1401,8 +1401,6 @@ class MainWindow(QMainWindow):
         toolbar.setObjectName("main_toolbar")
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-        toolbar.setStyleSheet("QToolBar { spacing: 6px; padding: 6px; }"
-                             "QToolButton, QPushButton, QLineEdit { min-height: 28px; }")
         toolbar.addAction(self._actions["open"])
         toolbar.addAction(self._actions["rescan"])
         toolbar.addAction(self._actions["stop"])
