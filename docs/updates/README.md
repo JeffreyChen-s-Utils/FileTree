@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261017-77 | 2026-10-17 | Duplicate membership rebuilds build paths only for ties | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-76 | 2026-10-17 | Live scan ticks repaint instead of relaying out; grouped fill audited | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-75 | 2026-10-17 | Folder-tree sorting audit: cheaper per-row relayout callbacks | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261017-74 | 2026-10-17 | Result-table filtering matches cached row text | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
