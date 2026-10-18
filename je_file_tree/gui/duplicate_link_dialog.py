@@ -18,6 +18,7 @@ from je_file_tree.gui.duplicate_link_worker import LinkOperationWorker, LinkPrev
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.lazy_details import set_lazy_details
 from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
@@ -131,8 +132,8 @@ class DuplicateLinksDialog(WorkerDialog):
                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(tr("link_confirm", count=format_count(ready), skipped=format_count(len(plan.pairs) - ready)))
-        question.setDetailedText("\n\n".join(f"{pair.copy_path}\n→ {pair.keeper_path}\n{link_reason(pair.reason)}"
-                                              for pair in plan.pairs))
+        set_lazy_details(question, lambda: "\n\n".join(
+            f"{pair.copy_path}\n→ {pair.keeper_path}\n{link_reason(pair.reason)}" for pair in plan.pairs))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         if (question.exec() != QMessageBox.StandardButton.Yes or self._closed or self.plan is not plan
                 or self.worker.cancel.is_set()):
@@ -211,7 +212,7 @@ class DuplicateLinksDialog(WorkerDialog):
                                      QMessageBox.StandardButton.Ok, self.parentWidget())
                 report.setTextFormat(Qt.TextFormat.PlainText)
                 report.setText(tr("namespace_closed_errors"))
-                report.setDetailedText("\n\n".join(lines))
+                set_lazy_details(report, lambda: "\n\n".join(lines))
                 report.exec()
             self._reported = True
         super().done(result)

@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-80 | 2026-10-18 | Bulk question and report details are built when opened | #performance #gui | [2026-10-d](2026-10-d.md) |
 | U-20261018-79 | 2026-10-18 | Remaining clipboard pause is Qt rendering text for the pasting program | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
 | U-20261018-78 | 2026-10-18 | Clipboard probe places GUI pauses against the native reader's call | #snapshot #diagnostics #performance | [2026-10-d](2026-10-d.md) |
 | U-20261017-77 | 2026-10-17 | Duplicate membership rebuilds build paths only for ties | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |

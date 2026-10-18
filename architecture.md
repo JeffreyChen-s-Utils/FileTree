@@ -1081,6 +1081,10 @@ GUI failure-flow fixtures model both complete and unsupported holder diagnostics
 inspect the modal report. The unattended-test guard dismisses any unhandled failure report and
 fails fixture teardown, preventing a platform-specific dialog from silently awaiting a user.
 
+Bulk questions and reports that list every entry (Trash with copies, copy errors, case-only renames,
+duplicate links) set their details through `gui.lazy_details.set_lazy_details`: the standard box
+starts with a placeholder and builds the complete list when the details are first shown or the box is
+copied, never as a native dialog; tests read it with `full_details` (U-20261018-80).
 `gui.entry_move_prompt.confirm_entry_move` presents ordinary Trash and protected-folder Yes/No
 questions with PlainText set before assigning captured names/paths. Preserve Qt's ordinary default
 choice and the protected question's explicit No, standard dismissal results and application modality;

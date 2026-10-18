@@ -63,6 +63,7 @@ from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
 from je_file_tree.gui.entry_report import EntryReportDialog
 from je_file_tree.gui.failed_dialog import FailedEntriesDialog
 from je_file_tree.gui.entry_move_prompt import confirm_entry_move
+from je_file_tree.gui.lazy_details import set_lazy_details
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -758,8 +759,9 @@ class MainWindow(QMainWindow):
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(self._trash_question(nodes) + "\n\n" + tr("copy_trash_confirm")
                          + ("\n\n" + tr("copy_redirect") if copies.redirect else ""))
-        question.setDetailedText("\n\n".join(f"{proof.item.source}\n→ {proof.item.destination}"
-                                            for proof in copies.proofs if proof.item.node in selected))
+        items = [proof.item for proof in copies.proofs if proof.item.node in selected]
+        if items:
+            set_lazy_details(question, lambda: "\n\n".join(f"{item.source}\n→ {item.destination}" for item in items))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         return question.exec()
 
@@ -834,9 +836,10 @@ class MainWindow(QMainWindow):
                                  QMessageBox.StandardButton.Ok, self)
             report.setTextFormat(Qt.TextFormat.PlainText)
             report.setText(tr("copy_errors"))
-            report.setDetailedText("\n\n".join(
+            errors = list(result.copy_errors)
+            set_lazy_details(report, lambda: "\n\n".join(
                 tr("copy_" + phase + "_failed", source=source, destination=destination, reason=reason)
-                for source, destination, phase, reason in result.copy_errors))
+                for source, destination, phase, reason in errors))
             report.exec()
 
     def _holder_lines(self, result: MoveResult) -> str:

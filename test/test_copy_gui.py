@@ -15,6 +15,7 @@ from je_file_tree.core.scanner import scan
 from je_file_tree.gui import copy_dialog, main_window, trash_worker
 from je_file_tree.gui.copy_dialog import CopyDialog, CopyPreviewWorker
 from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.lazy_details import full_details
 
 
 def _fixture(tmp_path, monkeypatch):
@@ -57,7 +58,7 @@ def test_confirmed_copy_freezes_options_and_requires_separate_finish(window, qap
     questions = []
 
     def answer(question):
-        questions.append((question.textFormat(), question.defaultButton().text(), question.detailedText()))
+        questions.append((question.textFormat(), question.defaultButton().text(), full_details(question)))
         return QMessageBox.StandardButton.Yes
 
     monkeypatch.setattr(QMessageBox, "exec", answer)
@@ -109,7 +110,7 @@ def test_close_joins_and_reports_retained_partial_paths(window, qapp, tmp_path, 
                                         partial=[item.destination], canceled=True)
 
     monkeypatch.setattr(copy_dialog, "copy_folders", waiting)
-    monkeypatch.setattr(QMessageBox, "exec", lambda question: questions.append(question.detailedText())
+    monkeypatch.setattr(QMessageBox, "exec", lambda question: questions.append(full_details(question))
                         or QMessageBox.StandardButton.Yes)
     dialog._apply()
     _wait(qapp, entered.is_set)
@@ -159,7 +160,7 @@ def test_copy_trash_confirmation_is_default_no_with_all_frozen_paths(window, tmp
     proof = verified_copy.copy_folders(verified_copy.prepare_copy(root, root.children, str(destination))).verified[0]
     questions = []
     monkeypatch.setattr(QMessageBox, "exec", lambda question: questions.append(
-        (question.defaultButton().text(), question.textFormat(), question.text(), question.detailedText()))
+        (question.defaultButton().text(), question.textFormat(), question.text(), full_details(question)))
         or QMessageBox.StandardButton.No)
     assert window._confirm_copy_trash(root.children, CopyApproval((proof,), True)) == QMessageBox.StandardButton.No
     assert questions[0][:2] == ("&No", Qt.TextFormat.PlainText)
@@ -201,7 +202,7 @@ def test_main_close_surfaces_final_copy_gate_failure_received_during_join(window
     monkeypatch.setattr(trash_worker, "verify_copy", waiting)
     monkeypatch.setattr(trash_worker.file_actions, "trash_receipt", lambda path: moves.append(path) or True)
     monkeypatch.setattr(QMessageBox, "exec", lambda question: questions.append(
-        (question.detailedText(), question.textFormat())) or QMessageBox.StandardButton.Ok)
+        (full_details(question), question.textFormat())) or QMessageBox.StandardButton.Ok)
     worker = trash_worker.TrashWorker(root, [proof.item.node], [], {proof.item.node: None}, window)
     worker.copy_approval = CopyApproval((proof,))
     window._trash_worker = worker
