@@ -169,7 +169,8 @@ native output, verifies bytes/identity and records cleanup even on failure. It r
 The macOS CI job runs it after the original three APFS samples, including when an earlier step fails,
 and retains `macos-evidence/literal-open-file.json`. This verifies the native query backend without
 warming or mounting an image before those samples. A final-busy capture with a backing-image helper
-association still cannot establish the busy cause; identifying it and verifying recovery remain #96.
+association still cannot establish the busy cause. Recovery is verified natively (U-20261017-60); the refusal no longer
+reproduces in hosted samples, and a new one is captured with its DiskArbitration `refusal_log` (U-20261018-83).
 
 The 143 hosted samples of 2026-10-16/17 (`docs/updates/apfs-cleanup-survey-20261017.json`) show the
 verbose refusal: the disk-image driver is already quiet, the APFS volume is already unmounted, and

@@ -1433,8 +1433,8 @@ Diagnostic fields stay capped at 512
 characters and device arguments at 128, with explicit unknown/truncation states; clipped JSON is
 never used as authority. Retain the original busy error and mounted-check refusal alongside the
 fresh registration. Native image absence and normal cleanup guards remain mandatory after success.
-The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery still requires
-its own native cleanup evidence under #96.
+The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery is verified
+natively (U-20261017-60), and the refusal no longer reproduces in hosted samples (U-20261018-83).
 
 After the third native busy refusal only, `tools.macos_busy_observer` records read-only image/device
 associations. It checks the private image/scratch identity and fresh complete registration/volume

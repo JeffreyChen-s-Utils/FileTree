@@ -2,14 +2,10 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #96 (DiskArbitration dissenter for the remaining APFS refusal), #113 (warm-up confirmation on hosted runs), then the native-environment gates in #75/#76 and the P2 items.
+Suggested order: the native-environment gates in #75/#76, then the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
-
-- **#113** (P2) Confirm on hosted runs that the Windows PowerShell warm-up (U-20261017-64) removes the share helpers' 20/30-second timeouts (12 hosted runs so far: warm-ups of 2.9–10.7 s, then helpers of 1.3–4.0 s and no timeout; at the old rate of 1 in 59, 12 clean runs are not yet conclusive; U-20261018-82). If a `powershell.exe` helper still times out after a completed `powershell_warmup`, keep its thread-state samples and investigate that warm wait as a new cause; do not lengthen the deadlines.
-
-- **#96** (P1) Identify who holds the owned APFS image's whole disk after unmount. Original cleanup and unmounted-binding recovery are verified natively (U-20261017-60: 134 first-attempt and 3 recovered samples of 143; no failure in the 64 samples after run 39000091134). The remaining refusal is a short whole-disk `Resource busy` with the volume already unmounted and only the normal `diskimages-helper` visible to `lsof`. Obtain a refusal carrying the new DiskArbitration `refusal_log` and identify the dissenter. The 51 hosted samples since that capture (through run 39095924450, U-20261018-82) all detached on the first attempt; at the earlier 9 in 143 that would happen about 4% of the time, so the refusal is much rarer now or was removed by a later change. Preserve complete UUID/device/container/store binding, fresh registrations, image/mountpoint checks, three-attempt/60-second command bounds and failed-fixture evidence. No force detach, guessed device, relaxed ownership check, extra retry or unverified deletion.
 
 - **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
 
