@@ -480,8 +480,8 @@ and one application style sheet; widgets opt in through `role` properties or obj
 no style sheet of their own. System under high contrast keeps the native style and an empty palette.
 Explicit themes also request the matching platform colour scheme (Qt 6.8+) for the title bar.
 ThemeMenu persists the choice and startup restores it before constructing windows. Palette/style events discard chart caches.
-`colours` selects label ink by sRGB contrast; treemap shading is retained only when its endpoints
-meet the same minimum contrast. Sunburst/age labels share this logic; bars use palette text roles.
+`colours` selects label ink by sRGB contrast and blends colours; treemap tiles are flat (1 px gap,
+rounded corners from 8 px) and folder fills blend the palette's text over its base by depth. Sunburst/age labels share this logic; bars use palette text roles.
 
 `chart_accessibility` attaches one QObject event filter per chart, exposing translated accessible
 names, current-root/selection facts and keyboard instructions. It navigates only cached/bounded layout

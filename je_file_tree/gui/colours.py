@@ -20,6 +20,12 @@ def contrast(first: QColor, second: QColor) -> float:
     return (bright + .05) / (dark + .05)
 
 
+def blend(top: QColor, bottom: QColor, amount: float) -> QColor:
+    """``top`` laid over ``bottom`` at ``amount`` opacity (0 gives ``bottom``, 1 gives ``top``)."""
+    return QColor.fromRgbF(*(amount * a + (1 - amount) * b for a, b in
+                             zip(top.getRgbF()[:3], bottom.getRgbF()[:3], strict=True)))
+
+
 def readable_ink(background: QColor) -> QColor:
     """Choose the stronger of black/white text; flat opaque fills reach at least 4.5:1."""
     black, white = QColor('#000000'), QColor('#ffffff')

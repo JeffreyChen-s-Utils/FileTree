@@ -19,7 +19,7 @@ from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QProxyStyle, QStyle, QStyleFactory, QStyleOption, QWidget
 
-from je_file_tree.gui.colours import contrast, readable_ink
+from je_file_tree.gui.colours import blend, contrast, readable_ink
 
 DEFAULT_ACCENT = "#0067c0"  # Windows' default blue, used when the platform reports no accent
 RADIUS = 6
@@ -96,13 +96,7 @@ def tokens_for(scheme: str, accent: QColor | str | None = None) -> Tokens:
     hover = fitted.lighter(112) if lighter else fitted.darker(112)
     return Tokens(scheme=scheme, accent=fitted.name(), accent_hover=hover.name(),
                   on_accent=readable_ink(fitted).name(), link=link.name(),
-                  selection=_blend(fitted, card, .32 if lighter else .2).name(), **surfaces)
-
-
-def _blend(top: QColor, bottom: QColor, amount: float) -> QColor:
-    """``top`` laid over ``bottom`` at ``amount`` opacity."""
-    return QColor.fromRgbF(*(amount * a + (1 - amount) * b for a, b in
-                             zip(top.getRgbF()[:3], bottom.getRgbF()[:3], strict=True)))
+                  selection=blend(fitted, card, .32 if lighter else .2).name(), **surfaces)
 
 
 def style_sheet(tokens: Tokens) -> str:
