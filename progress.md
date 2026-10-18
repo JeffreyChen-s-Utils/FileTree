@@ -2,7 +2,7 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #96 (DiskArbitration dissenter for the remaining APFS refusal), #95 (remaining UI hangs), #113 (warm-up confirmation on hosted runs), then the native-environment gates in #75/#76 and the P2 items.
+Suggested order: #96 (DiskArbitration dissenter for the remaining APFS refusal), #113 (warm-up confirmation on hosted runs), then the native-environment gates in #75/#76 and the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
@@ -10,8 +10,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 - **#113** (P2) Confirm on hosted runs that the Windows PowerShell warm-up (U-20261017-64) removes the share helpers' 20/30-second timeouts (two hosted runs so far: warm-ups of 3.3 and 10.7 s, then 1.7 and 1.3 s helpers; U-20261017-71). If a `powershell.exe` helper still times out after a completed `powershell_warmup`, keep its thread-state samples and investigate that warm wait as a new cause; do not lengthen the deadlines.
 
 - **#96** (P1) Identify who holds the owned APFS image's whole disk after unmount. Original cleanup and unmounted-binding recovery are verified natively (U-20261017-60: 134 first-attempt and 3 recovered samples of 143; no failure in the 64 samples after run 39000091134). The remaining refusal is a short whole-disk `Resource busy` with the volume already unmounted and only the normal `diskimages-helper` visible to `lsof`. Obtain a refusal carrying the new DiskArbitration `refusal_log` and identify the dissenter. The 27 hosted samples since that capture (runs 39063310689 attempts 1–7, 39064116568 and the 00f4e77 run) all detached on the first attempt, so the refusal is rarer than the earlier 9 in 143. Preserve complete UUID/device/container/store binding, fresh registrations, image/mountpoint checks, three-attempt/60-second command bounds and failed-fixture evidence. No force detach, guessed device, relaxed ownership check, extra retry or unverified deletion.
-
-- **#95** (P1) Audit the remaining Qt pauses while preserving complete rows, native notifications and accessibility: remaining settings/native GUI calls, including Properties. Grouped header titles no longer relayout the tree (U-20261017-73); result-table filtering is done (U-20261017-74); tree sorting was audited and its relayout callbacks made cheaper (U-20261017-75); live ticks repaint instead of relaying out and grouped fill was audited (U-20261017-76); duplicate membership rebuilds build paths only for ties (U-20261017-77); the clipboard pause is Qt rendering text for the pasting program (U-20261018-79); bulk question and report details are built when opened (U-20261018-80).
 
 - **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
 
