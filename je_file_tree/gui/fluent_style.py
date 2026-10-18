@@ -48,25 +48,27 @@ class Tokens:
     on_accent: str
     link: str
     selection: str
+    success: str
+    caution: str
 
 
 _SURFACES = {
     "light": {"window": "#f3f3f3", "card": "#ffffff", "subtle": "#f5f5f5", "control": "#fbfbfb",
               "control_hover": "#f0f0f0", "control_pressed": "#e8e8e8", "stroke": "#e3e3e3",
               "stroke_strong": "#c8c8c8", "text": "#1a1a1a", "text_secondary": "#5c5c5c",
-              "text_disabled": "#8a8a8a", "scrollbar": "#a8a8a8"},
+              "text_disabled": "#8a8a8a", "scrollbar": "#a8a8a8", "success": "#0f7b0f", "caution": "#8a5100"},
     "dark": {"window": "#202020", "card": "#2b2b2b", "subtle": "#323232", "control": "#2d2d2d",
              "control_hover": "#383838", "control_pressed": "#262626", "stroke": "#3b3b3b",
              "stroke_strong": "#545454", "text": "#ffffff", "text_secondary": "#c5c5c5",
-             "text_disabled": "#808080", "scrollbar": "#7a7a7a"},
+             "text_disabled": "#808080", "scrollbar": "#7a7a7a", "success": "#6ccb5f", "caution": "#fce100"},
 }
 
 
-def _shift_until(colour: QColor, against: QColor, ratio: float, lighter: bool) -> QColor:
-    """Lighten or darken ``colour`` in small steps until it reaches ``ratio`` against ``against``."""
+def _shift_until(colour: QColor, against: tuple[QColor, ...], ratio: float, lighter: bool) -> QColor:
+    """Lighten or darken ``colour`` in small steps until it reaches ``ratio`` against every background."""
     shifted = QColor(colour)
     for _step in range(40):
-        if contrast(shifted, against) >= ratio:
+        if min(contrast(shifted, background) for background in against) >= ratio:
             break
         hue, saturation, value, _alpha = shifted.getHsvF()
         value = min(1.0, value + .04) if lighter else max(0.0, value - .04)
@@ -80,7 +82,7 @@ def tokens_for(scheme: str, accent: QColor | str | None = None) -> Tokens:
     """Tokens for ``light`` or ``dark``, fitting ``accent`` so controls and links stay distinguishable.
 
     The accent is shifted until it has 3:1 against cards (WCAG non-text contrast) and the link
-    colour until 4.5:1 (text); text on the accent is black or white, whichever reads better
+    colour until 4.5:1 against every surface text sits on; text on the accent is black or white, whichever reads better
     (always at least 4.5:1).
     """
     scheme = scheme if scheme in _SURFACES else "light"
@@ -88,8 +90,9 @@ def tokens_for(scheme: str, accent: QColor | str | None = None) -> Tokens:
     card = QColor(surfaces["card"])
     base = QColor(accent) if accent is not None and QColor(accent).isValid() else QColor(DEFAULT_ACCENT)
     lighter = scheme == "dark"
-    fitted = _shift_until(base, card, 3.0, lighter)
-    link = _shift_until(fitted, card, 4.5, lighter)
+    fitted = _shift_until(base, (card,), 3.0, lighter)
+    surfaces_behind_text = tuple(QColor(surfaces[name]) for name in ("window", "card", "subtle"))
+    link = _shift_until(fitted, surfaces_behind_text, 4.5, lighter)
     hover = fitted.lighter(112) if lighter else fitted.darker(112)
     return Tokens(scheme=scheme, accent=fitted.name(), accent_hover=hover.name(),
                   on_accent=readable_ink(fitted).name(), link=link.name(),
@@ -223,6 +226,13 @@ QScrollBar::add-page, QScrollBar::sub-page {{ background: none; }}
 def _roles(t: Tokens) -> str:
     return f"""
 QLabel[role="caption"] {{ color: {t.text_secondary}; }}
+QLabel[role="chip"] {{
+    background: {t.subtle}; color: {t.text_secondary}; border: 1px solid {t.stroke};
+    border-radius: 8px; padding: 1px 10px;
+}}
+QLabel[role="chip"][tone="success"] {{ color: {t.success}; }}
+QLabel[role="chip"][tone="caution"] {{ color: {t.caution}; }}
+QLabel[role="chip"][tone="accent"] {{ color: {t.link}; }}
 QLabel[role="title"] {{ color: {t.text}; }}
 QPushButton[role="list"] {{ text-align: left; padding: 5px 10px; }}
 QFrame#scan_metric, QFrame[role="card"] {{
@@ -239,6 +249,17 @@ QListWidget#result_navigation::item:selected {{
     background: {t.control_hover}; color: {t.text}; border-left: 3px solid {t.accent};
 }}
 """
+
+
+def set_style_property(widget: QWidget, name: str, value: object) -> None:
+    """Set a dynamic property the style sheet selects on and re-polish, which Qt does not do by itself."""
+    if widget.property(name) == value:
+        return
+    widget.setProperty(name, value)
+    style = widget.style()
+    style.unpolish(widget)
+    style.polish(widget)
+    widget.update()
 
 
 class FluentStyle(QProxyStyle):

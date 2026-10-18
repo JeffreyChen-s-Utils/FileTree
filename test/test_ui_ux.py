@@ -335,3 +335,12 @@ def test_empty_hint_survives_its_view_being_destroyed(qapp):
     view.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)  # raised from eventFilter before
     model.appendRow(QStandardItem("after"))  # a model outliving the view no longer reaches the hint
+
+
+def test_scan_state_chip_takes_a_tone_per_state(window, qapp, sample_tree):
+    overview = window.results.overview
+    assert overview.state.property("role") == "chip"
+    assert window.results.capacity.summary.property("role") == "caption"
+    for state, tone in (("complete", "success"), ("partial", "caution"), ("live", "accent"), ("empty", "")):
+        overview.show_totals(None, state)
+        assert overview.state.property("tone") == tone, state

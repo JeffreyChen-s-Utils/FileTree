@@ -99,8 +99,10 @@ def test_tokens_keep_wcag_contrast_for_any_platform_accent(scheme, accent) -> No
     assert contrast(colour['on_accent'], colour['accent']) >= 4.5
     for surface in ('window', 'card', 'control', 'selection'):
         assert contrast(colour['text'], colour[surface]) >= 4.5, surface
-    for surface in ('window', 'card'):
+    for surface in ('window', 'card', 'subtle'):
         assert contrast(colour['text_secondary'], colour[surface]) >= 4.5, surface
+        for status in ('success', 'caution', 'link'):  # state chips sit on the subtle surface
+            assert contrast(colour[status], colour[surface]) >= 4.5, (status, surface)
 
 
 def test_widgets_carry_no_style_sheet_of_their_own(window, qapp, sample_tree) -> None:

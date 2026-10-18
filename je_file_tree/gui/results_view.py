@@ -751,8 +751,11 @@ class ResultsView(QWidget):
         layout.setSpacing(8)
         layout.addWidget(self.scan_bar)
         layout.addWidget(self.overview)
-        layout.addWidget(self.summary)
-        layout.addWidget(self.capacity)
+        captions = QVBoxLayout()  # the path summary and capacity line read as one caption block
+        captions.setSpacing(2)
+        captions.addWidget(self.summary)
+        captions.addWidget(self.capacity)
+        layout.addLayout(captions)
         self._assemble_navigation(splitter, layout)
 
     def _assemble_navigation(self, splitter: QSplitter, layout: QVBoxLayout) -> None:

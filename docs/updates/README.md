@@ -68,6 +68,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-86 | 2026-10-18 | Calmer results header: state chip and caption capacity line | #gui #ux | [2026-10-d](2026-10-d.md) |
 | U-20261018-85 | 2026-10-18 | Sidebar and tool bar icons; language font reaches every widget again | #gui #ux #i18n #fix | [2026-10-d](2026-10-d.md) |
 | U-20261018-84 | 2026-10-18 | Fluent theme system for every theme | #gui #ux #theme | [2026-10-d](2026-10-d.md) |
 | U-20261018-83 | 2026-10-18 | Close #96 (APFS refusal no longer reproduces) and #113 (PowerShell warm-up) | #ci #diagnostics #done | [2026-10-d](2026-10-d.md) |
