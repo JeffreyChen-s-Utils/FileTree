@@ -138,3 +138,17 @@ def test_changed_expanded_ancestors_keep_the_current_row_and_visible_selection(q
         view.deleteLater()
         model.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_cached_default_order_is_dropped_when_a_removal_reorders_siblings(qapp):
+    """U-20261017-75: the unsorted size-descending order is cached for relayouts and cleared by them."""
+    root, a, b, _inner, _peer, moved, _kept = _tree()
+    model = FolderTreeModel()
+    model.set_root(root)
+    model.sort(SIZE, Qt.SortOrder.DescendingOrder)
+    assert _shown(model, root) == [a, b]
+    assert model._orders.get(id(root)) is root.children  # the scanner's order, cached without a copy
+    model.remove_many([moved])
+    assert _shown(model, root) == [b, a]  # a shrank from 180 to 90 bytes
+    assert model.hasChildren(model.index_for(a)) and not model.hasChildren(model.index_for(_kept))
+    model.deleteLater()

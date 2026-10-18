@@ -332,8 +332,11 @@ class FolderTreeModel(QAbstractItemModel):
             return QModelIndex()
         if not parent.isValid():
             return self.createIndex(0, column, self._root) if row == 0 else QModelIndex()
-        folder = self._entry(parent)
-        children = self._ordered(folder) if folder is not None else []
+        # Called for every visible row on each relayout: read the cached order directly (U-20261017-75).
+        folder = parent.internalPointer()
+        children = self._orders.get(id(folder))
+        if children is None:
+            children = self._ordered(folder) if folder is not None else ()
         if not 0 <= row < len(children):
             return QModelIndex()
         return self.createIndex(row, column, children[row])
@@ -364,10 +367,14 @@ class FolderTreeModel(QAbstractItemModel):
         """Qt: inspect existing/frozen child presence without sorting or copying unopened rows."""
         if not parent.isValid():
             return self._root is not None
-        node = self._entry(parent)
+        node = parent.internalPointer()
         if parent.column() != 0 or node is None:
             return False
-        return self.has_entry_children(node)
+        # Inlined has_entry_children: Qt asks this for every visible row on each relayout (U-20261017-75).
+        children = self._orders.get(id(node))
+        if children is None:
+            children = self._archives.get(node, node.children)
+        return bool(children) or self.can_preview(node)
 
     def has_entry_children(self, node: Node | VirtualEntry) -> bool:
         """Inspect cached/raw child presence and preview eligibility without creating rows or sorting."""
@@ -605,6 +612,8 @@ class FolderTreeModel(QAbstractItemModel):
         if not self._live and (not children or (self._sort_column in (SIZE, SHARE, DRIVE_SHARE)
                                                and self._sort_order == Qt.SortOrder.DescendingOrder
                                                and folder not in self._size_order_changed)):
+            if children:
+                self._orders[id(folder)] = children  # the unsorted order too; every relayout clears it
             return children
         descending = self._sort_order == Qt.SortOrder.DescendingOrder
         cached = sorted(list(children), key=sort_key(self._sort_column), reverse=descending)
