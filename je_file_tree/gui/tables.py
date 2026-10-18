@@ -50,6 +50,7 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._rows: list[Row] = []
+        self._filter_texts: dict[int, str] = {}  # row ordinal -> case-folded display text of every column
         self._order: Sequence[int] = range(0)
         self._sort_column = -1
         self._sort_order = Qt.SortOrder.AscendingOrder
@@ -67,6 +68,7 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
     def set_rows(self, rows: Sequence[Row]) -> None:
         """Replace the rows."""
         self.beginResetModel()
+        self._filter_texts = {}
         self._rows = list(rows)
         self._order = self._sorted_order(self._sort_column, self._sort_order, range(len(self._rows)))
         self.endResetModel()
@@ -116,11 +118,26 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
 
     def refresh(self) -> None:
         """Repaint every cell and header (after a unit or language change)."""
+        self._filter_texts = {}
         if self._sort_column >= 0:
             self.sort(self._sort_column, self._sort_order)
         if self._rows:
             self.dataChanged.emit(self.index(0, 0), self.index(len(self._rows) - 1, self.columnCount() - 1))
         self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, self.columnCount() - 1)
+
+    def filter_text(self, row: int) -> str:
+        """Every column's display text of model row ``row``, case-folded; cached until rows, unit or language change.
+
+        Native Windows: Qt's own any-column filter called ``data`` for each of 4,000 cells and took up to
+        94 ms per keystroke over the 1,000 largest files (U-20261017-74).
+        """
+        ordinal = self._order[row]
+        text = self._filter_texts.get(ordinal)
+        if text is None:
+            item = self._rows[ordinal]
+            text = "\x1f".join(column.text(item) for column in self._columns).casefold()
+            self._filter_texts[ordinal] = text
+        return text
 
     def rowCount(self, parent: QModelIndex | QPersistentModelIndex = QModelIndex()) -> int:  # noqa: B008
         """Qt: the number of rows."""
@@ -163,6 +180,30 @@ class _TableModel(QAbstractTableModel, Generic[Row]):
 
 class TableProxy(QSortFilterProxyModel):
     """Filter a captured result table while its source owns stable row sorting."""
+
+    def setFilterFixedString(self, pattern: str) -> None:  # noqa: N802 - Qt slot
+        """Qt: filter on any column containing ``pattern``, matched against the source's cached row text."""
+        self._needle = pattern.casefold()
+        super().setFilterFixedString(pattern)
+
+    def setFilterRegularExpression(self, pattern: object) -> None:  # noqa: N802 - Qt slot
+        """Qt: any other filter kind uses Qt's own matching."""
+        self._needle = None
+        super().setFilterRegularExpression(pattern)
+
+    def setFilterWildcard(self, pattern: str) -> None:  # noqa: N802 - Qt slot
+        """Qt: any other filter kind uses Qt's own matching."""
+        self._needle = None
+        super().setFilterWildcard(pattern)
+
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex | QPersistentModelIndex) -> bool:
+        """Qt: one cached-text match per row instead of a ``data`` call for every cell."""
+        model = self.sourceModel()
+        needle = getattr(self, '_needle', None)
+        if (needle is None or not isinstance(model, _TableModel) or self.filterKeyColumn() != -1
+                or source_parent.isValid()):
+            return super().filterAcceptsRow(source_row, source_parent)
+        return not needle or needle in model.filter_text(source_row)
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
         """Delegate result sorting without Qt comparing Python cell values repeatedly."""

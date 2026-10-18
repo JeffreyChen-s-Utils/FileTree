@@ -122,7 +122,9 @@ During the synchronous `setModel` and header-state restoration, a nested, except
 relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,
 selection and current indexes; explicit refresh and ordinary repeated sorts retain live-snapshot semantics.
 
-Result-table `TableProxy` retains Qt filtering but delegates sorting to `_TableModel`. A separate
+Result-table `TableProxy` delegates sorting to `_TableModel` and matches an any-column fixed-string
+filter against each row's cached, case-folded display text (`_TableModel.filter_text`, cleared by
+`set_rows` and `refresh`); other filter kinds use Qt's own matching (U-20261017-74). A separate
 row-ordinal permutation leaves captured records intact and evaluates each sort key once; strings
 use UTF-16 code units to match QString, numbers retain raw values, and ties retain prior display order.
 Replacement resets the permutation and reapplies the active column/direction. Sorting emits vertical
