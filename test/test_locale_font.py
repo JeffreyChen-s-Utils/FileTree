@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QLabel
 
 from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
 from je_file_tree.core.scanner import scan
@@ -50,3 +50,20 @@ def test_language_font_reaches_widgets_created_later_under_the_theme(window, qap
     finally:
         window.change_language("en")
         theme_controller().apply("system")
+
+
+def _family_bits() -> int:
+    """The resolve-mask bits a family sets, taken from Qt itself (their values differ between versions)."""
+    one, many = QFont(), QFont()
+    one.setFamily("Courier New")
+    many.setFamilies(["Courier New"])
+    return one.resolveMask() | many.resolveMask()
+
+
+def test_emphasis_font_sets_only_size_and_weight_so_the_family_follows(qapp):
+    label = QLabel()
+    label.setFont(QFont("Courier New", 13))  # an explicitly set family, as macOS reports its fonts
+    assert label.font().resolveMask() & _family_bits()  # copying this font would have kept the family
+    font = locale_font.emphasis_font(label, 2)
+    assert font.pointSizeF() == 26 and font.bold()
+    assert font.resolveMask() & _family_bits() == 0

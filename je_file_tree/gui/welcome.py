@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import threading
 
 from PySide6.QtCore import QDir, QStorageInfo, QThread, QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPalette, QShowEvent
+from PySide6.QtGui import QColor, QPalette, QShowEvent
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -24,6 +24,7 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.locale_font import emphasis_font
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.worker_lifecycle import after_threads
 
@@ -212,10 +213,7 @@ class WelcomePage(QWidget):
         self._fill_recent()
 
     def _decorate(self) -> None:
-        title_font = QFont(self._title.font())
-        title_font.setPointSizeF(title_font.pointSizeF() * 1.8)
-        title_font.setBold(True)
-        self._title.setFont(title_font)
+        self._title.setFont(emphasis_font(self._title, 1.8))
         self._subtitle.setWordWrap(True)
         self._choose.setMinimumHeight(44)
         self.scan_all.setMinimumHeight(44)  # both ways to start sit on one line, at one height
@@ -230,9 +228,7 @@ class WelcomePage(QWidget):
             label.setTextFormat(Qt.TextFormat.PlainText)
             label.setWordWrap(True)
         for label in (self._drives_title, self._recent_title):
-            font = QFont(label.font())
-            font.setBold(True)
-            label.setFont(font)
+            label.setFont(emphasis_font(label))
 
     def _build(self) -> None:
         self._decorate()
@@ -342,9 +338,7 @@ class DriveCard(QFrame):
         self.button, self.bar, self.free = button, bar, free
         button.setProperty("role", "list")  # a left-aligned title that still scans the drive on click
         button.setFlat(True)
-        font = QFont(button.font())
-        font.setBold(True)
-        button.setFont(font)
+        button.setFont(emphasis_font(button))
         free.setProperty("role", "caption")
         self.bin_label = QLabel()
         self.bin_label.setWordWrap(True)

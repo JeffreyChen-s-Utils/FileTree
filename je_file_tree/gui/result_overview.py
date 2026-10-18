@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QResizeEvent
+from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
 from je_file_tree.gui.fluent_style import set_style_property
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.locale_font import emphasis_font
 
 _METRICS = ("size", "allocated", "files", "folders")
 _COMPACT_WIDTH = 680
@@ -58,10 +59,7 @@ class ResultOverview(QWidget):
         caption.setObjectName("metric_caption")
         for label in (caption, value):
             label.setTextFormat(Qt.TextFormat.PlainText)
-        font = QFont(value.font())
-        font.setPointSizeF(font.pointSizeF() * 1.45)
-        font.setBold(True)
-        value.setFont(font)
+        value.setFont(emphasis_font(value, 1.45))
         value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         column = QVBoxLayout(card)
         column.setContentsMargins(14, 8, 14, 10)

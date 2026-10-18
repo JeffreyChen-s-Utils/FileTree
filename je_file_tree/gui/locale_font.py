@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 
 from PySide6.QtGui import QFont, QFontDatabase
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 
 _FAMILIES = {
     "ja": {"win32": ("Yu Gothic UI", "Yu Gothic", "Meiryo"),
@@ -29,6 +29,19 @@ def language_font(language: str, base: QFont) -> QFont:
         if family in available:
             font.setFamily(family)
             break
+    return font
+
+
+def emphasis_font(widget: QWidget, scale: float = 1.0) -> QFont:
+    """A bold font ``scale`` times the widget's size that sets nothing else, so its family keeps
+    following the application (language) font.
+
+    Copying ``widget.font()`` would also pin its family where the platform marks every attribute of
+    the application font as set (macOS), and the label would ignore later language changes.
+    """
+    font = QFont()
+    font.setPointSizeF(widget.font().pointSizeF() * scale)
+    font.setBold(True)
     return font
 
 
