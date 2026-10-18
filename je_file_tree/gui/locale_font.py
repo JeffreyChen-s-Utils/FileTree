@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 
 from PySide6.QtGui import QFont, QFontDatabase
+from PySide6.QtWidgets import QApplication
 
 _FAMILIES = {
     "ja": {"win32": ("Yu Gothic UI", "Yu Gothic", "Meiryo"),
@@ -28,4 +29,23 @@ def language_font(language: str, base: QFont) -> QFont:
         if family in available:
             font.setFamily(family)
             break
+    return font
+
+
+def apply_language_font(language: str) -> QFont:
+    """Make the language's font the application font, from the base font captured on first use.
+
+    Application-wide, so every widget gets it, including ones created later (legend labels, dialogs):
+    once a style sheet is active Qt no longer passes a window's font on to children created after it.
+    """
+    app = QApplication.instance()
+    if not isinstance(app, QApplication):
+        raise RuntimeError("a QApplication is required")
+    base = getattr(app, "_filetree_base_font", None)
+    if base is None:
+        base = QFont(app.font())
+        app._filetree_base_font = base
+    font = language_font(language, base)
+    if font != app.font():
+        app.setFont(font)
     return font

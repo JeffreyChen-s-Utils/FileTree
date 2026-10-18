@@ -4,8 +4,13 @@ from types import SimpleNamespace
 
 import pytest
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication
 
+from test_gui import window as window  # noqa: PLC0414 - explicit pytest fixture re-export
+from je_file_tree.core.scanner import scan
 from je_file_tree.gui import locale_font
+from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.themes import theme_controller
 
 
 @pytest.mark.parametrize("language, platform, family", [
@@ -28,3 +33,20 @@ def test_missing_locale_fonts_keep_the_captured_system_font(qapp, monkeypatch):
     monkeypatch.setattr(locale_font.QFontDatabase, "families", lambda: [])
     base = QFont("owned system family", 10)
     assert locale_font.language_font("ko", base) == base
+
+
+def test_language_font_reaches_widgets_created_later_under_the_theme(window, qapp, sample_tree):
+    base = QApplication.instance()._filetree_base_font
+    theme_controller().apply("dark")  # an application style sheet is active
+    try:
+        window.change_language("ko")
+        expected = locale_font.language_font("ko", base).family()
+        window.results.show_outcome(analyse(scan(sample_tree)))  # legend labels are created now
+        labels = window.results._legend.labels()
+        assert labels and all(label.font().family() == expected for label in labels)
+        assert window.results.overview.values[0].font().family() == expected
+        window.change_language("en")
+        assert window.results.overview.values[0].font().family() == base.family()
+    finally:
+        window.change_language("en")
+        theme_controller().apply("system")

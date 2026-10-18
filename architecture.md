@@ -1304,7 +1304,9 @@ contract. ja/ko system locales select their language on first use. Native Qt ja/
 standard buttons/dialogs and all four non-English catalogues are required in runtime/package checks.
 README/Nuitka parity and generated screenshots cover all five languages; OS fonts provide glyphs.
 locale_font chooses installed Japanese/Korean UI families on each retranslation while preserving
-the captured system size/style, restoring that base for other languages. It neither bundles nor
+the captured system size/style, restoring that base for other languages. `apply_language_font` sets
+it as the application font, so widgets created later and dialogs get it too: under an application
+style sheet Qt no longer passes a window's font on to children created after it. It neither bundles nor
 installs fonts; missing families retain normal system fallback across workspace and result tabs.
 
 ## 5. Extension points

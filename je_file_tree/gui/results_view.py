@@ -120,6 +120,7 @@ _AGE_SHARE_COLUMN = 2
 _COMPACT_NAVIGATION_WIDTH = 1000
 CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
 USERS_TAB = 8
+_TAB_ICONS = ("chart", "largest", "search", "cleanup", "types", "age", "changes", "problems", "users")
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
@@ -756,7 +757,7 @@ class ResultsView(QWidget):
 
     def _assemble_navigation(self, splitter: QSplitter, layout: QVBoxLayout) -> None:
         self.tabs.tabBar().hide()
-        self.navigation = ResultNavigation(self.tabs)
+        self.navigation = ResultNavigation(self.tabs, icons=_TAB_ICONS)
         self._analysis_hint = QLabel()
         self._analysis_hint.setWordWrap(True)
         self._analysis_hint.setTextFormat(Qt.TextFormat.PlainText)
