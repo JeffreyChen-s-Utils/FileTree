@@ -100,6 +100,8 @@ def test_manual_refresh_routes_drive_totals_without_scan_or_cleanup_actions(
         window, qapp, sample_tree, monkeypatch):
     _sources(monkeypatch)
     window.welcome.refresh_drives()
+    # Drive discovery is asynchronous; the per-drive captions exist only once its rows arrive.
+    _wait(qapp, lambda: [row.root for row in window.welcome.drive_rows] == ["D:/", "E:/"])
     calls = []
     def query(root, *, cancel):
         calls.append(root)

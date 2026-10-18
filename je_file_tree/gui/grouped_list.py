@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 from PySide6.QtCore import (
-    QAbstractItemModel, QItemSelection, QItemSelectionModel, QModelIndex, QObject,
+    QAbstractItemModel, QAbstractTableModel, QItemSelection, QItemSelectionModel, QModelIndex, QObject,
     QPersistentModelIndex, Qt,
 )
 from PySide6.QtGui import QFont, QIcon
@@ -43,15 +43,49 @@ class _Group:
     kept: Node | None
 
 
+class HeaderTitles(QAbstractTableModel):
+    """The translated column titles a grouped view's header shows; it has columns but no rows.
+
+    Qt's item view lays out every row again on each model header notification: natively about
+    0.6 s per 100,000 grouped rows (U-20261017-72). The header reads its titles from this model,
+    so a title change notifies the header without relaying out the tree (U-20261017-73).
+    """
+
+    def rowCount(self, parent: ModelIndex = QModelIndex()) -> int:  # noqa: B008
+        """Qt: no rows; only headings."""
+        return 0
+
+    def columnCount(self, parent: ModelIndex = QModelIndex()) -> int:  # noqa: B008
+        """Qt: one heading per grouped column."""
+        return 0 if parent.isValid() else len(COLUMNS)
+
+    def headerData(self, section: int, orientation: Qt.Orientation,
+                   role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+        """Qt: the translated heading."""
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+            return tr(COLUMNS[section]) if 0 <= section < len(COLUMNS) else None
+        return None
+
+    def data(self, index: ModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+        """Qt: there are no cells."""
+        return None
+
+    def retranslate(self) -> None:
+        """Tell the header (and other listeners) that every heading changed."""
+        self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, len(COLUMNS) - 1)
+
+
 class GroupedListModel(QAbstractItemModel):
     """Two-level captured groups; format visible cells without creating per-file Qt items.
 
     Native Windows: eager four-cell rows took 2.58 s for 100,000 entries. Capture
     membership once, retain every row and supply display roles only when requested.
+    Column titles are announced through ``titles``, the header's own model (see HeaderTitles).
     """
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
+        self.titles = HeaderTitles(self)
         self._groups: tuple[_Group, ...] = ()
         self._icons: dict[Node, QIcon] = {}
         self._unit = "auto"
@@ -121,7 +155,7 @@ class GroupedListModel(QAbstractItemModel):
 
     def retranslate(self) -> None:
         """Refresh translated headings and keeper names without rebuilding captured groups."""
-        self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, len(COLUMNS) - 1)
+        self.titles.retranslate()
         for row, group in enumerate(self._groups):
             if group.kept is not None:
                 parent = self.index(row, 0)
@@ -267,6 +301,7 @@ def build_view(model: GroupedListModel) -> QTreeView:
     """A tree view over ``model`` in which several entry lines can be selected."""
     view = QTreeView() if hasattr(QTreeView, "setUpdateThreshold") else _LegacyGroupedView()
     view.setModel(model)
+    view.header().setModel(model.titles)  # title changes repaint the header without a full tree layout
     view.setUniformRowHeights(True)
     view.setAlternatingRowColors(True)
     view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)

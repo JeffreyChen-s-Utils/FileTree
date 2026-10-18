@@ -22,6 +22,7 @@ from je_file_tree.gui import duplicate_link_worker, main_window
 from je_file_tree.gui.duplicate_link_dialog import DuplicateLinksDialog
 from je_file_tree.gui.duplicate_link_worker import LinkOperationWorker
 from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.lazy_details import full_details
 
 
 def _dialog(window, qapp, tmp_path):
@@ -41,7 +42,7 @@ def test_plain_complete_preview_default_no_keeps_independent_sources(window, qap
         questions.append(question)
         assert question.textFormat() == Qt.TextFormat.PlainText
         assert question.defaultButton() is question.button(QMessageBox.StandardButton.No)
-        assert pair.copy_path in question.detailedText() and pair.keeper_path in question.detailedText()
+        assert pair.copy_path in full_details(question) and pair.keeper_path in full_details(question)
         assert "not kept in Trash" in question.text() and "permission" in question.text()
         return QMessageBox.StandardButton.No
 
@@ -156,7 +157,7 @@ def test_close_joins_and_reports_late_partial_retained_paths_in_plain_text(windo
         return LinkResult([observed], canceled=True)
 
     def answer(question):
-        messages.append((question.textFormat(), question.detailedText()))
+        messages.append((question.textFormat(), full_details(question)))
         return QMessageBox.StandardButton.Yes
 
     monkeypatch.setattr(duplicate_link_worker, "execute_links", wait)

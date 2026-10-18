@@ -67,11 +67,21 @@ Write-TestPhase 'run-case' 'started'
 """
 
 
+_WARMED: dict[str, dict] = {}
+
+
 @pytest.fixture(params=["powershell.exe", "pwsh"])
 def shell(request):
+    """The runtime, started once per session first: a fresh runner's cold start is not the helper's time.
+
+    Hosted Windows PowerShell 5.1 took 2.6 s to its first statement and 1.35 s for its first JSON
+    conversion on the first launch, then about 0.16/0.08 s (U-20261017-64); the 20 s deadline stays.
+    """
     program = shutil.which(request.param)
     if program is None:
         pytest.skip("PowerShell runtime unavailable for mocked script helpers")
+    if program not in _WARMED:
+        _WARMED[program] = probe.warm_powershell(Path(program))
     return program
 
 
@@ -293,3 +303,14 @@ try {
         origin = clock["origin"]
         assert origin["pid"] == data["pid"]
         assert data["created_filetime_100ns"] <= origin["before_filetime_100ns"] <= origin["after_filetime_100ns"]
+
+
+def test_each_runtime_is_warmed_once_and_only_recorded(monkeypatch):
+    calls = []
+    monkeypatch.setattr(probe, "warm_powershell", lambda program: calls.append(program) or {"outcome": "timeout"})
+    monkeypatch.setattr(shutil, "which", lambda name: f"C:/runtime/{name}")
+    monkeypatch.setattr(sys.modules[__name__], "_WARMED", {})
+    request = type("Request", (), {"param": "powershell.exe"})()
+    assert shell.__wrapped__(request) == "C:/runtime/powershell.exe"
+    assert shell.__wrapped__(request) == "C:/runtime/powershell.exe"
+    assert calls == [Path("C:/runtime/powershell.exe")]  # a failed warm-up is recorded, not retried

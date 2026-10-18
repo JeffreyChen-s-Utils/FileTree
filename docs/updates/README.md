@@ -68,6 +68,39 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
+| U-20261018-89 | 2026-10-18 | Emphasised labels follow the language font on macOS | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
+| U-20261018-88 | 2026-10-18 | Welcome page drives as cards | #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261018-87 | 2026-10-18 | Flat, theme-aware treemap tiles | #gui #ux #charts | [2026-10-d](2026-10-d.md) |
+| U-20261018-86 | 2026-10-18 | Calmer results header: state chip and caption capacity line | #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261018-85 | 2026-10-18 | Sidebar and tool bar icons; language font reaches every widget again | #gui #ux #i18n #fix | [2026-10-d](2026-10-d.md) |
+| U-20261018-84 | 2026-10-18 | Fluent theme system for every theme | #gui #ux #theme | [2026-10-d](2026-10-d.md) |
+| U-20261018-83 | 2026-10-18 | Close #96 (APFS refusal no longer reproduces) and #113 (PowerShell warm-up) | #ci #diagnostics #done | [2026-10-d](2026-10-d.md) |
+| U-20261018-82 | 2026-10-18 | Hosted tallies: PowerShell warm-up and APFS image detach | #snapshot #ci #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261018-81 | 2026-10-18 | Properties and settings native calls audited; #95 closed | #snapshot #performance #gui #done | [2026-10-d](2026-10-d.md) |
+| U-20261018-80 | 2026-10-18 | Bulk question and report details are built when opened | #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261018-79 | 2026-10-18 | Remaining clipboard pause is Qt rendering text for the pasting program | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261018-78 | 2026-10-18 | Clipboard probe places GUI pauses against the native reader's call | #snapshot #diagnostics #performance | [2026-10-d](2026-10-d.md) |
+| U-20261017-77 | 2026-10-17 | Duplicate membership rebuilds build paths only for ties | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-76 | 2026-10-17 | Live scan ticks repaint instead of relaying out; grouped fill audited | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-75 | 2026-10-17 | Folder-tree sorting audit: cheaper per-row relayout callbacks | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-74 | 2026-10-17 | Result-table filtering matches cached row text | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-73 | 2026-10-17 | Grouped headers read titles from their own model | #decision #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-72 | 2026-10-17 | Native grouped-list header layout still costs about 0.6 s per 100,000 rows | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-71 | 2026-10-17 | Hosted confirmation: UTF-8 clipboard publication and PowerShell warm-up | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261017-70 | 2026-10-17 | Publish copied rows as UTF-8 bytes instead of a converted string | #snapshot #performance #gui #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-69 | 2026-10-17 | Warm-up without SYSTEMROOT off Windows | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-68 | 2026-10-17 | macOS unit tests never read the host's unified log | #incident #tests #ci #macos | [2026-10-d](2026-10-d.md) |
+| U-20261017-67 | 2026-10-17 | #104's Qt6Core termination: a window's drive worker destroyed while running | #done #fix #gui #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-66 | 2026-10-17 | Wait for drive discovery before reading Recycle Bin captions | #incident #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-65 | 2026-10-17 | Split the hosted clipboard publication time | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-64 | 2026-10-17 | Windows PowerShell's cold start causes #99 and #100; warm it outside the deadlines | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-63 | 2026-10-17 | Sample Windows PowerShell start-up from a cold hosted runner | #snapshot #diagnostics #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-62 | 2026-10-17 | #99's disconnect time is Windows PowerShell start-up, not SMB work | #snapshot #diagnostics #smb | [2026-10-d](2026-10-d.md) |
+| U-20261017-61 | 2026-10-17 | Fix the thread-state record layout on 64-bit POSIX test hosts | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-60 | 2026-10-17 | APFS cleanup survey and DiskArbitration refusal logs | #snapshot #diagnostics #macos | [2026-10-d](2026-10-d.md) |
+| U-20261017-59 | 2026-10-17 | Add kernel thread states and I/O counters to slow-child samples | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-58 | 2026-10-17 | Stop the welcome drive test from scanning a real drive | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-57 | 2026-10-17 | Remove the remaining real-time chunk assumptions from capture tests | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-56 | 2026-10-17 | Fix a time-dependent copy cancellation test | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
 | U-20261017-55 | 2026-10-17 | Bound the pytest wrapper's evidence path and forwarded arguments | #snapshot #security #tests | [2026-10-d](2026-10-d.md) |

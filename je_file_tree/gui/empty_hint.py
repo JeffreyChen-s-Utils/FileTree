@@ -28,7 +28,7 @@ class EmptyHint(QObject):
         self.label.setWordWrap(True)
         self.label.setTextFormat(Qt.TextFormat.PlainText)
         self.label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.label.setStyleSheet("color: palette(placeholder-text);")
+        self.label.setProperty("role", "caption")
         self.label.hide()
         self._viewport.installEventFilter(self)
         self._model = model = view.model()

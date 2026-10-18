@@ -14,6 +14,15 @@ from tools import macos_owned_image as owned
 from tools import validate_macos_volume as probe
 
 
+@pytest.fixture(autouse=True)
+def _no_host_refusal_log(monkeypatch):
+    """Unit tests never read the host's unified log (macOS would run the real `log show`).
+
+    Cases that check the refusal log install their own stub over this one.
+    """
+    monkeypatch.setattr(owned, "refusal_log", lambda *_args: {"status": "not-read-in-unit-tests"})
+
+
 def test_wrong_platform_refuses_before_creating_evidence(tmp_path, monkeypatch):
     monkeypatch.setattr(owned.sys, "platform", "linux")
     monkeypatch.setattr(probe.sys, "argv", ["probe", "--evidence", str(tmp_path / "evidence")])
@@ -119,8 +128,10 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
     image.device, image.attached = "/dev/disk9", True
     calls = []
     monkeypatch.setattr(image, "check", lambda: calls.append("check"))
-    monkeypatch.setattr(owned, "time", SimpleNamespace(sleep=lambda delay: calls.append(("sleep", delay))),
-                        raising=False)
+    monkeypatch.setattr(owned, "time", SimpleNamespace(sleep=lambda delay: calls.append(("sleep", delay)),
+                                                       time=lambda: 1000.0), raising=False)
+    monkeypatch.setattr(owned, "refusal_log", lambda device, first, finished: {"device": device,
+                                                                               "window": [first, finished]})
 
     def detach(args):
         assert args == ["/usr/bin/hdiutil", "detach", "-verbose", image.device]
@@ -138,6 +149,7 @@ def test_owned_busy_detach_rechecks_identity_before_retry_and_verifies_success(t
     assert image.detach_attempts[0]["native_error"]["returncode"] == 16
     assert image.detach_attempts[1]["phase"] == "verified"
     assert image.detach_attempts[1]["native_succeeded"] is True
+    assert image.detach_attempts[1]["refusal_log"] == {"device": "/dev/disk9", "window": [1000.0, 1000.0]}
 
 
 @pytest.mark.parametrize("code", [16, 5])

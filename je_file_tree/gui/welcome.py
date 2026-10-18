@@ -6,8 +6,9 @@ from dataclasses import dataclass
 import threading
 
 from PySide6.QtCore import QDir, QStorageInfo, QThread, QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPalette
+from PySide6.QtGui import QColor, QPalette, QShowEvent
 from PySide6.QtWidgets import (
+    QFrame,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -23,11 +24,13 @@ from je_file_tree.core.formatting import AUTO_UNIT, format_share, format_size
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui.bin_labels import bin_caption, bin_key
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.locale_font import emphasise
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.worker_lifecycle import after_threads
 
 _MAX_RECENT = 6
 NEARLY_FULL = .9  # used share from which a drive's bar turns red
+_DRIVE_COLUMNS = 2
 _NEARLY_FULL_COLOUR = "#d13438"  # readable on light and dark surfaces
 
 
@@ -94,6 +97,7 @@ class WelcomePage(QWidget):
         self.unit = AUTO_UNIT
         self._bin_data: dict[str, TrashUsage] = {}
         self._bin_labels: dict[str, tuple[str, QLabel]] = {}
+        self.drive_cards: list[DriveCard] = []
         self._title = QLabel()
         self._subtitle = QLabel()
         self._choose = QPushButton()
@@ -116,7 +120,19 @@ class WelcomePage(QWidget):
         self._drive_timer = QTimer(self)
         self._drive_timer.setSingleShot(True)
         self._drive_timer.timeout.connect(self.refresh_drives)
-        self._drive_timer.start(0)
+        self._drives_requested = False  # discovery starts when the page is first shown (showEvent)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """Qt: query drives once the page is first visible.
+
+        Not from the constructor: a window that is never shown must not start a native worker later,
+        from whatever event loop runs next. A window deleted without close() would then destroy that
+        still-running worker, which Qt 6 treats as fatal (U-20261017-67, #104).
+        """
+        super().showEvent(event)
+        if not self._drives_requested:
+            self._drives_requested = True
+            self._drive_timer.start(0)
 
     def set_recent(self, folders: list[str]) -> None:
         """Show these recently scanned folders (most recent first)."""
@@ -197,31 +213,22 @@ class WelcomePage(QWidget):
         self._fill_recent()
 
     def _decorate(self) -> None:
-        title_font = QFont(self._title.font())
-        title_font.setPointSizeF(title_font.pointSizeF() * 1.8)
-        title_font.setBold(True)
-        self._title.setFont(title_font)
+        emphasise(self._title, 1.8)
         self._subtitle.setWordWrap(True)
         self._choose.setMinimumHeight(44)
         self.scan_all.setMinimumHeight(44)  # both ways to start sit on one line, at one height
         self._choose.setDefault(True)
-        self._choose.setStyleSheet("QPushButton { background: palette(highlight);"
-                                   " color: palette(highlighted-text); padding: 8px 20px; border-radius: 6px; }"
-                                   "QPushButton:disabled { background: palette(button);"
-                                   " color: palette(placeholder-text); }"
-                                   "QPushButton:focus { border: 2px solid palette(text); }")
+        self._choose.setProperty("role", "primary")
         self._choose.clicked.connect(self.choose_folder_requested)
         self._tip.setWordWrap(True)
-        self._tip.setStyleSheet("color: palette(placeholder-text);")
+        self._tip.setProperty("role", "caption")
         self._workflow.setWordWrap(True)
-        self._workflow.setStyleSheet("color: palette(placeholder-text);")
+        self._workflow.setProperty("role", "caption")
         for label in (self._title, self._subtitle, self._workflow, self._tip):
             label.setTextFormat(Qt.TextFormat.PlainText)
             label.setWordWrap(True)
         for label in (self._drives_title, self._recent_title):
-            font = QFont(label.font())
-            font.setBold(True)
-            label.setFont(font)
+            emphasise(label)
 
     def _build(self) -> None:
         self._decorate()
@@ -269,19 +276,15 @@ class WelcomePage(QWidget):
     def _fill_drives(self) -> None:
         _clear(self._drives)
         self._bin_labels = {}
-        for row, volume in enumerate(self.drive_rows):
-            button, bar, free = self._drive_widgets(volume)
-            self._drives.addWidget(button, row * 2, 0)
-            self._drives.addWidget(bar, row * 2, 1)
-            self._drives.addWidget(free, row * 2, 2)
-            bin_label = QLabel()
-            bin_label.setWordWrap(True)
-            bin_label.setTextFormat(Qt.TextFormat.PlainText)
-            bin_label.setToolTip(tr("bin_labels_hint"))
-            bin_label.setStyleSheet("color: palette(placeholder-text);")  # a caption of the drive above
-            self._bin_labels[bin_key(volume.root)] = (volume.root, bin_label)
-            self._drives.addWidget(bin_label, row * 2 + 1, 1, 1, 2)
-        self._drives.setColumnStretch(1, 1)
+        self.drive_cards = []
+        for index, volume in enumerate(self.drive_rows):
+            card = DriveCard(*self._drive_widgets(volume))
+            card.bin_label.setToolTip(tr("bin_labels_hint"))
+            self._bin_labels[bin_key(volume.root)] = (volume.root, card.bin_label)
+            self._drives.addWidget(card, index // _DRIVE_COLUMNS, index % _DRIVE_COLUMNS)
+            self.drive_cards.append(card)
+        for column in range(_DRIVE_COLUMNS):
+            self._drives.setColumnStretch(column, 1)
         self._update_bin_labels()
 
     def _drive_widgets(self, volume: DriveSnapshot) -> tuple[QPushButton, QProgressBar, QLabel]:
@@ -298,7 +301,7 @@ class WelcomePage(QWidget):
         bar.setRange(0, 1000)
         bar.setValue(round(1000 * share))
         bar.setTextVisible(False)
-        bar.setMaximumHeight(10)
+        bar.setMaximumHeight(6)
         percent = format_share(share)
         bar.setToolTip(tr("welcome_drive_used", percent=percent))
         bar.setAccessibleName(tr("welcome_drive_used", percent=percent))
@@ -320,10 +323,36 @@ class WelcomePage(QWidget):
             button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             button.setAccessibleName(folder)
             button.setFlat(True)
-            button.setStyleSheet("text-align: left;")
+            button.setProperty("role", "list")
             button.setToolTip(tr("welcome_drive_tip", path=folder))
             button.clicked.connect(lambda _checked=False, path=folder: self.scan_requested.emit(path))
             self._recent_box.addWidget(button)
+
+
+class DriveCard(QFrame):
+    """One drive as a card: its scan button as the title, free space, usage bar and Recycle Bin caption."""
+
+    def __init__(self, button: QPushButton, bar: QProgressBar, free: QLabel) -> None:
+        super().__init__()
+        self.setProperty("role", "card")
+        self.button, self.bar, self.free = button, bar, free
+        button.setProperty("role", "list")  # a left-aligned title that still scans the drive on click
+        button.setFlat(True)
+        emphasise(button)
+        free.setProperty("role", "caption")
+        self.bin_label = QLabel()
+        self.bin_label.setWordWrap(True)
+        self.bin_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.bin_label.setProperty("role", "caption")
+        layout = QGridLayout(self)
+        layout.setContentsMargins(8, 6, 12, 10)
+        layout.setHorizontalSpacing(8)
+        layout.setVerticalSpacing(6)
+        layout.addWidget(button, 0, 0)
+        layout.addWidget(free, 0, 1, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(bar, 1, 0, 1, 2)
+        layout.addWidget(self.bin_label, 2, 0, 1, 2)
+        layout.setColumnStretch(0, 1)
 
 
 def _clear(layout: QGridLayout | QVBoxLayout) -> None:

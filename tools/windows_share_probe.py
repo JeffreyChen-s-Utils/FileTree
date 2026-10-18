@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from dataclasses import replace
 import hashlib
 import json
@@ -28,6 +29,11 @@ _BRANCHES = 256
 _OPTIONS = ScanOptions(workers=1, file_times=True, exact_windows_allocation=True)
 _OUTPUT_LIMIT = 65536
 _STEP_PREFIX = "FILETREE_SMB_STEP "
+_WARMUP_TIMEOUT = 120
+# The first Windows PowerShell 5.1 launch on a fresh runner waits in the kernel while its images load
+# (2.6 s to the first statement and 1.35 s for the first ConvertFrom-Json, against about 0.16 s and
+# 0.08 s for every later launch; U-20261017-64). Warm it once, outside the helpers' own deadlines.
+_WARMUP_SCRIPT = "$null = '{\"warm\":1}' | ConvertFrom-Json"
 _STEP_NAMES = {"runner-guard", "identity-check", "root-scope", "owner-receipt", "share-presence",
                "receipt-read", "receipt-parse", "receipt-identity",
                "owned-share-lookup", "share-ownership", "remove-owned-share", "helper-complete",
@@ -88,6 +94,33 @@ def _helper_record(result, started: float) -> dict:
             "process_observation": getattr(result, "process_observation", {"status": "not-sampled"}),
             "clock": trace_clock(stderr, "FILETREE_SMB_CLOCK ",
                                  getattr(result, "process_observation", {"status": "not-sampled"}))}
+
+
+def windows_powershell() -> Path:
+    """The system's Windows PowerShell 5.1, never a PATH lookup."""
+    return Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+
+
+def warm_powershell(program: Path, environment: dict[str, str] | None = None) -> dict:
+    """Start Windows PowerShell once and convert one literal JSON value; bounded, recorded, never retried.
+
+    It only moves the runner's one-time cold start out of the measured helpers. A failed or timed-out
+    warm-up is evidence and changes no helper deadline, check or outcome.
+    """
+    encoded = base64.b64encode(_WARMUP_SCRIPT.encode("utf-16-le")).decode("ascii")
+    started = time.monotonic()
+    try:
+        result = subprocess.run(  # noqa: S603 - fixed system program and literal script, no shell
+            [str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+            capture_output=True, timeout=_WARMUP_TIMEOUT, env=environment, check=False)
+    except subprocess.TimeoutExpired:
+        return {"outcome": "timeout", "timeout_seconds": _WARMUP_TIMEOUT,
+                "elapsed_seconds": round(time.monotonic() - started, 3)}
+    except OSError as error:
+        return {"outcome": "start-failed", "error": str(error)[:2048]}
+    return {"outcome": "completed", "returncode": result.returncode,
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "stderr": result.stderr[-4096:].decode("utf-8", errors="replace")}
 
 
 def _owned(args) -> Path:
@@ -177,8 +210,22 @@ def _denied(args) -> dict:
     return {"cases": observations}
 
 
+def _helper_environment(program: Path) -> dict[str, str]:
+    environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
+    environment["PSModulePath"] = str(program.parent / "Modules")
+    return environment
+
+
+def _warm_up() -> dict:
+    """Warm the helper's runtime; without SYSTEMROOT (not Windows) there is none to warm."""
+    if "SYSTEMROOT" not in os.environ:
+        return {"outcome": "unavailable", "reason": "SYSTEMROOT is not set"}
+    program = windows_powershell()
+    return warm_powershell(program, _helper_environment(program))
+
+
 def _disconnect(owned: Path, args) -> dict:
-    captured = {"disconnected": False}
+    captured: dict = {"disconnected": False, "powershell_warmup": _warm_up()}
     pause = threading.Event()
 
     def progress(current) -> None:
@@ -186,10 +233,9 @@ def _disconnect(owned: Path, args) -> dict:
             return
         # A final callback must never be misreported as a mid-scan disconnect.
         require(current.files < _BRANCHES * 4, "Share scan completed before disconnect; no proof")
-        program = Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+        program = windows_powershell()
         script = Path(__file__).with_name("validate_windows_share.ps1").resolve(strict=True)
-        environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
-        environment["PSModulePath"] = str(program.parent / "Modules")
+        environment = _helper_environment(program)
         captured.update(helper_attempted=True, observed_files_before_disconnect=current.files)
         pause.set()
         started = time.monotonic()

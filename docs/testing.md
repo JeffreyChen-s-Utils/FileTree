@@ -14,7 +14,7 @@ py -3 -m tools.measure_grouped_layout unit --groups 3 --members 33334
 The tool builds the production grouped view over owned in-memory Node objects. It never scans,
 opens or changes source files. All members remain exposed, including those outside the viewport.
 The default is 1,000 groups of 100 members; refuse more than 1,000 groups or 1,000,000 total members.
-`headers` isolates the native header notification; `language` additionally updates keeper names.
+`headers` isolates the production title refresh (`model.titles.retranslate()`); `language` additionally updates keeper names.
 `unit`, `labels`, `keeper` and `noop` isolate the other model updates. These are synthetic model/view
 measurements, not full-panel or whole-window interaction tests.
 
@@ -38,8 +38,13 @@ Qt's native header notification can schedule a full item layout even when visibl
 unchanged: see [the Qt 6.8 connection](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview.cpp),
 [private layout scheduling](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qabstractitemview_p.h)
 and [tree layout/accessibility updates](https://github.com/qt/qtbase/blob/6.8/src/widgets/itemviews/qtreeview.cpp).
-Retain those notifications and native handling. This tool diagnoses the remaining #95 pause; it does
-not fix it or establish the owner's original hanging path.
+Grouped views therefore give their header its own title model, `grouped_list.HeaderTitles`
+(U-20261017-73): the header reads and is notified of titles there, while the grouped model still
+answers `headerData` for other readers but no longer emits header notifications to its tree view.
+Natively, 100,000 grouped rows went from 609 to 3.2 ms after a title refresh and from 593 to 15.3 ms
+after a language change, with every state check passing. List captures also abort on the header
+model's notifications. This measures the model/view path; it does not establish the owner's
+original hanging path.
 
 ## Pytest native context
 
@@ -125,7 +130,7 @@ exercise deep ancestors and parent columns, and check cancellation preserves exi
 them in both pinned Qt 6.8 lanes as well as the full matrix.
 
 The time budget is cooperative: an individual model/Qt API, opaque custom selection callback,
-final string extraction or native clipboard access may still block. Native performance probes must run
+final byte extraction or native clipboard access may still block. Native performance probes must run
 sequentially without a concurrent local full test suite, retain rejected prototypes and every sample,
 and distinguish first-turn/one-heartbeat observations from total capture and end-to-end input latency.
 
@@ -164,7 +169,48 @@ native output, verifies bytes/identity and records cleanup even on failure. It r
 The macOS CI job runs it after the original three APFS samples, including when an earlier step fails,
 and retains `macos-evidence/literal-open-file.json`. This verifies the native query backend without
 warming or mounting an image before those samples. A final-busy capture with a backing-image helper
-association still cannot establish the busy cause; identifying it and verifying recovery remain #96.
+association still cannot establish the busy cause. Recovery is verified natively (U-20261017-60); the refusal no longer
+reproduces in hosted samples, and a new one is captured with its DiskArbitration `refusal_log` (U-20261018-83).
+
+The 143 hosted samples of 2026-10-16/17 (`docs/updates/apfs-cleanup-survey-20261017.json`) show the
+verbose refusal: the disk-image driver is already quiet, the APFS volume is already unmounted, and
+only the whole-disk eject reports `Resource busy`. Within the original bounds 134 samples detach on
+the first attempt and 3 recover on the second or third; 6 exhaust them, none after run 39000091134.
+`lsof` cannot see kernel or other-user holders, so any detach with a busy refusal now also keeps a
+`refusal_log` on its last attempt: `log show --style ndjson` for DiskArbitration entries and entries
+naming the device, from two seconds before the first refusal to two seconds after the last attempt.
+It runs only after the attempts end (its own 20-second bound, at most 200 parsed entries), so delays,
+attempts and outcomes are unchanged. DiskArbitration names the dissenter of a refused eject; an entry
+is an observation, not an established cause, and a missing or refused log read changes nothing.
+
+## Windows PowerShell start-up samples
+
+#99's disconnect helper and #100's first mocked case both spend their time in `powershell.exe`
+start-up before the first script statement (U-20261017-62): 2.2–9.0 s on hosted runners against
+about 0.2 s locally. The `Windows PowerShell start-up` job runs, on a fresh runner:
+
+```powershell
+python -m tools.measure_powershell_startup --output powershell-startup.json
+```
+
+It launches the system `powershell.exe -NoLogo -NoProfile -NonInteractive` twelve times in order
+(the first is the cold start). Each `-EncodedCommand` script prints a clock origin, converts one
+literal JSON value and prints the elapsed milliseconds. The owned-child observer samples a launch
+still alive after one second, inside start-up, so its modules and kernel thread states show what
+the main thread waits on; a second sample comes five seconds before the 30-second bound. Each record
+keeps the launch-to-origin time from the parent's UTC stamp, the creation-aligned clock when sampled,
+the first `ConvertFrom-Json` time, the actual outcome and capped output. Launches never retry, the
+report path must be new, and the artifact is kept even when the step fails. These are diagnostics:
+they do not change the share helpers or their 20/30-second deadlines.
+
+Run 39054002281 measured the cold start directly: the first launch took 2,636 ms to its first
+statement and 1,351 ms for its first `ConvertFrom-Json`; the next eleven took 152–272 ms and 77–91 ms.
+Inside the cold start the main thread waited in the kernel (`KWAIT_REASON` 0, Executive) while
+`pwrshsip.dll`, `dbghelp.dll` and `System.Data` were the newest images. So the native disconnect
+probe (`windows_share_probe.warm_powershell`) and the mocked helper tests (`shell` fixture) start
+Windows PowerShell once, with the helpers' environment, before any timed helper: one launch that
+converts a literal JSON value, bounded at 120 seconds, recorded as `powershell_warmup`, never retried.
+The helpers keep their own 20/30-second deadlines, steps and ownership checks.
 
 ## PowerShell clock evidence
 
@@ -195,6 +241,14 @@ Each sample also emits one `modules` record after the thread list: the count and
 native `error` kept. #100's reproduction (U-20261017-51) stalled idle at start-up and in the first
 `ConvertFrom-Json` with no WCT-attributable owner; the newest names show what was loading then. A
 module name is an observation, not a cause: loading can finish between the snapshot and the wait.
+
+A `thread-states` record follows: one read-only `SystemProcessInformation` snapshot gives the
+process's I/O operation/byte counters and, for at most 48 threads ordered by creation time (so the
+main thread leads), the kernel thread state, `KWAIT_REASON`, context switches and raw wait time. Each
+thread's own start routine (`ThreadQuerySetWin32StartAddress`, through a handle pinned to the target
+process) is reported as module plus offset. Two samples per timeout show whether the main thread is
+blocked in user requests, executive (I/O) waits or ALPC, and whether I/O counters still move. The
+x64 layout is fixed; other layouts record an explicit error instead of guessed fields.
 
 Both helpers still launch once with their original 30/20-second deadline; the observer starts after
 five seconds and retains its five-second bound, thread/node caps and ownership checks. A still-live
@@ -298,12 +352,12 @@ Python lpDesktop attribute is not used. A desktop-metadata-only local probe veri
 under both Python runtimes; it calls no clipboard API and is not private clipboard readback proof.
 Compare the complete text hash after Windows CRLF normalization and decode/check every quoted,
 formula-safe Unicode row against the capture. Preserve source identities/selection and all rows.
-Record every capture callback and 5 ms heartbeat interval, final StringIO extraction, native Qt
-setText call, consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
+Record every capture callback and 5 ms heartbeat interval, final UTF-8 byte extraction
+(`extract_ms`), the native `QClipboard.setMimeData` publication (`publish_ms`), consumer fetch/decode, complete elapsed time and source/runtime hashes. Both processes also record raw `perf_counter` milliseconds, which on Windows is the machine-wide QueryPerformanceCounter: the reader brackets `OpenClipboard`, `GetClipboardData` and `CloseClipboard` (`native.marks_ms`), and the GUI keeps its five longest heartbeat gaps with their start and end (`largest_gaps`), publication and reader start times, and each gap's overlap with the reader's `GetClipboardData` call (`in_get_clipboard_data_ms`), the time Qt spends rendering the text for that reader. The native
 reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
 deadline apply only to the probe and do not change production copy behavior. Keep partial output,
 return codes and cleanup failures; nonempty diagnostic stderr alone is not failure. A reader start
-that setText queued but that runs only after cleanup began is recorded as `late_consumer_start` and
+that publication queued but that runs only after cleanup began is recorded as `late_consumer_start` and
 never launched, so no reader outlives the probe unreported.
 
 Stop/join only the retained reader, clear only the guarded private clipboard, destroy Qt while the

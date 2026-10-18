@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from dataclasses import replace
 
 from PySide6.QtCore import QItemSelectionModel, QSize, Signal
@@ -35,6 +37,36 @@ from je_file_tree.gui.tree_model import NODE_ROLE
 
 MIN_SIZES = (1, 100 * 1024, DEFAULT_MIN_SIZE, 10 * 1024 * 1024, 100 * 1024 * 1024)
 LISTED_GROUPS = 1000
+
+
+def oldest_first(files: list[Node]) -> list[Node]:
+    """Files by modification time, then path: the order of ``key=(modified, path)``.
+
+    Paths are built only to break ties, each folder's path once. Native Windows: building all 99,000
+    member paths for the tie-break took about 1 s of a 100,000-member rebuild (U-20261017-77).
+    """
+    folders: dict[int, str | None] = {}
+
+    def path(file: Node) -> str:
+        parent = file.parent
+        if parent is None:
+            return file.path or ""
+        if id(parent) not in folders:
+            folders[id(parent)] = parent.path
+        base = folders[id(parent)]
+        # os.path.join(*names) is a left fold, so this equals file.path.
+        return os.path.join(base, file.name) if base is not None else (file.path or "")
+
+    ordered = sorted(files, key=lambda file: file.modified)
+    start = 0
+    while start < len(ordered):
+        end = start + 1
+        while end < len(ordered) and ordered[end].modified == ordered[start].modified:
+            end += 1
+        if end - start > 1:
+            ordered[start:end] = sorted(ordered[start:end], key=path)
+        start = end
+    return ordered
 
 
 class DuplicatesPanel(QWidget):
@@ -299,7 +331,7 @@ class DuplicatesPanel(QWidget):
             return
         self.view.setUniformRowHeights(True)
         groups = [(self._group_title(position, group),
-                   sorted(group.files, key=lambda file: (file.modified, file.path)))
+                   oldest_first(group.files))
                   for position, group in enumerate(self._groups[:LISTED_GROUPS])]
         grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups],
                           keepers=[group.kept for group in self._groups[:LISTED_GROUPS]])

@@ -284,7 +284,7 @@ class SunburstWidget(QWidget):
         if self._colours == BY_AGE:
             return age_colour(segment.node, self.age_reference)
         if self._colours == BY_TYPE:
-            return colour_for(segment.node)
+            return colour_for(segment.node, self.palette())
         top = segment.node
         while top.parent is not None and top.parent is not self._view_root:
             top = top.parent

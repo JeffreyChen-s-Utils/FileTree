@@ -20,6 +20,15 @@ from tools.macos_detach_identity import registration, volume_binding
 _ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def _no_host_refusal_log(monkeypatch):
+    """Unit tests never read the host's unified log (macOS would run the real `log show`).
+
+    Cases that check the refusal log install their own stub over this one.
+    """
+    monkeypatch.setattr(owned, "refusal_log", lambda *_args: {"status": "not-read-in-unit-tests"})
+
+
 @pytest.fixture
 def scope(tmp_path, monkeypatch):
     proof = json.loads((_ROOT / "docs/updates/apfs-20261017-repeated-busy.json").read_text(encoding="utf-8"))
@@ -253,3 +262,49 @@ def test_native_probe_refuses_platform_before_creating_evidence(monkeypatch, tmp
     with pytest.raises(ValueError, match="native macOS"):
         probe.validate(output)
     assert not output.exists()
+
+
+def _log_output(lines, returncode=0):
+    return observer._Output(returncode, b"\n".join(line.encode() for line in lines), b"", False, False, False)
+
+
+def test_refusal_log_reads_bounded_diskarbitration_entries_without_claiming_a_cause(monkeypatch):
+    calls = []
+    entry = {"timestamp": "2026-10-17 12:00:01.5+0000", "processImagePath": "/usr/sbin/diskarbitrationd",
+             "processID": 88, "subsystem": "com.apple.DiskArbitration.diskarbitrationd", "category": "default",
+             "eventMessage": "disk5 eject dissented by PID 412 (/System/Library/mds) status 0x0000c010"}
+    lines = [json.dumps(entry)] * 205 + ["not json", json.dumps({"no": "message"})]
+    monkeypatch.setattr(observer, "_SUPPORTED", True)
+    monkeypatch.setattr(observer, "_run", lambda arguments, _deadline, limit, timeout: calls.append(
+        (arguments, limit, timeout)) or _log_output(lines))
+    record = observer.refusal_log("/dev/disk5", 1000.0, 1002.5)
+    [(arguments, limit, timeout)] = calls
+    assert arguments[:4] == ["/usr/bin/log", "show", "--style", "ndjson"] and timeout == observer._LOG_TIMEOUT
+    assert arguments[-1] == record["predicate"] and 'eventMessage CONTAINS "disk5"' in record["predicate"]
+    assert record["window"] == [observer._log_time(998.0), observer._log_time(1004.5)]
+    assert record["status"] == "observed" and record["cause_established"] is False
+    assert record["entry_count"] == 205 and len(record["entries"]) == 200 and record["entries_truncated"]
+    assert record["invalid_lines"] == 1 and limit == observer._LOG_LIMIT
+    assert record["entries"][0] == {"time": entry["timestamp"], "process": "diskarbitrationd", "pid": 88,
+                                    "subsystem": entry["subsystem"], "category": "default",
+                                    "message": entry["eventMessage"]}
+
+
+@pytest.mark.parametrize(("device", "first", "finished"), [("/dev/disk5s1", 1.0, 2.0), ("/dev/rdisk5", 1.0, 2.0),
+                                                            ('/dev/disk5" OR 1', 1.0, 2.0), ("/dev/disk5", 3.0, 2.0)])
+def test_refusal_log_refuses_unexpected_devices_or_windows_before_running(monkeypatch, device, first, finished):
+    monkeypatch.setattr(observer, "_SUPPORTED", True)
+    monkeypatch.setattr(observer, "_run", lambda *_args: pytest.fail("log read for an ineligible device"))
+    assert observer.refusal_log(device, first, finished) == {"status": "not-eligible", "cause_established": False}
+
+
+def test_refusal_log_failures_are_recorded_and_never_raised(monkeypatch):
+    def timed_out(*_args):
+        raise TimeoutError("Owned-image observation budget exhausted")
+    monkeypatch.setattr(observer, "_SUPPORTED", True)
+    monkeypatch.setattr(observer, "_run", timed_out)
+    record = observer.refusal_log("/dev/disk5", 1000.0, 1002.0)
+    assert record["status"] == "observation-refused" and record["exception_type"] == "TimeoutError"
+    assert observer.refusal_log("/dev/disk5", 1e300, 1e300)["status"] == "observation-refused"  # unconvertible
+    monkeypatch.setattr(observer, "_SUPPORTED", False)
+    assert observer.refusal_log("/dev/disk5", 1.0, 2.0)["status"] == "unsupported"

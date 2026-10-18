@@ -12,6 +12,7 @@ from je_file_tree.core.copy_approval import CopyApproval
 from je_file_tree.core.duplicates import DuplicateGroup
 from je_file_tree.core.node import Node
 from je_file_tree.gui import main_window
+from je_file_tree.gui.lazy_details import full_details
 from test_gui import window as window  # noqa: PLC0414 - shared owned-window fixture
 
 
@@ -96,7 +97,7 @@ def test_copy_question_keeps_frozen_proof_order_with_one_membership_pass(window,
     selected = list(reversed(nodes[1::2]))
     questions = []
     monkeypatch.setattr(QMessageBox, "exec", lambda question: questions.append(
-        (question.defaultButton().text(), question.detailedText())) or QMessageBox.StandardButton.No)
+        (question.defaultButton().text(), full_details(question))) or QMessageBox.StandardButton.No)
     _CountedNode.comparisons = 0
     assert window._confirm_copy_trash(selected, CopyApproval(proofs, True)) == QMessageBox.StandardButton.No
     assert questions == [("&No", "\n\n".join(f"{proofs[i].item.source}\n→ {proofs[i].item.destination}"

@@ -18,6 +18,9 @@ _ATOMIC_REPLACE = os.replace
 _PUBLISH_PAUSE = time.sleep
 _PUBLISH_ATTEMPTS = 10
 _PUBLISH_DELAY = .01
+# Doubling waits (about 2.5 s over all attempts): on 2026-10-18 an outside reader of the fresh
+# record, most likely an antivirus or indexer scan, outlasted ten 10 ms waits twice in one day.
+_PUBLISH_MAX_DELAY = .64
 _WINDOWS_READER_ERRORS = {5, 32, 33}
 
 
@@ -28,7 +31,7 @@ def _publish(temporary: Path, path: Path) -> None:
         except OSError as error:
             if getattr(error, "winerror", None) not in _WINDOWS_READER_ERRORS or attempt == _PUBLISH_ATTEMPTS - 1:
                 raise
-            _PUBLISH_PAUSE(_PUBLISH_DELAY)
+            _PUBLISH_PAUSE(min(_PUBLISH_DELAY * 2 ** attempt, _PUBLISH_MAX_DELAY))
         else:
             return
 

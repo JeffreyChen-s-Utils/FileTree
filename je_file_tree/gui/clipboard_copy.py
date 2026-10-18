@@ -1,22 +1,33 @@
-"""Encode copied rows within capture turns; publish only the current complete request."""
+"""Encode copied rows within capture turns; publish only the current complete request.
+
+Rows are written straight into UTF-8 bytes and published as ``text/plain;charset=utf-8``. Hosted
+measurement (U-20261017-70) found that publishing a ``str`` spends the whole pause converting it to a
+QString on the GUI thread (317 ms at 13.5 M and 1,328 ms at 56.7 M characters) while the native
+clipboard call takes 3 ms; bytes cross into Qt as a copy and are decoded only if a reader asks.
+"""
 
 from __future__ import annotations
 
+import atexit
 import csv
 import io
 
-from PySide6.QtCore import QEvent, QModelIndex, QObject, Qt
+import shiboken6
+from PySide6.QtCore import QEvent, QMimeData, QModelIndex, QObject, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QAbstractItemView, QApplication, QWidget
 
 from je_file_tree.core.export import spreadsheet_text
 from je_file_tree.gui.list_transfer import ListCapture
 
+UTF8_TEXT = 'text/plain;charset=utf-8'
+
 
 class _ClipboardCapture(ListCapture):
     def __init__(self, view: QAbstractItemView) -> None:
         super().__init__(view, view, selected=True)
-        self._output = io.StringIO(newline='')
+        self._bytes = io.BytesIO()
+        self._output = io.TextIOWrapper(self._bytes, encoding='utf-8', newline='', write_through=True)
         self._writer = csv.writer(self._output, delimiter='\t', lineterminator='\n')
         self._writer.writerow([spreadsheet_text(cell) for cell in self.header])
         self.finished.connect(self._output.close)
@@ -30,9 +41,10 @@ class _ClipboardCapture(ListCapture):
             self._writer.writerow(cells)
         return row
 
-    def encoded_text(self) -> str:
-        """Return only the already encoded complete text; the caller owns publication checks."""
-        return self._output.getvalue()
+    def encoded_utf8(self) -> bytes:
+        """Return the already encoded complete UTF-8 text; the caller owns publication checks."""
+        self._output.flush()
+        return self._bytes.getvalue()
 
 
 class _CopyController(QObject):
@@ -42,9 +54,11 @@ class _CopyController(QObject):
         self._current: _ClipboardCapture | None = None
         self._generation = 0
         self._publishing = 0
+        self._published: QMimeData | None = None
         self._clipboard = QApplication.clipboard()
         self._clipboard.dataChanged.connect(self._clipboard_changed)
         app.aboutToQuit.connect(self.cancel)
+        atexit.register(self._release_published)
 
     def copy(self, view: QAbstractItemView) -> None:
         """Supersede copies in any view; keep the original clipboard until complete publication."""
@@ -66,14 +80,31 @@ class _CopyController(QObject):
         if (getattr(self, '_current', None) is not capture or capture._active
                 or not capture._complete or not rows):
             return
-        text = capture.encoded_text()
+        data = capture.encoded_utf8()
         if self._current is not capture:
             return
+        mime = QMimeData()
+        mime.setData(UTF8_TEXT, data)
         self._publishing += 1
         try:
-            self._clipboard.setText(text)
+            self._clipboard.setMimeData(mime)  # the clipboard takes ownership
+            self._published = mime
         finally:
             self._publishing -= 1
+
+    def _release_published(self) -> None:
+        """Before interpreter shutdown, hand a copy that is still on the clipboard back to Qt as text.
+
+        Qt destroying this Python-created QMimeData during interpreter finalization calls back into a
+        dead interpreter (access violation at exit, U-20261017-70). As text, the copy still stays on
+        the system clipboard after FileTree exits; a copy already replaced elsewhere is left alone.
+        """
+        mime, self._published = self._published, None
+        current = getattr(self._clipboard, 'mimeData', None)
+        if mime is None or current is None or not shiboken6.isValid(mime):
+            return
+        if current() is mime:
+            self._clipboard.setText(mime.text())
 
     def _clipboard_changed(self) -> None:
         if not getattr(self, '_publishing', 0):
