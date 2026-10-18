@@ -48,7 +48,8 @@ def boundary(qapp, monkeypatch):
         normalized = board.text.replace('\r\n', '\n')
         record = {'scope': {'station': scope.station_name, 'desktop': scope.desktop_name,
                             'pid': 123, 'noninteractive': True}, 'parent_pid': os.getpid(),
-                  'normalized_sha256': hashlib.sha256(normalized.encode('utf-8')).hexdigest()}
+                  'normalized_sha256': hashlib.sha256(normalized.encode('utf-8')).hexdigest(),
+                  'marks_ms': {'data_start_ms': 0.0, 'data_end_ms': 1e15}}  # spans every gap
         return SimpleNamespace(pid=123, returncode=0, poll=lambda: 0,
                                communicate=lambda **_kwargs: (json.dumps(record).encode(), b''))
 
@@ -66,6 +67,11 @@ def test_probe_captures_every_quoted_unicode_row_and_retains_all_turns(qapp, bou
     assert result['characters'] == len(board.text) and 'published' not in result  # bytes read after the loop
     assert result['extract_ms'] >= 0 and result['native']['parent_pid'] == os.getpid()
     assert report == result and not hasattr(qapp, '_filetree_clipboard_copy')
+    gaps = result['largest_gaps']
+    assert 0 < len(gaps) <= 5 and [gap['ms'] for gap in gaps] == sorted((gap['ms'] for gap in gaps), reverse=True)
+    assert gaps[0]['ms'] == pytest.approx(max(result['heartbeat_ms']))
+    assert all(gap['in_get_clipboard_data_ms'] == pytest.approx(gap['ms']) for gap in gaps)
+    assert result['published_at_ms'] <= result['reader_started_at_ms']
 
 
 def test_native_consumer_start_failure_quits_and_preserves_diagnostics_without_hanging(qapp, monkeypatch, boundary):
@@ -233,3 +239,25 @@ def test_reader_launch_explicitly_inherits_only_the_owned_namespace_handles(monk
 
     monkeypatch.setattr(subprocess, 'Popen', launch)
     assert probe._consumer(scope) == 'owned-reader' and calls == ['guard','launch']
+
+
+def test_only_the_longest_gaps_are_kept_longest_first():
+    gaps = []
+    for number, length in enumerate([0.005, 0.3, 0.004, 0.02, 0.1, 0.006, 0.05]):
+        probe._keep_gap(gaps, number, number + length)
+    assert [round(gap['ms']) for gap in gaps] == [300, 100, 50, 20, 6]
+    assert gaps[0]['start_ms'] == 1000 and gaps[0]['end_ms'] == pytest.approx(1300)
+
+
+@pytest.mark.parametrize(('marks', 'expected'), [
+    ({'data_start_ms': 1100.0, 'data_end_ms': 1250.0}, [150.0, 0.0]),  # inside, then before the call
+    ({'data_start_ms': 900.0, 'data_end_ms': 1400.0}, [300.0, 0.0]),   # the call spans the whole gap
+    ({'data_start_ms': 1300.0, 'data_end_ms': 1400.0}, [0.0, 0.0]),    # touching is not overlapping
+    ({}, [None, None]),                                                 # an older reader without marks
+])
+def test_gaps_are_placed_against_the_readers_get_clipboard_data_call(marks, expected):
+    state = {'native': {'marks_ms': marks},
+             'largest_gaps': [{'start_ms': 1000.0, 'end_ms': 1300.0, 'ms': 300.0},
+                              {'start_ms': 200.0, 'end_ms': 250.0, 'ms': 50.0}]}
+    probe._place_gaps(state)
+    assert [gap['in_get_clipboard_data_ms'] for gap in state['largest_gaps']] == expected

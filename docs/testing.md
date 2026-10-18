@@ -352,7 +352,7 @@ under both Python runtimes; it calls no clipboard API and is not private clipboa
 Compare the complete text hash after Windows CRLF normalization and decode/check every quoted,
 formula-safe Unicode row against the capture. Preserve source identities/selection and all rows.
 Record every capture callback and 5 ms heartbeat interval, final UTF-8 byte extraction
-(`extract_ms`), the native `QClipboard.setMimeData` publication (`publish_ms`), consumer fetch/decode, complete elapsed time and source/runtime hashes. The native
+(`extract_ms`), the native `QClipboard.setMimeData` publication (`publish_ms`), consumer fetch/decode, complete elapsed time and source/runtime hashes. Both processes also record raw `perf_counter` milliseconds, which on Windows is the machine-wide QueryPerformanceCounter: the reader brackets `OpenClipboard`, `GetClipboardData` and `CloseClipboard` (`native.marks_ms`), and the GUI keeps its five longest heartbeat gaps with their start and end (`largest_gaps`), publication and reader start times, and each gap's overlap with the reader's `GetClipboardData` call (`in_get_clipboard_data_ms`), the time Qt spends rendering the text for that reader. The native
 reader's 30-second self-exit, GUI's 45-second watchdog and outer helper's 60-second owned-process
 deadline apply only to the probe and do not change production copy behavior. Keep partial output,
 return codes and cleanup failures; nonempty diagnostic stderr alone is not failure. A reader start

@@ -20,6 +20,7 @@ _RESULT = "FILETREE_CLIPBOARD_RESULT "
 _MAX_ROWS = 100_000
 _MAX_WIDTH = 512
 _GUI_WAIT_MS = 45000
+_KEPT_GAPS = 5
 
 
 def _validate(rows: int, width: int) -> None:
@@ -54,7 +55,8 @@ def _instrument(app, scope: PrivateStation, state: dict) -> object:
             print("FILETREE_CLIPBOARD_PHASE publish-start", flush=True)
             started = time.perf_counter()
             board.setMimeData(mime)  # the clipboard takes ownership; its bytes are read only in _verify
-            state.update(publish_ms=(time.perf_counter()-started)*1000, published=mime)
+            state.update(publish_ms=(time.perf_counter()-started)*1000, published=mime,
+                         published_at_ms=time.perf_counter()*1000)
             print("FILETREE_CLIPBOARD_PHASE publish-complete", flush=True)
             QTimer.singleShot(0, state["start_consumer"])
 
@@ -159,6 +161,27 @@ def _clear(app, scope, state, view, proxy, readers) -> None:
     app.processEvents()
 
 
+def _keep_gap(gaps: list[dict], start: float, end: float) -> None:
+    """Keep the ``_KEPT_GAPS`` longest heartbeat gaps, as ``perf_counter`` milliseconds, longest first."""
+    gaps.append({"start_ms": start*1000, "end_ms": end*1000, "ms": (end-start)*1000})
+    gaps.sort(key=lambda gap: gap["ms"], reverse=True)
+    del gaps[_KEPT_GAPS:]
+
+
+def _place_gaps(state: dict) -> None:
+    """Add each kept gap's overlap with the reader's GetClipboardData call (same QPC clock, Windows).
+
+    A gap inside that call is the GUI thread rendering the published text for the reader on demand.
+    """
+    marks = state.get("native", {}).get("marks_ms", {})
+    start, end = marks.get("data_start_ms"), marks.get("data_end_ms")
+    for gap in state["largest_gaps"]:
+        if start is None or end is None:
+            gap["in_get_clipboard_data_ms"] = None
+            continue
+        gap["in_get_clipboard_data_ms"] = max(0.0, min(gap["end_ms"], end) - max(gap["start_ms"], start))
+
+
 def _public_state(state: dict) -> dict:
     return {key: value for key, value in state.items() if key not in
             {"board", "text", "rows", "header", "start_consumer", "published"}}
@@ -185,6 +208,7 @@ def _consumer_starter(scope: PrivateStation, state: dict, reader: list, loop, cl
             state["late_consumer_start"] = "skipped: queued start ran after the probe began closing"
             return
         try:
+            state["reader_started_at_ms"] = time.perf_counter()*1000
             reader.append(_consumer(scope))
             print("FILETREE_CLIPBOARD_PHASE native-reader-started", flush=True)
         except (OSError, RuntimeError) as error:
@@ -200,7 +224,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
     from PySide6.QtWidgets import QApplication  # noqa: PLC0415
     from je_file_tree.gui import clipboard_copy  # noqa: PLC0415
 
-    state = {"callbacks_ms": [], "heartbeat_ms": []}
+    state = {"callbacks_ms": [], "heartbeat_ms": [], "largest_gaps": []}
     loop, reader = QEventLoop(), []
     original_getter, original_capture = QApplication.clipboard, clipboard_copy._ClipboardCapture
     require(getattr(app, "_filetree_clipboard_copy", None) is None, "A fresh clipboard controller is required")
@@ -211,6 +235,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
     def pulse():
         now = time.perf_counter()
         state["heartbeat_ms"].append((now-last[0])*1000)
+        _keep_gap(state["largest_gaps"], last[0], now)
         last[0] = now
         if reader and reader[0].poll() is not None:
             loop.quit()
@@ -228,6 +253,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
         state["total_ms"] = (time.perf_counter()-started)*1000
         require(reader and reader[0].poll() is not None, "Private clipboard probe did not finish")
         _read_result(reader[0], state, scope)
+        _place_gaps(state)
         scope.check()
         _verify(state, model, root, nodes)
         require(len(view.selectionModel().selectedRows()) == rows, "Source selection changed")

@@ -204,6 +204,9 @@ def test_native_reader_bounds_and_decodes_utf16_and_closes_even_on_invalid_text(
     if payload.endswith('\0'):
         result = private.read_private(scope.station_name, scope.desktop_name, os.getppid(), 3, 4)
         assert result['normalized_sha256'] == hashlib.sha256(payload[:-1].replace('\r\n','\n').encode()).hexdigest()
+        marks = result['marks_ms']
+        assert list(marks) == ['open_start_ms', 'data_start_ms', 'data_end_ms', 'closed_ms']
+        assert list(marks.values()) == sorted(marks.values())  # one perf_counter clock, in call order
     else:
         with pytest.raises(RuntimeError, match='terminator'):
             private.read_private(scope.station_name, scope.desktop_name, os.getppid(), 3, 4)

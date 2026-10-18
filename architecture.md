@@ -529,7 +529,8 @@ creates a named create-only noninteractive station and desktop before importing 
 protected owner/System DACL. Exact names and noninteractive flags gate clipboard access. The real
 copy shortcut/capture publishes to that private station; a separate base-interpreter child on the
 same desktop validates and joins only the explicitly inherited private handles before reading
-bounded CF_UNICODETEXT. Retain every capture/heartbeat sample, string-extraction
+bounded CF_UNICODETEXT. Retain every capture/heartbeat sample (the longest gaps placed against the
+reader's `GetClipboardData` call on the shared QPC clock), string-extraction
 and setter durations, native readback hash, runtime/source identity, raw output and cleanup result.
 Reader/GUI/helper bounds are 30/45/60 seconds; no interactive/existing-station fallback or elevation.
 Destroy Qt only after a scope recheck, then retire this thread's remaining windows on the private
