@@ -983,7 +983,9 @@ files, 0 for files whose data is elsewhere (cloud placeholders, offline), never 
 Each finished folder's files are added to the running totals of every folder above it. The root is handed
 out first (`started`), so `FolderTreeModel` shows the tree in live mode while it grows: each folder's
 children are a sorted copy frozen until the next `refresh()`, which the window calls every 700 ms (a layout
-change that moves persistent indexes, so expanded folders, selection and scroll position survive). The
+change that moves persistent indexes, so expanded folders, selection and scroll position survive). A tick
+whose shown folders keep their members, sorted order and child presence only notifies the root and folder
+rows and repaints the visible tree, since file rows' own values are final when added (U-20261017-76). The
 calling thread reports progress about ten times a second and watches the cancel event. When every folder
 is read, totals are added up again bottom-up and children sorted largest first; `analyse()` (largest
 files, per-type totals) runs still off the GUI thread and `succeeded(ScanOutcome)` ends live mode. Stop

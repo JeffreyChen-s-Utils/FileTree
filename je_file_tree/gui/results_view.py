@@ -263,6 +263,7 @@ class ResultsView(QWidget):
             return
         self._live_ticks += 1
         self.tree_model.refresh()
+        self.tree.viewport().update()  # file rows' shares of their growing parents; repainted on screen only
         self._update_overview()
         if self._live_ticks % 3 == 0:
             self.charts.invalidate()
