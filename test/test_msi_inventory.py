@@ -15,7 +15,9 @@ pytestmark = pytest.mark.skipif(_POWERSHELL is None, reason="PowerShell 7 invent
 def _run(tmp_path, body):
     script = tmp_path / "inventory.ps1"
     validator = str(_ROOT / "tools/validate_msi.ps1").replace("'", "''")
+    # Redirected output otherwise follows the console code page (cp950 here), not the UTF-8 we decode.
     script.write_text("param([string]$Source)\n$ErrorActionPreference = 'Stop'\n"
+                      "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n"
                       f"$ast = [Management.Automation.Language.Parser]::ParseFile('{validator}', "
                       "[ref]$null, [ref]$null)\n"
                       "$names = @('Read-OwnedInventory', 'Confirm-Inventory')\n"

@@ -2,12 +2,12 @@
 
 Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
 Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: #75 (account for the space), #76 (finish savings validation), then the P2 items.
+Suggested order: the native-environment gates in #75/#76, then the P2 items.
 Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
-- **#95** (P1) Audit remaining tree/model work and settings/shell/native GUI calls (`je_file_tree/gui/results_view.py:267`); verify the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Held-reader/closing timer tests cannot establish that every native UI hang is resolved.
+- **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
 
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
 

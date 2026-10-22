@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import subprocess
+import sys
 import threading
 import time
 
@@ -243,7 +247,8 @@ def test_follow_reconfiguration_queues_only_latest_reader_without_gui_wait(windo
 
 
 @pytest.mark.parametrize("cancel", [False, True])
-def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_path, monkeypatch, cancel):
+def test_trash_queues_behind_native_reader_without_gui_wait(
+        window, qapp, tmp_path, monkeypatch, cancel, failed_move_diagnostics):
     source = tmp_path / "source"
     source.mkdir()
     kept = source / "kept"
@@ -268,6 +273,8 @@ def test_trash_queues_behind_native_reader_without_gui_wait(window, qapp, tmp_pa
         assert release.is_set() and not window.operation_busy
         assert calls == ([] if cancel else [str(kept)])
         assert kept.read_bytes() == b"kept"
+        report, captured = failed_move_diagnostics
+        assert len(captured) == int(not cancel and bool(report.error))
         if cancel:
             assert not window._journal.recent().records
     finally:
@@ -357,3 +364,32 @@ def test_drive_discovery_and_retranslation_never_query_storage_on_gui(window, qa
         assert not page.drive_rows
     finally:
         release.set()
+
+
+_UNSHOWN_WINDOW_CHILD = r'''
+import sys, time
+sys.path.insert(0, sys.argv[1])
+from PySide6.QtCore import QEventLoop, QSettings, QTimer
+from PySide6.QtWidgets import QApplication
+from je_file_tree.gui import welcome
+from je_file_tree.gui.app import create_window
+app = QApplication([])
+real = welcome.drives
+welcome.drives = lambda: (time.sleep(1.0), real())[1]  # a slow native volume query
+window = create_window(QSettings(sys.argv[2], QSettings.Format.IniFormat))
+window.deleteLater()  # never shown and never closed
+loop = QEventLoop()  # like a later modal dialog's nested exec()
+QTimer.singleShot(300, loop.quit)
+loop.exec()
+print("survived", flush=True)
+'''
+
+
+def test_an_unshown_window_deleted_without_close_never_leaves_a_running_drive_worker(tmp_path):
+    """#104: the construction-time drive timer fired in a later nested loop that also deleted the window."""
+    root = Path(__file__).resolve().parents[1]
+    environment = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+    result = subprocess.run([sys.executable, "-c", _UNSHOWN_WINDOW_CHILD, str(root), str(tmp_path / "s.ini")],  # noqa: S603
+                            capture_output=True, timeout=60, env=environment, check=False)
+    assert result.returncode == 0, (hex(result.returncode & 0xFFFFFFFF), result.stderr[-2000:])
+    assert result.stdout.strip() == b"survived"

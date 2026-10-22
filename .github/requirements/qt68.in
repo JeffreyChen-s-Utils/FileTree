@@ -1,0 +1,5 @@
+# Overrides for the compatibility lane; other test dependencies retain their locked versions.
+PySide6==6.8.3
+PySide6-Addons==6.8.3
+PySide6-Essentials==6.8.3
+shiboken6==6.8.3

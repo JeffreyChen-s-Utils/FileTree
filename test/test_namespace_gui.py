@@ -14,6 +14,7 @@ from je_file_tree.core.scanner import scan
 from je_file_tree.gui import main_window, namespace_worker
 from je_file_tree.gui.namespace_dialog import NamespaceDialog
 from je_file_tree.gui.scan_worker import analyse
+from je_file_tree.gui.lazy_details import full_details
 
 
 def _dialog(window, qapp, tmp_path, monkeypatch):
@@ -110,7 +111,7 @@ def test_preview_plain_paths_decline_and_option_invalidation(window, qapp, tmp_p
     questions = []
 
     def decline(question):
-        questions.append((question.textFormat(), question.defaultButton().text(), question.detailedText()))
+        questions.append((question.textFormat(), question.defaultButton().text(), full_details(question)))
         return QMessageBox.StandardButton.No
 
     monkeypatch.setattr(QMessageBox, "exec", decline)
@@ -242,7 +243,7 @@ def test_close_reports_failures_received_while_joining(window, qapp, tmp_path, m
     questions = []
 
     def answer(question):
-        questions.append((question.text(), question.detailedText(), question.textFormat()))
+        questions.append((question.text(), full_details(question), question.textFormat()))
         return QMessageBox.StandardButton.Yes
 
     def waiting(_plan, *, cancel, progress):

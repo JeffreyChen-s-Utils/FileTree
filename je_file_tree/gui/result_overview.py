@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QResizeEvent
+from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from je_file_tree.core.formatting import format_count, format_size
 from je_file_tree.core.node import Node
+from je_file_tree.gui.fluent_style import set_style_property
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.locale_font import emphasise
 
 _METRICS = ("size", "allocated", "files", "folders")
 _COMPACT_WIDTH = 680
+_TONES = {"complete": "success", "partial": "caution", "live": "accent"}  # the state chip's colour
 
 
 class ResultOverview(QWidget):
@@ -28,6 +31,7 @@ class ResultOverview(QWidget):
         self._columns = 0
         self.state = QLabel()
         self.state.setTextFormat(Qt.TextFormat.PlainText)
+        self.state.setProperty("role", "chip")
         self.problems = QPushButton()
         self.problems.clicked.connect(self.problems_requested)
         self.cards: list[QFrame] = []
@@ -37,16 +41,14 @@ class ResultOverview(QWidget):
         for _key in _METRICS:
             self._add_card()
         row = QHBoxLayout()
-        row.addWidget(self.state, 1)
+        row.addWidget(self.state)
+        row.addStretch(1)
         row.addWidget(self.problems)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
         layout.addLayout(row)
         layout.addLayout(self._grid)
-        self.setStyleSheet("QFrame#scan_metric { background: palette(base); border: 1px solid palette(mid);"
-                           " border-radius: 6px; }"
-                           "QLabel#metric_caption { color: palette(placeholder-text); }")
         self._arrange()
         self.retranslate()
 
@@ -57,10 +59,7 @@ class ResultOverview(QWidget):
         caption.setObjectName("metric_caption")
         for label in (caption, value):
             label.setTextFormat(Qt.TextFormat.PlainText)
-        font = QFont(value.font())
-        font.setPointSizeF(font.pointSizeF() * 1.45)
-        font.setBold(True)
-        value.setFont(font)
+        emphasise(value, 1.45)
         value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         column = QVBoxLayout(card)
         column.setContentsMargins(14, 8, 14, 10)
@@ -79,6 +78,7 @@ class ResultOverview(QWidget):
     def retranslate(self) -> None:
         """Refresh values and their accessible labels using the current language."""
         self.state.setText(tr("overview_" + self._state))
+        set_style_property(self.state, "tone", _TONES.get(self._state, ""))
         self.state.setToolTip(tr("overview_coverage_hint"))
         self.problems.setText(tr("overview_problems", count=format_count(self._errors)))
         self.problems.setVisible(self._errors > 0)

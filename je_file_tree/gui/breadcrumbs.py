@@ -92,6 +92,10 @@ class Breadcrumbs(QWidget):
         self._scroll.setWidgetResizable(True)
         self._scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scroll.setWidget(self._container)
+        # Let the chart pane show through: setWidget fills the crumbs with the window colour,
+        # a visible block on the pane's own background.
+        self._container.setAutoFillBackground(False)
+        self._scroll.viewport().setAutoFillBackground(False)
         self._scroll.setMinimumWidth(60)
         self._scroll_timer = QTimer(self)
         self._scroll_timer.setSingleShot(True)

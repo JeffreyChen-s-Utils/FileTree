@@ -1,0 +1,1452 @@
+{
+  "measured_on": "2026-10-17",
+  "base_head_sha": "2f37d58da2f76c5ffbc66fbb11e2351be3381df3",
+  "python": "3.14.4",
+  "pyside6": "6.11.2",
+  "scope": "Native Windows hidden Qt ResultsView; 100,000 synthetic recorded sibling files, no payloads and no captured filesystem snapshots, 1,000 selected rows, two complete filter/clear cycles per process. No filesystem scan or source mutation.",
+  "method": "Each variant runs in its own process. Integrated baselines restore the actual model and proxy classes from the named commit; worker and controller class ASTs are identical. No test process overlaps final compact timing runs. A 5 ms Qt timer records first-query gaps, including the remaining interval at completion; full query timing includes debounce, worker, mapping and UI. Host background load remains uncontrolled.",
+  "source": [
+    {
+      "path": "je_file_tree/gui/tree_model.py",
+      "measured_normalized_sha256": "ed81d53e83f5c5b10116974fdf997bef79545c37ec23e6e1bdc1e091ba5f9ac9",
+      "final_normalized_sha256": "ed81d53e83f5c5b10116974fdf997bef79545c37ec23e6e1bdc1e091ba5f9ac9",
+      "module_ast_sha256": "c3f62511d92989fd506d3bc6123d06e6e9b02a2e49088276d82f293b74e07fb1"
+    },
+    {
+      "path": "je_file_tree/gui/tree_filter.py",
+      "measured_normalized_sha256": "268f5f81579e71e51440978012a1bff23cef9eb62d36a8bcc4f129af43eb0e91",
+      "final_normalized_sha256": "268f5f81579e71e51440978012a1bff23cef9eb62d36a8bcc4f129af43eb0e91",
+      "module_ast_sha256": "dbe8bba426c2cf441c4b8e6a841bbd3e9d2f62061fac79ada8db9dfee44fc9fb"
+    },
+    {
+      "path": "je_file_tree/gui/tree_projection.py",
+      "measured_normalized_sha256": "3531103283b042cd7b301432f5cb1648799aaa2762e5c3b3780e1447b9bc46f6",
+      "final_normalized_sha256": "f4291c820c0fe21ec5577fae9e7fd0ca4bce83a13c599e630d8efa36e5d16f5c",
+      "module_ast_sha256": "0eecb9a95efe26f66541a4772930ec8f059df2bc0ca7a50c09efefcafc1adf45"
+    }
+  ],
+  "source_note": "Only benchmark comments are added after the measured files; module AST equality is verified. Normalized digests use UTF-8 text with normalized newlines.",
+  "observations": "Final compact pair: first query 3163.58 -> 2459.91 ms; max sampled GUI gap 2520.88 -> 1309.51 ms. Filter switches 2515.42/2482.31 -> 1295.36/1395.32 ms. Clear timing overlaps: 997.74/1028.61 -> 1043.25/925.13 ms. Unchanged queries retain existing reuse. Rejected leaf/repaint variants and the limited prototype remain recorded; only the complete compact adapter is applied.",
+  "memory": {
+    "dictionary_draft": {
+      "rows": 100000,
+      "scope": "Shallow Python cache containers plus scalar row integers only; borrowed Nodes, Qt storage, allocator overhead and shared small-integer deduplication excluded. No scanned files.",
+      "parts": {
+        "groups_dictionary": 224,
+        "position_dictionary": 5242960,
+        "position_values": 2800000,
+        "node_reference_lists": 800984,
+        "source_row_lists": 800984,
+        "source_row_values": 2800000
+      },
+      "estimated_bytes": 12445152
+    },
+    "compact": {
+      "rows": 100000,
+      "scope": "Shallow Python cache containers plus scalar row integers only; borrowed Nodes, Qt storage, allocator overhead and shared small-integer deduplication excluded. No scanned files.",
+      "parts": {
+        "groups_dictionary": 224,
+        "node_reference_lists": 800984,
+        "source_row_buffers": 816640
+      },
+      "estimated_bytes": 1617848
+    },
+    "limitation": "These cache-container/row-coordinate estimates compare two new-adapter drafts, not total application RSS or the old Qt C++ mapping. Nodes, Qt allocations, descriptor objects, allocator arenas and source-model caches are outside the measurement; small Python integer sharing was not deduplicated in the draft."
+  },
+  "visual_comparisons": [
+    {
+      "language": "en",
+      "pixel_difference_bbox": null,
+      "size": [
+        445,
+        533
+      ],
+      "before_png_sha256": "1abd15818850700a7b7fab4ba12263823bcf48742eb93e7d36ad476836ecc2ca",
+      "after_png_sha256": "1abd15818850700a7b7fab4ba12263823bcf48742eb93e7d36ad476836ecc2ca"
+    },
+    {
+      "language": "zh-TW",
+      "pixel_difference_bbox": null,
+      "size": [
+        445,
+        533
+      ],
+      "before_png_sha256": "c2a4b0dc6f39391fff1a8901a6808633f7ca13866e64f5a97809133bf40b8fdb",
+      "after_png_sha256": "c2a4b0dc6f39391fff1a8901a6808633f7ca13866e64f5a97809133bf40b8fdb"
+    },
+    {
+      "language": "zh-CN",
+      "pixel_difference_bbox": null,
+      "size": [
+        445,
+        533
+      ],
+      "before_png_sha256": "5114c5125cfbef29f68bb554ba867b887bf37a1d4ecfdbbb58e05829d5c9c373",
+      "after_png_sha256": "5114c5125cfbef29f68bb554ba867b887bf37a1d4ecfdbbb58e05829d5c9c373"
+    },
+    {
+      "language": "ja",
+      "pixel_difference_bbox": null,
+      "size": [
+        445,
+        527
+      ],
+      "before_png_sha256": "3dceb48eb3053b96fd75162f181245560269b2064afc6594dd95ab2413ebf961",
+      "after_png_sha256": "3dceb48eb3053b96fd75162f181245560269b2064afc6594dd95ab2413ebf961"
+    },
+    {
+      "language": "ko",
+      "pixel_difference_bbox": null,
+      "size": [
+        445,
+        527
+      ],
+      "before_png_sha256": "a00c84bc35e2e758ed34c5f2aed39a70603e89c595160c0ea56a95d26f896674",
+      "after_png_sha256": "a00c84bc35e2e758ed34c5f2aed39a70603e89c595160c0ea56a95d26f896674"
+    }
+  ],
+  "limitations": "Synthetic snapshot-free data does not reproduce the owner's actual hanging Python-source path or establish all native workflows. Substantial GUI pauses remain, especially at greater widths or larger selections; no universal speedup or complete #95 resolution is claimed.",
+  "qt_source_references": [
+    "https://github.com/qt/qtbase/blob/v6.11.2/src/widgets/itemviews/qtreeview.cpp",
+    "https://github.com/qt/qtbase/blob/v6.11.2/src/widgets/itemviews/qabstractitemview.cpp",
+    "https://github.com/qt/qtbase/blob/v6.11.2/src/corelib/itemmodels/qabstractproxymodel.cpp"
+  ],
+  "runs": [
+    {
+      "label": "baseline-before-layout-hints",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 116.41,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 71.19,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 111.5,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2325.64,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 923.6,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2460.11,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 851.98,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2913.25,
+            "gui_max_gap_ms": 2331.27
+          },
+          {
+            "query": "FILE-",
+            "ms": 253.58,
+            "gui_max_gap_ms": 94.46
+          },
+          {
+            "query": "file-0",
+            "ms": 253.2,
+            "gui_max_gap_ms": 96.33
+          },
+          {
+            "query": "FILE-0",
+            "ms": 257.63,
+            "gui_max_gap_ms": 103.63
+          }
+        ]
+      }
+    },
+    {
+      "label": "rejected-source-leaf-hints",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 136.74,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 64.93,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 62.62,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2027.38,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1054.4,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 1877.74,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1119.45,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2616.6,
+            "gui_max_gap_ms": 2033.01
+          },
+          {
+            "query": "FILE-",
+            "ms": 251.91,
+            "gui_max_gap_ms": 125.63
+          },
+          {
+            "query": "file-0",
+            "ms": 247.69,
+            "gui_max_gap_ms": 130.45
+          },
+          {
+            "query": "FILE-0",
+            "ms": 255.93,
+            "gui_max_gap_ms": 132.07
+          }
+        ]
+      }
+    },
+    {
+      "label": "rejected-deferred-repaint",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 125.48,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 70.76,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 70.54,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2250.74,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 830.2,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2501.68,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 961.34,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2795.74,
+            "gui_max_gap_ms": 2256.82
+          },
+          {
+            "query": "FILE-",
+            "ms": 261.16,
+            "gui_max_gap_ms": 109.27
+          },
+          {
+            "query": "file-0",
+            "ms": 329.52,
+            "gui_max_gap_ms": 154.1
+          },
+          {
+            "query": "FILE-0",
+            "ms": 267.65,
+            "gui_max_gap_ms": 109.97
+          }
+        ]
+      }
+    },
+    {
+      "label": "rejected-public-proxy-leaf-hints",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 114.8,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 65.92,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 66.39,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2691.06,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 881.08,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2992.11,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 954.31,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3299.94,
+            "gui_max_gap_ms": 2696.5
+          },
+          {
+            "query": "FILE-",
+            "ms": 246.68,
+            "gui_max_gap_ms": 178.47
+          },
+          {
+            "query": "file-0",
+            "ms": 252.03,
+            "gui_max_gap_ms": 162.51
+          },
+          {
+            "query": "FILE-0",
+            "ms": 256.57,
+            "gui_max_gap_ms": 149.57
+          }
+        ]
+      }
+    },
+    {
+      "label": "public-proxy-hint-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 143.09,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 71.38,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 69.0,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2390.08,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 870.73,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2232.86,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 956.9,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2971.57,
+            "gui_max_gap_ms": 2396.08
+          },
+          {
+            "query": "FILE-",
+            "ms": 257.07,
+            "gui_max_gap_ms": 98.24
+          },
+          {
+            "query": "file-0",
+            "ms": 267.9,
+            "gui_max_gap_ms": 101.52
+          },
+          {
+            "query": "FILE-0",
+            "ms": 262.15,
+            "gui_max_gap_ms": 170.88
+          }
+        ]
+      }
+    },
+    {
+      "label": "direct-proxy-hint-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 244.93,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 70.18,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 89.07,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2739.11,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 958.65,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2722.88,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 957.54,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3434.31,
+            "gui_max_gap_ms": 2751.11
+          },
+          {
+            "query": "FILE-",
+            "ms": 281.92,
+            "gui_max_gap_ms": 124.23
+          },
+          {
+            "query": "file-0",
+            "ms": 281.83,
+            "gui_max_gap_ms": 122.43
+          },
+          {
+            "query": "FILE-0",
+            "ms": 265.19,
+            "gui_max_gap_ms": 114.98
+          }
+        ]
+      }
+    },
+    {
+      "label": "rejected-direct-proxy-leaf-hints",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 162.16,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 67.53,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 68.87,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3021.7,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1041.63,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3156.37,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1202.06,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3705.98,
+            "gui_max_gap_ms": 3027.5
+          },
+          {
+            "query": "FILE-",
+            "ms": 256.07,
+            "gui_max_gap_ms": 257.95
+          },
+          {
+            "query": "file-0",
+            "ms": 305.01,
+            "gui_max_gap_ms": 197.65
+          },
+          {
+            "query": "FILE-0",
+            "ms": 277.51,
+            "gui_max_gap_ms": 189.59
+          }
+        ]
+      }
+    },
+    {
+      "label": "limited-direct-projection-prototype",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 116.34,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 65.6,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 72.51,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 1078.44,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 922.42,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 1071.26,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 925.03,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 1781.2,
+            "gui_max_gap_ms": 1088.67
+          },
+          {
+            "query": "FILE-",
+            "ms": 304.23,
+            "gui_max_gap_ms": 101.66
+          },
+          {
+            "query": "file-0",
+            "ms": 278.8,
+            "gui_max_gap_ms": 102.2
+          },
+          {
+            "query": "FILE-0",
+            "ms": 247.89,
+            "gui_max_gap_ms": 100.41
+          }
+        ]
+      }
+    },
+    {
+      "label": "limited-prototype-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 144.85,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 65.69,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 77.04,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2476.81,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 925.51,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2319.53,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 990.79,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3133.19,
+            "gui_max_gap_ms": 2486.04
+          },
+          {
+            "query": "FILE-",
+            "ms": 262.69,
+            "gui_max_gap_ms": 110.89
+          },
+          {
+            "query": "file-0",
+            "ms": 271.2,
+            "gui_max_gap_ms": 117.38
+          },
+          {
+            "query": "FILE-0",
+            "ms": 298.94,
+            "gui_max_gap_ms": 129.64
+          }
+        ]
+      }
+    },
+    {
+      "label": "initial-integrated-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 129.54,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 77.28,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 122.83,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 1750.23,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 795.46,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2459.16,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 859.51,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2306.07,
+            "gui_max_gap_ms": 2094.45
+          },
+          {
+            "query": "FILE-",
+            "ms": 239.37,
+            "gui_max_gap_ms": 121.43
+          },
+          {
+            "query": "file-0",
+            "ms": 285.06,
+            "gui_max_gap_ms": 95.05
+          },
+          {
+            "query": "FILE-0",
+            "ms": 255.45,
+            "gui_max_gap_ms": 94.18
+          }
+        ]
+      }
+    },
+    {
+      "label": "initial-integrated-projection",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 135.2,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 77.49,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 72.9,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 1430.85,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 914.64,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 1524.49,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 928.36,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2301.04,
+            "gui_max_gap_ms": 1436.97
+          },
+          {
+            "query": "FILE-",
+            "ms": 261.43,
+            "gui_max_gap_ms": 123.36
+          },
+          {
+            "query": "file-0",
+            "ms": 255.54,
+            "gui_max_gap_ms": 118.41
+          },
+          {
+            "query": "FILE-0",
+            "ms": 244.34,
+            "gui_max_gap_ms": 165.31
+          }
+        ]
+      }
+    },
+    {
+      "label": "dictionary-projection-repeat",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 119.46,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 62.03,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 122.54,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "normalized_source_sha256": {
+          "je_file_tree/gui/tree_model.py": "ed81d53e83f5c5b10116974fdf997bef79545c37ec23e6e1bdc1e091ba5f9ac9",
+          "je_file_tree/gui/tree_filter.py": "268f5f81579e71e51440978012a1bff23cef9eb62d36a8bcc4f129af43eb0e91",
+          "je_file_tree/gui/tree_projection.py": "5c936cac26f95f6cfc08981128a2c8f5d51f624ad04b11cf64e6d7b325b40b5d"
+        },
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 1574.54,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 905.99,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 1439.7,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 883.94,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2424.83,
+            "gui_max_gap_ms": 1586.36
+          },
+          {
+            "query": "FILE-",
+            "ms": 257.26,
+            "gui_max_gap_ms": 111.19
+          },
+          {
+            "query": "file-0",
+            "ms": 361.01,
+            "gui_max_gap_ms": 199.15
+          },
+          {
+            "query": "FILE-0",
+            "ms": 259.44,
+            "gui_max_gap_ms": 121.25
+          }
+        ]
+      }
+    },
+    {
+      "label": "dictionary-projection-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 111.37,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 66.08,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 77.97,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "normalized_source_sha256": {
+          "build/tree_model_projection_baseline.py": "16e36c71370f1ac731a94260b6786dd80a7b3ac6dc8d61e0c33efbb68713a247"
+        },
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2619.26,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1121.53,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2564.14,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 980.71,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3380.65,
+            "gui_max_gap_ms": 2635.3
+          },
+          {
+            "query": "FILE-",
+            "ms": 271.74,
+            "gui_max_gap_ms": 123.51
+          },
+          {
+            "query": "file-0",
+            "ms": 253.03,
+            "gui_max_gap_ms": 128.83
+          },
+          {
+            "query": "FILE-0",
+            "ms": 258.09,
+            "gui_max_gap_ms": 128.28
+          }
+        ]
+      }
+    },
+    {
+      "label": "compact-final-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 107.15,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 61.14,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 70.15,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "normalized_source_sha256": {
+          "build/tree_model_projection_baseline.py": "16e36c71370f1ac731a94260b6786dd80a7b3ac6dc8d61e0c33efbb68713a247"
+        },
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2515.42,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 997.74,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2482.31,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1028.61,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3163.58,
+            "gui_max_gap_ms": 2520.88
+          },
+          {
+            "query": "FILE-",
+            "ms": 251.15,
+            "gui_max_gap_ms": 102.42
+          },
+          {
+            "query": "file-0",
+            "ms": 256.98,
+            "gui_max_gap_ms": 123.22
+          },
+          {
+            "query": "FILE-0",
+            "ms": 255.71,
+            "gui_max_gap_ms": 204.89
+          }
+        ]
+      }
+    },
+    {
+      "label": "compact-final-projection",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 107.07,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 80.69,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 72.54,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "normalized_source_sha256": {
+          "je_file_tree/gui/tree_model.py": "ed81d53e83f5c5b10116974fdf997bef79545c37ec23e6e1bdc1e091ba5f9ac9",
+          "je_file_tree/gui/tree_filter.py": "268f5f81579e71e51440978012a1bff23cef9eb62d36a8bcc4f129af43eb0e91",
+          "je_file_tree/gui/tree_projection.py": "3531103283b042cd7b301432f5cb1648799aaa2762e5c3b3780e1447b9bc46f6"
+        },
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 1295.36,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1043.25,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 1395.32,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 925.13,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 2459.91,
+            "gui_max_gap_ms": 1309.51
+          },
+          {
+            "query": "FILE-",
+            "ms": 248.81,
+            "gui_max_gap_ms": 132.07
+          },
+          {
+            "query": "file-0",
+            "ms": 256.43,
+            "gui_max_gap_ms": 112.83
+          },
+          {
+            "query": "FILE-0",
+            "ms": 259.09,
+            "gui_max_gap_ms": 137.12
+          }
+        ]
+      }
+    }
+  ]
+}

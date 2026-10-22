@@ -16,10 +16,7 @@ import subprocess  # nosec B404 - only list2cmdline, to quote the arguments
 import sys
 
 import je_file_tree
-
-_SHOW_NORMAL = 1
-# ShellExecute returns a value above 32 when it started the program.
-_STARTED_ABOVE = 32
+from je_file_tree.gui.native_shell import launch_elevated
 
 
 def supported() -> bool:
@@ -76,9 +73,4 @@ def relaunch_elevated(arguments: list[str]) -> bool:
 
 def run_as_admin(program: str, parameters: str, folder: str) -> bool:
     """Ask Windows to start ``program`` as administrator, which shows the UAC prompt; True when it started."""
-    shell_execute = ctypes.windll.shell32.ShellExecuteW
-    shell_execute.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_wchar_p,
-                              ctypes.c_wchar_p, ctypes.c_int]
-    shell_execute.restype = ctypes.c_void_p  # an HINSTANCE: pointer-sized, not an int
-    result = shell_execute(None, "runas", program, parameters, folder, _SHOW_NORMAL)
-    return (result or 0) > _STARTED_ABOVE
+    return launch_elevated(program, parameters, folder)

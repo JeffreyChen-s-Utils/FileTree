@@ -1,0 +1,2572 @@
+{
+ "source": "artifact macos-native-sources of every Tests run created 2026-10-16/17 that has one",
+ "runs": 51,
+ "samples": [
+  {
+   "run": 38929336488,
+   "sample": "apfs",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "ownership-refused",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e37905ee1ce437e762c05456fd89d8162eb4ead5bd8cd086bbb9357d6839402c"
+  },
+  {
+   "run": 38930818648,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "4e6b9818acff0f38e3d145487cb25e3195674452f511d13ca3d9a4086e68660c"
+  },
+  {
+   "run": 38933346781,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "b4e9c83c4d3e6d608401e1acec546ab7d828423fae28ab0932d9fcd1430ebdbf"
+  },
+  {
+   "run": 38938143798,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "2b3331cc67d92160d331666677f932878f1439e3bc6b8e2eb5a974ee0589cf35"
+  },
+  {
+   "run": 38940110186,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "44d5e3ac1feefc8001e7372f2acc3947f008f234e10f67ada6c71df6d8c2bc73"
+  },
+  {
+   "run": 38942911426,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "f9cdc4ec25740b8ab4420fa22c0a735dc43920b77fa0d804c1bc3e6a4736e997"
+  },
+  {
+   "run": 38942911426,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "16b2f3c066eb6a1b82f7e35e259268536886674c83a956afeb6894fa0f02a33a"
+  },
+  {
+   "run": 38942911426,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "dd758e99510fb7c73059aed16b9902e283848140bb8c3c247a93c30a2b2b0f08"
+  },
+  {
+   "run": 38943175751,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "fb403ddbdb3105ed4ec1a0f87c26437594533acaa398f4e39c15c52eed6896fd"
+  },
+  {
+   "run": 38943175751,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "5026eab2d9c00ac38055f41f6190613fdb368f79c3e89efd6428401de8a14597"
+  },
+  {
+   "run": 38943175751,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "6079a0affc0b8ff251af66c29c04527e4df08737f8eff40e30a1614f5d3b9a24"
+  },
+  {
+   "run": 38945828084,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "1d4e507e80caa40dce5326420e4fa9d225cfe003709b40af797df170a9849463"
+  },
+  {
+   "run": 38945828084,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "991fc45ea7ef4c0a88b2bd67e1df16853ef02fd3468fb054d6e9b40ed1dd6830"
+  },
+  {
+   "run": 38945828084,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "f00952fc75c95f9abd3781a3d15ae5ea749b7b85a8fde775c8c330c8fe655678"
+  },
+  {
+   "run": 38948063154,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "4c2adf8ac60cd3c88412e96fa87761b88e6cee6b8a49af75bd7b5fea9b8d6efa"
+  },
+  {
+   "run": 38948063154,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "be1447b477411ed3ef48729e1fc8b4e17c722f84f0527c7d7337350cc15d8dae"
+  },
+  {
+   "run": 38948063154,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "8df3c95492bed8ee6920af82a52ead94fab8259cca6d1b412bdb8b2bbe56e635"
+  },
+  {
+   "run": 38956208320,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "37cfe68327cd8860e45fcacd2850cf1986e58a893ba7a3d0d78dfb82c16b1563"
+  },
+  {
+   "run": 38956208320,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3e9e7aeb760ed996fb0d729988ea766f7f14343e07649941981e017c7442ac19"
+  },
+  {
+   "run": 38956208320,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "f86e7e675c4c77bd1ea645f9b3f488b5a89bc477541b4f453a680c53eb015c79"
+  },
+  {
+   "run": 38958061980,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "76c72d0cc74e0c4c588930db239f50608e258522903957a98c5c20bb694059df"
+  },
+  {
+   "run": 38958061980,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "5ec0c70571c1c9d853904224216ae0f8a46c98ba64c0bfbe69f4447da05cd030"
+  },
+  {
+   "run": 38958061980,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "c1fb34a27b8e08d928b45439ac82847455ecfdc9ca167613930374a96cf2fe1d"
+  },
+  {
+   "run": 38960028885,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "bf5274551538749e126a997285601a2b55a278bab253ab6b212fffc951b8ae4d"
+  },
+  {
+   "run": 38960028885,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "5e957f765e32927b28713a5cd7349bca572964e0f05fd290e63dbd11bff1ebc2"
+  },
+  {
+   "run": 38960028885,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e01ba7190fdf65b2b80d202654f97e1b0812dc8dbf7cc783aea3e42a096dfd68"
+  },
+  {
+   "run": 38961661105,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "2475bfadcf613077c759977a06f9c2b8de24ca0ee3c98104d8d7713eed41933d"
+  },
+  {
+   "run": 38961661105,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3b8cffa2c758709b78d2b36f85b56286af91b4a5044f254b57a58076a6bc8832"
+  },
+  {
+   "run": 38961661105,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "d020a72da0242754a1ff9d2818f0e4bc9e579c27f7488a730f54e56fb2096757"
+  },
+  {
+   "run": 38964661077,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "fd4b7247c657e7ac9fe7fa6b0ee128f06557b775d31b48caa5f82705ed55ff66"
+  },
+  {
+   "run": 38964661077,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3fe0c4b52c0a489933ed6bc755de2467858bd56b3312d61d3ea4123d126765e1"
+  },
+  {
+   "run": 38964661077,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "b95a3e6a9bd797b70984730e0d2a847fb345d12fda4c7e18cc2f4ae2f7572929"
+  },
+  {
+   "run": 38968047350,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "a593a8572df29c0818555ed6f211f9e40d359366556148614ab4ebe484bbf688"
+  },
+  {
+   "run": 38968047350,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3595580d55fd16f1359de61acfc61a6273f1fc9b36e51d190c08bd410e1f38c7"
+  },
+  {
+   "run": 38968047350,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "525774539d932185c72d8831b4b8b5ef4f1be688fb9ba03e8d1a4b339b224c9e"
+  },
+  {
+   "run": 38970418711,
+   "sample": "apfs",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "ownership-refused",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e3fee773d00249e2c3fcb7620058cbe22a5935e4a368cdfcee6fa332191cc9b4"
+  },
+  {
+   "run": 38970418711,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "9965b74e3345d2c6ea5e8e33857ce3814e77317672bbde4f0bc7e798a5afe3c1"
+  },
+  {
+   "run": 38970418711,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "086f836804c4c384faaa2931b441b9e6cb12a4d0c54c4a954ba938e14366c6c8"
+  },
+  {
+   "run": 38972729907,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "00d03b802b501b3773566e8abd4bf700cc3ca8e526cfdff073c475abee3917ac"
+  },
+  {
+   "run": 38972729907,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "a7118c543bdd2fe287f501431228c0a778a4ce7758bc0c7134877eaa69b287d6"
+  },
+  {
+   "run": 38972729907,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "77c0aef1ce65fb4b50ec394e9f3fae6cb9819e1162cc5f27945bda8389a920eb"
+  },
+  {
+   "run": 38974152846,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e38f8ecafbe822183d95d6399d38f5b8999c4909186557e41f0a6800e12e91ea"
+  },
+  {
+   "run": 38974152846,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "2b0fe051fbcd522a83eb6de446dab149a485624926eb4b765c73fd811a83a3ce"
+  },
+  {
+   "run": 38974152846,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "c27915a04e1d65ab511c8ed2e56514da0277c3f8ed7029ca8c4696658e02657b"
+  },
+  {
+   "run": 38977432068,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e112b87d8e3ce2fad731ee28663812da44c70c93ec92dd4cc538fafd0248567a"
+  },
+  {
+   "run": 38977432068,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "49431fe2415775e3890085aa0fd596223853dd48706b7fe30a2fe8cf66ae31cb"
+  },
+  {
+   "run": 38977432068,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "e06fbad5f36d371afcfcfb087e0bad773a6d4f3a3afe1ea121b89a4e7223b69e"
+  },
+  {
+   "run": 38979577473,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "fa6b48a777f7c308767d1e7c588bceaea985a6fbadd4a8584e96ba71a52d2d47"
+  },
+  {
+   "run": 38979577473,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "6cbc110351ebac015a56088b61f509b85c5e6787c993e0c616a45162fe4a8f7b"
+  },
+  {
+   "run": 38979577473,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "f328a32ff92a36f7ef7c48ca94a7a20458ac21a95f9ab39839ce437a0f44b7c3"
+  },
+  {
+   "run": 38980822764,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "fa222a055ede9e0637157b239453f07ac216ee4b2d8b71105c9ad4725a519dc8"
+  },
+  {
+   "run": 38980822764,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "880d76a1ca6aa1eaea62200d3f892530bc200d36d6e6a971ce7faacd23e45612"
+  },
+  {
+   "run": 38980822764,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "dfde321c8a7f7ef18122524b7026d2b725c84ff660916fe9411cdbdb268369fc"
+  },
+  {
+   "run": 38984040133,
+   "sample": "apfs",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": null,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "1ce7e2578345d4f00d1aec7825fd7ea9bd925fc8b86ca5408f2142dd81eeea46"
+  },
+  {
+   "run": 38984040133,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "07fa6b1290c773bdeac7405666444d8838bb55fbb55443ed223d04e4fba42210"
+  },
+  {
+   "run": 38984040133,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "5c352c36d5b90fa15b000b3cb4754a37356eef5a4c55435c4b763d5eaebb32fd"
+  },
+  {
+   "run": 38986535286,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "9a9e34c2b1584d8437a21dfc17536d52e1f978374a1a68f84c1c1a1e45198bc8"
+  },
+  {
+   "run": 38986535286,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "751981b184993919bbe104b7655ad176be870d111bd07a5a5ccf9efb8857cd9d"
+  },
+  {
+   "run": 38986535286,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "7e89bfcc34d5b71991259a45e058171e2de3ca49cb0d3a5ded5582b8e3dd30e5"
+  },
+  {
+   "run": 38986684150,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "acf5415f12c3b663a7175984512eb7a98c3c5e5c55bb362d3ba7d6bfcdc8e57a"
+  },
+  {
+   "run": 38986684150,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": null,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "bae9bbaaf7846dae15e31b2393047eb9d9a69764ff6d060c072fd62775bff1bf"
+  },
+  {
+   "run": 38986684150,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "9fa4b7dd7d93cfd560f84bfda0edeaea9d6b7be02adb9bec7d0d86e252e5d8e6"
+  },
+  {
+   "run": 38989195900,
+   "sample": "apfs",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": null,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "434305a5a73e5c8573cf8e6260a62259277c78e305449523e516aea52a684fee"
+  },
+  {
+   "run": 38989195900,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "05bb42e070cbaf71d082373397f1dfa82dbeb8e7068525be55866173d9bc8c4a"
+  },
+  {
+   "run": 38989195900,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "c1713141fd27ca4ac73b7fe87f9e8b9cc9d2b2df5eff2158c6986f5b8144b2b1"
+  },
+  {
+   "run": 38989336276,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "337e28e1fed6b34dd257b084c5684826708ecbdf64261f166746daaedcf584ee"
+  },
+  {
+   "run": 38989336276,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "009fbee96915c629dce788aa5a964fd7f522f823a4204f524c54f1aa932db9ac"
+  },
+  {
+   "run": 38989336276,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "4993fe9445d8d5940162f994712977a27ea0cc000a1b7a29cc15e6d7859c6786"
+  },
+  {
+   "run": 38991089842,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "019240a8c786515a93edbc69db50baa99832be2d3e650a1937b41ab60cb9a954"
+  },
+  {
+   "run": 38991089842,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "306ca6997d263e048dfc8aa270dd92df1c9cb19c0099450b2745812a84eab81c"
+  },
+  {
+   "run": 38991089842,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "2d784f055eb6bb725e55e378289df33089e6b55b9a40fbb3dcf747ffbe25b9a5"
+  },
+  {
+   "run": 38991247210,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3ec13b65fa51250e369068cc118dbb58410d85953138df6d635018186658ea64"
+  },
+  {
+   "run": 38991247210,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "1ca39305670b5b6875cc51300955547c70ab670a0d16af3e9b2c016eb7936117"
+  },
+  {
+   "run": 38991247210,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "44f923e074b276fc2a153490906a111f099210b4f8b1f737736d57db720cee1c"
+  },
+  {
+   "run": 38993405347,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "348f138a3bcf84cb132967186c799985b70dcb931f8c0f412c649069067472a5"
+  },
+  {
+   "run": 38993405347,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "9b6901a3b20fc8178a4afe4f1b0903f4028945e4c14a0263265a702640fba57e"
+  },
+  {
+   "run": 38993405347,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "d92820e00ade76c372b17f9a4ac1d8433aa8bb178841f5c72521b455a143c15d"
+  },
+  {
+   "run": 38998643366,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "df2fb448785db974f848a433eda394f0930be96540cc52517374c58f0dc0fba7"
+  },
+  {
+   "run": 38998643366,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "3fc074151f0872e2b48dcbc2f8c7990da8c3f86d16ae3cf351012ff9bf16336a"
+  },
+  {
+   "run": 38998643366,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "ef3c645e88709c187c62ccb37d800d1eba6c70cf2887e3aadd208b9b26a25ef2"
+  },
+  {
+   "run": 39000091134,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "6f71585dac8c3cee09b42b9e16f71880c5220fbf16294bb620fb03201bfafdcd"
+  },
+  {
+   "run": 39000091134,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "aa3dcf693ea7f2dfa25094fa056aff4c76629160a310501891c65babe41279e5"
+  },
+  {
+   "run": 39000091134,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": false,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": null,
+     "stderr_tail": "hdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "a6abb884c9baea5e7995417cc6ca4ae2a8291867a92ef991d9df2910717b7dfd"
+  },
+  {
+   "run": 39000815448,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "9bc8c63fa75dcd56db6bd18f119f59bf5ec4bfc4c049bfaa219d8d98029acfc8"
+  },
+  {
+   "run": 39000815448,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "19d6c157c72fe724ce1637dad90b6b138c6be799f291f20e6106cf4553cc41dd"
+  },
+  {
+   "run": 39000815448,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    }
+   ],
+   "proof_sha256": "dbe06c7a43c4910f4b3598caa05cbdcb8540ba83c974b9f01934ca7d9a7b75f4"
+  },
+  {
+   "run": 39001667237,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "2fc852ba297b3104ffd1f0529d63041f108151bf219c262a9f07e2d54e142d67"
+  },
+  {
+   "run": 39001667237,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6b7252c66240dcbdac1c75f87b75bc9c0cca826a0b00d3d57d07c558a2658481"
+  },
+  {
+   "run": 39001667237,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "de87361eb10701bb4aa996e70acab5aed942d0f40e3d26e7dbdfb813e9a92f26"
+  },
+  {
+   "run": 39004155733,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "19cd7093f5c4b55d30824b7f4161499ebb26a86870524afd5a322e69014150c7"
+  },
+  {
+   "run": 39004155733,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "85de32b4fbf4aa0994a568277d2623aef71fa95c8d053448ed87bdaa7117b50e"
+  },
+  {
+   "run": 39004155733,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6b5df2177dc5a7c685369fb1b4d6d0c05370594e5e307ace1064259bcfa3780c"
+  },
+  {
+   "run": 39006059647,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "3d2a92f1fe6eb6513d3d91a89141dabb346192a3e407dfaa77587da287da4b7f"
+  },
+  {
+   "run": 39006059647,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "extWaitQuiet: IOServiceWaitQuiet took 0.000002 seconds\nLetDiskImageDriverSettleDown: wait took 0.000014 seconds\nhdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 1.0,
+     "stderr_tail": "extWaitQuiet: IOServiceWaitQuiet took 0.000003 seconds\nLetDiskImageDriverSettleDown: wait took 0.000025 seconds\nhdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": null
+    },
+    {
+     "attempt": 3,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0e9078b95f88f328f95dbdb643828f5f6e1f5169c5516ed6600910a091b744ee"
+  },
+  {
+   "run": 39006059647,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "1b6c806fe92f5d4cf7f2eb0a879ca4faa7f357471e294e345c0f7855e0603b00"
+  },
+  {
+   "run": 39007016643,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "2ee0107f0a401e611b04b834767b8ff8397f4ffdf6db4393e0808403763bd7af"
+  },
+  {
+   "run": 39007016643,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "24cd392b55ae26a1a528555ccf24f4b28ad452da79efdfb933326dc67b6902b0"
+  },
+  {
+   "run": 39007016643,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0dd513b5b1841beb3c886135d55aeabf17973554c4269982fac5aac1c02174ca"
+  },
+  {
+   "run": 39034413839,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6b88cea9886df10e1b7d25ab58331ec648ca7e1f4a4c34afa7c1e5fd4dc68d38"
+  },
+  {
+   "run": 39034413839,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "2f5eeac8e9b7a5d179d357acef3abebc1256724d61b4f4cbd7d6fe68d0407a41"
+  },
+  {
+   "run": 39034413839,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "d13dea80ff713d072887d33c501da16bf34b272f35c1c3bcf07b3681bb4b43cf"
+  },
+  {
+   "run": 39034546524,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "452a58709fe111590b07747c783596c4a42ca85f91fbb03293907a282961a45f"
+  },
+  {
+   "run": 39034546524,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "472ab94551a829aa490e83ee419545aac0e8306c2e3ff2c551d2dbd8429ff60a"
+  },
+  {
+   "run": 39034546524,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "9f9c893065d9b9cef6eb9c01407867bcf9f942ab2c30afd9501334c81064f361"
+  },
+  {
+   "run": 39036148048,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0b1690c5c3fb16b7581d1bb454dec49036d945cde16268441d0c56fe9097f223"
+  },
+  {
+   "run": 39036148048,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "e40a4d3f76a6619e12bf1540e2f9c888e5a1fb93d1644505e148d29d775857e4"
+  },
+  {
+   "run": 39036148048,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "e5202a63374319b40b6a19be03e07d4b7ff30076ba3aff84e7a7926f55a19fb7"
+  },
+  {
+   "run": 39036712716,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "2753b2ba12e37c33dce56a023b2b6dfa05e24b2da3ab5fa625c96e9160408d5d"
+  },
+  {
+   "run": 39036712716,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "10051470d15cb3c8d8f1b41cfcd4ac8201225bf2f548feb8daaad18e2de94eb6"
+  },
+  {
+   "run": 39036712716,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "35ba627e41eea4a256cb269a82d80e0993e8c80475b64606fc7a639de5f03c45"
+  },
+  {
+   "run": 39038900362,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "e4619f3b1905d186ace0963d9e9e37744dba30880a95431871d087282957909b"
+  },
+  {
+   "run": 39038900362,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "a3544c70403e5f8108fd9854f4c0f8e3ccbd96760e13fb883e40624b057cfb99"
+  },
+  {
+   "run": 39038900362,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "cb101b52ad7a11d10e6e186b6ca9a6a310da871e25dc47b47f4c74b6c7cf0237"
+  },
+  {
+   "run": 39039006993,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "23530bde62f636b2d44a17c69a95e18bf9082337181f83ceeda9eee92cf7ba94"
+  },
+  {
+   "run": 39039006993,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "46017a280e98e053c64884a390b06176eb8d0c63555402e1cc44828f281df28b"
+  },
+  {
+   "run": 39039006993,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "97c20d24d66b7d16b57a2240b933fa8eddd75fd95fe6c72c803f2fb68625b5e9"
+  },
+  {
+   "run": 39040502657,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0435f05cd816833afea694097bf273b0535ee5dd18b1911a7cb45e3a21f34832"
+  },
+  {
+   "run": 39040502657,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "5b1f2c074e389589f1e980f74f8b912a982efcf470b0fbf8ca26aeb971f79178"
+  },
+  {
+   "run": 39040502657,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "4b235078af13deff6dca4995dbd6b28954203f0e9a7dac227d21539a6beb6300"
+  },
+  {
+   "run": 39041783441,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "ab8b5d19369fc4b59b0d858e2b0cccb915a9be32a3c55d05023a47cd648c95cf"
+  },
+  {
+   "run": 39041783441,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "d37c2ece6a5a77dc738717da3988a2e7db1a9cd7d13a783576e3c2ff4f95f4fa"
+  },
+  {
+   "run": 39041783441,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "bc8a7442cd1934dc81891315f8f2c85a86419178ab807bd8e6b96a7b34940f2d"
+  },
+  {
+   "run": 39044319401,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "b9454c9cfeeb5bee2636143c7f3bbc1cb48075759b3ca3756a224ddadd195636"
+  },
+  {
+   "run": 39044319401,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0d300bab2d8439cc620649c709631edf6b6bbe787a542b24682ba18e47f57c76"
+  },
+  {
+   "run": 39044319401,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "8fe1a254334c68355b5daf5e4a605e5f2c3779dfcee204e3f8ba6c62d21e3431"
+  },
+  {
+   "run": 39044324310,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "471a7b17266a746df35592d90adafad2e11d588e483c814b5966eddebaf58b63"
+  },
+  {
+   "run": 39044324310,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "d999e81660c1e0f3973aaf5e6eb2455922ed5883bab8c1a63e8c3c86b00ff415"
+  },
+  {
+   "run": 39044324310,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "d0ef641a0e0ff3eab10719e257207bc4533f88dc2cf0e02f894f0463434b1a84"
+  },
+  {
+   "run": 39045957388,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "9ed8c9d60a518eb93bfedf495fc0fdcc28ce3f2b5dc1186341f101437217d485"
+  },
+  {
+   "run": 39045957388,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "native-refused",
+     "returncode": 16,
+     "retry_delay_seconds": 0.5,
+     "stderr_tail": "extWaitQuiet: IOServiceWaitQuiet took 0.000004 seconds\nLetDiskImageDriverSettleDown: wait took 0.000027 seconds\nhdiutil: couldn't eject \"disk5\" - Resource busy\n",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": null
+    },
+    {
+     "attempt": 2,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": true,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "ca0b7bca43f11ed8f346db77cd07acbb9cc9cf1d08e112e56d071e3b94a6f209"
+  },
+  {
+   "run": 39045957388,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6f24be00f381b67c870ec49474fcd9a31016e1c73bdb1374f5ee9cccb6ec4de4"
+  },
+  {
+   "run": 39045961901,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "fbea7a18f220325bfb2c3c6801eae76e3f6301140830c129b6fb658457ff9f0a"
+  },
+  {
+   "run": 39045961901,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "240c99ff469d6eb4a12adf58f4bc7d28892f79abb7a6200205ae248e8fe179f4"
+  },
+  {
+   "run": 39045961901,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "16df78ec575415c4506a252e6e38a99b5e0737ba20929291f5668cfe262ee77e"
+  },
+  {
+   "run": 39047431017,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "0a754c8a68a2e5e58f676d9acd0e176ce627d2cb3ee91717ebb8f0a81d503e10"
+  },
+  {
+   "run": 39047431017,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6c01d6bf5bb208016d566aa24fb7a64f160f82af1d1f301c4c50727f6263ce1c"
+  },
+  {
+   "run": 39047431017,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "3e43f015693872b1594d70ff7b8d6e0465839894d842ad31ad2c9f56d520dbf7"
+  },
+  {
+   "run": 39047434588,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "70cd991aec3ff0dc4ec697a51e49cb145a4a89adfda8ee4d736b1a1051816b2b"
+  },
+  {
+   "run": 39047434588,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "6b739a486391a072814eac6cd367c7f15c71020f863bb58e5d99c1c9aa671b76"
+  },
+  {
+   "run": 39047434588,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "5639748eb419074ef54f32766ce74cbf6b2b9b0348f31dffc35bba2714f5b7e7"
+  },
+  {
+   "run": 39048225243,
+   "sample": "apfs",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "971c9e446b99aba8147e26f62dddbea9b361a8a8be5a3c6e89ebeb8021d66e92"
+  },
+  {
+   "run": 39048225243,
+   "sample": "apfs/sample-2",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "7caa18cc74463f2bf913a5d86d3c6c666c5d77ec678f8a0a6fc8b7f6c5b4bf39"
+  },
+  {
+   "run": 39048225243,
+   "sample": "apfs/sample-3",
+   "cleanup_verified": true,
+   "attempts": [
+    {
+     "attempt": 1,
+     "phase": "verified",
+     "returncode": null,
+     "retry_delay_seconds": null,
+     "stderr_tail": "",
+     "unmounted_identity_rechecked": null,
+     "native_stdout": "\"disk5\" ejected.\n"
+    }
+   ],
+   "proof_sha256": "2f62d68f771b981e2682f5fccc52522aa12560b728d9837559efbcdafa6afdca"
+  }
+ ]
+}

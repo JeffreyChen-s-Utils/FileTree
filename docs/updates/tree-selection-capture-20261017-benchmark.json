@@ -1,0 +1,600 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "46783e99853ea8cb128bfccdcebf9e45a4125dcb",
+  "runtime": {
+    "python": "3.14.4",
+    "pyside": "6.11.2",
+    "platform": "Windows-11-10.0.26300-SP0"
+  },
+  "method": [
+    "Fresh native Windows Qt process per run; WA_DontShowOnScreen. In-memory recorded sibling Node references, snapshot=None. No source filesystem scan, write or native cleanup operation.",
+    "All mode starts with a single complete-column range; sparse selects every hundredth row. Exact selected-node identities, one remaining selection model and shared tree/header ownership are checked after clear/sort. --updates also checks exact identities for every equivalent-result query while filtered.",
+    "The --before harness loads the exact 46783e9 TreeFilter module. The 10k baseline preceded source changes. The 100k baseline shares current source/projection modules, whose new capture helpers are unused by the old controller; ordinary model behavior is unchanged.",
+    "Switch timing includes capture, rebinding, expansion, one selection update and current-index restoration. Query timing includes debounce, worker and settling. A 5 ms heartbeat covers query-to-settle; both timings are captured before expensive selectedRows correctness assertions.",
+    "Profiling is separate: 10k all-selected baseline switches total 5.422 s, selectedRows 3.706 s cumulative, 5403553 calls. Profiling timings are not mixed into unprofiled comparisons.",
+    "Early after runs preceded one additional condition requiring the displayed proxy to be this controller's own proxy. Final 100k and 10k all-selected timings rerun with that guard; only a measurement comment changed afterward, preserving all three measured ASTs.",
+    "Host load is uncontrolled, so these are samples rather than universal percentages. Mapping selected nodes, Qt selection application and wide-folder layout still block in proportion to exposed/selected rows. #95 remains open, and no actual owner hanging path is verified here.",
+    "Capture copies only selected real-node references before callbacks can sort, remove or replace source rows. It does not preserve live list slices or reuse range endpoints across source mutation. Partial-cell and custom data/flags/node-role behavior retain selectedRows fallback."
+  ],
+  "sources": {
+    "je_file_tree/gui/tree_model.py": {
+      "lf_sha256": "8e98875321d60bd6167d67a47bf4f957f2acee4bd200dc3c3fb5216320510000",
+      "ast_sha256": "de9c8a82744374a25379a24006ef94826bc8dba4739865aab6d3eefcdc5ca6eb"
+    },
+    "je_file_tree/gui/tree_filter.py": {
+      "lf_sha256": "d7cf5e3bb9458e324b449501f74dd5e3afd5fe433bf847d4cacec2cfd6e490fc",
+      "ast_sha256": "136cfd6558313df94f6b78b53930a08facfa88dd0a62ab145f3b7e45da2bc582"
+    },
+    "je_file_tree/gui/tree_projection.py": {
+      "lf_sha256": "2f400eb7688dabcb62d513e5ab6d381879c19250c4014e98b48edbbdb44864fb",
+      "ast_sha256": "1c6cd4812e97fc6bc254dafcd5ed2a5deab223b81cd2307f7745b8691303bd38"
+    }
+  },
+  "runs": [
+    {
+      "label": "all-before-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 10000 1 --updates --before",
+      "before_final_proxy_identity_guard": false,
+      "raw_log": "build\\filter-ranges-all-before-final.log",
+      "raw_sha256": "8608143fa3e22036ca3a0f2a587dfe0fe291de7f332691d2fc67fbf88e56f0e0",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 10000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 3.46,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 4.56,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": true,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 765.15,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 3136.71,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 951.45,
+            "gui_max_gap_ms": 771.12
+          },
+          {
+            "query": "FILE-",
+            "ms": 216.4,
+            "gui_max_gap_ms": 29.98
+          },
+          {
+            "query": "file-0",
+            "ms": 186.71,
+            "gui_max_gap_ms": 22.08
+          },
+          {
+            "query": "FILE-0",
+            "ms": 184.48,
+            "gui_max_gap_ms": 19.94
+          }
+        ]
+      }
+    },
+    {
+      "label": "sparse-before-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 10000 1 --updates --before --sparse",
+      "before_final_proxy_identity_guard": false,
+      "raw_log": "build\\filter-ranges-sparse-before-final.log",
+      "raw_sha256": "880c26b5c3dd5632d17734c80eb97c7f9719763f76da519aabcec950c27a3763",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 100,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 9.12,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 6.78,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "sparse",
+        "before": true,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 100,
+            "ms": 108.01,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 100,
+            "ms": 118.43,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 357.7,
+            "gui_max_gap_ms": 195.6
+          },
+          {
+            "query": "FILE-",
+            "ms": 190.71,
+            "gui_max_gap_ms": 16.5
+          },
+          {
+            "query": "file-0",
+            "ms": 183.32,
+            "gui_max_gap_ms": 10.89
+          },
+          {
+            "query": "FILE-0",
+            "ms": 190.76,
+            "gui_max_gap_ms": 15.61
+          }
+        ]
+      }
+    },
+    {
+      "label": "all-after-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 10000 1 --updates",
+      "before_final_proxy_identity_guard": true,
+      "raw_log": "build\\filter-ranges-all-after-final.log",
+      "raw_sha256": "4ffc59249f648efee0c99f29838507e28ef570ce0c7974a8e5a67e90e8060ba8",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 10000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 3.03,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 11.88,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 389.9,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 425.23,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 598.85,
+            "gui_max_gap_ms": 400.15
+          },
+          {
+            "query": "FILE-",
+            "ms": 214.92,
+            "gui_max_gap_ms": 27.01
+          },
+          {
+            "query": "file-0",
+            "ms": 188.02,
+            "gui_max_gap_ms": 17.23
+          },
+          {
+            "query": "FILE-0",
+            "ms": 182.2,
+            "gui_max_gap_ms": 16.83
+          }
+        ]
+      }
+    },
+    {
+      "label": "sparse-after-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 10000 1 --updates --sparse",
+      "before_final_proxy_identity_guard": true,
+      "raw_log": "build\\filter-ranges-sparse-after-final.log",
+      "raw_sha256": "652a860ad2e2d3f7d4a79b3ccf28575c0c2b6e3d0c35292cd885bfa2475ecb6d",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 100,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 8.88,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 5.11,
+            "source_persistent_indexes": 201,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "sparse",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 100,
+            "ms": 96.35,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 100,
+            "ms": 57.27,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 341.57,
+            "gui_max_gap_ms": 102.59
+          },
+          {
+            "query": "FILE-",
+            "ms": 164.84,
+            "gui_max_gap_ms": 11.15
+          },
+          {
+            "query": "file-0",
+            "ms": 181.82,
+            "gui_max_gap_ms": 14.95
+          },
+          {
+            "query": "FILE-0",
+            "ms": 183.68,
+            "gui_max_gap_ms": 10.14
+          }
+        ]
+      }
+    },
+    {
+      "label": "100k-before-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 100000 1 --before",
+      "before_final_proxy_identity_guard": false,
+      "raw_log": "build\\filter-ranges-100k-before-final.log",
+      "raw_sha256": "9db476ae08aa9d4cadb5420799a0fe3ed70cfc45e2696b056b355edf80109be5",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 43.3,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 37.36,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": true,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 9595.91,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 9863.83,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-after-final",
+      "command": "py -3 build/measure_filter_selection_ranges.py 100000 1",
+      "before_final_proxy_identity_guard": true,
+      "raw_log": "build\\filter-ranges-100k-after-final.log",
+      "raw_sha256": "88ad0a957b011eca1dd519747289d8dae638afbf33060ed692eac87b11aa6eb7",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 47.86,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 32.48,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 2954.23,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 1657.17,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "100k-after-guard",
+      "command": "py -3 build/measure_filter_selection_ranges.py 100000 1",
+      "before_final_proxy_identity_guard": false,
+      "raw_log": "build\\filter-ranges-100k-after-guard.log",
+      "raw_sha256": "e031aed33977f5b4e6d1aac446fed9b0b533199a5b1c76d89b9e0f977edfe014",
+      "result": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 100000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 47.34,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 55.59,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 3292.57,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 1810.5,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "all-after-guard",
+      "command": "py -3 build/measure_filter_selection_ranges.py 10000 1 --updates",
+      "before_final_proxy_identity_guard": false,
+      "raw_log": "build\\filter-ranges-all-after-guard.log",
+      "raw_sha256": "9b8dd93a60c30e87e1a918d43e5f83915fb43422013b26e79794a50fee59aa67",
+      "result": {
+        "platform": "windows",
+        "files": 10000,
+        "selected": 10000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 2.99,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 2.45,
+            "source_persistent_indexes": 4,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "selection_mode": "all",
+        "before": false,
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "selection_ranges": 1,
+            "ms": 228.09,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "selection_ranges": 1,
+            "ms": 178.23,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 411.65,
+            "gui_max_gap_ms": 249.53
+          },
+          {
+            "query": "FILE-",
+            "ms": 176.09,
+            "gui_max_gap_ms": 14.85
+          },
+          {
+            "query": "file-0",
+            "ms": 177.68,
+            "gui_max_gap_ms": 18.68
+          },
+          {
+            "query": "FILE-0",
+            "ms": 176.56,
+            "gui_max_gap_ms": 16.97
+          }
+        ]
+      }
+    }
+  ],
+  "reproduction": {
+    "save_harness_as": "build/measure_filter_selection_ranges.py",
+    "baseline_file": "build/tree_filter_ranges_baseline.py",
+    "baseline_command": "git show 46783e9:je_file_tree/gui/tree_filter.py",
+    "harness": "\"\"\"Synthetic native filter cycling; no source operations or filesystem traversal.\"\"\"\nimport json\nimport sys\nimport time\nimport cProfile\nimport pstats\nfrom contextlib import nullcontext\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1]))\nfrom PySide6.QtCore import QCoreApplication, QEvent, QItemSelection, QItemSelectionModel, Qt, QTimer\nfrom PySide6.QtWidgets import QApplication\nfrom je_file_tree.core.analysis import category_stats, summarise\nfrom je_file_tree.core.node import Node\nfrom je_file_tree.core.scanner import ScanResult\nfrom je_file_tree.gui.i18n import set_language\nfrom je_file_tree.gui.results_view import ResultsView\nfrom je_file_tree.gui.scan_worker import ScanOutcome\nfrom je_file_tree.gui.tree_model import NAME, NODE_ROLE\nfrom je_file_tree.gui.tree_filter import ExpandedTreeProxy\nfrom je_file_tree.gui.tree_model import FolderTreeModel\n\nif '--before' in sys.argv:\n    import importlib.util\n    import je_file_tree.gui.results_view as results_module\n    spec = importlib.util.spec_from_file_location('selection_baseline', Path(__file__).with_name('tree_filter_ranges_baseline.py'))\n    baseline = importlib.util.module_from_spec(spec)\n    sys.modules[spec.name] = baseline\n    spec.loader.exec_module(baseline)\n    results_module.TreeFilter = baseline.TreeFilter\n\nif '--legacy-predicate' in sys.argv:\n    def legacy_predicate(self, row, parent):\n        source = self.sourceModel()\n        if source is None:\n            return False\n        node = source.index(row, 0, parent).data(NODE_ROLE)\n        return node is source.root or node is not None and id(node) in self.allowed\n    ExpandedTreeProxy.filterAcceptsRow = legacy_predicate\n\nif '--leaf-flags' in sys.argv:\n    def leaf_flags(self, index):\n        flags = super(FolderTreeModel, self).flags(index)\n        node = self._entry(index)\n        if (node is not None and not node.is_dir and not node.children\n                and node not in self._archives and not node.name.lower().endswith(('.zip', '.7z', '.rar'))):\n            flags |= Qt.ItemFlag.ItemNeverHasChildren\n        return flags\n    FolderTreeModel.flags = leaf_flags\n\nif '--direct-predicate' in sys.argv:\n    def direct_predicate(self, row, parent):\n        source = self.sourceModel()\n        if source is None:\n            return False\n        if not parent.isValid():\n            node = source.root if row == 0 else None\n        else:\n            children = source._ordered(source._entry(parent))\n            node = children[row] if 0 <= row < len(children) else None\n        return node is source.root or node is not None and id(node) in self.allowed\n    ExpandedTreeProxy.filterAcceptsRow = direct_predicate\n\nif '--proxy-flags' in sys.argv:\n    def proxy_flags(self, index):\n        return (Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable\n                if index.isValid() else Qt.ItemFlag.NoItemFlags)\n    ExpandedTreeProxy.flags = proxy_flags\n\nif '--cached-leaf-flags' in sys.argv:\n    BASE_FLAGS = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable\n    LEAF_FLAGS = BASE_FLAGS | Qt.ItemFlag.ItemNeverHasChildren\n    def cached_leaf_flags(self, index):\n        node = self._entry(index)\n        if node is None:\n            return Qt.ItemFlag.NoItemFlags\n        if (not node.is_dir and not node.children and node not in self._archives\n                and not self._orders.get(id(node))\n                and not node.name.lower().endswith(('.zip', '.7z', '.rar'))):\n            return LEAF_FLAGS\n        return BASE_FLAGS\n    FolderTreeModel.flags = cached_leaf_flags\n\nif '--defer-repaint' in sys.argv:\n    from je_file_tree.gui.tree_filter import TreeFilter\n    original_switch = TreeFilter._switch\n    def deferred_switch(self, filtered):\n        enabled = self.tree.updatesEnabled()\n        self.tree.setUpdatesEnabled(False)\n        try:\n            return original_switch(self, filtered)\n        finally:\n            self.tree.setUpdatesEnabled(enabled)\n    TreeFilter._switch = deferred_switch\n\napp = QApplication([])\nset_language('en')\nheartbeat = QTimer(app)\nheartbeat.setInterval(5)\nlast_tick = time.perf_counter()\ngaps = []\ndef tick():\n    global last_tick\n    now = time.perf_counter()\n    gaps.append((now-last_tick)*1000)\n    last_tick = now\nheartbeat.timeout.connect(tick)\nheartbeat.start()\ncount = int(sys.argv[1]) if len(sys.argv) > 1 else 20000\ncycles = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 5\nroot = Node('filter-lifetime-records', True, children=[], file_count=count)\nroot.children.extend(Node(f'file-{n:06d}.bin', False, size=count-n, file_count=1, parent=root)\n                     for n in range(count))\nroot.size = sum(node.size for node in root.children)\nsummary = summarise(root, now=1800000000)\nview = ResultsView()\nview.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)\nview.resize(1200, 800)\nview.show_outcome(ScanOutcome(ScanResult(root, [], 0), summary.largest, summary.extensions,\n                              category_stats(summary.extensions), summary.ages, summary.now))\nview.show()\napp.processEvents()\nparent = view.tree_model.index(0, 0)\npicked = QItemSelection()\nmode = 'sparse' if '--sparse' in sys.argv else 'all'\nwanted = set(root.children[::100] if mode == 'sparse' else root.children)\nif mode == 'sparse':\n    for row in range(0, count, 100):\n        index = view.tree_model.index(row, NAME, parent)\n        picked.select(index, index)\nelse:\n    picked.select(view.tree_model.index(0, NAME, parent), view.tree_model.index(count-1, NAME, parent))\nview.tree.selectionModel().select(picked, QItemSelectionModel.SelectionFlag.ClearAndSelect\n                                 | QItemSelectionModel.SelectionFlag.Rows)\nswitches = []\nswitch = view.tree_filter._switch\nprofiler = cProfile.Profile() if '--profile' in sys.argv else None\ndef measured_switch(filtered):\n    started = time.perf_counter()\n    original_sort = view.tree_model.sort\n    original_preserve = view.tree_model.preserve_sort\n    if '--force-rebind-sort' in sys.argv:\n        view.tree_model.preserve_sort = nullcontext\n    requested_sorts = []\n    if '--skip-rebind-sort' in sys.argv:\n        def same_sort(column, order):\n            assert (column, order) == (view.tree_model._sort_column, view.tree_model._sort_order)\n            requested_sorts.append((column, str(order)))\n        view.tree_model.sort = same_sort\n    if profiler:\n        profiler.enable()\n    try:\n        return switch(filtered)\n    finally:\n        view.tree_model.sort = original_sort\n        view.tree_model.preserve_sort = original_preserve\n        if profiler:\n            profiler.disable()\n        switches.append({'filtered': filtered, 'selection_ranges': len(view.tree.selectionModel().selection()), 'ms': round((time.perf_counter()-started)*1000, 2),\n                         'suppressed_sorts': requested_sorts})\nview.tree_filter._switch = measured_switch\nready = view.tree_filter._ready\nif '--skip-unchanged' in sys.argv:\n    def changed_ready(worker, allowed):\n        controller = view.tree_filter\n        if (not controller._closed and worker is controller._current and not worker.cancel.is_set()\n                and worker.root is controller.source.root and controller.proxy.allowed == allowed\n                and controller.proxy.sourceModel() is controller.source and controller.tree.model() is controller.proxy):\n            return\n        ready(worker, allowed)\n    view.tree_filter._ready = changed_ready\n\ndef settle():\n    deadline = time.monotonic() + 30\n    while view.tree_filter.timer.isActive() or view.tree_filter._workers:\n        assert time.monotonic() < deadline\n        app.processEvents()\n        time.sleep(.005)\n    app.processEvents()\n    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)\n\ndef observe(cycle):\n    started = time.perf_counter()\n    view.tree.sortByColumn(NAME, Qt.SortOrder.DescendingOrder)\n    elapsed = (time.perf_counter()-started)*1000\n    settle()\n    assert {index.data(NODE_ROLE) for index in view.tree.selectionModel().selectedRows()} == wanted\n    return {'cycle': cycle, 'selection_models': len(view.tree.findChildren(QItemSelectionModel)),\n            'sort_ms': round(elapsed, 2), 'source_persistent_indexes': len(view.tree_model.persistentIndexList()),\n            'selection_owners': {type(owner).__name__: len(owner.findChildren(\n                QItemSelectionModel, options=Qt.FindChildOption.FindDirectChildrenOnly))\n                for owner in (view.tree, view.tree.header())},\n            'header_shares_active_selection': view.tree.header().selectionModel() is view.tree.selectionModel()}\n\ntry:\n    results = [observe(0)]\n    updates = []\n    if '--updates' in sys.argv:\n        for query in ('file-', 'FILE-', 'file-0', 'FILE-0'):\n            started = time.perf_counter()\n            gaps.clear()\n            last_tick = started\n            view.tree_filter.line.setText(query)\n            settle()\n            ended = time.perf_counter()\n            elapsed = (ended-started)*1000\n            max_gap = max([*gaps, (ended-last_tick)*1000])\n            assert view.tree.model() is view.tree_filter.proxy\n            assert view.tree_filter.proxy.rowCount(view.tree_filter.index_for(root)) == count\n            assert {index.data(NODE_ROLE) for index in view.tree.selectionModel().selectedRows()} == wanted\n            updates.append({'query': query, 'ms': round(elapsed, 2), 'gui_max_gap_ms': round(max_gap, 2)})\n    for cycle in range(1, cycles + 1):\n        view.tree_filter.line.setText('file-')\n        settle()\n        assert view.tree.model() is view.tree_filter.proxy\n        view.tree_filter.line.clear()\n        settle()\n        assert view.tree.model() is view.tree_model\n        results.append(observe(cycle))\n    print(json.dumps({'platform': app.platformName(), 'files': count, 'selected': len(wanted),\n                      'cycles': results, 'selection_mode': mode, 'before': '--before' in sys.argv, 'sources_modified': False, 'switches': switches, 'updates': updates}))\n    if profiler:\n        pstats.Stats(profiler).sort_stats('cumulative').print_stats(24)\nfinally:\n    view.tree_filter.shutdown()\n    for panel in (view.search, view.duplicates, view.cleanup, view.users, view.changes, view.details):\n        panel.stop(wait=True)\n    view.wait_for_lists()\n    view.close()\n"
+  },
+  "primary_references": [
+    "https://doc.qt.io/qt-6/qitemselectionmodel.html#selectedRows",
+    "https://doc.qt.io/qt-6.11/qabstractproxymodel.html"
+  ],
+  "tests": {
+    "red": "Two real switch directions first failed on selectedRows per-cell expansion in build/filter-ranges-red.log.",
+    "focused": "66 passed, including 21 new cases: two complete-row switch directions and 19 partial/custom-role/custom-data/flags, callback mutation, virtual/foreign/invalid and subclass cases."
+  },
+  "baseline_filter_lf_sha256": "699ef0c55957cbe7f90b36a0814f15ecf8b835a89ebf60d2a730f73944ebe878",
+  "validation": {
+    "passed": 2047,
+    "skipped": 54,
+    "seconds": 301.67,
+    "new_cases_in_final_junit": 21,
+    "junit": "build/filter-ranges-full.xml",
+    "log": "build/filter-ranges-full-pytest.log",
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ],
+    "skip_scope": "Existing native-platform/privilege and the owned Windows fixture lacking an 8.3 alias; no claim of complete native workflow validation."
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "date": "2026-10-17",
+  "baseline_commit": "b597658349d3f5be4bf205fa70ff50173b5af5b9",
+  "scope": "Owned administrator-restart worker, deferred closing and thread-owned COM launch.",
+  "native_com_probe": {
+    "raw_log": "build/elevation-native-com.json",
+    "native_uac_invoked": false,
+    "before": {
+      "hresult": 0,
+      "type": 1,
+      "qualifier": 1
+    },
+    "during": {
+      "hresult": 0,
+      "type": 0,
+      "qualifier": 0
+    },
+    "after": {
+      "hresult": 0,
+      "type": 1,
+      "qualifier": 1
+    },
+    "mask": 256,
+    "structure_size": 112,
+    "process_handle": null,
+    "boundary": "Real Windows COM on an owned Qt worker; Shell execution is mocked. No actual UAC prompt or elevated program was launched.",
+    "raw_sha256": "b4be5266cf0fa6fe6d0b4357ac60c9849c96daacffbe17eb522f89b22090ae95"
+  },
+  "first_full_run": {
+    "junit": "build/elevation-worker-full.xml",
+    "passed": 2092,
+    "skipped": 54,
+    "failed": 1,
+    "seconds": 240.95,
+    "failure": "Ambient COM state changed from implicit MTA to CO_E_NOTINITIALIZED; this does not prove a leaked thread reference.",
+    "correction": "Verify owned references using actual initialization results. Preserve an existing STA after S_FALSE, require no owned STA after S_OK, and cover nested ownership. STA and main STA are both valid. Product code remains unchanged by this test correction."
+  },
+  "focused": {
+    "log": "build/elevation-worker-final-contracts.log",
+    "passed": 43,
+    "coverage": "GUI heartbeat, captured arguments, duplicate prevention, decline/success/error, rejected-dialog success, parent closing, literal errors, twelve mocked API combinations and two real COM ownership cases."
+  },
+  "visual_qa": {
+    "product_command": "py -3 tools/make_screenshots.py",
+    "languages": [
+      "en",
+      "zh-TW",
+      "zh-CN",
+      "ja",
+      "ko"
+    ],
+    "product_images": "Five regenerated 1200x800 images inspected; differences are confined to 7x6 clear-icon regions.",
+    "dialog_frames": "Fifteen waiting/error/closing frames inspected in build/elevation-dialog-previews. Translated text and Close buttons fit; markup-like errors remain literal.",
+    "product_manifest": [
+      {
+        "path": "docs/images/main_window_en.png",
+        "size": [
+          1200,
+          800
+        ],
+        "before_sha256": "eea586987da1b0cc4148aeb5e3ec8110accfb10f1718677787b13dc1ac3cb419",
+        "after_sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+        "pixel_diff_bbox": [
+          987,
+          88,
+          994,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_zh-TW.png",
+        "size": [
+          1200,
+          800
+        ],
+        "before_sha256": "26d2dce63b891acfd9bb5750d229091c5d6aac45ff2436b9dbc2730d7083dd3f",
+        "after_sha256": "ba96164d09a6d462396a0502e3b10c4ef9cc23c533074149c5e1859b0f73a774",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_zh-CN.png",
+        "size": [
+          1200,
+          800
+        ],
+        "before_sha256": "c8de430c5a3818c3340ee42ffe7014e55606d10acb4a7252d9d7c53deb2232c2",
+        "after_sha256": "8a89ddaf4cd55831f79ab09f3aae0f5c6b5cc02c5ee819709c7a912e07c170e7",
+        "pixel_diff_bbox": [
+          1002,
+          88,
+          1009,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ja.png",
+        "size": [
+          1200,
+          800
+        ],
+        "before_sha256": "69f1e1e91c3ef0238421f636d2780ffe64c317b5cc51e58f5f5442febf6286da",
+        "after_sha256": "54d1d911487d8183d551506cc09a93643af11b26df61484f14d629b1e0d6192f",
+        "pixel_diff_bbox": [
+          983,
+          88,
+          990,
+          94
+        ]
+      },
+      {
+        "path": "docs/images/main_window_ko.png",
+        "size": [
+          1200,
+          800
+        ],
+        "before_sha256": "5ca545b6d5c2fcc50c09423658e08946cb77f5bfebdc1eca82309592b3e6aaf6",
+        "after_sha256": "76352f53a0c0bfc9ed54a54b93f9f54267a3ce8217e34b86ddd07bb0b0c21ec7",
+        "pixel_diff_bbox": [
+          1021,
+          88,
+          1028,
+          94
+        ]
+      }
+    ],
+    "dialog_manifest": [
+      {
+        "path": "build\\elevation-dialog-previews\\en-closing.png",
+        "sha256": "d15014d3569957bb0615017469607a4a5743b1a74146a3874590422aca0065a2"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\en-error.png",
+        "sha256": "ab8fc28f4257cc28d593674063aec84025f60db59bb9b1d7e9bf87f57c11e7b7"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\en-sheet.png",
+        "sha256": "7417f9526699d8bdd8cabb1adf9f050f4a1dcdf32d8d6c9e5fafa5381b73823e"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\en-waiting.png",
+        "sha256": "7d4c8a7d3618fea136e8cab32d707aa78ce011360fe44d633fd91c5479be4dd2"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ja-closing.png",
+        "sha256": "091623e2a86d08151e2af54f675eb979a0c8be1f40c794dc9c8f55179539353e"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ja-error.png",
+        "sha256": "8b5fdb1a1d08aa0f60b48e7404925e2d695d94ade91b3accb885dddf9f5bd0db"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ja-sheet.png",
+        "sha256": "93a17797fb64ed37e337b2ffb8d997c8a1e4ead1bf6483ee80ec19bbdc699671"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ja-waiting.png",
+        "sha256": "ca3fcb51baf4bb4ac2e5b9da42242dd61c26b67532bc43f0a109d20e3a607f2d"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ko-closing.png",
+        "sha256": "375504be5254a9e183c2bad119d8b098e77c1aae1f52ff39b710cd962425b5a6"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ko-error.png",
+        "sha256": "d7cffb2416e329b6e0dfb9905f083d433e452324168f0bf56e23e88037bccccd"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ko-sheet.png",
+        "sha256": "763435ca37fb006e4f4a994686401cd8a58d175c28de49fb03c59eb00390593f"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\ko-waiting.png",
+        "sha256": "79f562c3a942a7195eecb5658711495feaf99e2c83169f02c133af8239e2b05a"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-CN-closing.png",
+        "sha256": "9730a8b5ee2c4dc5ae5098ee2bba147237c1fae6e3615ef75cf77b638661aab4"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-CN-error.png",
+        "sha256": "568352cd11801aab1beb2080159299f5b14a606a8ce87193e6bc14ab0a248500"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-CN-sheet.png",
+        "sha256": "a009980f3267057fde26e5d1782efa9cce8f2fa258f3c3f1a4815daa00daa648"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-CN-waiting.png",
+        "sha256": "700f8325be154976005a2025c5eb0057532416fc37658acba6fc244fc6bda679"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-TW-closing.png",
+        "sha256": "40b46cceb8aa2f88f81c75349663e86aaa6be346828d60e4a32eac7bcf52e9dd"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-TW-error.png",
+        "sha256": "deda9573068db51d41985932f3008c33d6ba6a4063d656cca7e1593c98aa6820"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-TW-sheet.png",
+        "sha256": "eca3cdd1c058dec05656c7b0e9d551b03d151e05f55524d8765d0210403fd5df"
+      },
+      {
+        "path": "build\\elevation-dialog-previews\\zh-TW-waiting.png",
+        "sha256": "f5f05267e1c78043ec87c69527e95edc369978a32ce27d77fe9fa808f7fe0718"
+      }
+    ]
+  },
+  "limits": "Actual Windows UAC consent/cancel, elevated-copy startup and Properties lifetime remain unverified under #95. This is not proof that all native UI hangs are resolved.",
+  "references": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow",
+    "https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecuteexw",
+    "https://learn.microsoft.com/en-us/windows/win32/api/objidl/ne-objidl-apttype",
+    "https://learn.microsoft.com/en-us/windows/win32/api/objidlbase/ne-objidlbase-apttypequalifier",
+    "https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cogetapartmenttype"
+  ],
+  "sources": {
+    "je_file_tree/gui/elevation.py": {
+      "lf_sha256": "8009c40a213b9fddcad8d16f690937bd39fa283ebf94c00b33ba9550e922890f",
+      "ast_sha256": "1e5e2422ddf6e64eab14a8f5d9c6a2f90a6a10f7b3297b6eac5dfa4970563291"
+    },
+    "je_file_tree/gui/native_shell.py": {
+      "lf_sha256": "39dd3f2ebeb2528a66498a8653612704990466738ea9867432b0b39dd49c2acb",
+      "ast_sha256": "13c16fa3b2329a1cd249c13aacc6631f420507dbd27818818f10fd080f3dacd5"
+    },
+    "je_file_tree/gui/elevation_dialog.py": {
+      "lf_sha256": "92beab86393ff03b5fdc34d7e10123bff4e5dbc90550b58422742b4b1f1e87b0",
+      "ast_sha256": "b5a7094a20c28ca5e25971f696d533a0c0994c60ce3385ca458191b4606c1b4d"
+    },
+    "je_file_tree/gui/main_window.py": {
+      "lf_sha256": "1fe15369c7b869c69b79a4cb60a8fb54df8af9862505658a8e95244aabdd8043",
+      "ast_sha256": "be4cf3cae2ce4628fe5dbed45c0b09161fcb9d195bcfa187efcc0159ed6bba47"
+    },
+    "je_file_tree/gui/shell_integration.py": {
+      "lf_sha256": "5c70dc50da85359e1c45bb1945846bf0e064d0ef60f802b80c1fa3cc8e4e63f7",
+      "ast_sha256": "d8e2d36be6743d76bffcae670a5707646320b76b49919becc1141426c52d580e"
+    },
+    "je_file_tree/gui/strings.py": {
+      "lf_sha256": "c7deb1ba981a29b5fac130cc27ac8aa10dcfbb4213afa7b99c6a6977e410ce95",
+      "ast_sha256": "b360ad0c7a25685bf39dbf0150468c73c2faab373f0fafcf41728311d5890560"
+    }
+  },
+  "validation": {
+    "passed": 2094,
+    "skipped": 54,
+    "seconds": 262.38,
+    "new_cases_in_final_junit": 20,
+    "junit": "build/elevation-worker-final-full.xml",
+    "log": "build/elevation-worker-final-full-pytest.log",
+    "scope": "Existing native-platform/privilege and owned-fixture 8.3 limitations remain skipped.",
+    "ruff": [
+      "0.15.14 clean",
+      "0.16.10 clean"
+    ]
+  }
+}

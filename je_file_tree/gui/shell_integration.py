@@ -12,6 +12,7 @@ from pathlib import Path
 
 import je_file_tree
 from je_file_tree.gui.elevation import compiled, supported
+from je_file_tree.gui.native_shell import ShellExecuteInfo as _ShellExecuteInfo
 
 VERB_KEY = r"Software\Classes\Directory\shell\JeffreyChenFileTree"
 _OWNER = "je_file_tree.folder-verb.v1"
@@ -140,16 +141,13 @@ def set_enabled(enabled: bool, label: str) -> None:
     notify(0x08000000, 0, None, None)
 
 
-class _ShellExecuteInfo(ctypes.Structure):
-    _fields_ = [("cbSize", wintypes.DWORD), ("fMask", wintypes.ULONG), ("hwnd", wintypes.HWND),
-                ("lpVerb", wintypes.LPCWSTR), ("lpFile", wintypes.LPCWSTR), ("lpParameters", wintypes.LPCWSTR),
-                ("lpDirectory", wintypes.LPCWSTR), ("nShow", ctypes.c_int), ("hInstApp", wintypes.HINSTANCE),
-                ("lpIDList", ctypes.c_void_p), ("lpClass", wintypes.LPCWSTR), ("hkeyClass", wintypes.HKEY),
-                ("dwHotKey", wintypes.DWORD), ("hIcon", wintypes.HANDLE), ("hProcess", wintypes.HANDLE)]
-
-
 def show_properties(path: str, parent_handle: int = 0) -> bool:
-    """Invoke the native Properties verb for one filesystem entry, without running its contents."""
+    """Invoke the native Properties verb for one filesystem entry, without running its contents.
+
+    Runs on the GUI thread: the shell opens the sheet on a thread of its own, and a worker caller
+    would make the GUI window a cross-thread owner. Measured on a separate desktop (U-20261018-81):
+    88–361 ms for the first call in a process, 8–10 ms afterwards, 21–76 ms for a folder.
+    """
     if not supported():
         return False
     info = _ShellExecuteInfo()

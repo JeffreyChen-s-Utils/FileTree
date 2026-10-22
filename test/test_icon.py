@@ -13,6 +13,8 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QImageReader
 from PySide6.QtWidgets import QApplication
 
+from test_gui import _wait
+
 from je_file_tree.gui import icon
 from je_file_tree.gui.app import create_window
 
@@ -44,6 +46,8 @@ def test_the_ico_holds_every_size_and_windows_can_read_it(qapp: QApplication, tm
 def test_the_window_has_the_icon(qapp: QApplication, tmp_path: Path) -> None:
     window = create_window(QSettings(str(tmp_path / "s.ini"), QSettings.Format.IniFormat))
     assert not window.windowIcon().isNull()
+    window.close()  # joins the window's workers; a bare deleteLater left them to a later event loop (#104)
+    _wait(qapp, lambda: window._close_ready)
     window.deleteLater()
 
 

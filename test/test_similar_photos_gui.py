@@ -5,7 +5,7 @@ from __future__ import annotations
 import threading
 import time
 
-from PySide6.QtCore import QItemSelectionModel
+from PySide6.QtCore import QItemSelectionModel, Qt
 
 from je_file_tree.core.scanner import scan
 from je_file_tree.core.similar_photos import PhotoSearchCancelledError
@@ -33,10 +33,10 @@ def test_similar_mode_has_thumbnails_but_no_exact_keeper_or_extra_selection(qapp
     _wait(qapp, lambda: not panel.running)
     assert panel._photos.files_read == 3
     assert panel.model.rowCount() == 1
-    item = panel.model.item(0).child(0, 0)
-    assert not item.icon().isNull()
+    item = panel.model.index(0, 0, panel.model.index(0, 0))
+    assert not item.data(Qt.ItemDataRole.DecorationRole).isNull()
     assert item.data(NODE_ROLE).is_in(root)
-    panel.view.selectionModel().setCurrentIndex(item.index(), QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    panel.view.selectionModel().setCurrentIndex(item, QItemSelectionModel.SelectionFlag.ClearAndSelect)
     assert not panel.keep_selected.isEnabled()
     assert not panel.select_extra.isEnabled()
     assert panel.decisions_for([item.data(NODE_ROLE)]) == []

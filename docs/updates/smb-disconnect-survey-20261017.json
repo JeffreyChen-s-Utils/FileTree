@@ -1,0 +1,4237 @@
+{
+ "source": "artifact windows-native-share of every Tests run created 2026-10-16/17 that has one",
+ "helper": "tools/windows_share_probe.py::_disconnect via Windows PowerShell 5.1 (powershell.exe)",
+ "runs": [
+  {
+   "run": 38929336488,
+   "outcome": "completed",
+   "elapsed_seconds": 8.078,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 3759,
+   "step_durations_ms": {
+    "runner-guard": [
+     10
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     10,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1490,
+     1
+    ],
+    "share-presence": [
+     1362
+    ],
+    "owned-share-lookup": [
+     17
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     92
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "c18e5524fe1133c3d0904bd7356be3882ce404c5b16ac4955524f2f2d87274f1"
+  },
+  {
+   "run": 38930818648,
+   "outcome": "completed",
+   "elapsed_seconds": 4.25,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2297,
+   "step_durations_ms": {
+    "runner-guard": [
+     7
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     977,
+     1
+    ],
+    "share-presence": [
+     884
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     93
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "8cbef043383d1c5b4057a27b2cfd1e2c4ed9036ade2cff16cac3fb06f49444fe"
+  },
+  {
+   "run": 38933346781,
+   "outcome": "completed",
+   "elapsed_seconds": 5.391,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2721,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "owner-receipt": [
+     1211,
+     1
+    ],
+    "share-presence": [
+     986
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     126
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "86b13f305f05707e41218f4c14c456c15ff37b6c0275a76b84b704def87e1412"
+  },
+  {
+   "run": 38938143798,
+   "outcome": "completed",
+   "elapsed_seconds": 4.984,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2803,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1209,
+     1
+    ],
+    "share-presence": [
+     1017
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     108
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "671a1bf268cabef8204e4bb0a00dc2d3a9b3d240f649efd05fa0e2303128c7f0"
+  },
+  {
+   "run": 38940110186,
+   "outcome": "completed",
+   "elapsed_seconds": 4.953,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2697,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     9
+    ],
+    "root-scope": [
+     12,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     1113,
+     1
+    ],
+    "share-presence": [
+     1006
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     103
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "a4c9a54dfe959ab590d07a30d8fbe92b16c55916bdd167e3b9e68bb28f605157"
+  },
+  {
+   "run": 38942911426,
+   "outcome": "completed",
+   "elapsed_seconds": 5.875,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2811,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1276,
+     1
+    ],
+    "share-presence": [
+     953
+    ],
+    "owned-share-lookup": [
+     29
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     95
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "0ad6f6a2f9fcc616e0a2a5846bb365c3c003d01bd4b8f8d5f94d27843e2c6869"
+  },
+  {
+   "run": 38943175751,
+   "outcome": "completed",
+   "elapsed_seconds": 5.719,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 3102,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1419,
+     1
+    ],
+    "share-presence": [
+     1093
+    ],
+    "owned-share-lookup": [
+     25
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     106
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "f411b0342fef7bd4efa875a7585e5e07edfc95c55a6aa5544c23fbb18302e346"
+  },
+  {
+   "run": 38945828084,
+   "outcome": "completed",
+   "elapsed_seconds": 4.609,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2507,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     1068,
+     1
+    ],
+    "share-presence": [
+     932
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     99
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "25b900f5100ac98ece7fc52c56b64f06db9703ad116e244fe81f20f4983ee472"
+  },
+  {
+   "run": 38948063154,
+   "outcome": "completed",
+   "elapsed_seconds": 4.906,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2670,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1189,
+     1
+    ],
+    "share-presence": [
+     981
+    ],
+    "owned-share-lookup": [
+     18
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     101
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "f0c61ad26f64218f59214dfb856379775b1b2233268bd880d4a3d4ab01f73a95"
+  },
+  {
+   "run": 38956208320,
+   "outcome": "completed",
+   "elapsed_seconds": 17.843,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 4827,
+   "step_durations_ms": {
+    "runner-guard": [
+     5
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     2399,
+     1
+    ],
+    "share-presence": [
+     1516
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     3
+    ],
+    "remove-owned-share": [
+     89
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "31a3dbe5510bdcaa6c3a963d91bb3da625b0005c27fb9bf25bd20d795c35c537"
+  },
+  {
+   "run": 38958061980,
+   "outcome": "completed",
+   "elapsed_seconds": 4.688,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2524,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1060,
+     1
+    ],
+    "share-presence": [
+     942
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     96
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "43f3e84ad79b706a7d27076f6dfe7368f9190ef506e5e57b0a1d401647d657e0"
+  },
+  {
+   "run": 38960028885,
+   "outcome": "completed",
+   "elapsed_seconds": 8.281,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2434,
+   "step_durations_ms": {
+    "runner-guard": [
+     4
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     6,
+     0
+    ],
+    "owned-entry-1": [
+     6,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1117,
+     0
+    ],
+    "share-presence": [
+     829
+    ],
+    "owned-share-lookup": [
+     16
+    ],
+    "share-ownership": [
+     3
+    ],
+    "remove-owned-share": [
+     88
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "a83c840ffd57181c4493bc6b62f49b93d495e54de906b66d2ba8615106d6e847"
+  },
+  {
+   "run": 38961661105,
+   "outcome": "completed",
+   "elapsed_seconds": 6.313,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 3068,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1406,
+     1
+    ],
+    "share-presence": [
+     1120
+    ],
+    "owned-share-lookup": [
+     22
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     120
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "8cd480636cdcf0d75fb8040ad855df78f0fc68acdf794e577752af4c196dee24"
+  },
+  {
+   "run": 38964661077,
+   "outcome": "completed",
+   "elapsed_seconds": 17.86,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2540,
+   "step_durations_ms": {
+    "runner-guard": [
+     5
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "owner-receipt": [
+     1093,
+     1
+    ],
+    "share-presence": [
+     861
+    ],
+    "owned-share-lookup": [
+     17
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     82
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "a433fbbc68a8da3a561ee1ec38fdbf0b73ab568d3e6865b330490d403493639a"
+  },
+  {
+   "run": 38968047350,
+   "outcome": "completed",
+   "elapsed_seconds": 4.484,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2420,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "owner-receipt": [
+     1007,
+     1
+    ],
+    "share-presence": [
+     914
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     99
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "931bab96c1107446ce2022910c3ad94e093322a9c16b5050f64f0b7b0ddf3e7f"
+  },
+  {
+   "run": 38970418711,
+   "outcome": "timeout",
+   "elapsed_seconds": 30.406,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": null,
+   "step_durations_ms": {},
+   "samples": [],
+   "artifact_sha256": "71c8fe0762581eeb360c06ff1cdb453457880388227dc07a4884f7fef9f5d45b"
+  },
+  {
+   "run": 38972729907,
+   "outcome": "completed",
+   "elapsed_seconds": 4.453,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2453,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1002,
+     1
+    ],
+    "share-presence": [
+     944
+    ],
+    "owned-share-lookup": [
+     18
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     93
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "127e2b2aa616d38c965d8bc342caeafeaaa0b76b2a04c2ad2295ee22f7131845"
+  },
+  {
+   "run": 38974152846,
+   "outcome": "completed",
+   "elapsed_seconds": 10.172,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 5435,
+   "step_durations_ms": {
+    "runner-guard": [
+     19
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     11,
+     1
+    ],
+    "owned-entry-1": [
+     13,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     7
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1807,
+     1
+    ],
+    "share-presence": [
+     1621
+    ],
+    "owned-share-lookup": [
+     89
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     1442
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366622764026127,
+      "exited_100ns": 0,
+      "kernel_100ns": 3906250,
+      "user_100ns": 3125000
+     },
+     "threads": 20,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "da874fc0ebbe9bc4027dbb04f89192e1a31ff1dbdb37227353b5c9331353a5a8"
+  },
+  {
+   "run": 38977432068,
+   "outcome": "completed",
+   "elapsed_seconds": 8.703,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 3095,
+   "step_durations_ms": {
+    "runner-guard": [
+     4
+    ],
+    "identity-check": [
+     5
+    ],
+    "root-scope": [
+     7,
+     0
+    ],
+    "owned-entry-1": [
+     6,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     944,
+     0
+    ],
+    "share-presence": [
+     1747
+    ],
+    "owned-share-lookup": [
+     16
+    ],
+    "share-ownership": [
+     3
+    ],
+    "remove-owned-share": [
+     72
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366642325561052,
+      "exited_100ns": 0,
+      "kernel_100ns": 2812500,
+      "user_100ns": 937500
+     },
+     "threads": 18,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "5c5c3c4e28a274b039f197a8ab136a23f8981b684c6acd3c7b27024f20080ed3"
+  },
+  {
+   "run": 38979577473,
+   "outcome": "completed",
+   "elapsed_seconds": 4.985,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2686,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     10,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "owner-receipt": [
+     1118,
+     1
+    ],
+    "share-presence": [
+     1019
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     108
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "f7acf663efcd928bef8c56b444aa3dfb1a6d9950bd4dbcf58c1e85bb08e079d9"
+  },
+  {
+   "run": 38980822764,
+   "outcome": "completed",
+   "elapsed_seconds": 7.141,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 4038,
+   "step_durations_ms": {
+    "runner-guard": [
+     7
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "owner-receipt": [
+     2512,
+     1
+    ],
+    "share-presence": [
+     984
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     98
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366664155943771,
+      "exited_100ns": 0,
+      "kernel_100ns": 4375000,
+      "user_100ns": 4062500
+     },
+     "threads": 19,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "a5fc1d9dc8de2053629da810aa4c5e166cfd3427049587e37a93e86711a9111a"
+  },
+  {
+   "run": 38984040133,
+   "outcome": "completed",
+   "elapsed_seconds": 4.469,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2454,
+   "step_durations_ms": {
+    "runner-guard": [
+     5
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     999,
+     1
+    ],
+    "share-presence": [
+     929
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     101
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "006b59616fe56e0afd3087f26fe0585b0dd0b3124416b58625d3dfd4f19c99ae"
+  },
+  {
+   "run": 38986535286,
+   "outcome": "completed",
+   "elapsed_seconds": 6.672,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2604,
+   "step_durations_ms": {
+    "runner-guard": [
+     4
+    ],
+    "identity-check": [
+     5
+    ],
+    "root-scope": [
+     6,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     1082,
+     1
+    ],
+    "share-presence": [
+     1083
+    ],
+    "owned-share-lookup": [
+     17
+    ],
+    "share-ownership": [
+     3
+    ],
+    "remove-owned-share": [
+     74
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366705365087472,
+      "exited_100ns": 0,
+      "kernel_100ns": 2812500,
+      "user_100ns": 2187500
+     },
+     "threads": 20,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "2732f36e60141789cddb624a2fa7aea670f8d13fc1b90db61c97a75dca029a35"
+  },
+  {
+   "run": 38986684150,
+   "outcome": "completed",
+   "elapsed_seconds": 4.297,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2358,
+   "step_durations_ms": {
+    "runner-guard": [
+     6
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     928,
+     1
+    ],
+    "share-presence": [
+     901
+    ],
+    "owned-share-lookup": [
+     18
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     95
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "565a6866bbf4dfb90286bce6fbe822ecb327922bd954a67043d523f90accd4b6"
+  },
+  {
+   "run": 38989195900,
+   "outcome": "completed",
+   "elapsed_seconds": 8.328,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2710,
+   "step_durations_ms": {
+    "runner-guard": [
+     5
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     7,
+     1
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "owner-receipt": [
+     1274,
+     1
+    ],
+    "share-presence": [
+     906
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     4
+    ],
+    "remove-owned-share": [
+     95
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366726440433440,
+      "exited_100ns": 0,
+      "kernel_100ns": 1875000,
+      "user_100ns": 1250000
+     },
+     "threads": 18,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "076cb2541d2503213827ded429a7540daf7b5a65242f7816893198e54fed1ae3"
+  },
+  {
+   "run": 38989336276,
+   "outcome": "completed",
+   "elapsed_seconds": 4.188,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2285,
+   "step_durations_ms": {
+    "runner-guard": [
+     5
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     11,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     986,
+     1
+    ],
+    "share-presence": [
+     877
+    ],
+    "owned-share-lookup": [
+     18
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     93
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "22df0a0061ff3ea29fa21928da4345538528325c858f5bf42f82292f6ee06bac"
+  },
+  {
+   "run": 38991089842,
+   "outcome": "completed",
+   "elapsed_seconds": 5.234,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2852,
+   "step_durations_ms": {
+    "runner-guard": [
+     7
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "owner-receipt": [
+     1188,
+     1
+    ],
+    "share-presence": [
+     1082
+    ],
+    "owned-share-lookup": [
+     22
+    ],
+    "share-ownership": [
+     5
+    ],
+    "remove-owned-share": [
+     121
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366742168080707,
+      "exited_100ns": 0,
+      "kernel_100ns": 7656250,
+      "user_100ns": 8906250
+     },
+     "threads": 22,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "e4dce37fca61bbfff693ece47edbb726e359c4af45ab775c437c7df69d87e9f2"
+  },
+  {
+   "run": 38991247210,
+   "outcome": "completed",
+   "elapsed_seconds": 10.359,
+   "clock_status": null,
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2726,
+   "step_durations_ms": {
+    "runner-guard": [
+     4
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "owner-receipt": [
+     1307,
+     1
+    ],
+    "share-presence": [
+     917
+    ],
+    "owned-share-lookup": [
+     17
+    ],
+    "share-ownership": [
+     3
+    ],
+    "remove-owned-share": [
+     95
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": null,
+     "cpu": {
+      "created_100ns": 134366743337587630,
+      "exited_100ns": 0,
+      "kernel_100ns": 468750,
+      "user_100ns": 312500
+     },
+     "threads": 6,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "7e69e5ada083489073a72bcd464883f7acf6c099ec9c9a82ab085a673345b812"
+  },
+  {
+   "run": 38993405347,
+   "outcome": "completed",
+   "elapsed_seconds": 7.828,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366762313635714,
+   "creation_to_origin_100ns": [
+    54623300,
+    54683497
+   ],
+   "last_step_ms": 2302,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     5
+    ],
+    "root-scope": [
+     7,
+     0
+    ],
+    "owned-entry-1": [
+     6,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     6,
+     1
+    ],
+    "receipt-parse": [
+     1035,
+     0
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     1048,
+     1
+    ],
+    "share-presence": [
+     784
+    ],
+    "owned-share-lookup": [
+     28
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     80
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366762364440071,
+     "cpu": {
+      "created_100ns": 134366762313635714,
+      "exited_100ns": 0,
+      "kernel_100ns": 2187500,
+      "user_100ns": 2031250
+     },
+     "threads": 18,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "ee485465cb493950db5ea1adfea6e111d8337d48f877aa67eee6625b9f0869b9"
+  },
+  {
+   "run": 38994992732,
+   "outcome": "completed",
+   "elapsed_seconds": 4.86,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2622,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     11,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     1030,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     1
+    ],
+    "owner-receipt": [
+     1048,
+     2
+    ],
+    "share-presence": [
+     1002
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     9
+    ],
+    "remove-owned-share": [
+     128
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "0c7aacabdd6a1ba056182868557e5648235a398d3834206e03903720939cf4d0"
+  },
+  {
+   "run": 38995116446,
+   "outcome": "completed",
+   "elapsed_seconds": 8.469,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366777949878862,
+   "creation_to_origin_100ns": [
+    58370820,
+    58489014
+   ],
+   "last_step_ms": 2551,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     7,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     5,
+     1
+    ],
+    "receipt-parse": [
+     1147,
+     0
+    ],
+    "receipt-identity": [
+     8,
+     0
+    ],
+    "owner-receipt": [
+     1160,
+     1
+    ],
+    "share-presence": [
+     902
+    ],
+    "owned-share-lookup": [
+     28
+    ],
+    "share-ownership": [
+     8
+    ],
+    "remove-owned-share": [
+     83
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366778000782990,
+     "cpu": {
+      "created_100ns": 134366777949878862,
+      "exited_100ns": 0,
+      "kernel_100ns": 3750000,
+      "user_100ns": 1093750
+     },
+     "threads": 18,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "63a77e17fa1e99ef16ce9bd1390e34f474c5395a46ee581920f1c48c5968afbe"
+  },
+  {
+   "run": 38998643366,
+   "outcome": "completed",
+   "elapsed_seconds": 7.297,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366810828457209,
+   "creation_to_origin_100ns": [
+    48466398,
+    48584714
+   ],
+   "last_step_ms": 2365,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     6,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     4,
+     0
+    ],
+    "receipt-parse": [
+     1074,
+     1
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     1086,
+     1
+    ],
+    "share-presence": [
+     809
+    ],
+    "owned-share-lookup": [
+     23
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     74
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366810879070038,
+     "cpu": {
+      "created_100ns": 134366810828457209,
+      "exited_100ns": 0,
+      "kernel_100ns": 3593750,
+      "user_100ns": 1875000
+     },
+     "threads": 20,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "00d94bf97dbfdd805a6eb5b15f30fe339e5e7da5b6f0ed2b35f9b7490c2a23c3"
+  },
+  {
+   "run": 39000091134,
+   "outcome": "completed",
+   "elapsed_seconds": 4.859,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2667,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     10
+    ],
+    "root-scope": [
+     11,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     1113,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1130,
+     2
+    ],
+    "share-presence": [
+     989
+    ],
+    "owned-share-lookup": [
+     25
+    ],
+    "share-ownership": [
+     8
+    ],
+    "remove-owned-share": [
+     91
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "40ad09115365f0d779fb6f6feac70e94fb991a33de0c7ae4a8356c84aa8ef28d"
+  },
+  {
+   "run": 39000815448,
+   "outcome": "completed",
+   "elapsed_seconds": 4.344,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2330,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     7
+    ],
+    "root-scope": [
+     9,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     75,
+     1
+    ],
+    "receipt-parse": [
+     930,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1015,
+     1
+    ],
+    "share-presence": [
+     876
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     84
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "d09f34516e0996a97cdf65d783d5706956bee5ee2be1020daf7197776d4aa13b"
+  },
+  {
+   "run": 39001667237,
+   "outcome": "completed",
+   "elapsed_seconds": 12.453,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366839764654115,
+   "creation_to_origin_100ns": [
+    60399968,
+    60795361
+   ],
+   "last_step_ms": 6232,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     16
+    ],
+    "root-scope": [
+     20,
+     0
+    ],
+    "owned-entry-1": [
+     19,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     55,
+     1
+    ],
+    "receipt-parse": [
+     2816,
+     0
+    ],
+    "receipt-identity": [
+     24,
+     0
+    ],
+    "owner-receipt": [
+     2895,
+     2
+    ],
+    "share-presence": [
+     1969
+    ],
+    "owned-share-lookup": [
+     33
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     239
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366839815294420,
+     "cpu": {
+      "created_100ns": 134366839764654115,
+      "exited_100ns": 0,
+      "kernel_100ns": 3437500,
+      "user_100ns": 2500000
+     },
+     "threads": 19,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "8bcb2d3badb51e5c8c3627d137ee8b72fd3dd17d365cd849372112684ca5c234"
+  },
+  {
+   "run": 39004155733,
+   "outcome": "completed",
+   "elapsed_seconds": 4.578,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2486,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     1026,
+     1
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1042,
+     2
+    ],
+    "share-presence": [
+     929
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     96
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "e2b0f08c03608fa1ab2ed00a4cbce4ece43b64641b56dde53edcc2c419461ca8"
+  },
+  {
+   "run": 39006059647,
+   "outcome": "completed",
+   "elapsed_seconds": 5.469,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366882173051488,
+   "creation_to_origin_100ns": [
+    25259965,
+    25398047
+   ],
+   "last_step_ms": 2868,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     94,
+     1
+    ],
+    "receipt-parse": [
+     1214,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1318,
+     2
+    ],
+    "share-presence": [
+     1007
+    ],
+    "owned-share-lookup": [
+     23
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     105
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366882223941963,
+     "cpu": {
+      "created_100ns": 134366882173051488,
+      "exited_100ns": 0,
+      "kernel_100ns": 7187500,
+      "user_100ns": 7031250
+     },
+     "threads": 21,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "d2cce38a7252cca4a9121e8366b2ce5803d8d871e194d49003ffa2bd2381b13e"
+  },
+  {
+   "run": 39007016643,
+   "outcome": "completed",
+   "elapsed_seconds": 6.094,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134366891650138093,
+   "creation_to_origin_100ns": [
+    26755242,
+    27022015
+   ],
+   "last_step_ms": 3319,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     9
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     1426,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     1
+    ],
+    "owner-receipt": [
+     1444,
+     2
+    ],
+    "share-presence": [
+     1210
+    ],
+    "owned-share-lookup": [
+     30
+    ],
+    "share-ownership": [
+     21
+    ],
+    "remove-owned-share": [
+     114
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134366891701057482,
+     "cpu": {
+      "created_100ns": 134366891650138093,
+      "exited_100ns": 0,
+      "kernel_100ns": 6875000,
+      "user_100ns": 4687500
+     },
+     "threads": 20,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "3b684a094bae0412b551d86c002c899525b80db7ab596c2894e1da50f2c2af47"
+  },
+  {
+   "run": 39034413839,
+   "outcome": "completed",
+   "elapsed_seconds": 4.344,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2349,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     15,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     931,
+     0
+    ],
+    "receipt-identity": [
+     8,
+     0
+    ],
+    "owner-receipt": [
+     949,
+     2
+    ],
+    "share-presence": [
+     895
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     94
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "08c792329dcb244c39fe880f3b31910fc20f837923bffb43a23013273e4989cf"
+  },
+  {
+   "run": 39034546524,
+   "outcome": "completed",
+   "elapsed_seconds": 4.593,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2570,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     9
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     13,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     9,
+     1
+    ],
+    "receipt-parse": [
+     966,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     987,
+     2
+    ],
+    "share-presence": [
+     1029
+    ],
+    "owned-share-lookup": [
+     28
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     99
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "a9e89c6822d4ee91c5b74a35f49b3e71a12b5373065a3f70602ff3b5f3bcbd82"
+  },
+  {
+   "run": 39036148048,
+   "outcome": "completed",
+   "elapsed_seconds": 5.094,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367168615888090,
+   "creation_to_origin_100ns": [
+    21843856,
+    22002129
+   ],
+   "last_step_ms": 2817,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     11,
+     0
+    ],
+    "owned-entry-1": [
+     10,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "receipt-read": [
+     8,
+     0
+    ],
+    "receipt-parse": [
+     1169,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     1188,
+     3
+    ],
+    "share-presence": [
+     1058
+    ],
+    "owned-share-lookup": [
+     23
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     102
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367168666677375,
+     "cpu": {
+      "created_100ns": 134367168615888090,
+      "exited_100ns": 134367168666529809,
+      "kernel_100ns": 9218750,
+      "user_100ns": 8906250
+     },
+     "threads": 1,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "7972714e325850ffb717124a7a9c472040cd441a406a06334c4ae877729729a5"
+  },
+  {
+   "run": 39036712716,
+   "outcome": "completed",
+   "elapsed_seconds": 5.453,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367173569624920,
+   "creation_to_origin_100ns": [
+    23622028,
+    23781109
+   ],
+   "last_step_ms": 2997,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     9,
+     1
+    ],
+    "receipt-parse": [
+     979,
+     1
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     998,
+     2
+    ],
+    "share-presence": [
+     1404
+    ],
+    "owned-share-lookup": [
+     25
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     118
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367173620702396,
+     "cpu": {
+      "created_100ns": 134367173569624920,
+      "exited_100ns": 0,
+      "kernel_100ns": 7812500,
+      "user_100ns": 7812500
+     },
+     "threads": 21,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "bdf2f126d5893eb79ff22b188994f9a032b94d5e32467dd89d3e43d03fc6127b"
+  },
+  {
+   "run": 39037318629,
+   "outcome": "completed",
+   "elapsed_seconds": 4.359,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2363,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     0
+    ],
+    "receipt-read": [
+     6,
+     1
+    ],
+    "receipt-parse": [
+     938,
+     1
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     954,
+     2
+    ],
+    "share-presence": [
+     914
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     88
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "6d01012962b518b67a7570e1e320ee15e04d373e0fec6edd45ed567b9e78a9f7"
+  },
+  {
+   "run": 39037352810,
+   "outcome": "completed",
+   "elapsed_seconds": 8.813,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367179041637917,
+   "creation_to_origin_100ns": [
+    63329133,
+    63435219
+   ],
+   "last_step_ms": 2418,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     6,
+     0
+    ],
+    "owned-entry-1": [
+     102,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     6,
+     0
+    ],
+    "receipt-parse": [
+     1102,
+     0
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     1115,
+     1
+    ],
+    "share-presence": [
+     750
+    ],
+    "owned-share-lookup": [
+     24
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     90
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367179092917149,
+     "cpu": {
+      "created_100ns": 134367179041637917,
+      "exited_100ns": 0,
+      "kernel_100ns": 937500,
+      "user_100ns": 1250000
+     },
+     "threads": 15,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "71c014de3f201ec412473a4984e5ebdde4840fbd978a39c7ad33d080d081e7b0"
+  },
+  {
+   "run": 39038187983,
+   "outcome": "completed",
+   "elapsed_seconds": 13.875,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367186321705136,
+   "creation_to_origin_100ns": [
+    89947780,
+    90068689
+   ],
+   "last_step_ms": 4823,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     126
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     32,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     6,
+     1
+    ],
+    "receipt-parse": [
+     2429,
+     0
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     2442,
+     1
+    ],
+    "share-presence": [
+     1242
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     8
+    ],
+    "remove-owned-share": [
+     72
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367186372779739,
+     "cpu": {
+      "created_100ns": 134367186321705136,
+      "exited_100ns": 0,
+      "kernel_100ns": 1406250,
+      "user_100ns": 625000
+     },
+     "threads": 16,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "adfe398cdfb84625f24ca204d30cada73c16e57d10501595ac7757e43a36128e"
+  },
+  {
+   "run": 39038240621,
+   "outcome": "completed",
+   "elapsed_seconds": 4.953,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2703,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     1
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     1139,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     1
+    ],
+    "owner-receipt": [
+     1157,
+     2
+    ],
+    "share-presence": [
+     987
+    ],
+    "owned-share-lookup": [
+     23
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     94
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "2d50ee061c59b548d8d3d183e4a87d717dcb0cf9e59510db88b95db43b5056de"
+  },
+  {
+   "run": 39038900362,
+   "outcome": "completed",
+   "elapsed_seconds": 11.015,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367192545664047,
+   "creation_to_origin_100ns": [
+    85716302,
+    85834202
+   ],
+   "last_step_ms": 2375,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     8,
+     0
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     5,
+     1
+    ],
+    "receipt-parse": [
+     1000,
+     0
+    ],
+    "receipt-identity": [
+     8,
+     0
+    ],
+    "owner-receipt": [
+     1013,
+     2
+    ],
+    "share-presence": [
+     865
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     86
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367192596671611,
+     "cpu": {
+      "created_100ns": 134367192545664047,
+      "exited_100ns": 0,
+      "kernel_100ns": 1718750,
+      "user_100ns": 781250
+     },
+     "threads": 16,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "45a6f33f791ebd27e9633c5a27a638a062385e051d481f864e455ada41e8c3c4"
+  },
+  {
+   "run": 39039006993,
+   "outcome": "completed",
+   "elapsed_seconds": 5.688,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367193470228510,
+   "creation_to_origin_100ns": [
+    29990483,
+    30101031
+   ],
+   "last_step_ms": 2605,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     5
+    ],
+    "root-scope": [
+     6,
+     0
+    ],
+    "owned-entry-1": [
+     6,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     1,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     5,
+     0
+    ],
+    "receipt-parse": [
+     825,
+     0
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     837,
+     1
+    ],
+    "share-presence": [
+     1369
+    ],
+    "owned-share-lookup": [
+     18
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     69
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367193522338473,
+     "cpu": {
+      "created_100ns": 134367193470228510,
+      "exited_100ns": 0,
+      "kernel_100ns": 3437500,
+      "user_100ns": 3906250
+     },
+     "threads": 21,
+     "newest_modules": [],
+     "module_count": null,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "9069d81ad40aa574bc9a6370c19eb59298415cf458579e960b90450ee5513a2a"
+  },
+  {
+   "run": 39040502657,
+   "outcome": "completed",
+   "elapsed_seconds": 12.25,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367206130102276,
+   "creation_to_origin_100ns": [
+    68883803,
+    69097989
+   ],
+   "last_step_ms": 5249,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     10
+    ],
+    "root-scope": [
+     13,
+     1
+    ],
+    "owned-entry-1": [
+     17,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     32,
+     0
+    ],
+    "receipt-parse": [
+     2124,
+     0
+    ],
+    "receipt-identity": [
+     19,
+     0
+    ],
+    "owner-receipt": [
+     2176,
+     1
+    ],
+    "share-presence": [
+     1827
+    ],
+    "owned-share-lookup": [
+     30
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     213
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367206180932697,
+     "cpu": {
+      "created_100ns": 134367206130102276,
+      "exited_100ns": 0,
+      "kernel_100ns": 2500000,
+      "user_100ns": 1093750
+     },
+     "threads": 18,
+     "newest_modules": [
+      "MSISIP.DLL",
+      "wshext.dll",
+      "AppxSip.dll",
+      "OpcServices.DLL",
+      "dtrace.dll",
+      "dbghelp.dll",
+      "Windows.StateRepositoryPS.dll",
+      "pwrshsip.dll",
+      "System.Data.ni.dll",
+      "System.Data.dll",
+      "WS2_32.dll",
+      "System.Configuration.ni.dll"
+     ],
+     "module_count": 71,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "8297d4bafdd2c2241d432082a8e809c8333b9e963d482883309d3975554c398f"
+  },
+  {
+   "run": 39041783441,
+   "outcome": "completed",
+   "elapsed_seconds": 4.516,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2433,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     9
+    ],
+    "root-scope": [
+     10,
+     0
+    ],
+    "owned-entry-1": [
+     11,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     996,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     1
+    ],
+    "owner-receipt": [
+     1014,
+     2
+    ],
+    "share-presence": [
+     911
+    ],
+    "owned-share-lookup": [
+     19
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     91
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "c7f7d8f979821631681db081fe189c9f4841bb8bafb989ce4cfff712446c3e9e"
+  },
+  {
+   "run": 39044319401,
+   "outcome": "completed",
+   "elapsed_seconds": 4.375,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2370,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     11,
+     1
+    ],
+    "owned-entry-1": [
+     10,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     7,
+     0
+    ],
+    "receipt-parse": [
+     960,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     977,
+     1
+    ],
+    "share-presence": [
+     947
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     88
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "d001868acebc8c2fd2eb19026b1cdcef7c9caa7765d24ef93f132cf7511a70df"
+  },
+  {
+   "run": 39044324310,
+   "outcome": "completed",
+   "elapsed_seconds": 4.625,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2515,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     0
+    ],
+    "owned-entry-1": [
+     9,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     988,
+     0
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1005,
+     2
+    ],
+    "share-presence": [
+     887
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     95
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "3c45ef53d226d0a98bf06772acb270374ba40af59fa84242167160b5824ce3dc"
+  },
+  {
+   "run": 39045957388,
+   "outcome": "completed",
+   "elapsed_seconds": 7.437,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367251635740984,
+   "creation_to_origin_100ns": [
+    48765459,
+    48922477
+   ],
+   "last_step_ms": 2477,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     9,
+     1
+    ],
+    "owned-entry-1": [
+     9,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     5,
+     1
+    ],
+    "receipt-parse": [
+     1001,
+     1
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     1018,
+     2
+    ],
+    "share-presence": [
+     912
+    ],
+    "owned-share-lookup": [
+     46
+    ],
+    "share-ownership": [
+     13
+    ],
+    "remove-owned-share": [
+     96
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367251686656864,
+     "cpu": {
+      "created_100ns": 134367251635740984,
+      "exited_100ns": 0,
+      "kernel_100ns": 4687500,
+      "user_100ns": 3593750
+     },
+     "threads": 20,
+     "newest_modules": [
+      "drprov.dll",
+      "ntlanman.dll",
+      "wkscli.dll",
+      "cscapi.dll",
+      "netutils.dll",
+      "MPCLIENT.DLL",
+      "uxtheme.dll",
+      "urlmon.dll",
+      "iertutil.dll",
+      "srvcli.dll",
+      "PROPSYS.dll",
+      "virtdisk.dll"
+     ],
+     "module_count": 91,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "d03fa1b9b8a7803acb882bcdd37eeb39b2278676db23f5cf6511df7e594b9bea"
+  },
+  {
+   "run": 39045961901,
+   "outcome": "completed",
+   "elapsed_seconds": 5.265,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367252542610473,
+   "creation_to_origin_100ns": [
+    22320096,
+    22498787
+   ],
+   "last_step_ms": 2941,
+   "step_durations_ms": {
+    "runner-guard": [
+     3
+    ],
+    "identity-check": [
+     13
+    ],
+    "root-scope": [
+     14,
+     0
+    ],
+    "owned-entry-1": [
+     10,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     0
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     1176,
+     1
+    ],
+    "receipt-identity": [
+     9,
+     0
+    ],
+    "owner-receipt": [
+     1192,
+     3
+    ],
+    "share-presence": [
+     1057
+    ],
+    "owned-share-lookup": [
+     24
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     98
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367252593629337,
+     "cpu": {
+      "created_100ns": 134367252542610473,
+      "exited_100ns": 0,
+      "kernel_100ns": 7031250,
+      "user_100ns": 8593750
+     },
+     "threads": 22,
+     "newest_modules": [
+      "System.Web.ni.dll",
+      "System.Web.Extensions.ni.dll",
+      "webengine4.dll",
+      "Microsoft.Management.Infrastructure.Native.ni.dll",
+      "Microsoft.Management.Infrastructure.Native.Unmanaged.DLL",
+      "mi.dll",
+      "miutils.dll",
+      "wmidcom.dll",
+      "wbemprox.dll",
+      "wbemcomn.dll",
+      "wbemsvc.dll",
+      "fastprox.dll"
+     ],
+     "module_count": 106,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "8916c904e287cb0a7870848db7925db7f1b6d6bf9860431351b9cbfd9f395d38"
+  },
+  {
+   "run": 39047431017,
+   "outcome": "completed",
+   "elapsed_seconds": 5.032,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2716,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     10,
+     0
+    ],
+    "owned-entry-2": [
+     1,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     1159,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     0
+    ],
+    "owner-receipt": [
+     1177,
+     1
+    ],
+    "share-presence": [
+     1022
+    ],
+    "owned-share-lookup": [
+     26
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     97
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "c27dc93f901e15afb166632a51dc6618be20af7d1b03df92fb6531937ce28b5b"
+  },
+  {
+   "run": 39047434588,
+   "outcome": "completed",
+   "elapsed_seconds": 9.281,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367264398882612,
+   "creation_to_origin_100ns": [
+    65724314,
+    65843787
+   ],
+   "last_step_ms": 2624,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     7,
+     0
+    ],
+    "owned-entry-1": [
+     8,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     6,
+     0
+    ],
+    "receipt-parse": [
+     1136,
+     1
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     1149,
+     1
+    ],
+    "share-presence": [
+     943
+    ],
+    "owned-share-lookup": [
+     25
+    ],
+    "share-ownership": [
+     7
+    ],
+    "remove-owned-share": [
+     88
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367264451746824,
+     "cpu": {
+      "created_100ns": 134367264398882612,
+      "exited_100ns": 0,
+      "kernel_100ns": 1562500,
+      "user_100ns": 1562500
+     },
+     "threads": 16,
+     "newest_modules": [
+      "SHCORE.dll",
+      "psapi.dll",
+      "amsi.dll",
+      "USERENV.dll",
+      "profapi.dll",
+      "MpOav.dll",
+      "wintrust.dll",
+      "CRYPT32.dll",
+      "MSASN1.dll",
+      "gpapi.dll",
+      "cryptnet.dll",
+      "Microsoft.Management.Infrastructure.ni.dll"
+     ],
+     "module_count": 54,
+     "thread_states": null
+    }
+   ],
+   "artifact_sha256": "17bed85323b8d29013222e941357a12448c0d3eec1d398f140d8f01343e417a9"
+  },
+  {
+   "run": 39048225243,
+   "outcome": "completed",
+   "elapsed_seconds": 4.453,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2481,
+   "step_durations_ms": {
+    "runner-guard": [
+     1
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     11,
+     0
+    ],
+    "owned-entry-1": [
+     11,
+     1
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     7,
+     1
+    ],
+    "receipt-parse": [
+     941,
+     0
+    ],
+    "receipt-identity": [
+     10,
+     1
+    ],
+    "owner-receipt": [
+     959,
+     2
+    ],
+    "share-presence": [
+     907
+    ],
+    "owned-share-lookup": [
+     20
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     91
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "7e6d7bd32440f6e606f6c2d8d26c78512ee9d23764c464ff61aa0ef7619e0803"
+  },
+  {
+   "run": 39050248168,
+   "outcome": "completed",
+   "elapsed_seconds": 4.687,
+   "clock_status": "origin-only",
+   "process_created_filetime_100ns": null,
+   "creation_to_origin_100ns": null,
+   "last_step_ms": 2528,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     8
+    ],
+    "root-scope": [
+     10,
+     1
+    ],
+    "owned-entry-1": [
+     10,
+     1
+    ],
+    "owned-entry-2": [
+     1,
+     0
+    ],
+    "owned-entry-3": [
+     3,
+     1
+    ],
+    "owned-entry-4": [
+     1,
+     1
+    ],
+    "receipt-read": [
+     8,
+     1
+    ],
+    "receipt-parse": [
+     1013,
+     0
+    ],
+    "receipt-identity": [
+     11,
+     0
+    ],
+    "owner-receipt": [
+     1032,
+     2
+    ],
+    "share-presence": [
+     942
+    ],
+    "owned-share-lookup": [
+     25
+    ],
+    "share-ownership": [
+     6
+    ],
+    "remove-owned-share": [
+     112
+    ]
+   },
+   "samples": [],
+   "artifact_sha256": "f0705d397434c26bd8939de7652b52c479a5e15a2bc08db658ad13d2e9096fcc"
+  },
+  {
+   "run": 39051236161,
+   "outcome": "completed",
+   "elapsed_seconds": 9.422,
+   "clock_status": "aligned-origin",
+   "process_created_filetime_100ns": 134367295229289260,
+   "creation_to_origin_100ns": [
+    50970060,
+    51090646
+   ],
+   "last_step_ms": 4065,
+   "step_durations_ms": {
+    "runner-guard": [
+     2
+    ],
+    "identity-check": [
+     6
+    ],
+    "root-scope": [
+     8,
+     1
+    ],
+    "owned-entry-1": [
+     7,
+     0
+    ],
+    "owned-entry-2": [
+     0,
+     1
+    ],
+    "owned-entry-3": [
+     2,
+     0
+    ],
+    "owned-entry-4": [
+     0,
+     1
+    ],
+    "receipt-read": [
+     5,
+     1
+    ],
+    "receipt-parse": [
+     1027,
+     0
+    ],
+    "receipt-identity": [
+     7,
+     0
+    ],
+    "owner-receipt": [
+     1039,
+     1
+    ],
+    "share-presence": [
+     2244
+    ],
+    "owned-share-lookup": [
+     21
+    ],
+    "share-ownership": [
+     162
+    ],
+    "remove-owned-share": [
+     251
+    ]
+   },
+   "samples": [
+    {
+     "emitted_filetime_100ns": 134367295280043373,
+     "cpu": {
+      "created_100ns": 134367295229289260,
+      "exited_100ns": 0,
+      "kernel_100ns": 2187500,
+      "user_100ns": 1875000
+     },
+     "threads": 19,
+     "newest_modules": [
+      "drprov.dll",
+      "ntlanman.dll",
+      "wkscli.dll",
+      "cscapi.dll",
+      "netutils.dll",
+      "MPCLIENT.DLL",
+      "uxtheme.dll",
+      "urlmon.dll",
+      "iertutil.dll",
+      "srvcli.dll",
+      "PROPSYS.dll",
+      "virtdisk.dll"
+     ],
+     "module_count": 91,
+     "thread_states": {
+      "event": "thread-states",
+      "count": 19,
+      "truncated": false,
+      "io": {
+       "read_operations": 75,
+       "write_operations": 4,
+       "other_operations": 1762,
+       "read_bytes": 202318,
+       "write_bytes": 440,
+       "other_bytes": 15852
+      },
+      "threads": [
+       {
+        "tid": 1980,
+        "created_100ns": 134367295229289285,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 1070,
+        "wait_time_raw": 14309,
+        "start_module": "powershell.exe",
+        "start_offset": 27136
+       },
+       {
+        "tid": 8468,
+        "created_100ns": 134367295230728177,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 25,
+        "wait_time_raw": 14309,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 7976,
+        "created_100ns": 134367295230729370,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 10,
+        "wait_time_raw": 14309,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 6512,
+        "created_100ns": 134367295230733179,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 8,
+        "wait_time_raw": 14309,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 6516,
+        "created_100ns": 134367295233095516,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 14022,
+        "start_module": "clr.dll",
+        "start_offset": 1477824
+       },
+       {
+        "tid": 7980,
+        "created_100ns": 134367295233100072,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 9,
+        "wait_time_raw": 14152,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 1128,
+        "created_100ns": 134367295253855975,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 14155,
+        "start_module": "combase.dll",
+        "start_offset": 1163632
+       },
+       {
+        "tid": 4952,
+        "created_100ns": 134367295253858356,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 4,
+        "wait_time_raw": 14155,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 6380,
+        "created_100ns": 134367295253860000,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 16,
+        "wait_time_raw": 14309,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 6352,
+        "created_100ns": 134367295253868402,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 227,
+        "wait_time_raw": 14310,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 1284,
+        "created_100ns": 134367295253868819,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 13,
+        "wait_time_raw": 14315,
+        "start_module": "clr.dll",
+        "start_offset": 979696
+       },
+       {
+        "tid": 5140,
+        "created_100ns": 134367295253869220,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 422,
+        "wait_time_raw": 14310,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 1880,
+        "created_100ns": 134367295253870858,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 88,
+        "wait_time_raw": 14310,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 6376,
+        "created_100ns": 134367295253871253,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 64,
+        "wait_time_raw": 14310,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 8824,
+        "created_100ns": 134367295262877547,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 14213,
+        "start_module": "CRYPT32.dll",
+        "start_offset": 648832
+       },
+       {
+        "tid": 6372,
+        "created_100ns": 134367295262882689,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 2,
+        "wait_time_raw": 14213,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 1176,
+        "created_100ns": 134367295272745606,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 2,
+        "wait_time_raw": 14276,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 6528,
+        "created_100ns": 134367295272781044,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 3,
+        "wait_time_raw": 14278,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 1360,
+        "created_100ns": 134367295277852541,
+        "state": 5,
+        "wait_reason": 0,
+        "switches": 221,
+        "wait_time_raw": 14324,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       }
+      ],
+      "emitted_filetime_100ns": 134367295280259320
+     }
+    }
+   ],
+   "artifact_sha256": "d089b200310759b0e6aedae629b5c3c0b7e137d6e40a9d8ad8fa10b5c90811a2"
+  }
+ ]
+}

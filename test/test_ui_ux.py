@@ -2,16 +2,20 @@
 
 import dataclasses
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, QDir, QEvent, Qt
+from PySide6.QtGui import QColor, QPalette, QStandardItem, QStandardItemModel
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QLabel, QPushButton, QStyleOptionViewItem, QTableView
 import pytest
 
 from test_gui import _wait, window as window  # noqa: PLC0414 - shared pytest fixture
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.scanner import ScanProgress, scan
+from je_file_tree.gui.bin_labels import bin_key
 from je_file_tree.gui import i18n
 from je_file_tree.gui.app import create_window
+from je_file_tree.gui.delegates import PathTailDelegate, bar_alpha
+from je_file_tree.gui.empty_hint import EmptyHint
 from je_file_tree.gui.main_window import RESULTS_PAGE
 from je_file_tree.gui.results_view import CHANGES_TAB, CHART_TAB, LARGEST_TAB, PROBLEMS_TAB, SEARCH_TAB
 from je_file_tree.gui.result_overview import ResultOverview
@@ -20,6 +24,12 @@ from je_file_tree.gui.scan_worker import analyse
 from je_file_tree.gui.themes import theme_controller
 from je_file_tree.gui.tree_model import SIZE
 from je_file_tree.gui.welcome import DriveSnapshot
+
+
+def test_result_legends_do_not_insert_invisible_font_fallback_controls(window, sample_tree):
+    results = window.results
+    results.show_outcome(analyse(scan(sample_tree)))
+    assert all("\u2060" not in label.text() for label in results.findChildren(QLabel))
 
 
 @pytest.mark.parametrize("language", i18n.LANGUAGES)
@@ -230,3 +240,111 @@ def test_theme_switch_retains_overview_values_and_analysis_selection(window, qap
         assert results.navigation.combo.currentData() == LARGEST_TAB
     finally:
         controller.apply("system")
+
+
+def test_folder_columns_keep_the_nearest_folders_when_elided(window, sample_tree):
+    results = window.results
+    results.show_outcome(analyse(scan(sample_tree)))
+    views = [(results.largest_table, 2), (results.search_table, 2), (results.type_locations_table, 0),
+             (results.cleanup.view, 2), (results.duplicates.view, 2)]
+    for view, column in views:
+        delegate = view.itemDelegateForColumn(column)
+        assert isinstance(delegate, PathTailDelegate), view
+        option = QStyleOptionViewItem()
+        delegate.initStyleOption(option, view.model().index(0, column))
+        assert option.textElideMode == Qt.TextElideMode.ElideLeft
+    assert results.largest_table.textElideMode() == Qt.TextElideMode.ElideMiddle  # names keep extensions
+
+
+def test_share_bars_are_stronger_on_dark_surfaces():
+    assert bar_alpha(QColor("#20242a")) > bar_alpha(QColor("#ffffff"))
+    assert bar_alpha(QColor("#ffffff")) == 110
+
+
+def test_chart_breadcrumbs_show_the_pane_background(window):
+    crumbs = window.results.breadcrumbs
+    assert not crumbs._container.autoFillBackground()
+    assert not crumbs._scroll.viewport().autoFillBackground()
+
+
+def test_drive_rows_show_native_roots_fill_and_nearly_full_warning(window, qapp, monkeypatch):
+    monkeypatch.setattr("je_file_tree.gui.welcome.drives", lambda: [])
+    page = window.welcome
+    _wait(qapp, lambda: not page._drive_timer.isActive() and page._drive_worker is None)
+    # Owned, nonexistent roots: the rows are rendered from snapshots and no drive is ever scanned.
+    page.drive_rows = (DriveSnapshot("Q:/filetree-owned/", "System", 1000, 50),
+                       DriveSnapshot("R:/filetree-owned/", "", 1000, 600))
+    page.retranslate()
+    full, roomy = page.drive_cards
+    full_button, full_bar, roomy_bar = full.button, full.bar, roomy.bar
+    assert full.property("role") == "card" and page._bin_labels[bin_key("Q:/filetree-owned/")][1] is full.bin_label
+    assert full_button.isFlat() and full_button.font().bold()  # the card's title, still a keyboard-focusable button
+    assert page._drives.indexOf(roomy) == 1 and page._drives.getItemPosition(1)[:2] == (0, 1)  # two cards per row
+    shown = QDir.toNativeSeparators("Q:/filetree-owned/")
+    assert full_button.text() == f"System  ({shown})"
+    assert full_bar.toolTip() == i18n.tr("welcome_drive_used", percent="95.0 %")
+    assert full_bar.palette().color(QPalette.ColorRole.Highlight) == QColor("#d13438")
+    assert roomy_bar.palette().color(QPalette.ColorRole.Highlight) != QColor("#d13438")
+    requested = []
+    page.scan_requested.disconnect()  # the window would start a real scan; record the request only
+    page.scan_requested.connect(requested.append)
+    full_button.click()
+    assert requested == ["Q:/filetree-owned/"]  # the scan keeps the native root Qt reported
+    assert window._worker is None and window._pending_scan is None  # nothing was scanned
+    page.set_unit("KB")
+    free = page.drive_cards[0].free
+    assert free.text() == i18n.tr("welcome_drive_free", free=format_size(50, "KB"), total=format_size(1000, "KB"))
+    assert page.scan_all.minimumHeight() == page._choose.minimumHeight()
+
+
+def test_empty_lists_explain_themselves_without_claiming_unfinished_coverage(window, qapp, sample_tree):
+    results = window.results
+    problems, largest = results._empty_hints
+    results.begin_scan()
+    assert problems.label.isHidden() and largest.label.isHidden()  # nothing to claim while scanning
+    outcome = analyse(scan(sample_tree))
+    results.show_outcome(outcome)
+    assert not problems.label.isHidden() and problems.label.text() == i18n.tr("problems_none")
+    assert largest.label.isHidden()  # the list has rows
+    results._largest_filter.setText("no-such-name-anywhere")
+    qapp.processEvents()
+    assert largest.label.text() == i18n.tr("search_none") and not largest.label.isHidden()
+    assert largest.label.testAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+    results._largest_filter.clear()
+    qapp.processEvents()
+    assert largest.label.isHidden()
+    results.show_outcome(dataclasses.replace(outcome, partial=True))
+    assert problems.label.isHidden()  # a stopped scan did not read everything
+    outcome.result.errors.append((str(sample_tree / "unreadable"), "Access denied"))
+    results.show_outcome(outcome)
+    assert problems.label.isHidden()
+    i18n.set_language("zh-TW")
+    try:
+        results.show_outcome(dataclasses.replace(outcome, result=dataclasses.replace(outcome.result, errors=[])))
+        window.retranslate()
+        assert problems.label.text() == i18n.tr("problems_none")
+    finally:
+        i18n.set_language("en")
+
+
+def test_empty_hint_survives_its_view_being_destroyed(qapp):
+    model = QStandardItemModel()
+    view = QTableView()
+    view.setModel(model)
+    hint = EmptyHint(view, lambda: "empty")
+    view.resize(240, 120)
+    view.show()
+    qapp.processEvents()
+    assert not hint.label.isHidden()
+    view.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)  # raised from eventFilter before
+    model.appendRow(QStandardItem("after"))  # a model outliving the view no longer reaches the hint
+
+
+def test_scan_state_chip_takes_a_tone_per_state(window, qapp, sample_tree):
+    overview = window.results.overview
+    assert overview.state.property("role") == "chip"
+    assert window.results.capacity.summary.property("role") == "caption"
+    for state, tone in (("complete", "success"), ("partial", "caution"), ("live", "accent"), ("empty", "")):
+        overview.show_totals(None, state)
+        assert overview.state.property("tone") == tone, state

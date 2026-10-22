@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import heapq
 import math
+import threading
 import time
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 
 from je_file_tree.core.node import Node
@@ -119,19 +120,38 @@ class Summary:
     counted_categories: list[CategoryStat] | None = None
 
 
-def summarise(root: Node, limit: int = 1000, *, now: float | None = None) -> Summary:
+class AnalysisCancelledError(RuntimeError):
+    """A requested summary was canceled; no partial statistics are returned."""
+
+
+def summarise(root: Node, limit: int = 1000, *, now: float | None = None,
+              cancel: threading.Event | None = None) -> Summary:
     """The largest files, the per-extension totals and the per-age totals, in one pass over the tree.
 
     A single pass matters on big scans: measured on 650,000 files, 0.65 s
     against 1.4 s for the first two computed one after the other. ``now`` is
     the moment ages are counted from (the current time when omitted).
+    Optional ``cancel`` raises ``AnalysisCancelledError`` during traversal,
+    largest-file selection or age counting, without returning partial totals.
     """
     now = time.time() if now is None else now
     accounted: dict[str, int] | None = {} if root.accounting is not None else None
-    files, sizes, counts = _files_and_extensions(root, accounted=accounted)
-    largest = heapq.nlargest(limit, files, key=_file_size) if limit > 0 else []
+    files, sizes, counts = _files_and_extensions(root, accounted=accounted, cancel=cancel)
+    largest = heapq.nlargest(limit, _checked_files(files, cancel), key=_file_size) if limit > 0 else []
     counted = category_stats(_extension_list(accounted, counts)) if accounted is not None else None
-    return Summary(largest, _extension_list(sizes, counts), age_stats(files, now), now, counted)
+    return Summary(largest, _extension_list(sizes, counts), age_stats(_checked_files(files, cancel), now), now, counted)
+
+
+def _check_cancel(cancel: threading.Event | None) -> None:
+    if cancel is not None and cancel.is_set():
+        raise AnalysisCancelledError("Analysis canceled")
+
+
+def _checked_files(files: Iterable[Node], cancel: threading.Event | None) -> Iterator[Node]:
+    for node in files:
+        _check_cancel(cancel)
+        yield node
+    _check_cancel(cancel)
 
 
 def largest_files(root: Node, limit: int = 1000) -> list[Node]:
@@ -182,7 +202,8 @@ def extension_stats(root: Node) -> list[ExtensionStat]:
     return _extension_list(sizes, counts)
 
 
-def _files_and_extensions(root: Node, *, accounted: dict[str, int] | None = None
+def _files_and_extensions(root: Node, *, accounted: dict[str, int] | None = None,
+                          cancel: threading.Event | None = None
                           ) -> tuple[list[Node], dict[str, int], dict[str, int]]:
     """Every file beneath ``root`` (links left out), with the total size and count per extension."""
     files: list[Node] = []
@@ -190,6 +211,7 @@ def _files_and_extensions(root: Node, *, accounted: dict[str, int] | None = None
     counts: dict[str, int] = {}
     stack = [root]
     while stack:
+        _check_cancel(cancel)
         node = stack.pop()
         if node.is_link:
             continue

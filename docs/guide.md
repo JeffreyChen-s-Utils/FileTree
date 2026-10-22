@@ -2,6 +2,69 @@
 
 [Project introduction and quick start](../README.md)
 
+Administrator restart also captures each tab’s current hidden-file, gentle-scan, file-time, Windows-owner, exact-allocation and hard-link-count choices. Exclusions and concurrency remain workspace-wide and are encoded once. Imported choices are applied before scans without emitting setting-write signals; shared imported defaults remain in memory, including for new tabs. An explicit exclusion/concurrency edit updates the running workspace and saves that choice. Restored flags alone do not replace saved preferences when closing. Running workers retain their original immutable options if preferences change later. Legacy scope-only handoffs still use saved preferences; experimental scanner backends and operation approvals are refused.
+
+Administrator restart preserves the explicit root lists of every open scan tab, their visual order and the active tab. Blank tabs stay blank. Single-folder and combined scans remain distinct, including combined scans with one root. Closed/closing tabs are excluded. The new process performs fresh scans using captured choices; operation approvals and result objects are not transferred. Invalid restart data is reported as plain text before another administrator prompt. The internal handoff is versioned and bounded to the existing 16 tabs and 256 roots per combined scan; malformed, duplicate, unknown or ambiguous fields are refused.
+
+From an open window, Restart as administrator captures the current restart arguments and opens a waiting dialog. One owned worker waits for Windows while Qt events continue. Complete or dismiss the Windows prompt; closing the waiting dialog or pressing Escape waits for that request to finish. A successful launch still closes the original window/workspace even if its waiting dialog was closed; a failed or declined launch keeps the original copy running. Errors remain literal text, with no automatic retry. Repeated requests and active source-operation conflicts are blocked. Application closing retains the worker until it joins and suppresses late status updates. The optional startup prompt still runs before the workspace exists.
+
+Standard row-position lookup keeps temporary maps per requested parent; large groups no longer populate the shared file-row cache. Input order, repeated nodes, existing caches and frozen live rows remain intact. Small groups retain the threshold of sixteen distinct entries; custom row lookup or batch preparation keeps the previous cached mapping path. Generic index lookup and persistent-index restoration continue using their existing cache.
+
+Restoring ordinary tree selections groups the recorded nodes by parent, resolves their row positions and projects only numeric coordinates into filtered groups. Qt indexes are created for adjacent-range endpoints rather than every selected entry. Hidden ancestors, virtual members and gaps remain excluded; custom index mappings retain their existing delegation. Current items, whole-row selection, expansion and header state are preserved.
+
+Ordinary whole-row selections read their recorded node references directly from selected ranges before switching models. They avoid expanding every selected cell into Qt indexes, while still copying the selected references before callbacks can reorder or replace rows. Partial-cell selections, custom data/permissions and changed node-role handlers retain Qt row-selection checks. Virtual archive rows remain excluded; only selected sibling intervals are read, with no subtree traversal.
+
+When switching tree filters, adjacent selected rows within the same folder restore as one whole-column range. Gaps and folder boundaries stay separate; hidden and virtual entries remain excluded. This reduces range bookkeeping for large contiguous selections without reducing the selection.
+
+Ordinary Recycle Bin/Trash and protected-folder confirmation questions display the listed filenames
+and paths as plain text. Markup-like names and ampersands remain literal; tabs and line breaks are
+preserved. Yes/No, Enter, Escape and window-close behavior stay the same, including the protected
+question's default No. Declining the final confirmation starts no move.
+
+After completed moves to Trash or a folder rescan, the default largest-first tree order follows
+updated folder sizes. Selections and expanded folders stay attached to entries that remain.
+
+Changing size units or refreshing volume shares keeps selections, expanded folders and the active
+filter. Only the displayed values change.
+
+Clearing and reapplying tree filters retains visible selections and expanded folders.
+Switching between the filtered and full tree keeps the current row order without redundant sorting.
+Live scans still refresh normally, and changing the sort column or direction still applies immediately.
+When a new query matches the same entries, the tree retains its existing view and selection. Changed
+matches still update normally, even when the number of matches stays the same. Sorting or refreshing
+the scan does not trigger a second tree rebuild when the background query returns unchanged matches.
+Repeated browsing and filter mapping read an existing sorted or frozen sibling order directly. Scan refreshes, new sort columns/directions, completed moves/rescans and archive preview updates rebuild the relevant order through their existing model notifications. Live groups, including empty ones, keep the same frozen rows until the next model refresh.
+
+The filtered tree maps each queried sibling group once from the source model's current sorted or frozen rows. It borrows real nodes, formats normal cells directly and caches source row positions for reverse mapping. Sorts, source updates and membership changes preserve surviving selections and current items; formatting updates forward only the affected visible rows and columns. Custom source data, permissions and filter predicates still delegate. Explicit archive row counts skip wholly virtual previews.
+
+Tree-filter membership reads current sorted or frozen row identities directly, avoiding temporary Qt
+indexes and data-role dispatch for each row. Virtual previews and an empty scan remain excluded.
+Checking a folder's expander does not sort, copy or freeze its unopened children. During filtering,
+the worker's expansion snapshot also prevents mappings for unsearched groups. Eligible archives keep
+their on-demand preview offer. Explicit row queries freeze live membership, including initially empty
+groups; arrivals become visible after the next scan refresh.
+An already expanded archive preview also skips hidden-member mapping during tree filtering. A
+physical file with no scanned children keeps only its on-demand preview offer; clearing the filter
+restores its open preview. Physical scan sizes/counts stay unchanged, and virtual members remain
+read-only and excluded from file actions.
+Visible items are restored together as a full-row selection. Changing tree filters drops display-only
+archive selections while keeping physical files and scan totals unchanged.
+
+Large selections stay attached to their files when the folder tree is sorted. Rescans and archive
+preview refreshes discard selections whose entries are no longer in the current tree or preview,
+including nested archive entries. Archive previews remain read-only and never count as filesystem
+entries for file actions or scan totals.
+
+After approved moves to Trash, file-type and age totals update in the background. Stop retains completed
+moves and finishes their statistics. Completed entries update the tree together, keeping selections
+outside the removed entries. Failed moves remain visible, and affected folders are still rescanned.
+Closing can cancel those calculations; completed moves and
+operation errors still follow the normal completion handling.
+
+Chart legends wrap between complete entries as the pane narrows. Each category or age label keeps
+its color marker and text together, including Chinese, Japanese and Korean; labels follow the current
+font and language. Changing the chart or color mode updates the entries and their accessible names.
+
 Closing or canceling an owned analysis/operation dialog requests cancellation and finishes asynchronously after its workers join. The dialog remains owned and prevents competing source operations during an active native call; repeated close input keeps the first decision. Retained partial outcomes/errors are reported before dismissal. Replaced previews queue behind canceled reads and only the latest request starts; a queued, canceled operation never runs. Qt widgets/models remain on the GUI thread. Explicit whole-application shutdown still joins workers before destruction.
 
 Source operations and branch rescans also wait asynchronously for canceled background readers. Trash, Undo and approved bin operations start after the owned readers join; their results release the operation guard only after their own worker joins. Stop discards queued Trash, Undo or branch requests without calling their native operation.
@@ -95,7 +158,7 @@ On Windows, **Details** explains hibernation/page/swap files, Windows.old, the R
 
 The four charts expose accessible names, keyboard instructions and the current folder/selected entry with recorded size and counts. Focus a chart with Tab or a click: **arrow keys** select its rendered entries, **Enter** opens a selected folder, and **Backspace** goes up. Tree diagram retains Up/Down card selection and Right/Left expand/collapse. Bars and Tree diagram scroll selected rows into view. Navigation uses bounded chart geometry; grouped/hidden entries remain available in the folder tree. Modified shortcuts such as Alt+Left retain their existing behavior.
 
-**View → Theme → System / Light / Dark** switches immediately and remembers the choice. System restores the native platform style/palette; explicit themes use consistent Qt controls and contrasting text, selection and disabled colours. Palette/style changes invalidate chart images. Treemap and Sunburst choose black/white labels by actual fill contrast; treemap gradients are retained only when both ends keep at least 4.5:1 contrast. Bar names and values use the active palette, outside their coloured bars.
+**View → Theme → System / Light / Dark** switches immediately and remembers the choice. Every theme uses the same Fluent (Windows 11) look: rounded controls, quiet surfaces and the platform's accent colour, adjusted so controls keep 3:1 and text 4.5:1 contrast. System follows the platform's light or dark setting and switches with it; under a high-contrast setting it keeps the native platform style and palette. Palette/style changes invalidate chart images. Treemap tiles are flat, separated by thin gaps, and folders are shaded from the theme's own surfaces; Treemap and Sunburst choose black/white labels by actual fill contrast. Bar names and values use the active palette, outside their coloured bars.
 
 
 The new `multi_scan.scan_roots(paths, ...)` core API scans up to 256 explicit roots under one virtual root. Duplicate/overlapping ordinary paths are collapsed; separately selected mount scopes stay independent. Each child keeps its actual absolute source path, while the virtual `Node.path` is `None` and grants no filesystem operation or OS-capacity authority. Failed/pending roots retain incomplete coverage; cancellation joins active crawlers and preserves partial data. Optional hard-link counting is applied once across all observed roots. JSON marks the virtual root explicitly, saved comparisons preserve it, and CSV/report root paths stay blank. History requires individual source roots. Use **File → Scan several folders…** to capture a folder list, or **Scan all drives** on the welcome page to capture currently ready drives. Combined results support charts, search, comparison and exports; source-changing actions are disabled. Rescan reuses the captured source list, and history stores each actual source separately. CLI `scan ROOT --also ROOT` accepts repeated `--also` arguments; its scan record has `root: null`, actual `roots`, and unknown combined OS capacity. Single-root scans keep their normal behavior.
@@ -108,11 +171,15 @@ The application opens independent **scan tabs**. Use **New scan tab** or `Ctrl+T
 
 ## Features
 
-The welcome page groups folder/drive scanning, drive tools and recent folders in a scrollable layout. The path toolbar has an explicit **Scan path** button; Enter uses the same enabled action, and empty input cannot start a scan. Results show four counters for logical size, recorded allocation, files and folders, with an explicit live/finished/incomplete state and a shortcut to unreadable entries. Recorded allocation may be estimated or shared; it is not a savings estimate. Scan exclusions and mount boundaries still apply after completion. Choose an analysis in the sidebar, or the dropdown in a narrow window; keyboard navigation and existing menu shortcuts select the same views. The selected-folder list scope remains available above the views. During scanning, elapsed feedback continues between worker replies; Pause stops the activity animation, while Stop explains that current filesystem calls may need to finish before partial results appear. Full current paths remain in tooltips. New labels follow all five languages, size units and System/Light/Dark palettes. The saved tree/analysis split is restored when reopening; first-display defaults do not replace it, and both panes remain noncollapsible. See the [UI and UX design](ui-ux.md).
+The welcome page groups folder/drive scanning, drive tools and recent folders in a scrollable layout. The path toolbar has an explicit **Scan path** button; Enter uses the same enabled action, and empty input cannot start a scan. Results show four counters for logical size, recorded allocation, files and folders, with an explicit live/finished/incomplete state and a shortcut to unreadable entries. Recorded allocation may be estimated or shared; it is not a savings estimate. Scan exclusions and mount boundaries still apply after completion. Choose an analysis in the sidebar, or the dropdown in a narrow window; keyboard navigation and existing menu shortcuts select the same views. The selected-folder list scope remains available above the views. During scanning, elapsed feedback continues between worker replies; Pause stops the activity animation, while Stop explains that current filesystem calls may need to finish before partial results appear. Full current paths remain in tooltips. New labels follow all five languages, size units and System/Light/Dark palettes. The saved tree/analysis split is restored when reopening; first-display defaults do not replace it, and both panes remain noncollapsible. Folder columns keep the nearest folders when a path is shortened, and empty lists say why (a complete scan with no unreadable entries, or nothing matching a filter). Drive rows show their root in native form and the used share in the bar’s tooltip, and the bar turns red from 90 % used. See the [UI and UX design](ui-ux.md).
 
 Closing a scan tab or quitting cancels pending work and keeps the Qt event loop running while current filesystem calls finish. The closing status stays visible; the tab and its workers are retained until fully joined. Paused scans are released for cancellation, exports finish, and late source-operation errors remain visible. Windows UAC identifies the executable being elevated: running Python source displays Python/pythonw, while a compiled FileTree executable identifies FileTree. The administrator actions explain this difference. A window title or shortcut cannot rename the Python UAC prompt; signing and publisher verification are separate.
 
 **Options → Scan workers…** sets concurrency from 1 to 32 for new scans and branch rescans; the existing default remains up to 4 (bounded by CPU count), and invalid stored settings use that default. Running scans retain their workers. Slow shares may benefit from more concurrency, while disks/servers can slow down under excessive load; choose based on your environment. On Windows, paste an absolute UNC path such as `\\server\share` using your current account's permissions. Denied/disconnected branches remain incomplete. The welcome page includes this hint. Native disposable loopback SMB validation matched the local tree through UNC and a temporary mapped drive at 1/4 workers, with matching share-root allocation units. Denied branches and a mid-scan disconnect retained incomplete coverage without empty-folder cleanup proposals; exact owned ACL restoration and source identity/content preservation passed. This is not a slow remote-link throughput result; that measurement remains pending. Evidence: [native SMB proof](updates/share-20261009-native.json).
+
+The hosted Windows SMB validator retains ordered disconnect-helper steps, exit/timeout status and bounded stdout/stderr in `windows-share.json`, including failed attempts and later verification refusals. It keeps the 30-second deadline and exact ownership checks. A healthy retry or modeled timeout does not identify the cause of a native wait; use a reproduced native step trace.
+
+The separate mocked PowerShell helper tests save startup, module-import, source-parse, helper-extraction and case phases with runtime, actual exit/timeout and bounded outputs. Windows CI always preserves these JSON files for seven days as `windows-mocked-share-script-<python>`, including failed tests. The 20-second deadline, single attempt, module isolation and exact ownership assertions remain. A missing entry marker only means none was captured; a successful run does not explain an earlier timeout. These tests never create a real share.
 
 **Recycle Bins…** on Welcome, Clean up or the View menu reviews drive totals. On Windows, select one local drive and choose **Empty selected drive's Recycle Bin…**. Two questions show the drive, reported bytes and item count and explain permanent deletion. The worker queries totals again and refuses changed totals or incomplete inventories, then calls `SHEmptyRecycleBinW` for that explicit drive. This is a permanent-delete exception limited to the current user's OS bin; no arbitrary path or all-drive scope is accepted. Native emptying cannot be canceled after it starts; Stop/close and activation are disabled until it returns. Items arriving during the OS operation may also be removed. Errors can leave partially emptied bins and are reported alongside refreshed totals. Capacity/bin metadata refreshes afterwards; rescan for an updated main tree. macOS uses the separately reviewed Finder-wide operation described below. Verification never empties a real user bin.
 
@@ -139,6 +206,8 @@ The **Filter expanded folders…** box above the tree matches names without rega
 NTFS named-stream research is available separately on Windows with `python tools/measure_streams.py <folder> --entries 10000 --repeats 5`. It times a normal scan of the entire folder, then a bounded additional metadata survey of files and directories, and prints JSON. It excludes reparse entries, reports failures as unknown and never opens stream contents; named stream lengths are logical bytes, not disk allocation. The 2026-10-07 source-checkout sample found none among 9,749 entries; the extra survey cost 1.694 s versus a 0.466 s scan (five-run medians, including two identity checks per entry). This sample is not drive-wide prevalence evidence; normal scans remain unchanged.
 
 On Windows, **Options → Explorer integration…** adds or removes **Scan with FileTree** in your account's Explorer folder menu (Windows 11: **Show more options**). It is off until you save it, requires no administrator rights, and refuses to overwrite or remove an unowned registration. Register again after relocating the executable or source checkout. The entry uses an absolute, quoted launcher, so a source copy works from Explorer's working directory too. FileTree's entry context menu also offers the native **Properties** dialog on Windows.
+
+Explorer integration settings read and save in the background. Save and the checkbox stay disabled while the current request runs. Opening the dialog or canceling before Save makes no changes. Once Save starts, closing waits for it to finish and does not undo it; the window keeps processing events. Read failures leave Save disabled. Save failures remain visible in the dialog and allow another explicit Save.
 
 - **One click to start**: pick a folder, click a drive, drag a folder onto the window, or paste a path.
 - **Parallel, and live**: several folders are read at once; a two-million-entry Windows system drive
@@ -170,6 +239,26 @@ On Windows, **Options → Explorer integration…** adds or removes **Scan with 
 - **English, 繁體中文, 简体中文, 日本語 and 한국어**, switchable at any time; a built-in *How to use* guide.
 - Links and junctions are listed but never followed, so nothing is counted twice and a link loop cannot
   trap a scan. Folders that cannot be read are listed under *Problems* instead of stopping the scan.
+
+Cleanup suggestions and duplicate groups retain all listed members in their original order. Cell text is supplied when the view requests it, rather than creating four Qt items and formatting every file in advance. Groups still open together, and selection, context menus and activation use the original recorded Nodes. Explicit keeper labels remain bold and similar-photo previews retain their thumbnails. Captured membership stays fixed until results are replaced; this display work performs no source filesystem operations.
+
+New or replaced grouped results expand together while retaining all listed members and their original order. For lists with uniform row heights, no supplied thumbnails and 500 or more groups, the window combines expansion display updates; it does not trim rows or load only visible files. Initial column widths, keeper markers and photo thumbnails keep their existing settings. Very large lists still need a full layout, so this does not eliminate every pause. Analysis and file-operation reviews keep their existing behavior.
+
+When a background duplicate-space estimate completes, only the displayed group titles and tooltips change. Selected files, the current cell, collapsed groups, scroll position and column widths stay in place. Every captured member, oldest-first ordering and explicit keeper marker remain available; the updated checks still control bulk extra-copy selection. This update does not re-sort files or rebuild the list. New search results and pruning still follow their existing refresh behavior. An in-progress list export is canceled if the labels change, so it cannot mix old and new estimates.
+
+In Clean-up suggestions, Exact duplicates and Similar photos, changing size units or language updates the existing grouped file rows. It keeps selected files, the current cell, collapsed groups and column widths, with scroll position limited by any viewport resize. Sizes, column headings, keeper names, group titles and explanations use the new preferences; photo thumbnails retain their existing icons and the 1,000-member display bound. Formatting does not re-sort the files or restart the search or estimate worker. Results arriving from a running estimate use the latest units and language. An in-progress list or clipboard capture is canceled if its display text changes, so it cannot mix formats.
+
+Clicking **Keep selected copy** updates the old and new keeper labels and bold markers in place. Selected files, the current cell, collapsed groups and column widths remain available without re-sorting members or reloading the list. Old estimates and checks are cleared, and the existing worker recomputes them for the new keeper before bulk extra-copy selection is enabled. The original search result and captured member order stay intact. Status changes can resize the viewport; scroll position is retained within the new scrollbar limits. File actions keep their normal review and revalidation.
+
+Select extra copies applies one complete row selection across eligible displayed duplicate groups. It preserves the current row, excludes every occurrence of each explicit keeper and skips blocked or missing check results. A missing keeper, or one outside the captured displayed group, cannot select the entire group. Existing manual selections are replaced together; running or unfinished estimates leave selection untouched. This changes selection only; the normal review and pre-operation checks still apply.
+
+After review, batch preparation builds one identity set from the final checked selection. Cleanup and duplicate audit reasons and verified-copy receipts retain only those selected identities. Operation order and the original frozen receipt order are preserved. Unchecked entries leave the audit reason map; review rejection or unrelated copy proofs cannot queue a batch. Review, protected-folder questions, the default-No verified-copy Trash confirmation and source rechecks still apply.
+
+When more than eight entries are refused before a Trash confirmation, invalidated while confirming, or reported skipped by the worker (or a notice exceeds 1,024 characters or contains markup-like filename text), a read-only Skipped entries table replaces the long warning label. It retains every entry in original order, with the full path and translated reason in the details pane and tooltip. Select rows and use the normal copy shortcut (Ctrl+C, or Command+C on macOS) for quoted tab-separated text. Closing the table grants no approval; remaining eligible entries still require their usual review and confirmation. Closing the owning window cancels pending clipboard capture and stops this pre-confirmation flow. Small batches with short plain paths keep their existing notice.
+
+Large Trash failures also use the complete read-only report. Every failed path remains available in result order, with all observed process names/PIDs, incomplete-query warnings and exact open-file query errors in details, tooltips and copy output. Query observations do not establish the failure cause, and missing/partial visibility stays explicit. A short simple failure retains its existing notice; more than eight failures, more than eight observed processes, a query error, long text or markup-like text uses the table. Closing a report never retries a move or changes a process.
+
+Result tables (including Problems, Search, Largest files, Changes, file types and age groups) calculate each row's sort value once per sort instead of repeatedly reading cells for comparisons. Sorting retains visible selections, filters and column indicators; replacing results reapplies the chosen column and direction. Names keep Qt's UTF-16 ordering, numeric columns use raw values, and equal values retain their previous row order. This sorts captured records only and performs no source filesystem operations.
 
 ## Install
 
@@ -250,6 +339,8 @@ To give FileTree to someone without Python, compile it with Nuitka into a progra
 | File types | Space per extension; choose a kind above the table to see only that kind, double-click a row to list the largest files of that type |
 | Age | Space by when files last changed (within a month … over two years ago); double-click a row to list its largest files |
 | Problems | Folders FileTree was not allowed to read; their contents are not counted |
+
+Focus a list and press Ctrl+C (Command+C on macOS) to copy complete selected rows with headers in list order. Large selections and their quoted TSV text are prepared in small batches, protecting spreadsheet formula text. A new copy in any list replaces the pending request. Changes to displayed data or selection, an observed clipboard change, closing the view or its owner, explicitly hiding its top-level window, or quitting cancel preparation. Only the current complete result replaces the clipboard; canceled or partial rows never publish. Preparation can take longer than one bulk pass. Individual model calls, final string extraction and native clipboard access can still pause; an OS call already in progress cannot be interrupted.
 
 ### Freeing space
 
@@ -354,6 +445,8 @@ On macOS use ⌘ instead of Ctrl (⌘R rescans).
   *View → Ask for administrator rights at start*.
 - *Largest files*, *File types* and *Age* cover the whole scan; *Selected folder only*, at the top right of
   those tabs, makes them follow the folder selected in the tree.
+  Changing scope, starting a new scan or closing cancels pending list calculations and discards stale
+  replies. Closing keeps any active native capacity query owned until it finishes.
 - Hidden files are counted. Turn off *View → Include hidden files* to leave them out of the next scan.
 - Clean-up shows known bytes and counts of skipped, inaccessible and unread folders; omitted bytes are
   unknown. An incomplete branch is never suggested as a whole or as empty. *Select all* is disabled for
@@ -529,6 +622,10 @@ python tools/validate_linux_volume.py --evidence volume-evidence
 ```sh
 python tools/validate_macos_volume.py --evidence macos-volume-evidence
 ```
+
+Hosted macOS CI collects three independent fresh-image samples. The first proof stays at `macos-evidence/apfs/proof.json`; the other proofs are under `apfs/sample-2` and `apfs/sample-3`. `apfs/samples.tsv` retains each sample number, exit code and evidence path. Any failed sample fails the step even when later samples succeed. Each process creates its own private image; later samples never reopen or clean up an earlier retained fixture.
+
+APFS detach-attempt JSON retains checked image/scratch identities, image device entries and primary-volume metadata with explicit limits and truncation flags. After a busy detach and a later ownership refusal, it may read the previously validated primary device once if that device remains uniquely registered in the same wholly unmounted owned image. This read has a 60-second bound and records volume UUID match, mismatch or unknown plus device/container/physical-store metadata. Missing or changed mappings skip the read. The original refusal and retained fixture remain, including when the UUID matches or the query fails; the observation grants no further detach or cleanup. Native evidence is still required before changing recovery.
 
 A separate Windows CI job runs `validate_windows_volume.py` as administrator. Its completed native proof creates a new 512 MiB VHDX with a fresh UUID, derives the physical-device number only from its live native handle, formats only an empty RAW nonboot/non-system virtual disk and lets Windows assign the drive letter. Every fixture mutation rechecks the device mapping and volume GUID. It compares capacity and exact allocation, hard links, compression and sparse-file savings, then tests only its private bin with default-No refusal, a new arrival, two-question native emptying and joined GUI lifetime/refresh. It never accepts an existing image, disk, drive or bin; detachment failure retains scratch, and cleanup checks captured scratch/image identities. Native capacity/allocation/savings bounds and private-bin proof passed, including confirmed owned detach/cleanup. An unreadable system folder retained incomplete coverage and a null remainder; zero OS bin items still left observed bin metadata bytes. Per-case hard-link/compressed/sparse free recovery now has a private-volume native CI probe; native one/last/all hard-link names, compressed and 8 MiB sparse recovery passed on both fresh formats with confirmed cleanup. Cloud providers, shared extents and independently reserved bytes remain unknown; APFS cases have separate native evidence. Partial phase JSON is preserved if a later native check fails; only complete evidence confirms detachment/cleanup. JSON is retained for seven days. Run only on an already elevated disposable Windows test machine; no UAC request is made:
 

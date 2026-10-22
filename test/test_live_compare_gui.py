@@ -31,16 +31,21 @@ def _folders(tmp_path):
     return str(left), str(right)
 
 
+def _result_shown(app, dialog):
+    # Thread exit precedes the joined GUI callback that fills rows and enables export.
+    _wait(app, lambda: dialog.export.isEnabled() and not dialog.stop_button.isEnabled())
+
+
 def test_requested_pairs_only_and_csv_export(qapp, tmp_path, monkeypatch):
     dialog = LiveCompareDialog(_folders(tmp_path), "auto")
     try:
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _result_shown(qapp, dialog)
         assert dialog.model.rowCount() == 2
         assert all(row.state != "identical" for row in dialog.model.rows())
         selected = dialog.proxy.index(0, 0).data()
         dialog.view.selectRow(0)
         dialog.hash_selected()
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _result_shown(qapp, dialog)
         states = {row.relative: row.state for row in dialog.model.rows()}
         assert states[selected] == "identical"
         assert next(state for path, state in states.items() if path != selected) != "identical"
@@ -85,7 +90,7 @@ def test_choose_comparison_canceled_at_either_folder_starts_no_scan(window, monk
 def test_comparison_table_is_read_only_and_has_two_metadata_sides(qapp, tmp_path):
     dialog = LiveCompareDialog(_folders(tmp_path), "auto")
     try:
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _result_shown(qapp, dialog)
         assert dialog.model.columnCount() == 6
         assert not dialog.model.flags(dialog.model.index(0, 0)) & Qt.ItemFlag.ItemIsEditable
         assert "Equal size/time" in dialog.hint.text()

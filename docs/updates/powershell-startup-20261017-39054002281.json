@@ -1,0 +1,928 @@
+{
+ "program": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+ "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+ "commit": "7b994ede883945282d7e54e810a8463475a8ed6b",
+ "launches": [
+  {
+   "launch": 1,
+   "parent_before_filetime_100ns": 134367318034558970,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 4.094,
+   "clock": {
+    "status": "aligned-origin",
+    "origin": {
+     "pid": 628,
+     "before_filetime_100ns": 134367318060917587,
+     "after_filetime_100ns": 134367318061074419
+    },
+    "assumption": "stable host UTC",
+    "process_created_filetime_100ns": 134367318034572623,
+    "creation_to_origin_100ns": [
+     26344964,
+     26501796
+    ]
+   },
+   "launch_to_origin_ms": 2635.9,
+   "first_json_ms": 1351,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":628,\"before_filetime_100ns\":134367318060917587,\"after_filetime_100ns\":134367318061074419}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 1351\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "observed",
+    "child_pid": 628,
+    "returncode": 0,
+    "records": [
+     {
+      "event": "identity",
+      "pid": 628,
+      "parent_pid": 8260,
+      "cpu": {
+       "created_100ns": 134367318034572623,
+       "exited_100ns": 0,
+       "kernel_100ns": 2968750,
+       "user_100ns": 1250000
+      },
+      "reported_threads": 16,
+      "emitted_filetime_100ns": 134367318047354874
+     },
+     {
+      "event": "threads",
+      "count": 16,
+      "truncated": false,
+      "emitted_filetime_100ns": 134367318047493162
+     },
+     {
+      "event": "modules",
+      "count": 68,
+      "truncated": false,
+      "names": [
+       "powershell.exe",
+       "ntdll.dll",
+       "KERNEL32.DLL",
+       "KERNELBASE.dll",
+       "msvcrt.dll",
+       "OLEAUT32.dll",
+       "msvcp_win.dll",
+       "ucrtbase.dll",
+       "ATL.DLL",
+       "combase.dll",
+       "USER32.dll",
+       "win32u.dll",
+       "RPCRT4.dll",
+       "GDI32.dll",
+       "gdi32full.dll",
+       "ADVAPI32.dll",
+       "sechost.dll",
+       "OLE32.dll",
+       "mscoree.dll",
+       "IMM32.DLL",
+       "mscoreei.dll",
+       "SHLWAPI.dll",
+       "kernel.appcore.dll",
+       "VERSION.dll",
+       "clr.dll",
+       "VCRUNTIME140_1_CLR0400.dll",
+       "ucrtbase_clr0400.dll",
+       "VCRUNTIME140_CLR0400.dll",
+       "mscorlib.ni.dll",
+       "bcryptPrimitives.dll",
+       "System.ni.dll",
+       "System.Core.ni.dll",
+       "Microsoft.PowerShell.ConsoleHost.ni.dll",
+       "CRYPTSP.dll",
+       "rsaenh.dll",
+       "CRYPTBASE.dll",
+       "bcrypt.dll",
+       "System.Management.Automation.ni.dll",
+       "clbcatq.dll",
+       "shell32.dll",
+       "wintypes.dll",
+       "windows.storage.dll",
+       "SHCORE.dll",
+       "psapi.dll",
+       "amsi.dll",
+       "USERENV.dll",
+       "profapi.dll",
+       "MpOav.dll",
+       "wintrust.dll",
+       "CRYPT32.dll",
+       "MSASN1.dll",
+       "Microsoft.Management.Infrastructure.ni.dll",
+       "gpapi.dll",
+       "cryptnet.dll",
+       "System.Xml.ni.dll",
+       "System.Management.ni.dll",
+       "System.DirectoryServices.ni.dll",
+       "System.Numerics.ni.dll",
+       "wldp.dll",
+       "MSISIP.DLL",
+       "wshext.dll",
+       "AppxSip.dll",
+       "OpcServices.DLL",
+       "dtrace.dll",
+       "dbghelp.dll",
+       "Windows.StateRepositoryPS.dll",
+       "pwrshsip.dll",
+       "System.Data.ni.dll"
+      ],
+      "emitted_filetime_100ns": 134367318047513314
+     },
+     {
+      "event": "thread-states",
+      "count": 16,
+      "truncated": false,
+      "io": {
+       "read_operations": 35,
+       "write_operations": 2,
+       "other_operations": 1155,
+       "read_bytes": 96847,
+       "write_bytes": 120,
+       "other_bytes": 10702
+      },
+      "threads": [
+       {
+        "tid": 3748,
+        "created_100ns": 134367318034572640,
+        "state": 5,
+        "wait_reason": 0,
+        "switches": 604,
+        "wait_time_raw": 9005,
+        "start_module": "powershell.exe",
+        "start_offset": 27136
+       },
+       {
+        "tid": 9948,
+        "created_100ns": 134367318034625031,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 11,
+        "wait_time_raw": 8988,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 10236,
+        "created_100ns": 134367318034625714,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 19,
+        "wait_time_raw": 8988,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 9900,
+        "created_100ns": 134367318034629772,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 8,
+        "wait_time_raw": 8988,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 5108,
+        "created_100ns": 134367318034754320,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 8924,
+        "start_module": "clr.dll",
+        "start_offset": 1477824
+       },
+       {
+        "tid": 2828,
+        "created_100ns": 134367318034758858,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 8,
+        "wait_time_raw": 8925,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 2224,
+        "created_100ns": 134367318037951534,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 8944,
+        "start_module": "combase.dll",
+        "start_offset": 1163632
+       },
+       {
+        "tid": 6228,
+        "created_100ns": 134367318037954023,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 4,
+        "wait_time_raw": 8944,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 5144,
+        "created_100ns": 134367318037955970,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 3,
+        "wait_time_raw": 8944,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       },
+       {
+        "tid": 9420,
+        "created_100ns": 134367318037966339,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 149,
+        "wait_time_raw": 8969,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 7692,
+        "created_100ns": 134367318037966936,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 5,
+        "wait_time_raw": 8977,
+        "start_module": "clr.dll",
+        "start_offset": 979696
+       },
+       {
+        "tid": 9424,
+        "created_100ns": 134367318037967474,
+        "state": 5,
+        "wait_reason": 0,
+        "switches": 267,
+        "wait_time_raw": 9005,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 10136,
+        "created_100ns": 134367318037969146,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 3,
+        "wait_time_raw": 8969,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 8196,
+        "created_100ns": 134367318037970139,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 3,
+        "wait_time_raw": 8944,
+        "start_module": "clr.dll",
+        "start_offset": 1532832
+       },
+       {
+        "tid": 2368,
+        "created_100ns": 134367318040889167,
+        "state": 5,
+        "wait_reason": 6,
+        "switches": 2,
+        "wait_time_raw": 8963,
+        "start_module": "CRYPT32.dll",
+        "start_offset": 648832
+       },
+       {
+        "tid": 9436,
+        "created_100ns": 134367318040894108,
+        "state": 5,
+        "wait_reason": 15,
+        "switches": 2,
+        "wait_time_raw": 8963,
+        "start_module": "ntdll.dll",
+        "start_offset": 482240
+       }
+      ],
+      "emitted_filetime_100ns": 134367318047631585
+     },
+     {
+      "event": "chain",
+      "tid": 2224,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 2224,
+        "wait_time_raw": 8944,
+        "switches": 2
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050607663,
+      "query_after_filetime_100ns": 134367318050642731,
+      "emitted_filetime_100ns": 134367318050642731
+     },
+     {
+      "event": "chain",
+      "tid": 2368,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 2368,
+        "wait_time_raw": 8963,
+        "switches": 2
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050642731,
+      "query_after_filetime_100ns": 134367318050662848,
+      "emitted_filetime_100ns": 134367318050662848
+     },
+     {
+      "event": "chain",
+      "tid": 2828,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 2828,
+        "wait_time_raw": 8925,
+        "switches": 8
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050662848,
+      "query_after_filetime_100ns": 134367318050682973,
+      "emitted_filetime_100ns": 134367318050682973
+     },
+     {
+      "event": "chain",
+      "tid": 3748,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 3748,
+        "wait_time_raw": 9026,
+        "switches": 710
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050682973,
+      "query_after_filetime_100ns": 134367318050708380,
+      "emitted_filetime_100ns": 134367318050708380
+     },
+     {
+      "event": "chain",
+      "tid": 5108,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 5108,
+        "wait_time_raw": 8924,
+        "switches": 2
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050708380,
+      "query_after_filetime_100ns": 134367318050728497,
+      "emitted_filetime_100ns": 134367318050728497
+     },
+     {
+      "event": "chain",
+      "tid": 5144,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 5144,
+        "wait_time_raw": 8944,
+        "switches": 3
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050728497,
+      "query_after_filetime_100ns": 134367318050743484,
+      "emitted_filetime_100ns": 134367318050743484
+     },
+     {
+      "event": "chain",
+      "tid": 6228,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 6228,
+        "wait_time_raw": 8944,
+        "switches": 4
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050743484,
+      "query_after_filetime_100ns": 134367318050761130,
+      "emitted_filetime_100ns": 134367318050761130
+     },
+     {
+      "event": "chain",
+      "tid": 7692,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 7692,
+        "wait_time_raw": 9009,
+        "switches": 10
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050761130,
+      "query_after_filetime_100ns": 134367318050781337,
+      "emitted_filetime_100ns": 134367318050781337
+     },
+     {
+      "event": "chain",
+      "tid": 8196,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 8196,
+        "wait_time_raw": 9017,
+        "switches": 5
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050781337,
+      "query_after_filetime_100ns": 134367318050801488,
+      "emitted_filetime_100ns": 134367318050801488
+     },
+     {
+      "event": "chain",
+      "tid": 9420,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 9420,
+        "wait_time_raw": 9017,
+        "switches": 150
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050801488,
+      "query_after_filetime_100ns": 134367318050821645,
+      "emitted_filetime_100ns": 134367318050821645
+     },
+     {
+      "event": "chain",
+      "tid": 9424,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 9424,
+        "wait_time_raw": 9020,
+        "switches": 359
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050821645,
+      "query_after_filetime_100ns": 134367318050841828,
+      "emitted_filetime_100ns": 134367318050841828
+     },
+     {
+      "event": "chain",
+      "tid": 9436,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 9436,
+        "wait_time_raw": 8963,
+        "switches": 2
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050841828,
+      "query_after_filetime_100ns": 134367318050861926,
+      "emitted_filetime_100ns": 134367318050861926
+     },
+     {
+      "event": "chain",
+      "tid": 9900,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 9900,
+        "wait_time_raw": 8988,
+        "switches": 8
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050861926,
+      "query_after_filetime_100ns": 134367318050869420,
+      "emitted_filetime_100ns": 134367318050869420
+     },
+     {
+      "event": "chain",
+      "tid": 9948,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 9948,
+        "wait_time_raw": 9015,
+        "switches": 12
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050869420,
+      "query_after_filetime_100ns": 134367318050889503,
+      "emitted_filetime_100ns": 134367318050889503
+     },
+     {
+      "event": "chain",
+      "tid": 10136,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 3,
+        "pid": 628,
+        "tid": 10136,
+        "wait_time_raw": 9020,
+        "switches": 27
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050889503,
+      "query_after_filetime_100ns": 134367318050902152,
+      "emitted_filetime_100ns": 134367318050902152
+     },
+     {
+      "event": "chain",
+      "tid": 10236,
+      "complete": true,
+      "error": 0,
+      "cycle": false,
+      "required_nodes": 1,
+      "nodes": [
+       {
+        "kind": 8,
+        "status": 2,
+        "pid": 628,
+        "tid": 10236,
+        "wait_time_raw": 8988,
+        "switches": 19
+       }
+      ],
+      "query_before_filetime_100ns": 134367318050909658,
+      "query_after_filetime_100ns": 134367318050919791,
+      "emitted_filetime_100ns": 134367318050919791
+     },
+     {
+      "event": "complete",
+      "cpu": {
+       "created_100ns": 134367318034572623,
+       "exited_100ns": 0,
+       "kernel_100ns": 3281250,
+       "user_100ns": 1250000
+      },
+      "emitted_filetime_100ns": 134367318050919791
+     }
+    ],
+    "stop_reason": null,
+    "invalid_records": 0,
+    "output_truncated": false,
+    "stderr": ""
+   }
+  },
+  {
+   "launch": 2,
+   "parent_before_filetime_100ns": 134367318075601886,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.313,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 832,
+     "before_filetime_100ns": 134367318077443218,
+     "after_filetime_100ns": 134367318077503853
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 184.1,
+   "first_json_ms": 90,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":832,\"before_filetime_100ns\":134367318077443218,\"after_filetime_100ns\":134367318077503853}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 90\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 3,
+   "parent_before_filetime_100ns": 134367318078636888,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.39,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 6604,
+     "before_filetime_100ns": 134367318081357183,
+     "after_filetime_100ns": 134367318081417618
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 272.0,
+   "first_json_ms": 90,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":6604,\"before_filetime_100ns\":134367318081357183,\"after_filetime_100ns\":134367318081417618}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 90\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 4,
+   "parent_before_filetime_100ns": 134367318082508267,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.266,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 8376,
+     "before_filetime_100ns": 134367318084120725,
+     "after_filetime_100ns": 134367318084206420
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 161.2,
+   "first_json_ms": 85,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":8376,\"before_filetime_100ns\":134367318084120725,\"after_filetime_100ns\":134367318084206420}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 85\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 5,
+   "parent_before_filetime_100ns": 134367318085248707,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.266,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 8608,
+     "before_filetime_100ns": 134367318086806405,
+     "after_filetime_100ns": 134367318086878794
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 155.8,
+   "first_json_ms": 83,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":8608,\"before_filetime_100ns\":134367318086806405,\"after_filetime_100ns\":134367318086878794}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 83\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 6,
+   "parent_before_filetime_100ns": 134367318087907277,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.265,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 3508,
+     "before_filetime_100ns": 134367318089434808,
+     "after_filetime_100ns": 134367318089495080
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 152.8,
+   "first_json_ms": 81,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":3508,\"before_filetime_100ns\":134367318089434808,\"after_filetime_100ns\":134367318089495080}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 81\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 7,
+   "parent_before_filetime_100ns": 134367318090527811,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.313,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 5840,
+     "before_filetime_100ns": 134367318092436545,
+     "after_filetime_100ns": 134367318092514935
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 190.9,
+   "first_json_ms": 91,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":5840,\"before_filetime_100ns\":134367318092436545,\"after_filetime_100ns\":134367318092514935}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 91\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 8,
+   "parent_before_filetime_100ns": 134367318093625541,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.265,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 9516,
+     "before_filetime_100ns": 134367318095198718,
+     "after_filetime_100ns": 134367318095279765
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 157.3,
+   "first_json_ms": 90,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":9516,\"before_filetime_100ns\":134367318095198718,\"after_filetime_100ns\":134367318095279765}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 90\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 9,
+   "parent_before_filetime_100ns": 134367318096379328,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.266,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 1468,
+     "before_filetime_100ns": 134367318097971776,
+     "after_filetime_100ns": 134367318098029851
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 159.2,
+   "first_json_ms": 78,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":1468,\"before_filetime_100ns\":134367318097971776,\"after_filetime_100ns\":134367318098029851}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 78\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 10,
+   "parent_before_filetime_100ns": 134367318099008273,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.266,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 9904,
+     "before_filetime_100ns": 134367318100532547,
+     "after_filetime_100ns": 134367318100598132
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 152.4,
+   "first_json_ms": 81,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":9904,\"before_filetime_100ns\":134367318100532547,\"after_filetime_100ns\":134367318100598132}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 81\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 11,
+   "parent_before_filetime_100ns": 134367318101606458,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.265,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 7016,
+     "before_filetime_100ns": 134367318103174524,
+     "after_filetime_100ns": 134367318103258211
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 156.8,
+   "first_json_ms": 77,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":7016,\"before_filetime_100ns\":134367318103174524,\"after_filetime_100ns\":134367318103258211}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 77\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  },
+  {
+   "launch": 12,
+   "parent_before_filetime_100ns": 134367318104226710,
+   "outcome": "completed",
+   "returncode": 0,
+   "elapsed_seconds": 0.25,
+   "clock": {
+    "status": "origin-only",
+    "origin": {
+     "pid": 6308,
+     "before_filetime_100ns": 134367318105782400,
+     "after_filetime_100ns": 134367318105842677
+    },
+    "assumption": "stable host UTC"
+   },
+   "launch_to_origin_ms": 155.6,
+   "first_json_ms": 81,
+   "stderr": "FILETREE_STARTUP_CLOCK {\"pid\":6308,\"before_filetime_100ns\":134367318105782400,\"after_filetime_100ns\":134367318105842677}\r\n#< CLIXML\r\nFILETREE_STARTUP_JSON 81\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+   "stdout": "",
+   "process_observation": {
+    "status": "not-sampled"
+   }
+  }
+ ],
+ "launch_to_origin_ms": [
+  2635.9,
+  184.1,
+  272.0,
+  161.2,
+  155.8,
+  152.8,
+  190.9,
+  157.3,
+  159.2,
+  152.4,
+  156.8,
+  155.6
+ ],
+ "timeouts": 0
+}

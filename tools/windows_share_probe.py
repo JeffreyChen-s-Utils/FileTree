@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from dataclasses import replace
 import hashlib
 import json
@@ -12,6 +13,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -20,9 +22,105 @@ from je_file_tree.core.cleanup import EMPTY_FOLDERS, find_cleanup  # noqa: E402
 from je_file_tree.core.coverage import coverage_of  # noqa: E402
 from je_file_tree.core.scanner import ACCESS_DENIED, ScanOptions, ScanResult, scan  # noqa: E402
 from tools.windows_owned_volume import require  # noqa: E402
+from tools.observed_process import run_observed  # noqa: E402
+from tools.windows_trace_clock import trace_clock  # noqa: E402
 
 _BRANCHES = 256
 _OPTIONS = ScanOptions(workers=1, file_times=True, exact_windows_allocation=True)
+_OUTPUT_LIMIT = 65536
+_STEP_PREFIX = "FILETREE_SMB_STEP "
+_WARMUP_TIMEOUT = 120
+# The first Windows PowerShell 5.1 launch on a fresh runner waits in the kernel while its images load
+# (2.6 s to the first statement and 1.35 s for the first ConvertFrom-Json, against about 0.16 s and
+# 0.08 s for every later launch; U-20261017-64). Warm it once, outside the helpers' own deadlines.
+_WARMUP_SCRIPT = "$null = '{\"warm\":1}' | ConvertFrom-Json"
+_STEP_NAMES = {"runner-guard", "identity-check", "root-scope", "owner-receipt", "share-presence",
+               "receipt-read", "receipt-parse", "receipt-identity",
+               "owned-share-lookup", "share-ownership", "remove-owned-share", "helper-complete",
+               *(f"owned-entry-{number}" for number in range(1, 5))}
+
+
+class ShareDisconnectError(RuntimeError):
+    """A failed disconnect proof with bounded native observations retained for the outer fixture."""
+
+    def __init__(self, proof: dict, error: Exception) -> None:
+        self.proof = {**proof, "failure": {"type": type(error).__name__, "message": _output(str(error))[0]}}
+        super().__init__(f"Native SMB disconnect proof failed: {error}")
+
+
+def _output(value: str | bytes | None) -> tuple[str, bool]:
+    raw = value.encode("utf-8", errors="replace") if isinstance(value, str) else value or b""
+    return raw[-_OUTPUT_LIMIT:].decode("utf-8", errors="replace"), len(raw) > _OUTPUT_LIMIT
+
+
+def _steps(stderr: str) -> tuple[list[dict], int]:
+    records, invalid = [], 0
+    for line in stderr.splitlines():
+        _before, prefix, payload = line.rpartition(_STEP_PREFIX)
+        if not prefix:
+            continue
+        try:
+            item = json.loads(payload)
+        except (json.JSONDecodeError, RecursionError):
+            invalid += 1
+            continue
+        if (not isinstance(item, dict) or set(item) != {"sequence", "step", "event", "elapsed_ms"}
+                or type(item["sequence"]) is not int or item["sequence"] <= 0
+                or type(item["step"]) is not str or item["step"] not in _STEP_NAMES
+                or item["event"] not in ("started", "completed")
+                or type(item["elapsed_ms"]) is not int or item["elapsed_ms"] < 0):
+            invalid += 1
+            continue
+        records.append(item)
+    return records[-64:], invalid
+
+
+def _helper_record(result, started: float) -> dict:
+    stdout, out_truncated = _output(getattr(result, "stdout", None))
+    stderr, err_truncated = _output(getattr(result, "stderr", None))
+    steps, invalid = _steps(stderr)
+    complete = bool(steps and [step["sequence"] for step in steps] == list(range(1, len(steps)+1))
+                    and steps[-1]["step"] == "helper-complete" and steps[-1]["event"] == "completed" and not invalid)
+    if isinstance(result, subprocess.TimeoutExpired):
+        outcome = "timeout"
+    elif isinstance(result, OSError):
+        outcome = "start-failed"
+    else:
+        outcome = "completed" if getattr(result, "returncode", None) == 0 else "failed"
+    return {"outcome": outcome, "returncode": getattr(result, "returncode", None), "timeout_seconds": 30,
+            "elapsed_seconds": round(time.monotonic()-started, 6), "stdout": stdout, "stderr": stderr,
+            "stdout_truncated": out_truncated, "stderr_truncated": err_truncated,
+            "steps": steps, "invalid_step_records": invalid, "trace_complete": complete,
+            "process_observation": getattr(result, "process_observation", {"status": "not-sampled"}),
+            "clock": trace_clock(stderr, "FILETREE_SMB_CLOCK ",
+                                 getattr(result, "process_observation", {"status": "not-sampled"}))}
+
+
+def windows_powershell() -> Path:
+    """The system's Windows PowerShell 5.1, never a PATH lookup."""
+    return Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+
+
+def warm_powershell(program: Path, environment: dict[str, str] | None = None) -> dict:
+    """Start Windows PowerShell once and convert one literal JSON value; bounded, recorded, never retried.
+
+    It only moves the runner's one-time cold start out of the measured helpers. A failed or timed-out
+    warm-up is evidence and changes no helper deadline, check or outcome.
+    """
+    encoded = base64.b64encode(_WARMUP_SCRIPT.encode("utf-16-le")).decode("ascii")
+    started = time.monotonic()
+    try:
+        result = subprocess.run(  # noqa: S603 - fixed system program and literal script, no shell
+            [str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+            capture_output=True, timeout=_WARMUP_TIMEOUT, env=environment, check=False)
+    except subprocess.TimeoutExpired:
+        return {"outcome": "timeout", "timeout_seconds": _WARMUP_TIMEOUT,
+                "elapsed_seconds": round(time.monotonic() - started, 3)}
+    except OSError as error:
+        return {"outcome": "start-failed", "error": str(error)[:2048]}
+    return {"outcome": "completed", "returncode": result.returncode,
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "stderr": result.stderr[-4096:].decode("utf-8", errors="replace")}
 
 
 def _owned(args) -> Path:
@@ -112,31 +210,56 @@ def _denied(args) -> dict:
     return {"cases": observations}
 
 
+def _helper_environment(program: Path) -> dict[str, str]:
+    environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
+    environment["PSModulePath"] = str(program.parent / "Modules")
+    return environment
+
+
+def _warm_up() -> dict:
+    """Warm the helper's runtime; without SYSTEMROOT (not Windows) there is none to warm."""
+    if "SYSTEMROOT" not in os.environ:
+        return {"outcome": "unavailable", "reason": "SYSTEMROOT is not set"}
+    program = windows_powershell()
+    return warm_powershell(program, _helper_environment(program))
+
+
 def _disconnect(owned: Path, args) -> dict:
-    captured = {"disconnected": False}
+    captured: dict = {"disconnected": False, "powershell_warmup": _warm_up()}
     pause = threading.Event()
 
     def progress(current) -> None:
-        if captured["disconnected"] or not current.files:
+        if captured.get("helper_attempted") or not current.files:
             return
         # A final callback must never be misreported as a mid-scan disconnect.
         require(current.files < _BRANCHES * 4, "Share scan completed before disconnect; no proof")
-        program = Path(os.environ["SYSTEMROOT"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+        program = windows_powershell()
         script = Path(__file__).with_name("validate_windows_share.ps1").resolve(strict=True)
-        environment = {key: value for key, value in os.environ.items() if key.casefold() != "psmodulepath"}
-        environment["PSModulePath"] = str(program.parent / "Modules")
+        environment = _helper_environment(program)
+        captured.update(helper_attempted=True, observed_files_before_disconnect=current.files)
         pause.set()
+        started = time.monotonic()
         try:
-            subprocess.run([str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),  # noqa: S603
-                            "-DisposableRunner", "-DisconnectOnly", "-FixtureRoot", str(owned)],
-                           check=True, timeout=30, capture_output=True, env=environment)
+            completed = run_observed(
+                [str(program), "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(script),
+                 "-DisposableRunner", "-DisconnectOnly", "-FixtureRoot", str(owned)],
+                check=True, timeout=30, env=environment)
+        except (subprocess.SubprocessError, OSError) as error:
+            captured["helper"] = _helper_record(error, started)
+            raise
+        else:
+            captured["helper"] = _helper_record(completed, started)
         finally:
             pause.clear()
-        captured.update(disconnected=True, observed_files_before_disconnect=current.files)
+        require(captured["helper"]["trace_complete"], "Native SMB helper step evidence is incomplete")
+        captured["disconnected"] = True
 
-    result = scan(args.unc, options=_OPTIONS, progress=progress, progress_interval=.001, pause=pause)
-    require(captured["disconnected"], "Native mid-scan share disconnect was not exercised")
-    _safe_failure(result)
+    try:
+        result = scan(args.unc, options=_OPTIONS, progress=progress, progress_interval=.001, pause=pause)
+        require(captured["disconnected"], "Native mid-scan share disconnect was not exercised")
+        _safe_failure(result)
+    except (subprocess.SubprocessError, OSError, RuntimeError) as error:
+        raise ShareDisconnectError(captured, error) from error
     return {**captured, "incomplete": True, "errors": len(result.errors), "files": result.root.file_count,
             "empty_cleanup_proposals": 0}
 
@@ -157,7 +280,11 @@ def main() -> None:
     elif args.mode == "denied":
         proof = _denied(args)
     elif args.mode == "disconnect":
-        proof = _disconnect(owned, args)
+        try:
+            proof = _disconnect(owned, args)
+        except ShareDisconnectError as error:
+            sys.stdout.write(json.dumps(error.proof) + "\n")
+            raise SystemExit(1) from None
     else:
         expected = json.loads((owned / "inventory.json").read_text(encoding="utf-8"))
         require(_inventory(owned / "sources") == expected, "SMB fixture source identity/content changed")

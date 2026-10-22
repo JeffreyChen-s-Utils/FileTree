@@ -22,15 +22,15 @@ from PySide6.QtGui import (
     QBrush,
     QColor,
     QContextMenuEvent,
-    QLinearGradient,
     QMouseEvent,
     QPainter,
     QPaintEvent,
+    QPalette,
     QPen,
     QPixmap,
     QResizeEvent,
 )
-from PySide6.QtWidgets import QToolTip, QWidget
+from PySide6.QtWidgets import QApplication, QToolTip, QWidget
 
 from je_file_tree.core.analysis import category_of, extension_of
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_share, format_size
@@ -39,39 +39,61 @@ from je_file_tree.gui.node_text import node_name, node_path
 from je_file_tree.core.treemap import Rect, Tile, layout
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.age_colours import age_colour
-from je_file_tree.gui.colours import MIN_TEXT_CONTRAST, contrast, readable_ink
+from je_file_tree.gui.colours import blend, readable_ink
 
-# One colour per file-type group (every key of analysis.CATEGORIES), readable on
-# light and dark themes alike.
+# One flat colour per file-type group (every key of analysis.CATEGORIES): evenly bright hues
+# that read on light and dark surfaces alike; labels pick black or white by contrast.
 CATEGORY_COLOURS: dict[str, str] = {
-    "images": "#4e9a06",
-    "video": "#c4a000",
-    "audio": "#75507b",
-    "documents": "#3465a4",
-    "archives": "#ce5c00",
-    "code": "#06989a",
-    "programs": "#c0504d",
-    "other": "#a08c6e",
+    "images": "#3fa34d",
+    "video": "#e0a526",
+    "audio": "#8e6cc8",
+    "documents": "#3b82c4",
+    "archives": "#e07a3a",
+    "code": "#1fa2a8",
+    "programs": "#d9534f",
+    "other": "#9a8f80",
 }
-_FOLDER_COLOURS = ("#d3d7cf", "#babdb6", "#a4a8a0")
+_FOLDER_SHADES = (.10, .16, .22)  # text colour laid over the surface, by folder depth
 LEVELS = (1, 2, 3, 4, 8)  # 8: every level worth drawing
 DEFAULT_LEVELS = 2
 BY_TYPE, BY_FOLDER, BY_AGE = "type", "folder", "age"
 COLOUR_MODES = (BY_TYPE, BY_FOLDER, BY_AGE)
 _GOLDEN = 0.618033988749895  # hue step that keeps neighbouring folders apart
 MIN_SIDE = 14  # px: a tile smaller than this is hard to see or point at, so it joins its folder's group
-_GROUP_COLOUR = "#c9ccc4"
-_GROUP_HATCH = QColor(0, 0, 0, 40)
+_GROUP_HATCH_ALPHA = 40
+_GAP = 1.0  # surface showing between neighbouring tiles
+_ROUND_MIN_SIDE = 8  # tiles at least this wide and tall get rounded corners
+_RADIUS = 2.0
 _LABEL_MIN_WIDTH = 48
 _LABEL_MIN_HEIGHT = 16
-_SHADE_MIN_SIDE = 12
 
 
-def colour_for(node: Node) -> QColor:
-    """The fill colour of a file tile (by file type) or a folder tile (by depth)."""
+def colour_for(node: Node, palette: QPalette | None = None) -> QColor:
+    """The fill colour of a file tile (by file type) or a folder tile (a shade of the surface, by depth)."""
     if node.is_dir:
-        return QColor(_FOLDER_COLOURS[node.depth % len(_FOLDER_COLOURS)])
+        return folder_colour(node.depth, palette or QApplication.palette())
     return QColor(CATEGORY_COLOURS[category_of(extension_of(node.name))])
+
+
+def _fill(painter: QPainter, rect: QRectF, brush: QColor | QBrush) -> None:
+    """Fill a tile inset by half the gap on each side, rounded when it is large enough to show it."""
+    inner = rect.adjusted(_GAP / 2, _GAP / 2, -_GAP / 2, -_GAP / 2)
+    if inner.width() <= 0 or inner.height() <= 0:
+        return
+    painter.setPen(Qt.PenStyle.NoPen)  # labels leave their ink as the pen
+    painter.setBrush(brush)
+    rounded = min(inner.width(), inner.height()) >= _ROUND_MIN_SIDE
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing, rounded)  # only corners need smoothing
+    if rounded:
+        painter.drawRoundedRect(inner, _RADIUS, _RADIUS)
+    else:
+        painter.drawRect(inner)
+
+
+def folder_colour(depth: int, palette: QPalette) -> QColor:
+    """A neutral folder fill that follows the theme: the text colour faintly over the base surface."""
+    shade = _FOLDER_SHADES[depth % len(_FOLDER_SHADES)]
+    return blend(palette.color(QPalette.ColorRole.Text), palette.color(QPalette.ColorRole.Base), shade)
 
 
 class TreemapWidget(QWidget):
@@ -87,6 +109,8 @@ class TreemapWidget(QWidget):
         self.setMinimumSize(200, 150)
         self._view_root: Node | None = None
         self._tiles: list[Tile] = []
+        self._shades: list[QColor] = []
+        self._inks: dict[int, QColor] = {}
         self._pixmap: QPixmap | None = None
         self._hover: Tile | None = None
         self._selected: Node | None = None
@@ -228,32 +252,25 @@ class TreemapWidget(QWidget):
         self._tiles = layout(self._view_root, Rect(0, 0, self.width(), self.height()), max_depth=self._levels,
                              min_side=MIN_SIDE, header=self._line_height() + 2)
         self._hues = {id(child): (index * _GOLDEN) % 1.0 for index, child in enumerate(self._view_root.children)}
+        # Per render: shades and label inks repeat across tiles, so each is computed once. Native, 1,259
+        # tiles: 55–66 ms recomputing them per tile, 30–37 ms cached (old gradient drawing 36–41 ms).
+        self._shades = [folder_colour(depth, self.palette()) for depth in range(len(_FOLDER_SHADES))]
+        self._inks = {}
         painter = QPainter(pixmap)
-        border = QPen(QColor(0, 0, 0, 90))
-        border.setWidthF(0.5)
         for tile in self._tiles:
-            self._draw_tile(painter, tile, border)
+            self._draw_tile(painter, tile)
         painter.end()
         self._pixmap = pixmap
 
-    def _draw_tile(self, painter: QPainter, tile: Tile, border: QPen) -> None:
+    def _draw_tile(self, painter: QPainter, tile: Tile) -> None:
         rect = QRectF(tile.rect.x, tile.rect.y, tile.rect.width, tile.rect.height)
         if tile.grouped:
-            self._draw_group(painter, tile, rect, border)
+            self._draw_group(painter, tile, rect)
             return
         node = tile.node
         colour = self._colour(node, tile.depth)
-        ink = readable_ink(colour)
-        if (min(rect.width(), rect.height()) >= _SHADE_MIN_SIDE and not node.is_dir and self._colours != BY_AGE
-                and min(contrast(ink, colour.lighter(135)), contrast(ink, colour.darker(115))) >= MIN_TEXT_CONTRAST):
-            gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
-            gradient.setColorAt(0.0, colour.lighter(135))
-            gradient.setColorAt(1.0, colour.darker(115))
-            painter.setBrush(gradient)
-        else:
-            painter.setBrush(colour)
-        painter.setPen(border)
-        painter.drawRect(rect)
+        ink = self._ink(colour)
+        _fill(painter, rect, colour)
         if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
             return
         size = format_size(node.accounted_size, self.unit)
@@ -269,16 +286,17 @@ class TreemapWidget(QWidget):
         if label.height() >= 2 * self._line_height():
             self._draw_label(painter, label.adjusted(0, self._line_height(), 0, 0), size, Qt.AlignmentFlag.AlignTop)
 
-    def _draw_group(self, painter: QPainter, tile: Tile, rect: QRectF, border: QPen) -> None:
-        """A folder's entries too small for tiles of their own: one grey, hatched tile saying how many."""
-        painter.setPen(border)
-        painter.setBrush(QColor(_GROUP_COLOUR))
-        painter.drawRect(rect)
-        painter.setBrush(QBrush(_GROUP_HATCH, Qt.BrushStyle.BDiagPattern))
-        painter.drawRect(rect)
+    def _draw_group(self, painter: QPainter, tile: Tile, rect: QRectF) -> None:
+        """A folder's entries too small for tiles of their own: one neutral, hatched tile saying how many."""
+        fill = self._shades[(tile.depth + 1) % len(self._shades)]
+        ink = self._ink(fill)
+        _fill(painter, rect, fill)
+        hatch = QColor(ink)
+        hatch.setAlpha(_GROUP_HATCH_ALPHA)
+        _fill(painter, rect, QBrush(hatch, Qt.BrushStyle.BDiagPattern))
         if rect.width() < _LABEL_MIN_WIDTH or rect.height() < _LABEL_MIN_HEIGHT:
             return
-        painter.setPen(QColor("#000000"))
+        painter.setPen(ink)
         label = rect.adjusted(3, 1, -3, -1)
         count = format_count(tile.grouped)
         text = tr("treemap_more", count=count)
@@ -296,10 +314,18 @@ class TreemapWidget(QWidget):
     def _line_height(self) -> int:
         return self.fontMetrics().height()
 
+    def _ink(self, fill: QColor) -> QColor:
+        """Black or white label ink for ``fill``, remembered for the rest of this render."""
+        key = fill.rgb()
+        ink = self._inks.get(key)
+        if ink is None:
+            ink = self._inks[key] = readable_ink(fill)
+        return ink
+
     def _colour(self, node: Node, depth: int) -> QColor:
         """The fill of a tile: by file type (folders grey by depth), or by the hue of its top-level folder."""
         if self._colours == BY_TYPE:
-            return colour_for(node)
+            return self._shades[node.depth % len(self._shades)] if node.is_dir else colour_for(node)
         if self._colours == BY_AGE:
             return age_colour(node, self.age_reference)
         top = node

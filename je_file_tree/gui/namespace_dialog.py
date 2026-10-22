@@ -16,6 +16,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.list_transfer import install_copy
 from je_file_tree.gui.namespace_worker import NamespaceOperationWorker, NamespacePreviewWorker, NamespaceRequest
 from je_file_tree.gui.scan_worker import wait_for
+from je_file_tree.gui.lazy_details import set_lazy_details
 from je_file_tree.gui.worker_lifecycle import WorkerDialog, queue_worker, retire_worker
 from je_file_tree.gui.tables import SORT_ROLE, Column, _TableModel
 
@@ -180,7 +181,7 @@ class NamespaceDialog(WorkerDialog):
                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(self._question_text(len(eligible), len(plan.items) - len(eligible)))
-        question.setDetailedText("\n\n".join(f"{item.source}\n→ {item.destination}" for item in eligible))
+        set_lazy_details(question, lambda: "\n\n".join(f"{item.source}\n→ {item.destination}" for item in eligible))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         if (question.exec() != QMessageBox.StandardButton.Yes or self.plan is not plan
                 or self._closed or self.worker.cancel.is_set()):
@@ -275,5 +276,5 @@ class NamespaceDialog(WorkerDialog):
                                  QMessageBox.StandardButton.Ok, self.parentWidget())
             report.setTextFormat(Qt.TextFormat.PlainText)
             report.setText(tr("namespace_closed_errors"))
-            report.setDetailedText("\n\n".join(lines))
+            set_lazy_details(report, lambda: "\n\n".join(lines))
             report.exec()

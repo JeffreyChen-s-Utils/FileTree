@@ -1,0 +1,905 @@
+{
+  "measured_on": "2026-10-17",
+  "base_head_sha": "bb5b2580bb9545b0f167e5cbd4d249c9fb6d879c",
+  "python": "3.14.4",
+  "pyside6": "6.11.2",
+  "platform": "native Windows Qt; WA_DontShowOnScreen",
+  "scope": "Synthetic 100,000 recorded sibling files and 1,000 selected rows, built entirely in memory; no source scan, native cleanup or source mutations. Each log is a fresh process with two filter/clear cycles and exact visible selection assertions.",
+  "baseline_ordered_ast_sha256": "b8ac61baa782af5b951716f5fee4c666485f58ca6d91f9f8febacb520a3c5e2d",
+  "candidate_ordered_ast_sha256": "d89f6c57e94e7eb8dc05cd4974830f9e86346894dbe2dbc150c1821e1cddebbb",
+  "method": "Initial and repeat prototype pairs precede the production edit. The final quiet pair restores the captured baseline method and its default-order predicate for the old run, then runs the actual changed model in a fresh process. Assert baseline method AST equality against the recorded Git head. No test process overlaps the final quiet pair; host background load remains uncontrolled.",
+  "observed": "Final paired first full query including debounce, worker and UI: 3588.45 ms baseline, 3342.00 ms candidate. Individual later entry switches overlap and include a candidate 3157.97 ms outlier; no fixed or general percentage speedup is established. Default-order timings show no stable regression. Significant wide-folder GUI pauses remain.",
+  "limitations": "This does not reproduce the owner's actual hanging Python-source path, prove every native UI is responsive, or replace #95's remaining view/proxy/selection work. The production-name-with-focused-tests run overlaps focused tests and is retained for transparency, not used for the paired claim.",
+  "runs": [
+    {
+      "label": "initial-name-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 172.19,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 124.31,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 70.26,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2984.31,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1047.49,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2937.89,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1146.28,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "initial-name-cached-prototype",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 145.58,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 76.98,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 75.17,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2705.17,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1194.03,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2649.01,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 971.8,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "name-updates-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 154.68,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 84.37,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 84.35,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3162.56,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1109.18,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3263.8,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1165.19,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3841.56
+          },
+          {
+            "query": "FILE-",
+            "ms": 263.96
+          },
+          {
+            "query": "file-0",
+            "ms": 270.7
+          },
+          {
+            "query": "FILE-0",
+            "ms": 263.7
+          }
+        ]
+      }
+    },
+    {
+      "label": "name-updates-inline-prototype",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 178.55,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 83.77,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 81.68,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3003.9,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1330.42,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2914.37,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1112.25,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3728.07
+          },
+          {
+            "query": "FILE-",
+            "ms": 291.15
+          },
+          {
+            "query": "file-0",
+            "ms": 285.06
+          },
+          {
+            "query": "FILE-0",
+            "ms": 275.24
+          }
+        ]
+      }
+    },
+    {
+      "label": "default-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 70.89,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 47.94,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 47.78,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3255.86,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1195.66,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3138.9,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1331.62,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "default-inline-prototype",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 58.77,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 46.54,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 54.46,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3252.18,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1047.79,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3236.64,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1183.61,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "production-name-with-focused-tests",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 196.93,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 78.41,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 88.19,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2964.26,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1485.92,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2774.7,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1296.08,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3675.19
+          },
+          {
+            "query": "FILE-",
+            "ms": 286.84
+          },
+          {
+            "query": "file-0",
+            "ms": 288.91
+          },
+          {
+            "query": "FILE-0",
+            "ms": 323.89
+          }
+        ]
+      }
+    },
+    {
+      "label": "production-default",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 74.88,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 47.62,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 44.62,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3144.29,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1022.28,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3012.16,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 955.76,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "final-quiet-name-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 153.4,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 73.98,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 70.42,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2941.52,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1214.29,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 2942.14,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1245.04,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3588.45
+          },
+          {
+            "query": "FILE-",
+            "ms": 259.89
+          },
+          {
+            "query": "file-0",
+            "ms": 279.57
+          },
+          {
+            "query": "FILE-0",
+            "ms": 254.81
+          }
+        ]
+      }
+    },
+    {
+      "label": "final-quiet-name-production",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 131.57,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 75.25,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 85.77,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2583.49,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1027.99,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3157.97,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1077.85,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": [
+          {
+            "query": "file-",
+            "ms": 3342.0
+          },
+          {
+            "query": "FILE-",
+            "ms": 274.89
+          },
+          {
+            "query": "file-0",
+            "ms": 265.14
+          },
+          {
+            "query": "FILE-0",
+            "ms": 281.47
+          }
+        ]
+      }
+    },
+    {
+      "label": "unused-viewport-region-prototype",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 144.59,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "ViewportRegionsTree": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 82.16,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "ViewportRegionsTree": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 96.87,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "ViewportRegionsTree": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 2946.76,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1134.09,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3334.52,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1451.11,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    },
+    {
+      "label": "viewport-experiment-baseline",
+      "record": {
+        "platform": "windows",
+        "files": 100000,
+        "selected": 1000,
+        "cycles": [
+          {
+            "cycle": 0,
+            "selection_models": 1,
+            "sort_ms": 195.14,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 1,
+            "selection_models": 1,
+            "sort_ms": 84.04,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          },
+          {
+            "cycle": 2,
+            "selection_models": 1,
+            "sort_ms": 149.69,
+            "source_persistent_indexes": 2001,
+            "selection_owners": {
+              "QTreeView": 1,
+              "QHeaderView": 0
+            },
+            "header_shares_active_selection": true
+          }
+        ],
+        "sources_modified": false,
+        "switches": [
+          {
+            "filtered": true,
+            "ms": 3649.25,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1456.98,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": true,
+            "ms": 3433.75,
+            "suppressed_sorts": []
+          },
+          {
+            "filtered": false,
+            "ms": 1165.42,
+            "suppressed_sorts": []
+          }
+        ],
+        "updates": []
+      }
+    }
+  ],
+  "unused_alternative": "The viewport-region prototype repaints a full viewport for nonempty selections; its results vary between cycles and it is not applied. Preserve both runs alongside the cache comparisons."
+}

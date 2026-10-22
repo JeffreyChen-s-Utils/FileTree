@@ -58,6 +58,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10-d](2026-10-d.md) | 2026-10 |
 | [2026-10-c](2026-10-c.md) | 2026-10 |
 | [2026-10-b](2026-10-b.md) | 2026-10 |
 | [2026-10](2026-10.md) | 2026-10 |
@@ -67,6 +68,123 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
+| U-20261018-89 | 2026-10-18 | Emphasised labels follow the language font on macOS | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
+| U-20261018-88 | 2026-10-18 | Welcome page drives as cards | #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261018-87 | 2026-10-18 | Flat, theme-aware treemap tiles | #gui #ux #charts | [2026-10-d](2026-10-d.md) |
+| U-20261018-86 | 2026-10-18 | Calmer results header: state chip and caption capacity line | #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261018-85 | 2026-10-18 | Sidebar and tool bar icons; language font reaches every widget again | #gui #ux #i18n #fix | [2026-10-d](2026-10-d.md) |
+| U-20261018-84 | 2026-10-18 | Fluent theme system for every theme | #gui #ux #theme | [2026-10-d](2026-10-d.md) |
+| U-20261018-83 | 2026-10-18 | Close #96 (APFS refusal no longer reproduces) and #113 (PowerShell warm-up) | #ci #diagnostics #done | [2026-10-d](2026-10-d.md) |
+| U-20261018-82 | 2026-10-18 | Hosted tallies: PowerShell warm-up and APFS image detach | #snapshot #ci #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261018-81 | 2026-10-18 | Properties and settings native calls audited; #95 closed | #snapshot #performance #gui #done | [2026-10-d](2026-10-d.md) |
+| U-20261018-80 | 2026-10-18 | Bulk question and report details are built when opened | #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261018-79 | 2026-10-18 | Remaining clipboard pause is Qt rendering text for the pasting program | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261018-78 | 2026-10-18 | Clipboard probe places GUI pauses against the native reader's call | #snapshot #diagnostics #performance | [2026-10-d](2026-10-d.md) |
+| U-20261017-77 | 2026-10-17 | Duplicate membership rebuilds build paths only for ties | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-76 | 2026-10-17 | Live scan ticks repaint instead of relaying out; grouped fill audited | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-75 | 2026-10-17 | Folder-tree sorting audit: cheaper per-row relayout callbacks | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-74 | 2026-10-17 | Result-table filtering matches cached row text | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-73 | 2026-10-17 | Grouped headers read titles from their own model | #decision #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-72 | 2026-10-17 | Native grouped-list header layout still costs about 0.6 s per 100,000 rows | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-71 | 2026-10-17 | Hosted confirmation: UTF-8 clipboard publication and PowerShell warm-up | #snapshot #performance #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261017-70 | 2026-10-17 | Publish copied rows as UTF-8 bytes instead of a converted string | #snapshot #performance #gui #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-69 | 2026-10-17 | Warm-up without SYSTEMROOT off Windows | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-68 | 2026-10-17 | macOS unit tests never read the host's unified log | #incident #tests #ci #macos | [2026-10-d](2026-10-d.md) |
+| U-20261017-67 | 2026-10-17 | #104's Qt6Core termination: a window's drive worker destroyed while running | #done #fix #gui #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-66 | 2026-10-17 | Wait for drive discovery before reading Recycle Bin captions | #incident #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-65 | 2026-10-17 | Split the hosted clipboard publication time | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-64 | 2026-10-17 | Windows PowerShell's cold start causes #99 and #100; warm it outside the deadlines | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-63 | 2026-10-17 | Sample Windows PowerShell start-up from a cold hosted runner | #snapshot #diagnostics #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-62 | 2026-10-17 | #99's disconnect time is Windows PowerShell start-up, not SMB work | #snapshot #diagnostics #smb | [2026-10-d](2026-10-d.md) |
+| U-20261017-61 | 2026-10-17 | Fix the thread-state record layout on 64-bit POSIX test hosts | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-60 | 2026-10-17 | APFS cleanup survey and DiskArbitration refusal logs | #snapshot #diagnostics #macos | [2026-10-d](2026-10-d.md) |
+| U-20261017-59 | 2026-10-17 | Add kernel thread states and I/O counters to slow-child samples | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-58 | 2026-10-17 | Stop the welcome drive test from scanning a real drive | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-57 | 2026-10-17 | Remove the remaining real-time chunk assumptions from capture tests | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-56 | 2026-10-17 | Fix a time-dependent copy cancellation test | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-55 | 2026-10-17 | Bound the pytest wrapper's evidence path and forwarded arguments | #snapshot #security #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-54 | 2026-10-17 | Name the loaded modules in each slow-child sample | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-53 | 2026-10-17 | Native private-station clipboard tail verified on hosted Windows | #done #clipboard #diagnostics | [2026-10-d](2026-10-d.md) |
+| U-20261017-52 | 2026-10-17 | Make the WINFUNCTYPE import test portable | #incident #tests #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-51 | 2026-10-17 | #100 reproduced: idle native wait at start-up and in receipt-parse | #snapshot #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-50 | 2026-10-17 | Keep the clipboard helper importable off Windows; skip late reader starts | #incident #clipboard #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-49 | 2026-10-17 | Repository hash of the LF-normalized clipboard evidence | #docs #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-48 | 2026-10-17 | Retire Qt's leftover windows before leaving the private clipboard desktop | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-47 | 2026-10-17 | Welcome drive rows with native roots and a nearly-full warning | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261017-46 | 2026-10-17 | Clearer result lists: path tails, visible bars and empty-state hints | #snapshot #gui #ux | [2026-10-d](2026-10-d.md) |
+| U-20261017-45 | 2026-10-17 | Decode the MSI inventory test's PowerShell output as UTF-8 | #snapshot #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-44 | 2026-10-17 | Quote workflow commands containing YAML mapping separators | #done #fix #ci | [2026-10-d](2026-10-d.md) |
+| U-20261017-43 | 2026-10-17 | Gate native clipboard measurements in a fresh private station | #snapshot #diagnostics #clipboard | [2026-10-d](2026-10-d.md) |
+| U-20261017-42 | 2026-10-17 | Observe later slow-child phases within the original deadline | #done #diagnostics #tests | [2026-10-d](2026-10-d.md) |
+| U-20261017-41 | 2026-10-17 | Encode clipboard rows during yielding capture | #done #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-40 | 2026-10-17 | Yield while preparing large selected-list copies | #done #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-39 | 2026-10-17 | Retain APFS busy associations and enable native diagnostics | #incident #diagnostics #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-38 | 2026-10-17 | Drain bounded observer streams before anonymous pipes can block | #done #diagnostics #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-37 | 2026-10-17 | Align the reproduced PowerShell timeout and observer output limit | #incident #diagnostics #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-36 | 2026-10-17 | Verify the corrected hosted macOS layout diagnostic | #done #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-35 | 2026-10-17 | Keep owned Windows wait observers attached through virtual environments | #done #diagnostics #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-34 | 2026-10-17 | Synchronize emitted-output timeout fixtures without extending deadlines | #incident #testing #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-33 | 2026-10-17 | Retain native header geometry changes in the layout diagnostic | #incident #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-32 | 2026-10-17 | Coalesce native layout while opening grouped results | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-31 | 2026-10-17 | Isolate grouped header layout work across native Qt runtimes | #snapshot #performance #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-30 | 2026-10-17 | Verify native literal-file reporting and retain an empty helper timeout | #snapshot #ci #apfs #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-29 | 2026-10-17 | Align PowerShell phase origins with owned-child timing | #snapshot #diagnostics #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-28 | 2026-10-17 | Retain repeated APFS busy and late mocked receipt timeout evidence | #incident #ci #apfs #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-27 | 2026-10-17 | Observe literal image/device handles after final APFS busy refusal | #snapshot #diagnostics #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-26 | 2026-10-17 | Retain native Qt test messages and active phase context | #snapshot #diagnostics #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-25 | 2026-10-17 | Record repeated APFS busy refusals after identity recovery | #incident #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-24 | 2026-10-17 | Continuously verify the Qt 6.8 grouped-view path | #snapshot #ci #qt | [2026-10-d](2026-10-d.md) |
+| U-20261017-23 | 2026-10-17 | Preserve grouped results when changing size units or language | #snapshot #fix #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-22 | 2026-10-17 | Update duplicate keeper choices without rebuilding every group | #snapshot #fix #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-21 | 2026-10-17 | Preserve duplicate selections when background estimates finish | #snapshot #fix #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-20 | 2026-10-17 | Map tree selections without retaining selected file rows | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-19 | 2026-10-17 | Recheck complete APFS identity before an unmounted detach retry | #snapshot #fix #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-18 | 2026-10-17 | Capture native CI refusals and observe owned helper waits | #snapshot #diagnostics #windows #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-17 | 2026-10-17 | Retain per-tab scan choices through administrator restart | #snapshot #fix #gui #settings | [2026-10-d](2026-10-d.md) |
+| U-20261017-16 | 2026-10-17 | Preserve workspace scan scopes across administrator restart | #snapshot #fix #gui #startup | [2026-10-d](2026-10-d.md) |
+| U-20261017-15 | 2026-10-17 | Keep administrator relaunch responsive through native approval | #snapshot #fix #gui #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-14 | 2026-10-17 | Restore selected row groups using only range endpoint indexes | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-13 | 2026-10-17 | Capture complete selected rows from recorded node ranges | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-12 | 2026-10-17 | Compact adjacent selected rows when switching tree filters | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-11 | 2026-10-17 | Map filtered sibling groups directly while preserving source semantics | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-10 | 2026-10-17 | Reuse sorted sibling rows before repeated model bookkeeping | #snapshot #performance #gui | [2026-10-d](2026-10-d.md) |
+| U-20261017-09 | 2026-10-17 | Keep Explorer registration settings responsive during native calls | #snapshot #fix #gui #windows | [2026-10-d](2026-10-d.md) |
+| U-20261017-08 | 2026-10-17 | Collect independent APFS samples without masking failures | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-07 | 2026-10-17 | Verify private desktop approvals on native X11 | #done #ci #desktop | [2026-10-d](2026-10-d.md) |
+| U-20261017-06 | 2026-10-17 | Capture post-busy owned APFS image and volume identity observations | #snapshot #ci #apfs | [2026-10-d](2026-10-d.md) |
+| U-20261017-05 | 2026-10-17 | Bind the owned desktop probe to the literal approval presenter | #snapshot #fix #ci | [2026-10-c](2026-10-c.md) |
+| U-20261017-04 | 2026-10-17 | Display literal source names in cleanup approvals | #done #fix #gui | [2026-10-c](2026-10-c.md) |
+| U-20261017-03 | 2026-10-17 | Verify corrected macOS GUI tests and retain native APFS busy-refusal evidence | #done #ci #test #apfs | [2026-10-c](2026-10-c.md) |
+| U-20261017-02 | 2026-10-17 | Record literal-name rendering in cleanup approval prompts | #snapshot #gui #test | [2026-10-c](2026-10-c.md) |
+| U-20261017-01 | 2026-10-17 | Synchronize held Undo completion with explicit fixture ownership | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
+| U-20261016-27 | 2026-10-16 | Inspect failed replacement moves while expiring Undo offers | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
+| U-20261016-26 | 2026-10-16 | Preserve mocked-helper wait phases and bound unattended failure-report tests | #snapshot #ci #test | [2026-10-c](2026-10-c.md) |
+| U-20261016-25 | 2026-10-16 | Retain complete failed-entry diagnostics in a lazy report | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-24 | 2026-10-16 | Share the complete read-only entry report viewport | #snapshot #refactor #gui | [2026-10-c](2026-10-c.md) |
+| U-20261016-23 | 2026-10-16 | Show complete large refusal batches in a lazy copyable table | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-22 | 2026-10-16 | Prepare reviewed batches with selected identity membership | #snapshot #fix #gui #performance #audit | [2026-10-c](2026-10-c.md) |
+| U-20261016-21 | 2026-10-16 | Batch eligible duplicate-copy selections around explicit keepers | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-20 | 2026-10-16 | Format grouped cleanup cells only when requested | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-19 | 2026-10-16 | Sort captured result rows with one key evaluation each | #snapshot #fix #gui #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-18 | 2026-10-16 | Preserve ordered native SMB disconnect diagnostics | #snapshot #diagnostics #network #tests | [2026-10-c](2026-10-c.md) |
+| U-20261016-17 | 2026-10-16 | Skip hidden member mappings for expanded archive previews | #snapshot #fix #gui #archives #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-16 | 2026-10-16 | Keep expander checks lazy and freeze empty live groups | #done #fix #gui #performance #live | [2026-10-c](2026-10-c.md) |
+| U-20261016-15 | 2026-10-16 | Read tree filter row identities without temporary Qt indexes | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-14 | 2026-10-16 | Reuse unchanged tree filter mappings | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-13 | 2026-10-16 | Keep tree order while rebinding filter views | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-12 | 2026-10-16 | Restore size ordering of ancestors after tree mutations | #done #fix #gui #sorting | [2026-10-c](2026-10-c.md) |
+| U-20261016-11 | 2026-10-16 | Restore filtered row selections in one scoped batch | #snapshot #fix #gui #filter #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-10 | 2026-10-16 | Retire generated selection models when tree filters switch | #snapshot #fix #gui #resources #filter | [2026-10-c](2026-10-c.md) |
+| U-20261016-09 | 2026-10-16 | Repaint tree units and capacity without structural relayouts | #snapshot #fix #gui #performance #settings | [2026-10-c](2026-10-c.md) |
+| U-20261016-08 | 2026-10-16 | Preserve each owned APFS detach attempt before later refusal | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |
+| U-20261016-07 | 2026-10-16 | Batch completed move updates without repeated tree layouts | #snapshot #fix #gui #cleanup #performance | [2026-10-c](2026-10-c.md) |
+| U-20261016-06 | 2026-10-16 | Batch tree selection remapping and reject obsolete row scopes | #fix #gui #performance #indexes | [2026-10-c](2026-10-c.md) |
+| U-20261016-05 | 2026-10-16 | Verify all fourteen jobs and native APFS cleanup on d0c2455 | #snapshot #ci #validation #macos | [2026-10-c](2026-10-c.md) |
+| U-20261016-04 | 2026-10-16 | Prepare removed-file statistics on the owned Trash worker | #fix #gui #threads #cleanup | [2026-10-c](2026-10-c.md) |
+| U-20261016-03 | 2026-10-16 | Stabilize invalid-Gitfile tests and retain APFS refusal details | #incident #ci #validation #macos | [2026-10-c](2026-10-c.md) |
+| U-20261016-02 | 2026-10-16 | Remove slow font fallback from wrapping chart legends | #fix #gui #performance #accessibility | [2026-10-c](2026-10-c.md) |
+| U-20261016-01 | 2026-10-16 | Cancel obsolete folder summaries and reject stale replies | #fix #gui #threads #analysis | [2026-10-c](2026-10-c.md) |
 | U-20261010-01 | 2026-10-10 | Simplify project introductions across all five languages | #docs #readme | [2026-10-c](2026-10-c.md) |
 | U-20261009-32 | 2026-10-09 | Publish Windows releases as complete program folders | #release #windows #distribution | [2026-10-c](2026-10-c.md) |
 | U-20261009-31 | 2026-10-09 | Validate recurring-review closure against asynchronous shutdown | #incident #tests #gui | [2026-10-c](2026-10-c.md) |

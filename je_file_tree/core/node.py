@@ -128,13 +128,7 @@ class Node:
         parent.children.remove(self)
         self.parent = None
         folders = self.dir_count + (1 if self.is_dir and not self.is_link else 0)
-        node: Node | None = parent
-        while node is not None:
-            node.size -= self.size
-            node.allocated -= self.allocated
-            node.file_count -= self.file_count
-            node.dir_count -= folders
-            node = node.parent
+        _subtract_totals(parent, self.size, self.allocated, self.file_count, folders)
 
     def replace_with(self, new: Node) -> None:
         """Put ``new`` (a fresh scan of this same folder) in this entry's place and correct every total above it.
@@ -181,3 +175,39 @@ def outermost(nodes: Iterable[Node]) -> list[Node]:
         if above is None:
             kept.append(node)
     return kept
+
+
+def detach_many(nodes: Iterable[Node]) -> None:
+    """Detach captured outermost entries, filtering each affected sibling list once.
+
+    Duplicates and descendants of chosen entries count once. Roots, immutable child collections and
+    entries absent from their recorded parent are ignored. Survivor order and list identity stay intact;
+    only captured parent links and named totals change. No descendant walk or filesystem access occurs.
+    """
+    parents: dict[Node, set[Node]] = {}
+    for node in outermost(nodes):
+        parent = node.parent
+        if parent is not None and isinstance(parent.children, list):
+            parents.setdefault(parent, set()).add(node)
+    for parent, wanted in parents.items():
+        kept, removed = [], []
+        for child in parent.children:
+            (removed if child in wanted else kept).append(child)
+        if not removed:
+            continue
+        parent.children[:] = kept
+        for child in removed:
+            child.parent = None
+        _subtract_totals(parent, sum(child.size for child in removed), sum(child.allocated for child in removed),
+                         sum(child.file_count for child in removed),
+                         sum(child.dir_count + (child.is_dir and not child.is_link) for child in removed))
+
+
+def _subtract_totals(parent: Node, size: int, allocated: int, files: int, folders: int) -> None:
+    node: Node | None = parent
+    while node is not None:
+        node.size -= size
+        node.allocated -= allocated
+        node.file_count -= files
+        node.dir_count -= folders
+        node = node.parent

@@ -11,12 +11,13 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ## What you can do
 
-- **Find large files and folders**: see the biggest items first, with charts showing their share of the space.
-- **Search and filter**: find files by name, type, size or last change.
-- **Review clean-up suggestions**: inspect caches, temporary files and duplicate files before acting.
+- **Find large files and folders**: see the biggest items first, including after cleaning or rescanning a folder. Charts show their share of the space. Browsing and filtering reuse sorted rows and sort unopened subfolders only when needed.
+- **Search and filter**: find files by name, type, size or last change. Sorting, units and tree filters keep visible selections. Tree filters reuse unchanged results, map each opened group once, and skip hidden archive members. Tree filters keep large selections and their gaps while retaining less cached data. Large result lists sort with one value calculation per row.
+- **Review clean-up suggestions**: inspect caches, temporary files and duplicates before acting. Large lists keep selections when changing units or language; large batches of skipped or failed entries remain available in complete, copyable tables. Keeper choices and space estimates keep your selection and view position. Grouped results open together and retain every listed file.
 - **See what grew**: compare scans to find folders using more space than before.
-- **Save reports**: export results to CSV, JSON or Excel.
+- **Save reports**: export results to CSV, JSON or Excel. Large selected-list copies prepare rows and text in batches; a newer copy in any list replaces the pending one.
 - **Use your language**: switch between English, Traditional Chinese, Simplified Chinese, Japanese and Korean.
+- **Explorer folder menu (Windows)**: add Scan with FileTree from Options. Settings stay responsive; an active Save finishes before closing.
 
 ## Install
 
@@ -44,9 +45,10 @@ For running from source or building a standalone app, see the [detailed guide](d
 
 1. **Choose a folder or drive**, or drag a folder into the window.
 2. **Wait for the scan**, then browse the largest folders and files. Bigger chart blocks mean more space used.
-3. **Review anything you want to remove**, then right-click → **Move to Recycle Bin**. FileTree asks for confirmation.
+3. **Review anything you want to remove**, then right-click → **Move to Recycle Bin**. FileTree asks for confirmation, displaying filenames and paths as written.
 
 You can stop a scan at any time; the results collected so far stay visible and are marked incomplete.
+Starting a new scan cancels pending folder-list calculations and discards their old results.
 
 ## Things to know
 
@@ -54,7 +56,7 @@ You can stop a scan at any time; the results collected so far stay visible and a
 - Clean-up suggestions need your review. Background monitoring is off by default and does not clean up automatically.
 - Folders that cannot be read appear under **Problems**; their contents are missing from the totals.
 - Scans do not follow symbolic links or junctions. File size and space used on disk can differ.
-- Windows may ask for administrator rights at startup. You can decline and scan accessible folders.
+- Windows may ask for administrator rights at startup. You can decline and scan accessible folders. A restart requested from the window waits in the background; complete or dismiss the Windows prompt to finish. Restart reopens scan tabs in order and rescans their folder lists with each tab’s current scan choices.
 - Advanced actions such as emptying Trash or linking duplicate copies have separate confirmations and consequences; read the [detailed guide](docs/guide.md) first.
 
 ## Keyboard shortcuts

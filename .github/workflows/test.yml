@@ -11,6 +11,63 @@ permissions:
   contents: read
 
 jobs:
+  windows-clipboard:
+    runs-on: windows-latest
+    name: Windows private clipboard
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: "3.12"
+    - name: Install pinned native Qt dependencies
+      run: 'python -m pip install --require-hashes --only-binary :all: -r .github/requirements/test.txt'
+    - name: Measure only new private clipboard stations
+      timeout-minutes: 3
+      env:
+        QT_QPA_PLATFORM: windows
+        PYTHONIOENCODING: utf-8
+        PYTHONFAULTHANDLER: "1"
+        QT_FORCE_STDERR_LOGGING: "1"
+      run: |
+        python -m tools.measure_clipboard_tail --rows 100000 --width 80 --output windows-clipboard-80.json *> windows-clipboard-80.log
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        python -m tools.measure_clipboard_tail --rows 100000 --width 512 --output windows-clipboard-512.json *> windows-clipboard-512.log
+        exit $LASTEXITCODE
+    - name: Preserve private clipboard proof including refusals
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-private-clipboard
+        path: |
+          windows-clipboard-*.json
+          windows-clipboard-*.log
+        if-no-files-found: warn
+        retention-days: 7
+  powershell-startup:
+    runs-on: windows-latest
+    name: Windows PowerShell start-up
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: "3.12"
+    - name: Sample Windows PowerShell start-up from a cold runner
+      timeout-minutes: 8
+      run: python -m tools.measure_powershell_startup --output powershell-startup.json
+    - name: Preserve start-up samples
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-powershell-startup
+        path: powershell-startup.json
+        if-no-files-found: warn
+        retention-days: 7
   windows-msi:
     runs-on: windows-latest
     name: Windows owned MSI installation
@@ -84,7 +141,15 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
         PYTHONFAULTHANDLER: "1"
-      run: python -m pytest -v --tb=short -p no:unraisableexception
+      run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
+    - name: Preserve pytest native context
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: pytest-context-macos
+        path: build/pytest-context/
+        if-no-files-found: warn
+        retention-days: 7
     - name: Validate owned native metadata and cocoa rendering
       run: python tools/validate_macos_sources.py --evidence macos-evidence
     - name: Validate owned native startup metadata without a login entry
@@ -99,7 +164,29 @@ jobs:
           python tools/validate_background.py --evidence "$evidence" --notification 2>&1 | tee "$evidence/probe.log"
         done
     - name: Validate fresh owned APFS capacity, recovery and cross-volume metadata
-      run: python tools/validate_macos_volume.py --evidence macos-evidence/apfs
+      shell: bash
+      run: |
+        apfs_failed=0
+        apfs_summary=macos-evidence/apfs/samples.tsv
+        mkdir -p macos-evidence/apfs
+        for apfs_sample in 1 2 3; do
+          apfs_evidence=macos-evidence/apfs
+          if [ "$apfs_sample" != 1 ]; then
+            apfs_evidence="$apfs_evidence/sample-$apfs_sample"
+          fi
+          if python tools/validate_macos_volume.py --evidence "$apfs_evidence"; then
+            apfs_status=0
+          else
+            apfs_status=$?
+            apfs_failed=1
+          fi
+          printf 'APFS sample %s exit=%s evidence=%s\n' "$apfs_sample" "$apfs_status" "$apfs_evidence"
+          printf '%s\t%s\t%s\n' "$apfs_sample" "$apfs_status" "$apfs_evidence" >> "$apfs_summary"
+        done
+        exit "$apfs_failed"
+    - name: Verify literal open-file reporting on an owned temporary file
+      if: always()
+      run: python -m tools.validate_macos_busy_observer --output macos-evidence/literal-open-file.json
     - name: Preserve macOS evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -272,7 +359,25 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
         PYTHONFAULTHANDLER: "1"
-      run: python -m pytest -v --tb=short -p no:unraisableexception
+        FILETREE_SHARE_SCRIPT_EVIDENCE: build/share-script-evidence
+      run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
+    - name: Preserve pytest native context
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: pytest-context-windows-${{ matrix.python-version }}
+        path: build/pytest-context/
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Preserve mocked PowerShell helper evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: windows-mocked-share-script-${{ matrix.python-version }}
+        path: build/share-script-evidence/
+        if-no-files-found: warn
+        retention-days: 7
 
     - name: Validate compression on fresh owned NTFS fixtures
       run: python tools/validate_windows_compression.py --output windows-compression.json
@@ -309,6 +414,83 @@ jobs:
         if-no-files-found: warn
         retention-days: 7
 
+  qt68:
+    runs-on: ${{ matrix.os }}
+    name: Qt 6.8 compatibility / ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python 3.13
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: "3.13"
+    - name: Install Qt's system libraries
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3 libglib2.0-0
+    - name: Install locked compatibility dependencies
+      run: 'python -m pip install --require-hashes --only-binary :all: -r .github/requirements/qt68.txt'
+    - name: Capture and verify the pinned Qt runtime
+      shell: python
+      run: |
+        import hashlib
+        import json
+        import sys
+        from pathlib import Path
+        import PySide6
+        from PySide6.QtCore import qVersion
+        from PySide6.QtWidgets import QTreeView
+
+        record = {
+            "python": sys.version,
+            "pyside6": PySide6.__version__,
+            "qt": qVersion(),
+            "update_threshold_available": hasattr(QTreeView, "setUpdateThreshold"),
+            "requirements_sha256_lf": hashlib.sha256(
+                Path(".github/requirements/qt68.txt").read_bytes().replace(b"\r\n", b"\n")
+            ).hexdigest(),
+        }
+        Path("build").mkdir(exist_ok=True)
+        Path("build/qt68-runtime.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        if record["pyside6"] != "6.8.3" or record["qt"] != "6.8.3" or record["update_threshold_available"]:
+            raise SystemExit("The compatibility lane must execute the pinned Qt 6.8 path")
+    - name: Verify grouped display, owned workers and native context
+      env:
+        QT_QPA_PLATFORM: offscreen
+        PYTHONFAULTHANDLER: "1"
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      run: >-
+        python -m tools.run_pytest --evidence build/pytest-context -- -q -ra --junitxml=build/qt68-tests.xml
+        test/test_grouped_display_refresh.py test/test_grouped_list.py
+        test/test_duplicate_keeper_refresh.py test/test_duplicate_savings_panel.py
+        test/test_similar_photos_gui.py test/test_list_transfer.py
+        test/test_selected_list_capture.py test/test_skipped_dialog.py test/test_clipboard_copy.py
+        test/test_pytest_context.py test/test_measure_grouped_layout.py
+    - name: Preserve pytest native context
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: pytest-context-qt68-${{ matrix.os }}
+        path: build/pytest-context/
+        if-no-files-found: warn
+        retention-days: 7
+    - name: Preserve compatibility runtime and test evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: qt68-${{ matrix.os }}
+        path: |
+          build/qt68-runtime.json
+          build/qt68-tests.xml
+        if-no-files-found: warn
+        retention-days: 7
+
   linux:
     runs-on: ubuntu-latest
     name: Linux / Python 3.12
@@ -331,7 +513,15 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
         PYTHONFAULTHANDLER: "1"
-      run: python -m pytest -v --tb=short -p no:unraisableexception
+      run: python -m tools.run_pytest --evidence build/pytest-context -- -v --tb=short -p no:unraisableexception
+    - name: Preserve pytest native context
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: pytest-context-linux
+        path: build/pytest-context/
+        if-no-files-found: warn
+        retention-days: 7
     - name: Validate isolated ext4 capacity and recovery
       run: python tools/validate_linux_volume.py --evidence volume-evidence
     - name: Validate fresh owned native changes and external hard-link aliases

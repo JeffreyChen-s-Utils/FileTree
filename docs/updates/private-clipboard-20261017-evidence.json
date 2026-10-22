@@ -1,0 +1,2231 @@
+{
+  "schema": 1,
+  "update": "U-20261017-43",
+  "baseline_commit": "d078dc0596d772bb8e631be36d5d82806cc9f9ca",
+  "sources": [
+    {
+      "path": "tools\\windows_private_clipboard.py",
+      "bytes": 11873,
+      "sha256": "ce8696cee281f24a71e19645bb98f91b2ac6f3611381a443d7a0486d0556fdd3"
+    },
+    {
+      "path": "tools\\measure_clipboard_tail.py",
+      "bytes": 14455,
+      "sha256": "f973c8823c65b71b7db280a531217211ec3807802787508471fa12eb4ba04180"
+    },
+    {
+      "path": "test\\test_private_clipboard.py",
+      "bytes": 10632,
+      "sha256": "f3ed90ec6270044083fdec94d0cdfa57f83b56e2f9ad8a1a77a698b11458d96d"
+    },
+    {
+      "path": "test\\test_clipboard_tail_probe.py",
+      "bytes": 9853,
+      "sha256": "421db64885449a376c6d4bcfc9474c95daee92f6b663dca6f154810a311d07e0"
+    },
+    {
+      "path": ".github\\workflows\\test.yml",
+      "bytes": 21687,
+      "sha256": "3004324cb5f8353287bf4c0a8fa5784bc62eced0f63259187d4325cd9e129ceb"
+    },
+    {
+      "path": "build\\private_clipboard_smoke.py",
+      "bytes": 2759,
+      "sha256": "371a435b7ec9d9e89f3d2979f78106736910287ff1984bc213cc0b6c035bf5b4"
+    },
+    {
+      "path": "build\\windows_private_clipboard_before_restore.py",
+      "bytes": 10907,
+      "sha256": "4ffa1650d3fab3f982e0830bbde8e2c0477ddde4cbaa5955b37cec5e5b188f0c"
+    },
+    {
+      "path": "build\\windows_private_clipboard_before_qt_guard.py",
+      "bytes": 10907,
+      "sha256": "e420bb4c0be1c56461e3991cda41873f4a3eabaa72aeed552f045fcdc610c18f"
+    },
+    {
+      "path": "build\\windows_private_clipboard_before_inheritance.py",
+      "bytes": 11089,
+      "sha256": "799fb38deceafdef9ce4f118e141988dcb0bf0869d20a5c6917d529e79cd9c7b"
+    },
+    {
+      "path": "build\\measure_clipboard_tail_before_inheritance.py",
+      "bytes": 14383,
+      "sha256": "69d8c118255fc6d6bb5e6a557ec6cd8b270186a4d3bf1e8ac6803e1d27e5b96f"
+    },
+    {
+      "path": "build\\check_private_clipboard_qt_gui_guard.py",
+      "bytes": 465,
+      "sha256": "c0e038d1dfcd6424d7c13f2f3e6f505cb8e9c3337c6e583715aa932f7014200f"
+    },
+    {
+      "path": "build\\probe_desktop_handle_transport.py",
+      "bytes": 1833,
+      "sha256": "e9cd33de0c3473797acba1cfb3a5f4ff27d433aaa5ee7f7efdcdd671a491bf7f"
+    },
+    {
+      "path": "build\\seal_private_clipboard_stage.py",
+      "bytes": 13000,
+      "sha256": "177abd83350145c88c118695e82984ecc34452e3b64681efd9158bde42353bbe"
+    }
+  ],
+  "checks": {
+    "inheritance-final": {
+      "path": "build\\private-clipboard-inheritance-final.xml",
+      "bytes": 11192,
+      "sha256": "2b7bdcd965db8bd59271d4a030760a017e977f733ebacc307ddccd6136549873",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "76",
+          "time": "1.972",
+          "timestamp": "2026-10-17T14:14:19.488412+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    "py313-transport": {
+      "path": "build\\private-clipboard-py313-transport.xml",
+      "bytes": 11192,
+      "sha256": "6135b6a8f3afb59b1a6e031acda0749a50d61454b6f2e195a06a8119dfbeb82c",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "76",
+          "time": "1.929",
+          "timestamp": "2026-10-17T14:17:05.967362+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    "transport-full": {
+      "path": "build\\private-clipboard-transport-full.xml",
+      "bytes": 389084,
+      "sha256": "8ab00d9b4d581a821677f405e3c1f6a8647a1f997604c747e9094888397f2381",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "54",
+          "tests": "2560",
+          "time": "439.827",
+          "timestamp": "2026-10-17T14:17:06.348663+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    }
+  },
+  "prototype_negative_checks": [
+    {
+      "path": "build\\private-clipboard-cleanup-red.xml",
+      "bytes": 4531,
+      "sha256": "60f5d29b41bc07ee469e5173ecb33c3d8d7a116942a766545e2afd1fc4384310",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "1",
+          "skipped": "0",
+          "tests": "18",
+          "time": "1.577",
+          "timestamp": "2026-10-17T14:01:27.865810+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    },
+    {
+      "path": "build\\private-clipboard-inheritance-focused.xml",
+      "bytes": 11688,
+      "sha256": "50bb139f00e4012b5b304c06c323550e4ace4e3c178a228ab713548199843e49",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "1",
+          "skipped": "0",
+          "tests": "73",
+          "time": "2.173",
+          "timestamp": "2026-10-17T14:12:20.049494+08:00",
+          "hostname": "LAPTOP-EKQMFLNE"
+        }
+      ]
+    }
+  ],
+  "exploratory_local_refusals": {
+    "named": {
+      "flags": "CWF_CREATE_ONLY",
+      "error": 5,
+      "message": "Access denied before Qt or clipboard APIs"
+    },
+    "anonymous": {
+      "flags": "CWF_CREATE_ONLY",
+      "error": 183,
+      "message": "Existing generated station refused before Qt or clipboard APIs"
+    },
+    "fallback": false
+  },
+  "desktop_handle_transport": [
+    {
+      "kind": "desktop metadata transport only; no clipboard API called",
+      "desktop": "filetree-metadata-3184512e9ee64be1bd5e6b4469daa274",
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "returncode": 0,
+      "stdout": "{\"inherited\": \"filetree-metadata-3184512e9ee64be1bd5e6b4469daa274\", \"before\": \"filetree-metadata-3184512e9ee64be1bd5e6b4469daa274\", \"after\": \"filetree-metadata-3184512e9ee64be1bd5e6b4469daa274\"}\r\n",
+      "stderr": "",
+      "verified": true,
+      "restored": true,
+      "closed_owned_desktop": true
+    },
+    {
+      "kind": "desktop metadata transport only; no clipboard API called",
+      "desktop": "filetree-metadata-b5d68f0d725a4852bada5d4ce6c94a3f",
+      "python": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+      "returncode": 0,
+      "stdout": "{\"inherited\": \"filetree-metadata-b5d68f0d725a4852bada5d4ce6c94a3f\", \"before\": \"filetree-metadata-b5d68f0d725a4852bada5d4ce6c94a3f\", \"after\": \"filetree-metadata-b5d68f0d725a4852bada5d4ce6c94a3f\"}\r\n",
+      "stderr": "",
+      "verified": true,
+      "restored": true,
+      "closed_owned_desktop": true
+    }
+  ],
+  "startupinfo_audit": {
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "lpDesktop_preserved": false,
+    "handle_list_preserved": true
+  },
+  "intentional_stops": [
+    {
+      "identity": {
+        "reason": "Intentional stop before strengthening the new pre-Qt namespace guard; not a native Qt termination",
+        "target": {
+          "ProcessId": 76256,
+          "ParentProcessId": 61548,
+          "CreationDate": "2026-10-17T14:02:55.128573+08:00",
+          "CommandLine": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe -m pytest -v -ra --tb=short --junitxml=build/private-clipboard-full.xml --basetemp D:/Codes/tests/filetree-private-clipboard-full-f40e066241be455f907959b75e5a0135 -o cache_dir=D:/Codes/tests/.pytest_cache -p tools.pytest_context --capture=tee-sys -o faulthandler_timeout=60"
+        },
+        "direct_children": 0,
+        "phase": {
+          "schema": 1,
+          "pid": 76256,
+          "phase": "call",
+          "nodeid": "test/test_namespace_moves.py::test_explicit_collision_suffix_is_previewed_not_rechosen",
+          "nodeid_truncated": false,
+          "outcome": "",
+          "utc": "2026-10-17T14:05:26.66392+08:00",
+          "monotonic_ns": 289048990878200
+        },
+        "utc": "2026-10-17T06:05:26.6813636Z"
+      },
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 61548,
+        "utc": "2026-10-17T06:02:55.123352+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 76256,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 4294967295,
+        "elapsed_seconds": 151.64641689998098
+      },
+      "active": {
+        "schema": 1,
+        "pid": 76256,
+        "phase": "call",
+        "nodeid": "test/test_namespace_moves.py::test_literals_patterns_and_multiple_reserved_names",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T06:05:26.693655+00:00",
+        "monotonic_ns": 289049020612500
+      },
+      "wrapper_exit": "1"
+    },
+    {
+      "identity": {
+        "reason": "Intentional stop before replacing the unsupported STARTUPINFO.lpDesktop transport; not a Qt termination",
+        "target": {
+          "ProcessId": 4080,
+          "ParentProcessId": 77528,
+          "CreationDate": "2026-10-17T14:06:41.276491+08:00",
+          "CommandLine": "C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe -m pytest -v -ra --tb=short --junitxml=build/private-clipboard-full-final.xml --basetemp D:/Codes/tests/filetree-private-clipboard-full-final-880715c9734f430fbe67bde9b5abf599 -o cache_dir=D:/Codes/tests/.pytest_cache -p tools.pytest_context --capture=tee-sys -o faulthandler_timeout=60"
+        },
+        "direct_children": 0,
+        "phase": {
+          "schema": 1,
+          "pid": 4080,
+          "phase": "call",
+          "nodeid": "test/test_tree_index_lifecycle.py::test_sort_hint_preserves_row_and_partial_column_selections_and_excludes_live_updates[True-False]",
+          "nodeid_truncated": false,
+          "outcome": "",
+          "utc": "2026-10-17T14:11:55.566092+08:00",
+          "monotonic_ns": 289437893049800
+        },
+        "utc": "2026-10-17T06:11:55.5752033Z"
+      },
+      "process": {
+        "schema": 1,
+        "state": "exited",
+        "parent_pid": 77528,
+        "utc": "2026-10-17T06:06:41.271390+00:00",
+        "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+        "capture": "tee-sys",
+        "qt_force_stderr_logging": true,
+        "fault_timeout_seconds": 60,
+        "child_pid": 4080,
+        "child_pid_role": "Popen process; may be a Windows venv launcher",
+        "returncode": 4294967295,
+        "elapsed_seconds": 314.4252006000024
+      },
+      "active": {
+        "schema": 1,
+        "pid": 4080,
+        "phase": "call",
+        "nodeid": "test/test_tree_index_lifecycle.py::test_sort_hint_preserves_row_and_partial_column_selections_and_excludes_live_updates[True-False]",
+        "nodeid_truncated": false,
+        "outcome": "",
+        "utc": "2026-10-17T06:11:55.566092+00:00",
+        "monotonic_ns": 289437893049800
+      },
+      "wrapper_exit": "1"
+    }
+  ],
+  "logs": [
+    {
+      "path": "build\\private-clipboard-local-guard.log",
+      "bytes": 1088,
+      "sha256": "53ecfda49c319e92216c8d152d3820b515ba7fcd94b0ce9c57157cb3d7faf7b7"
+    },
+    {
+      "path": "build\\private-clipboard-qt-gui-guard-red.log",
+      "bytes": 416,
+      "sha256": "9af2666e33fcbad4b67383c90ac04c6e5e2f0aafdd29b88dd3db356bc121c241"
+    },
+    {
+      "path": "build\\private-clipboard-qt-gui-guard-green.log",
+      "bytes": 93,
+      "sha256": "5ce4bb04658d15cc710626302c2e763c74672d8a2ba3baed53be513379d71e60"
+    },
+    {
+      "path": "build\\private-clipboard-cleanup-red.log",
+      "bytes": 1965,
+      "sha256": "62dc54931254d75d95a800dc813ff90eaddde1ad9dd9970432c44b65bfe132ad"
+    },
+    {
+      "path": "build\\private-clipboard-inheritance-focused.log",
+      "bytes": 1281,
+      "sha256": "3ee9e07a404e0daa95e9f11aa17c9b6eb6c7c71672fa5ee53edc0bb8f9f4107a"
+    },
+    {
+      "path": "build\\private-clipboard-inheritance-final.log",
+      "bytes": 182,
+      "sha256": "28238083315dfb4f8b4a2fea64a99f8e3ad6597aef76c76ef72a7c8c417e24ce"
+    },
+    {
+      "path": "build\\private-clipboard-py313-transport.log",
+      "bytes": 182,
+      "sha256": "a0fb882cc675ae0a545b933b76070f64eeb25be8c196db1e5cb5f0f61e2950ff"
+    },
+    {
+      "path": "build\\private-clipboard-ruff-global.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "build\\private-clipboard-ruff-pinned.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "build\\private-clipboard-full.log",
+      "bytes": 168546,
+      "sha256": "0d948b4cf9ca267357b21d059a0f5f61b6f270361e929273ade03bbc67cba398"
+    },
+    {
+      "path": "build\\private-clipboard-full-context\\output.log",
+      "bytes": 168336,
+      "sha256": "a5707efadd63ee0f8351e656eec863bf76d82e306a687241f225828ab76087a1"
+    },
+    {
+      "path": "build\\private-clipboard-full-final.log",
+      "bytes": 262555,
+      "sha256": "05830ca09622fb7ff50b9c2da0180aee432c7c7a0cf92c5de5b386a0c52c638f"
+    },
+    {
+      "path": "build\\private-clipboard-full-final-context\\output.log",
+      "bytes": 262214,
+      "sha256": "527ce4f4d51622f4fb556434989575d3b57d236f8043f3943848236beca8d1ea"
+    },
+    {
+      "path": "build\\private-clipboard-transport-full.log",
+      "bytes": 333959,
+      "sha256": "bf3608a6e4bb173cc6e815e10dac317545795487eb52b781c1f8d0c4b9806e64"
+    },
+    {
+      "path": "build\\private-clipboard-transport-full-context\\output.log",
+      "bytes": 333459,
+      "sha256": "1557da170b07de7d1bbd09cbbd12fcd658805cefe4f749ec8a3c783b7f97c680"
+    }
+  ],
+  "final_process": {
+    "schema": 1,
+    "state": "exited",
+    "parent_pid": 73528,
+    "utc": "2026-10-17T06:17:05.850734+00:00",
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "capture": "tee-sys",
+    "qt_force_stderr_logging": true,
+    "fault_timeout_seconds": 60,
+    "child_pid": 71004,
+    "child_pid_role": "Popen process; may be a Windows venv launcher",
+    "returncode": 0,
+    "elapsed_seconds": 442.04187139996793
+  },
+  "final_phase": {
+    "schema": 1,
+    "pid": 71004,
+    "phase": "session-finished",
+    "nodeid": "",
+    "nodeid_truncated": false,
+    "outcome": "0",
+    "utc": "2026-10-17T06:24:26.190932+00:00",
+    "monotonic_ns": 290188517894800
+  },
+  "prior_ci": {
+    "artifact": {
+      "path": "build\\d078dc0-run-observation.json",
+      "bytes": 39871,
+      "sha256": "f10b62806fa5b37f70b8732180759e3a1526725121acaedff94f3523c4eec225"
+    },
+    "metadata": {
+      "conclusion": "success",
+      "databaseId": 39007016643,
+      "headSha": "d078dc0596d772bb8e631be36d5d82806cc9f9ca",
+      "jobs": [
+        {
+          "completedAt": "2026-10-17T05:38:58Z",
+          "conclusion": "success",
+          "databaseId": 117321440344,
+          "name": "Lint (ruff)",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:55Z",
+              "conclusion": "success",
+              "name": "Install ruff",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:55Z",
+              "conclusion": "success",
+              "name": "ruff",
+              "number": 5,
+              "startedAt": "2026-10-17T05:38:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:55Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 9,
+              "startedAt": "2026-10-17T05:38:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:56Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:38:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:56Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:38:56Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440344"
+        },
+        {
+          "completedAt": "2026-10-17T05:39:37Z",
+          "conclusion": "success",
+          "databaseId": 117321440417,
+          "name": "Windows owned SMB loopback",
+          "startedAt": "2026-10-17T05:38:49Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:02Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:02Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:32Z",
+              "conclusion": "success",
+              "name": "Validate only a fresh owned share and temporary mapping",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:33Z",
+              "conclusion": "success",
+              "name": "Preserve native SMB proof including failures",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:32Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:33Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 9,
+              "startedAt": "2026-10-17T05:39:33Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:35Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:39:33Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:35Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:39:35Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440417"
+        },
+        {
+          "completedAt": "2026-10-17T05:40:30Z",
+          "conclusion": "success",
+          "databaseId": 117321440428,
+          "name": "Windows private NTFS volume",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:37Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:52Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned VHDX, private NTFS bin and detached compaction",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:01Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned VHD, private NTFS bin and detached compaction",
+              "number": 6,
+              "startedAt": "2026-10-17T05:39:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:02Z",
+              "conclusion": "success",
+              "name": "Preserve private volume evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:40:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:16Z",
+              "conclusion": "success",
+              "name": "Compare raw MFT metadata on a new private NTFS image",
+              "number": 8,
+              "startedAt": "2026-10-17T05:40:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:18Z",
+              "conclusion": "success",
+              "name": "Preserve raw MFT metadata evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:40:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:24Z",
+              "conclusion": "success",
+              "name": "Compare sparse Trash lengths on a fresh owned larger NTFS volume",
+              "number": 10,
+              "startedAt": "2026-10-17T05:40:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:26Z",
+              "conclusion": "success",
+              "name": "Preserve sparse Trash size-boundary evidence",
+              "number": 11,
+              "startedAt": "2026-10-17T05:40:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:26Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 21,
+              "startedAt": "2026-10-17T05:40:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:28Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 22,
+              "startedAt": "2026-10-17T05:40:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:28Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 23,
+              "startedAt": "2026-10-17T05:40:28Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440428"
+        },
+        {
+          "completedAt": "2026-10-17T05:47:11Z",
+          "conclusion": "success",
+          "databaseId": 117321440481,
+          "name": "Windows / Python 3.13",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:07Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:07Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:36Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:54Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:55Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:46:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:56Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:46:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:58Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:46:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:58Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:46:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:59Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:46:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:04Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:46:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:06Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:47:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:07Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:47:06Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:08Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:47:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:08Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 27,
+              "startedAt": "2026-10-17T05:47:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:10Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:47:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:10Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:47:10Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440481"
+        },
+        {
+          "completedAt": "2026-10-17T05:39:45Z",
+          "conclusion": "success",
+          "databaseId": 117321440482,
+          "name": "Qt 6.8 compatibility / ubuntu-latest",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:02Z",
+              "conclusion": "success",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:16Z",
+              "conclusion": "success",
+              "name": "Install locked compatibility dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:17Z",
+              "conclusion": "success",
+              "name": "Capture and verify the pinned Qt runtime",
+              "number": 6,
+              "startedAt": "2026-10-17T05:39:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:40Z",
+              "conclusion": "success",
+              "name": "Verify grouped display, owned workers and native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:39:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:42Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 8,
+              "startedAt": "2026-10-17T05:39:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:43Z",
+              "conclusion": "success",
+              "name": "Preserve compatibility runtime and test evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:39:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:43Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 17,
+              "startedAt": "2026-10-17T05:39:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:43Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-10-17T05:39:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:43Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-10-17T05:39:43Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440482"
+        },
+        {
+          "completedAt": "2026-10-17T05:39:12Z",
+          "conclusion": "success",
+          "databaseId": 117321440490,
+          "name": "Windows owned MSI installation",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:57Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:57Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:02Z",
+              "conclusion": "success",
+              "name": "Install the pinned MSI compiler",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:08Z",
+              "conclusion": "success",
+              "name": "Validate only owned installer fixtures in the disposable runner",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:09Z",
+              "conclusion": "success",
+              "name": "Preserve native installer evidence",
+              "number": 6,
+              "startedAt": "2026-10-17T05:39:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:09Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+              "number": 11,
+              "startedAt": "2026-10-17T05:39:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:10Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 12,
+              "startedAt": "2026-10-17T05:39:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:10Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-10-17T05:39:10Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440490"
+        },
+        {
+          "completedAt": "2026-10-17T05:48:42Z",
+          "conclusion": "success",
+          "databaseId": 117321440500,
+          "name": "macOS arm64 / Python 3.12",
+          "startedAt": "2026-10-17T05:38:57Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:58Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:01Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:01Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:17Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:54Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:55Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:47:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:58Z",
+              "conclusion": "success",
+              "name": "Validate owned native metadata and cocoa rendering",
+              "number": 7,
+              "startedAt": "2026-10-17T05:47:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:47:58Z",
+              "conclusion": "success",
+              "name": "Validate owned native startup metadata without a login entry",
+              "number": 8,
+              "startedAt": "2026-10-17T05:47:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:05Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history and cocoa tray lifetime",
+              "number": 9,
+              "startedAt": "2026-10-17T05:47:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:38Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned APFS capacity, recovery and cross-volume metadata",
+              "number": 10,
+              "startedAt": "2026-10-17T05:48:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:38Z",
+              "conclusion": "success",
+              "name": "Verify literal open-file reporting on an owned temporary file",
+              "number": 11,
+              "startedAt": "2026-10-17T05:48:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:39Z",
+              "conclusion": "success",
+              "name": "Preserve macOS evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:48:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:40Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 23,
+              "startedAt": "2026-10-17T05:48:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:40Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 24,
+              "startedAt": "2026-10-17T05:48:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:48:40Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 25,
+              "startedAt": "2026-10-17T05:48:40Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440500"
+        },
+        {
+          "completedAt": "2026-10-17T05:45:01Z",
+          "conclusion": "success",
+          "databaseId": 117321440512,
+          "name": "Linux / Python 3.12",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:02Z",
+              "conclusion": "success",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:14Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:51Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 6,
+              "startedAt": "2026-10-17T05:39:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:52Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:44:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:57Z",
+              "conclusion": "success",
+              "name": "Validate isolated ext4 capacity and recovery",
+              "number": 8,
+              "startedAt": "2026-10-17T05:44:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:58Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native changes and external hard-link aliases",
+              "number": 9,
+              "startedAt": "2026-10-17T05:44:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:58Z",
+              "conclusion": "success",
+              "name": "Validate owned native startup metadata without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:44:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:58Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 11,
+              "startedAt": "2026-10-17T05:44:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:59Z",
+              "conclusion": "success",
+              "name": "Preserve volume evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:44:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:59Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 23,
+              "startedAt": "2026-10-17T05:44:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:59Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 24,
+              "startedAt": "2026-10-17T05:44:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:59Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 25,
+              "startedAt": "2026-10-17T05:44:59Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440512"
+        },
+        {
+          "completedAt": "2026-10-17T05:40:01Z",
+          "conclusion": "success",
+          "databaseId": 117321440525,
+          "name": "FreeBSD native nullfs boundaries",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:59Z",
+              "conclusion": "success",
+              "name": "Validate only fresh nullfs fixtures in a disposable FreeBSD guest",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:59Z",
+              "conclusion": "success",
+              "name": "Preserve native FreeBSD proof including failures",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:59Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 8,
+              "startedAt": "2026-10-17T05:39:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:59Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 9,
+              "startedAt": "2026-10-17T05:39:59Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440525"
+        },
+        {
+          "completedAt": "2026-10-17T05:46:35Z",
+          "conclusion": "success",
+          "databaseId": 117321440539,
+          "name": "Windows / Python 3.10",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:59Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:59Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.10",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:28Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:19Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:20Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:46:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:21Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:46:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:22Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:46:21Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:23Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:46:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:23Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:46:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:28Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:46:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:29Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:46:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:30Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:46:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:31Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:46:30Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:31Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.10",
+              "number": 27,
+              "startedAt": "2026-10-17T05:46:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:34Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:46:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:34Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:46:34Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440539"
+        },
+        {
+          "completedAt": "2026-10-17T05:40:01Z",
+          "conclusion": "success",
+          "databaseId": 117321440561,
+          "name": "Qt 6.8 compatibility / windows-latest",
+          "startedAt": "2026-10-17T05:38:51Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.13",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "skipped",
+              "name": "Install Qt's system libraries",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:27Z",
+              "conclusion": "success",
+              "name": "Install locked compatibility dependencies",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:27Z",
+              "conclusion": "success",
+              "name": "Capture and verify the pinned Qt runtime",
+              "number": 6,
+              "startedAt": "2026-10-17T05:39:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:56Z",
+              "conclusion": "success",
+              "name": "Verify grouped display, owned workers and native context",
+              "number": 7,
+              "startedAt": "2026-10-17T05:39:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:56Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 8,
+              "startedAt": "2026-10-17T05:39:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:57Z",
+              "conclusion": "success",
+              "name": "Preserve compatibility runtime and test evidence",
+              "number": 9,
+              "startedAt": "2026-10-17T05:39:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:57Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.13",
+              "number": 17,
+              "startedAt": "2026-10-17T05:39:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:00Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-10-17T05:39:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:00Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-10-17T05:40:00Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440561"
+        },
+        {
+          "completedAt": "2026-10-17T05:44:29Z",
+          "conclusion": "success",
+          "databaseId": 117321440566,
+          "name": "Windows / Python 3.14",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:58Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:58Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.14",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:22Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:13Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:14Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:44:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:15Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:44:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:16Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:44:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:16Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:44:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:17Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:44:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:22Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:44:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:23Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:44:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:24Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:44:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:26Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:44:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:26Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.14",
+              "number": 27,
+              "startedAt": "2026-10-17T05:44:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:27Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:44:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:44:27Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:44:27Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440566"
+        },
+        {
+          "completedAt": "2026-10-17T05:46:10Z",
+          "conclusion": "success",
+          "databaseId": 117321440587,
+          "name": "Windows / Python 3.11",
+          "startedAt": "2026-10-17T05:38:51Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:01Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:01Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.11",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:36Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:53Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:54Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:45:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:55Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:45:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:56Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:45:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:56Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:45:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:45:57Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:45:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:03Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:45:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:04Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:46:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:05Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:46:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:06Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:46:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:06Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.11",
+              "number": 27,
+              "startedAt": "2026-10-17T05:46:06Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:08Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:46:06Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:08Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:46:08Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440587"
+        },
+        {
+          "completedAt": "2026-10-17T05:38:55Z",
+          "conclusion": "success",
+          "databaseId": 117321440600,
+          "name": "Linux native Trash restore",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned restore fixtures",
+              "number": 4,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Preserve restore evidence",
+              "number": 5,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 9,
+              "startedAt": "2026-10-17T05:38:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:38:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:54Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:38:54Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440600"
+        },
+        {
+          "completedAt": "2026-10-17T05:46:51Z",
+          "conclusion": "success",
+          "databaseId": 117321440669,
+          "name": "Windows / Python 3.12",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:51Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:00Z",
+              "conclusion": "success",
+              "name": "Set up Python 3.12",
+              "number": 3,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:39:28Z",
+              "conclusion": "success",
+              "name": "Install dependencies",
+              "number": 4,
+              "startedAt": "2026-10-17T05:39:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:36Z",
+              "conclusion": "success",
+              "name": "Run tests",
+              "number": 5,
+              "startedAt": "2026-10-17T05:39:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:37Z",
+              "conclusion": "success",
+              "name": "Preserve pytest native context",
+              "number": 6,
+              "startedAt": "2026-10-17T05:46:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:37Z",
+              "conclusion": "success",
+              "name": "Preserve mocked PowerShell helper evidence",
+              "number": 7,
+              "startedAt": "2026-10-17T05:46:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:39Z",
+              "conclusion": "success",
+              "name": "Validate compression on fresh owned NTFS fixtures",
+              "number": 8,
+              "startedAt": "2026-10-17T05:46:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:39Z",
+              "conclusion": "success",
+              "name": "Validate fresh owned native change feed",
+              "number": 9,
+              "startedAt": "2026-10-17T05:46:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:40Z",
+              "conclusion": "success",
+              "name": "Validate owned native HKCU startup fixtures without a login entry",
+              "number": 10,
+              "startedAt": "2026-10-17T05:46:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:45Z",
+              "conclusion": "success",
+              "name": "Validate owned native background history or visible unavailable tray",
+              "number": 11,
+              "startedAt": "2026-10-17T05:46:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:46Z",
+              "conclusion": "success",
+              "name": "Preserve native background evidence",
+              "number": 12,
+              "startedAt": "2026-10-17T05:46:45Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:47Z",
+              "conclusion": "success",
+              "name": "Preserve native change-feed evidence",
+              "number": 13,
+              "startedAt": "2026-10-17T05:46:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:48Z",
+              "conclusion": "success",
+              "name": "Preserve compression evidence",
+              "number": 14,
+              "startedAt": "2026-10-17T05:46:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:48Z",
+              "conclusion": "success",
+              "name": "Post Set up Python 3.12",
+              "number": 27,
+              "startedAt": "2026-10-17T05:46:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:50Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 28,
+              "startedAt": "2026-10-17T05:46:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:46:50Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-17T05:46:50Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321440669"
+        },
+        {
+          "completedAt": "2026-10-17T05:40:18Z",
+          "conclusion": "success",
+          "databaseId": 117321441038,
+          "name": "Linux desktop / X11 and D-Bus",
+          "startedAt": "2026-10-17T05:38:50Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-17T05:38:52Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-17T05:38:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:38:53Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-10-17T05:38:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:08Z",
+              "conclusion": "success",
+              "name": "Build isolated desktop probe",
+              "number": 3,
+              "startedAt": "2026-10-17T05:38:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:14Z",
+              "conclusion": "success",
+              "name": "Test native desktop behavior",
+              "number": 4,
+              "startedAt": "2026-10-17T05:40:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:16Z",
+              "conclusion": "success",
+              "name": "Preserve desktop evidence",
+              "number": 5,
+              "startedAt": "2026-10-17T05:40:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:16Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 10,
+              "startedAt": "2026-10-17T05:40:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-17T05:40:16Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-10-17T05:40:16Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643/job/117321441038"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/JeffreyChen-s-Utils/FileTree/actions/runs/39007016643"
+    }
+  },
+  "unchanged": {
+    "application_tree": true,
+    "readmes": true,
+    "screenshots": [
+      {
+        "path": "docs\\images\\main_window_en.png",
+        "bytes": 94546,
+        "sha256": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631"
+      },
+      {
+        "path": "docs\\images\\main_window_ja.png",
+        "bytes": 107232,
+        "sha256": "1b9d89e156fdb0e702c30df6b6a5e7e02f50f3f4f4b267198322074fe5731b32"
+      },
+      {
+        "path": "docs\\images\\main_window_ko.png",
+        "bytes": 95213,
+        "sha256": "c4d291661e88ac607ba7ba7f056eac341c5d2dc9ef3decf8fb35541586814ba3"
+      },
+      {
+        "path": "docs\\images\\main_window_zh-CN.png",
+        "bytes": 107982,
+        "sha256": "e10dd6ac6b37b158889b5aaea3a502878c5f890e628ed6ebefeb431eb76c50db"
+      },
+      {
+        "path": "docs\\images\\main_window_zh-TW.png",
+        "bytes": 111691,
+        "sha256": "8dc5de33bed5ed8186d2203e75c76277d8f872e70dd3e601f4fdd23ff17d3db5"
+      }
+    ]
+  },
+  "native_clipboard_proof": {
+    "status": "pending-hosted-gate",
+    "progress_item": 111,
+    "success_claim": false,
+    "reason": "Local named station creation denied; generated existing station refused. No local clipboard API was called."
+  },
+  "limits": [
+    "Modeled native boundaries and offscreen recording tests do not prove the Windows clipboard backend.",
+    "Real desktop handle inheritance/join/cleanup is verified under Python 3.14/3.13, with no clipboard API; this is not station or clipboard isolation proof.",
+    "The hosted job must verify fresh private station creation, real native CF_UNICODETEXT, exact scopes, hashes and all cleanup before #111 closes.",
+    "Noninteractive station timings will not establish interactive clipboard-manager contention, settled frames or end-to-end input latency.",
+    "Initial exploratory refusals are recorded from terminal outcomes, before Qt/clipboard access; no native clipboard success data exists locally.",
+    "Two earlier full runs were deliberately stopped by verified owned PID/parent/command with zero direct children; neither is a Qt incident."
+  ]
+}

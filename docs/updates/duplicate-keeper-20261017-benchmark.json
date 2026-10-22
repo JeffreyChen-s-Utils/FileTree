@@ -1,0 +1,759 @@
+{
+  "schema": "filetree-duplicate-keeper-evidence/1",
+  "update": "U-20261017-22",
+  "baseline_commit": "22e88167a3c092729c6b7e5ec20f5a82cab7e1eb",
+  "baseline_ci": {
+    "run": 38979577473,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": 14
+  },
+  "scope": "Partial #95; choosing an explicit duplicate keeper without a full list rebuild. Other UI/native gates remain open.",
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "pyside6": "6.11.2"
+  },
+  "protocol": [
+    "Fresh standalone native Windows QApplication processes with WA_DontShowOnScreen; synthetic captured Nodes only.",
+    "Initial fill, prior estimates, last-member current selection, collapse, custom column width and scrolling occur outside timing.",
+    "Measure choose_kept_copy and then one processEvents pass separately; replace only _start_estimate with a recorder to isolate GUI preparation. Exactly one estimate request and stale-savings clearance are asserted.",
+    "The before variant injects the exact baseline choose_kept_copy AST; all other functions use current product code.",
+    "Three before/after pairs interleaved sequentially at 1000 displayed groups and 100000 members. One-group 100k cases and separate profiles are retained. No performance process overlaps full pytest.",
+    "Every member, correct old/new keeper markers and cleared estimate group titles are verified. Before clears selection/current, collapse, width and scroll; after preserves them.",
+    "Benchmark worker startup is isolated and cannot prove filesystem checks or whole interactive latency. Separate actual-worker tests hold the estimate and control validation results, checking the new decision and completed bulk exclusions.",
+    "Real worker status changes can resize the viewport. Tests cover an ordinary visible row and a bottom row with normal scrollbar clamping; preserving an out-of-range value is not expected.",
+    "All raw samples, including initial and slower/outlying cases, are retained. Shared host load is uncontrolled; timings are observations, never a fixed or general speed guarantee."
+  ],
+  "sources": {
+    "je_file_tree/gui/duplicates_panel.py": {
+      "baseline_sha256_lf": "d8614ae72676f8b1ee7e7e5d475640e825e0f10219bfc3cdb4c3f592873a099d",
+      "final_sha256_lf": "c36bb61373cdb2307c459181b544cba58c9140bda2631cfcdebb416daba91dcb",
+      "changed_methods": [
+        "_show_savings",
+        "choose_kept_copy"
+      ],
+      "added_methods": [
+        "_refresh_group_labels"
+      ],
+      "all_other_existing_class_method_asts_unchanged": true,
+      "final_target_sources": {
+        "choose_kept_copy": "def choose_kept_copy(self) -> None:\n        \"\"\"Make the current file the explicit keeper and recompute estimates/checks on a worker.\"\"\"\n        index = self.view.currentIndex()\n        node = index.data(NODE_ROLE)\n        row = index.parent().row()\n        if self.running or node is None or not 0 <= row < len(self._groups):\n            return\n        self._groups[row] = replace(self._groups[row], kept=node)\n        self._savings = None\n        # Native 100k-member choice: 811 ms rebuilding versus 15 ms in place (U-20261017-22).\n        self.model.set_group_keeper(row, node)\n        self._refresh_group_labels()\n        self._start_estimate()",
+        "_refresh_group_labels": "def _refresh_group_labels(self) -> None:\n        titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]\n        self.model.set_group_labels([(title, title) for title in titles])",
+        "_show_savings": "def _show_savings(self, savings: DuplicateSavings) -> None:\n        self._estimator = None\n        self._savings = savings\n        self._refresh_group_labels()\n        self._update()"
+      }
+    },
+    "je_file_tree/gui/grouped_list.py": {
+      "baseline_sha256_lf": "c3e1b90c45af390278e0163feee0444fc135179ed2f51fb35996758ab3acd497",
+      "final_sha256_lf": "1b2e741da540f1cd0330a5c5ccdd9646b1dde0e5ff8951b63f587c158c38225d",
+      "changed_methods": [],
+      "added_methods": [
+        "set_group_keeper"
+      ],
+      "all_other_existing_class_method_asts_unchanged": true,
+      "final_target_sources": {
+        "set_group_keeper": "def set_group_keeper(self, row: int, kept: Node) -> None:\n        \"\"\"Mark a captured member as keeper, updating only old/new keeper name and font roles.\"\"\"\n        if not 0 <= row < len(self._groups):\n            raise IndexError(\"Keeper group is outside the captured list\")\n        group = self._groups[row]\n        positions = [position for position, node in enumerate(group.nodes) if node is kept or node is group.kept]\n        if not any(group.nodes[position] is kept for position in positions):\n            raise ValueError(\"Keeper must belong to the captured group\")\n        if group.kept is kept:\n            return\n        updated = list(self._groups)\n        updated[row] = replace(group, kept=kept)\n        self._groups = tuple(updated)\n        parent = self.index(row, 0)\n        for position in positions:\n            index = self.index(position, 0, parent)\n            self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.FontRole])"
+      }
+    }
+  },
+  "baseline_panel": {
+    "path": "build/duplicates_panel_keeper_baseline.py",
+    "sha256_lf": "d8614ae72676f8b1ee7e7e5d475640e825e0f10219bfc3cdb4c3f592873a099d",
+    "encoding": "utf-8-sig",
+    "text": "\"\"\"The Duplicates tab: files with the same content, grouped, with the space the extra copies take.\"\"\"\n\nfrom __future__ import annotations\n\nfrom dataclasses import replace\n\nfrom PySide6.QtCore import QItemSelectionModel, QSize, Signal\n\nfrom PySide6.QtGui import QIcon, QImage, QPixmap\nfrom PySide6.QtWidgets import (\n    QComboBox,\n    QHBoxLayout,\n    QLabel,\n    QListWidget,\n    QProgressBar,\n    QPushButton,\n    QSizePolicy,\n    QSpinBox,\n    QVBoxLayout,\n    QWidget,\n)\n\nfrom je_file_tree.core.duplicates import (\n    DEFAULT_MIN_SIZE, DuplicateGroup, DuplicateProgress, DuplicateResult, DuplicateSavings,\n)\nfrom je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size\nfrom je_file_tree.core.node import Node\nfrom je_file_tree.core.similar_photos import SimilarPhotoResult\nfrom je_file_tree.core.savings import Savings\nfrom je_file_tree.gui.i18n import tr\nfrom je_file_tree.gui import grouped_list\nfrom je_file_tree.gui.scan_worker import DuplicatesWorker, wait_for\nfrom je_file_tree.gui.duplicate_savings_worker import DuplicateSavingsWorker\nfrom je_file_tree.gui.tree_model import NODE_ROLE\n\nMIN_SIZES = (1, 100 * 1024, DEFAULT_MIN_SIZE, 10 * 1024 * 1024, 100 * 1024 * 1024)\nLISTED_GROUPS = 1000\n\n\nclass DuplicatesPanel(QWidget):\n    \"\"\"Looks for duplicates on request (a ``DuplicatesWorker``) and lists the groups, oldest copy first.\n\n    ``set_root(None)`` stops a search and disables the panel (while a scan runs); ``prune`` drops\n    files that left the tree (moved to the Recycle Bin, or in a rescanned folder).\n    \"\"\"\n\n    link_requested = Signal(object)\n\n    def __init__(self, parent: QWidget | None = None) -> None:\n        super().__init__(parent)\n        self.unit = AUTO_UNIT\n        self.model = grouped_list.GroupedListModel(self)\n        self.folder_matches = QListWidget()\n        self.folder_matches.setMaximumHeight(110)\n        self.folder_matches.setVisible(False)\n        self.view = grouped_list.build_view(self.model)\n        self.min_size = QComboBox()\n        self.kind = QComboBox()\n        self.distance = QSpinBox()\n        self.distance.setRange(0, 16)\n        self.distance.setValue(4)\n        self._distance_label = QLabel()\n        self.start_button = QPushButton()\n        self.stop_button = QPushButton()\n        self.select_extra = QPushButton()\n        self.keep_selected = QPushButton()\n        self.link_extra = QPushButton()\n        self.status = QLabel()\n        self.status.setWordWrap(True)\n        self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)\n        self.estimate = QLabel()\n        self.estimate.setWordWrap(True)\n        self.estimate.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)\n        self.estimate.setToolTip(tr(\"duplicates_estimate_assumption\"))\n        self._size_label = QLabel()\n        self._busy = QProgressBar()\n        self._busy.setRange(0, 0)\n        self._busy.setMaximumWidth(120)\n        self._root: Node | None = None\n        self._worker: DuplicatesWorker | None = None\n        self._search_workers: set[DuplicatesWorker] = set()\n        self._estimator: DuplicateSavingsWorker | None = None\n        self._estimate_workers: set[DuplicateSavingsWorker] = set()\n        self._savings: DuplicateSavings | None = None\n        self._groups: list[DuplicateGroup] = []\n        self._found: DuplicateResult | None = None\n        self._photos: SimilarPhotoResult | None = None\n        self._progress: DuplicateProgress | tuple[int, int] | None = None\n        self._stopped = False\n        self._assemble()\n        self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._keeper_button())\n        self.retranslate()\n        self.kind.currentIndexChanged.connect(lambda: self.set_root(self._root))\n        self.set_root(None)\n\n    # --- public API -------------------------------------------------------\n\n    @property\n    def groups(self) -> list[DuplicateGroup]:\n        \"\"\"The groups found, as they stand after files left the tree.\"\"\"\n        return self._groups\n\n    @property\n    def running(self) -> bool:\n        \"\"\"Whether a search is running.\"\"\"\n        return self._worker is not None or self._estimator is not None\n\n    def set_root(self, root: Node | None) -> None:\n        \"\"\"Look for duplicates beneath ``root`` from now on (None: nothing to search, the panel is idle).\"\"\"\n        self.stop()\n        self._root = root\n        self._groups = []\n        self._found = None\n        self._photos = None\n        self._savings = None\n        self._stopped = False\n        self._rebuild()\n        self._update()\n\n    def start(self) -> None:\n        \"\"\"Start looking for duplicates of the size chosen or larger.\"\"\"\n        if self._root is None or self.running:\n            return\n        worker = DuplicatesWorker(self._root, int(self.min_size.currentData()), self,\n                                  photos=self.kind.currentData() == \"photos\", distance=self.distance.value())\n        worker.progressed.connect(lambda progress: worker is self._worker and self._show_progress(progress))\n        worker.succeeded.connect(lambda result: worker is self._worker and self._show_result(result))\n        worker.cancelled.connect(lambda: worker is self._worker and self._finish(stopped=True))\n        worker.finished.connect(worker.deleteLater)\n        worker.finished.connect(lambda: self._search_workers.discard(worker))\n        self._worker = worker\n        self._search_workers.add(worker)\n        self._progress = None\n        self._stopped = False\n        self._update()\n        worker.start()\n\n    def stop(self, *, wait: bool = False) -> None:\n        \"\"\"Stop a running search (``wait``: until its thread has ended); what was found so far is dropped.\"\"\"\n        worker = self._worker\n        self._cancel_estimate()\n        if worker is not None:\n            worker.stop()\n        if wait:\n            for pending in self._search_workers.copy() | self._estimate_workers.copy():\n                wait_for(pending)\n        self._worker = None\n        self._stopped = True\n        self._update()\n\n    def prune(self) -> None:\n        \"\"\"Drop files that are no longer in the tree, and groups left with a single file.\"\"\"\n        root = self._root\n        if self.running:\n            self.stop()\n        if self._photos is not None:\n            self._photos = None\n            self._rebuild()\n            self._update()\n        if self._found is not None:\n            self._found = replace(self._found, folders=[])\n        self.folder_matches.clear()\n        self.folder_matches.setVisible(False)\n        if root is None or not self._groups:\n            return\n        kept = []\n        for group in self._groups:\n            files = [node for node in group.files if node.is_in(root)]\n            if len(files) > 1:\n                kept.append(replace(group, files=files, kept=group.kept if group.kept in files else None,\n                                    proofs={node: group.proofs[node] for node in files if node in group.proofs}))\n        self._groups = kept\n        self._savings = None\n        self._rebuild()\n        self._start_estimate()\n        self._update()\n\n    def select_extra_copies(self) -> None:\n        \"\"\"Select extras only in explicitly chosen groups that passed every metadata/protection check.\"\"\"\n        savings = self._savings\n        if self.running or savings is None:\n            return\n        keepers = {row: group.kept for row, group in enumerate(self._groups[:LISTED_GROUPS])\n                   if row < len(savings.issues) and savings.issues[row] is None}\n        # 10k rows: individual selects took 156 s; two ranges and one update took 9–20 ms.\n        selection = self.model.extra_selection(keepers)\n        self.view.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)\n        self.view.setFocus()\n\n    def choose_kept_copy(self) -> None:\n        \"\"\"Make the current file the explicit keeper and recompute estimates/checks on a worker.\"\"\"\n        index = self.view.currentIndex()\n        node = index.data(NODE_ROLE)\n        row = index.parent().row()\n        if self.running or node is None or not 0 <= row < len(self._groups):\n            return\n        self._groups[row] = replace(self._groups[row], kept=node)\n        self._savings = None\n        self._rebuild()\n        self._start_estimate()\n\n    def decisions_for(self, nodes: list[Node]) -> list[DuplicateGroup]:\n        \"\"\"All current duplicate groups touched by an approved file selection, including keeper mistakes.\"\"\"\n        chosen = set(nodes)\n        return [group for group in self._groups if any(node in chosen for node in group.files)]\n\n    def link_extra_copies(self) -> None:\n        \"\"\"Request bounded explicit-keeper exact groups; heuristic photos/folders cannot grant authority.\"\"\"\n        if groups := self.link_groups:\n            self.link_requested.emit(groups)\n\n    @property\n    def link_groups(self) -> tuple[DuplicateGroup, ...]:\n        \"\"\"Idle exact-file decisions with explicit keepers; empty for heuristic or unfinished searches.\"\"\"\n        if self.running or self.kind.currentData() != \"exact\" or self._found is None:\n            return ()\n        return tuple(group for group in self._groups if group.kept is not None)\n\n    def set_unit(self, unit: str) -> None:\n        \"\"\"Show sizes in ``unit``.\"\"\"\n        self.unit = unit\n        self._rebuild()\n        self._update()\n\n    def retranslate(self) -> None:\n        \"\"\"Re-read every translated text.\"\"\"\n        self._size_label.setText(tr(\"duplicates_min_size\"))\n        current_kind = self.kind.currentData()\n        self.kind.blockSignals(True)\n        self.kind.clear()\n        self.kind.addItem(tr(\"photos_exact\"), \"exact\")\n        self.kind.addItem(tr(\"photos_similar\"), \"photos\")\n        self.kind.setCurrentIndex(max(0, self.kind.findData(current_kind)))\n        self.kind.blockSignals(False)\n        self._distance_label.setText(tr(\"photos_distance\"))\n        self.distance.setToolTip(tr(\"photos_hint\"))\n        self.estimate.setToolTip(tr(\"duplicates_estimate_assumption\"))\n        current = self.min_size.currentData()\n        self.min_size.blockSignals(True)\n        self.min_size.clear()\n        for size in MIN_SIZES:\n            self.min_size.addItem(tr(\"duplicates_any_size\") if size <= 1 else format_size(size), size)\n        position = self.min_size.findData(current if current is not None else DEFAULT_MIN_SIZE)\n        self.min_size.setCurrentIndex(max(0, position))\n        self.min_size.blockSignals(False)\n        self.start_button.setText(tr(\"duplicates_find\"))\n        self.stop_button.setText(tr(\"duplicates_stop\"))\n        self.select_extra.setText(tr(\"duplicates_select_extra\"))\n        self.select_extra.setToolTip(tr(\"duplicates_select_extra_tip\"))\n        self.keep_selected.setText(tr(\"duplicates_keep_selected\"))\n        self.link_extra.setText(tr(\"link_title\"))\n        self.link_extra.setToolTip(tr(\"link_hint\"))\n        self._rebuild()\n        self._update()\n\n    # --- building ---------------------------------------------------------\n\n    def _assemble(self) -> None:\n        self.start_button.clicked.connect(self.start)\n        self.stop_button.clicked.connect(lambda: self.stop())  # noqa: PLW0108 - clicked(bool) must not reach stop()\n        self.select_extra.clicked.connect(self.select_extra_copies)\n        self.keep_selected.clicked.connect(self.choose_kept_copy)\n        self.link_extra.clicked.connect(self.link_extra_copies)\n        bar = QHBoxLayout()\n        bar.setContentsMargins(0, 0, 0, 0)\n        for widget in (self.kind, self._size_label, self.min_size, self.start_button, self.stop_button, self._busy):\n            bar.addWidget(widget)\n        bar.addStretch(1)\n        decisions = QHBoxLayout()\n        decisions.addStretch(1)\n        decisions.addWidget(self.keep_selected)\n        decisions.addWidget(self.select_extra)\n        decisions.addWidget(self.link_extra)\n        layout = QVBoxLayout(self)\n        layout.setContentsMargins(0, 4, 0, 0)\n        layout.addLayout(bar)\n        threshold = QHBoxLayout()\n        threshold.addWidget(self._distance_label)\n        threshold.addWidget(self.distance)\n        threshold.addStretch(1)\n        layout.addLayout(threshold)\n        layout.addLayout(decisions)\n        layout.addWidget(self.status)\n        layout.addWidget(self.estimate)\n        layout.addWidget(self.folder_matches)\n        layout.addWidget(self.view, 1)\n\n    def _rebuild(self) -> None:\n        \"\"\"Fill the list from ``_groups`` (the most extra space first, up to ``LISTED_GROUPS``), oldest copy first.\"\"\"\n        if self.kind.currentData() == \"photos\":\n            self._rebuild_photos()\n            return\n        self.view.setUniformRowHeights(True)\n        groups = [(self._group_title(position, group),\n                   sorted(group.files, key=lambda file: (file.modified, file.path)))\n                  for position, group in enumerate(self._groups[:LISTED_GROUPS])]\n        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[title for title, _files in groups],\n                          keepers=[group.kept for group in self._groups[:LISTED_GROUPS]])\n        self._folder_lines()\n\n    def _rebuild_photos(self) -> None:\n        photos = self._photos\n        groups, remaining = [], LISTED_GROUPS\n        if photos is not None:\n            for group in photos.groups[:LISTED_GROUPS]:\n                files = group.files[:remaining]\n                if not files:\n                    break\n                title = tr(\"photos_group\", count=format_count(len(group.files)), distance=photos.distance)\n                groups.append((title, files))\n                remaining -= len(files)\n        icons = {}\n        if photos is not None:\n            for _title, files in groups:\n                for node in files:\n                    if data := photos.thumbnails.get(node):\n                        icons[node] = QIcon(QPixmap.fromImage(QImage.fromData(data)))\n        grouped_list.fill(self.model, self.view, groups, self.unit, tips=[tr(\"photos_hint\")] * len(groups),\n                          icons=icons)\n        self.view.setUniformRowHeights(False)\n        self.view.setIconSize(QSize(64, 64))\n        self.folder_matches.clear()\n        self.folder_matches.hide()\n\n    def _folder_lines(self) -> None:\n        self.folder_matches.clear()\n        matches = self._found.folders[:LISTED_GROUPS] if self._found is not None else []\n        for group in matches:\n            if self._root is None or any(not folder.is_in(self._root) for folder in group.folders):\n                continue\n            original = group.folders[0]\n            for copy in group.folders[1:]:\n                if self.folder_matches.count() == LISTED_GROUPS:\n                    break\n                text = tr(\"duplicate_folder_match\", copy=copy.path, original=original.path,\n                          size=format_size(group.size, self.unit), files=format_count(group.files))\n                self.folder_matches.addItem(text)\n                self.folder_matches.item(self.folder_matches.count() - 1).setToolTip(text)\n        self.folder_matches.setVisible(self.folder_matches.count() > 0)\n        self.folder_matches.setToolTip(tr(\"duplicate_folder_tip\"))\n\n    # --- a search ---------------------------------------------------------\n\n    def _show_progress(self, progress: DuplicateProgress | tuple[int, int]) -> None:\n        self._progress = progress\n        self._update()\n\n    def _show_result(self, result: DuplicateResult | SimilarPhotoResult) -> None:\n        self._photos = result if isinstance(result, SimilarPhotoResult) else None\n        self._found = result if isinstance(result, DuplicateResult) else None\n        self._groups = list(result.groups) if isinstance(result, DuplicateResult) else []\n        self._savings = None\n        self._rebuild()\n        self._finish(stopped=False)\n        self._start_estimate()\n\n    def _finish(self, *, stopped: bool) -> None:\n        self._worker = None\n        self._stopped = stopped\n        self._update()\n\n    def _update(self) -> None:\n        running = self._worker is not None\n        self.min_size.setEnabled(self._root is not None and not self.running)\n        self.kind.setEnabled(not self.running)\n        photos = self.kind.currentData() == \"photos\"\n        self.distance.setEnabled(not self.running)\n        self.distance.setVisible(photos)\n        self._distance_label.setVisible(photos)\n        self.start_button.setText(tr(\"photos_find\") if photos else tr(\"duplicates_find\"))\n        self.start_button.setEnabled(self._root is not None and not self.running)\n        self.stop_button.setEnabled(self.running)\n        self._busy.setVisible(self.running)\n        eligible = self._savings is not None and any(issue is None for issue in self._savings.issues)\n        self.select_extra.setEnabled(bool(self._groups) and eligible and not self.running)\n        self.link_extra.setEnabled(not self.running and not photos and self._found is not None\n                                   and self._root is not None and self._root.path is not None\n                                   and any(group.kept is not None for group in self._groups))\n        self._keeper_button()\n        self.status.setText(self._status_text())\n        self.estimate.setVisible(bool(self._groups) and not running and not photos)\n        self.estimate.setText(self._estimate_text())\n\n    def _keeper_button(self) -> None:\n        self.keep_selected.setEnabled(self.kind.currentData() != \"photos\" and not self.running\n                                      and self.view.currentIndex().data(NODE_ROLE) is not None)\n\n    def _cancel_estimate(self) -> None:\n        if self._estimator is not None:\n            self._estimator.stop()\n            self._estimator = None\n\n    def _start_estimate(self) -> None:\n        self._cancel_estimate()\n        if self._root is None or not self._groups:\n            self._update()\n            return\n        worker = DuplicateSavingsWorker(self._groups, self._root, LISTED_GROUPS, self)\n        worker.done.connect(lambda savings: worker is self._estimator and self._show_savings(savings))\n        worker.finished.connect(lambda: self._estimate_workers.discard(worker))\n        worker.finished.connect(worker.deleteLater)\n        self._estimator = worker\n        self._estimate_workers.add(worker)\n        self._update()\n        worker.start()\n\n    def _show_savings(self, savings: DuplicateSavings) -> None:\n        self._estimator = None\n        self._savings = savings\n        titles = [self._group_title(row, group) for row, group in enumerate(self._groups[:LISTED_GROUPS])]\n        self.model.set_group_labels([(title, title) for title in titles])\n        self._update()\n\n    def _savings_text(self, value: Savings) -> str:\n        maximum = value.recoverable_max\n        recovery = tr(\"size_unknown\") if maximum is None else (\n            f\"{format_size(value.recoverable_min, self.unit)} – {format_size(maximum, self.unit)}\")\n        allocated = tr(\"size_unknown\") if maximum is None else format_size(value.allocated, self.unit)\n        return tr(\"duplicates_savings\", allocated=allocated, recoverable=recovery)\n\n    def _estimate_text(self) -> str:\n        if self._savings is not None:\n            return self._savings_text(self._savings.total) + \" \" + tr(\"duplicates_estimate_assumption\")\n        return tr(\"duplicates_estimating\") if self._estimator is not None else tr(\"duplicates_estimate_unavailable\")\n\n    def _group_title(self, position: int, group: DuplicateGroup) -> str:\n        title = tr(\"duplicates_group\", count=format_count(len(group.files)), size=format_size(group.size, self.unit),\n                   extra=format_size(group.extra, self.unit))\n        if self._savings is not None and position < len(self._savings.groups):\n            title += \" \" + self._savings_text(self._savings.groups[position])\n        title += \" \" + (tr(\"duplicates_kept_path\", path=group.kept.path) if group.kept is not None\n                         else tr(\"duplicates_choose_keeper\"))\n        if self._savings is not None and position < len(self._savings.issues):\n            issue = self._savings.issues[position]\n            if issue is not None and issue != \"duplicate_choose\":\n                title += \" \" + tr(\"duplicates_group_blocked\", reason=tr(f\"trash_skip_{issue}\"))\n        return title\n\n    def _status_text(self) -> str:\n        return self._photo_status() if self.kind.currentData() == \"photos\" else self._exact_status()\n\n    def _exact_status(self) -> str:\n        if self._worker is not None:\n            progress = self._progress\n            if progress is None:\n                return tr(\"duplicates_starting\")\n            return tr(\"duplicates_running\", files=format_count(progress.files_read),\n                      total=format_count(progress.files_total), read=format_size(progress.bytes_read, self.unit),\n                      bytes=format_size(progress.bytes_total, self.unit))\n        if self._stopped:\n            return tr(\"duplicates_stopped\")\n        if self._found is None:\n            return tr(\"duplicates_hint\")\n        if not self._groups:\n            return tr(\"duplicates_none\")\n        extra = sum(group.extra for group in self._groups)\n        text = tr(\"duplicates_summary\", groups=format_count(len(self._groups)), extra=format_size(extra, self.unit))\n        if len(self._groups) > LISTED_GROUPS:\n            text += \" \" + tr(\"duplicates_limited\", shown=format_count(LISTED_GROUPS))\n        if self._found.skipped:\n            text += \" \" + tr(\"duplicates_skipped\", count=format_count(self._found.skipped))\n        return text\n\n    def _photo_status(self) -> str:\n        if self._worker is not None:\n            read, skipped = self._progress if isinstance(self._progress, tuple) else (0, 0)\n            return tr(\"photos_running\", read=format_count(read), skipped=format_count(skipped))\n        if self._stopped:\n            return tr(\"duplicates_stopped\")\n        if self._photos is None:\n            return tr(\"photos_hint\")\n        result = self._photos\n        text = tr(\"photos_summary\", groups=format_count(len(result.groups)), read=format_count(result.files_read),\n                  skipped=format_count(result.skipped)) + \" \" + tr(\"photos_hint\")\n        if result.limited or sum(len(group.files) for group in result.groups) > LISTED_GROUPS:\n            text += \" \" + tr(\"photos_limited\", count=format_count(LISTED_GROUPS))\n        return text\n"
+  },
+  "harness": {
+    "path": "build/measure_duplicate_keeper.py",
+    "sha256_lf": "06a59bee30dfb3cc624b8ac992732fdbdf0409b7918be9313bb13792d1efe1fc",
+    "encoding": "utf-8-sig",
+    "text": "import ast\nimport cProfile\nimport json\nimport sys\nimport time\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path.cwd()))\nfrom PySide6.QtCore import QItemSelectionModel, QPersistentModelIndex, Qt\nfrom PySide6.QtWidgets import QApplication\nfrom je_file_tree.core.duplicates import DuplicateGroup, DuplicateResult, DuplicateSavings\nfrom je_file_tree.core.node import Node\nfrom je_file_tree.core.savings import Savings\nfrom je_file_tree.gui.duplicates_panel import DuplicatesPanel\nfrom je_file_tree.gui.tree_model import NODE_ROLE\n\nif '--baseline' in sys.argv:\n    path = Path('build/duplicates_panel_keeper_baseline.py')\n    tree = ast.parse(path.read_text(encoding='utf-8'))\n    cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'DuplicatesPanel')\n    method = next(node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == 'choose_kept_copy')\n    from dataclasses import replace\n    namespace = {'replace': replace, 'NODE_ROLE': NODE_ROLE}\n    exec(compile(ast.Module(body=[method], type_ignores=[]), str(path), 'exec'), namespace)\n    DuplicatesPanel.choose_kept_copy = namespace['choose_kept_copy']\ngroup_count, members = int(sys.argv[1]), int(sys.argv[2])\napp = QApplication([])\nroot = Node('captured-keeper-probe', True, children=[])\ngroups = []\nfor number in range(group_count):\n    files = [Node(f'{number}-{row:07}', False, size=10, modified=(row * 997) % members, parent=root)\n             for row in range(members)]\n    root.children.extend(files)\n    groups.append(DuplicateGroup(10, files, kept=files[0]))\npanel = DuplicatesPanel()\npanel.setAttribute(Qt.WA_DontShowOnScreen)\npanel.resize(1000, 600)\npanel.show()\npanel._root, panel._groups = root, groups\npanel._found = DuplicateResult(groups, len(root.children), 10 * len(root.children), 0)\nvalue = Savings(10 * (members - 1), 4096, 0, 4096, 1000, False)\npanel._savings = DuplicateSavings(value, [value] * group_count, [None] * group_count)\npanel._rebuild()\npanel._update()\napp.processEvents()\nparent = panel.model.index(group_count - 1, 0)\ncurrent = panel.model.index(members - 1, 2, parent)\nchosen = current.data(NODE_ROLE)\nselection = panel.view.selectionModel()\nselection.setCurrentIndex(current, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)\npinned = QPersistentModelIndex(current)\nif group_count > 1:\n    panel.view.collapse(panel.model.index(0, 0))\npanel.view.setColumnWidth(0, 317)\npanel.view.scrollTo(current)\napp.processEvents()\nscroll = panel.view.verticalScrollBar().value()\nresets, starts = [], []\npanel.model.modelReset.connect(lambda: resets.append(True))\npanel._start_estimate = lambda: starts.append(True)\nprofile = cProfile.Profile() if '--profile' in sys.argv else None\nif profile:\n    profile.enable()\nstarted = time.perf_counter()\npanel.choose_kept_copy()\nupdate_ms = (time.perf_counter() - started) * 1000\napp.processEvents()\nsettled_ms = (time.perf_counter() - started) * 1000\nif profile:\n    profile.disable()\n    profile.dump_stats('build/duplicate-keeper-' + ('before' if '--baseline' in sys.argv else 'after') + '.prof')\nselected = [index.data(NODE_ROLE) for index in selection.selectedRows()]\nassert panel.groups[-1].kept is chosen and panel._savings is None and len(starts) == 1\nassert panel.model.index(members - 1, 0, panel.model.index(group_count - 1, 0)).data(Qt.FontRole).bold()\nassert panel.model.index(0, 0, panel.model.index(group_count - 1, 0)).data(Qt.FontRole) is None\nassert all(panel.model.index(row, 0).data() == panel._group_title(row, group) for row, group in enumerate(panel.groups))\nassert sum(panel.model.rowCount(panel.model.index(row, 0)) for row in range(group_count)) == group_count * members\nprint(json.dumps({'variant': 'before' if '--baseline' in sys.argv else 'after', 'profiled': bool(profile),\n                  'platform': app.platformName(), 'groups': group_count, 'members': group_count * members,\n                  'update_ms': round(update_ms, 2), 'settled_ms': round(settled_ms, 2),\n                  'resets': len(resets), 'selected_node_preserved': selected == [chosen],\n                  'current_preserved': pinned.isValid() and selection.currentIndex() == pinned,\n                  'scroll_preserved': scroll == panel.view.verticalScrollBar().value(),\n                  'width_preserved': panel.view.columnWidth(0) == 317,\n                  'first_collapsed': group_count > 1 and not panel.view.isExpanded(panel.model.index(0, 0)),\n                  'new_keeper_and_old_marker_correct': True, 'all_titles_current': True,\n                  'stale_savings_cleared': True, 'estimation_requested_once': True, 'all_rows_present': True}), flush=True)\npanel.view.setModel(None)\npanel.close()\n"
+  },
+  "raw_measurements": [
+    {
+      "path": "build/duplicate-keeper-after-1.log",
+      "sha256_lf": "490a192bdf6eedc09bc96d51a1c047f2ecac8f5eeec344f2579f1fa8f874c191",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 14.92, \"settled_ms\": 15.38, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": true, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 14.92,
+        "settled_ms": 15.38,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-after-2.log",
+      "sha256_lf": "51206f9cb8ba06d3a8c1a5e2faaf92ec859699180e2113cc9f0542e9d14f6bf1",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 12.92, \"settled_ms\": 13.25, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": true, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 12.92,
+        "settled_ms": 13.25,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-after-3.log",
+      "sha256_lf": "c6a6c6037126e1e85bdeaef4a05d4695f29573b7f7bea413e7a6aabd0996ae3b",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 15.57, \"settled_ms\": 15.86, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": true, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 15.57,
+        "settled_ms": 15.86,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-after-profile.log",
+      "sha256_lf": "921945e00549ee02cd93e8319c0f5c7a8ed5e78f1baed3f2c16e1fc4d5b78fe1",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": true, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 29.1, \"settled_ms\": 29.53, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": true, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": true,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 29.1,
+        "settled_ms": 29.53,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-before-1.log",
+      "sha256_lf": "0cab10473ac12b3b3ffc0af47062f6d1d5877d045c64a9824bf6cd5708233242",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 807.55, \"settled_ms\": 819.18, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 807.55,
+        "settled_ms": 819.18,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-before-2.log",
+      "sha256_lf": "b87a1ea275ece3945fca23d223db345cf67a0935151928f36265404731d24835",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 1095.1, \"settled_ms\": 1105.2, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 1095.1,
+        "settled_ms": 1105.2,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-before-3.log",
+      "sha256_lf": "8ae5d11215274582c735f56ae45a87a2a91afcb40195365c80ac0c5c267f5cbe",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 811.08, \"settled_ms\": 828.82, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 811.08,
+        "settled_ms": 828.82,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-before-profile.log",
+      "sha256_lf": "9805c530b7a0b49087f4543aa9e87914db026ef01c6e3292ed592e89f3b6502a",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": true, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 1824.02, \"settled_ms\": 1845.4, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": true,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 1824.02,
+        "settled_ms": 1845.4,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-initial-after.log",
+      "sha256_lf": "8fa97d09d2684bb0e3ad44bcdf83330076c3094dfea17af7de3fb84d3929a193",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 13.21, \"settled_ms\": 14.4, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": true, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 13.21,
+        "settled_ms": 14.4,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-initial-before.log",
+      "sha256_lf": "a1c5afb7e0a814e736e451524de87d4d2e91c0cc8fc73b06fdbba835f4b58089",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1000, \"members\": 100000, \"update_ms\": 1105.24, \"settled_ms\": 1115.43, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 1105.24,
+        "settled_ms": 1115.43,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-one-after.log",
+      "sha256_lf": "2831f8f1cd7d69fa881f48b7e37923ef56d489889499add253b7d64bce6af5ca",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"after\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1, \"members\": 100000, \"update_ms\": 14.73, \"settled_ms\": 15.72, \"resets\": 0, \"selected_node_preserved\": true, \"current_preserved\": true, \"scroll_preserved\": true, \"width_preserved\": true, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1,
+        "members": 100000,
+        "update_ms": 14.73,
+        "settled_ms": 15.72,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "path": "build/duplicate-keeper-one-before.log",
+      "sha256_lf": "3976bc30a06a729a51ef4e14902c2ea31741955d5df8384cfa28f2da71beb699",
+      "encoding": "utf-8-sig",
+      "text": "{\"variant\": \"before\", \"profiled\": false, \"platform\": \"windows\", \"groups\": 1, \"members\": 100000, \"update_ms\": 666.82, \"settled_ms\": 675.28, \"resets\": 1, \"selected_node_preserved\": false, \"current_preserved\": false, \"scroll_preserved\": false, \"width_preserved\": false, \"first_collapsed\": false, \"new_keeper_and_old_marker_correct\": true, \"all_titles_current\": true, \"stale_savings_cleared\": true, \"estimation_requested_once\": true, \"all_rows_present\": true}\n",
+      "record": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1,
+        "members": 100000,
+        "update_ms": 666.82,
+        "settled_ms": 675.28,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    }
+  ],
+  "final_pairs": [
+    {
+      "before": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 807.55,
+        "settled_ms": 819.18,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      },
+      "after": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 14.92,
+        "settled_ms": 15.38,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "before": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 1095.1,
+        "settled_ms": 1105.2,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      },
+      "after": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 12.92,
+        "settled_ms": 13.25,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    },
+    {
+      "before": {
+        "variant": "before",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 811.08,
+        "settled_ms": 828.82,
+        "resets": 1,
+        "selected_node_preserved": false,
+        "current_preserved": false,
+        "scroll_preserved": false,
+        "width_preserved": false,
+        "first_collapsed": false,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      },
+      "after": {
+        "variant": "after",
+        "profiled": false,
+        "platform": "windows",
+        "groups": 1000,
+        "members": 100000,
+        "update_ms": 15.57,
+        "settled_ms": 15.86,
+        "resets": 0,
+        "selected_node_preserved": true,
+        "current_preserved": true,
+        "scroll_preserved": true,
+        "width_preserved": true,
+        "first_collapsed": true,
+        "new_keeper_and_old_marker_correct": true,
+        "all_titles_current": true,
+        "stale_savings_cleared": true,
+        "estimation_requested_once": true,
+        "all_rows_present": true
+      }
+    }
+  ],
+  "final_medians": {
+    "before": {
+      "update_ms": 811.08,
+      "settled_ms": 828.82
+    },
+    "after": {
+      "update_ms": 14.92,
+      "settled_ms": 15.38
+    }
+  },
+  "profile_summaries": {
+    "before": {
+      "path": "build/duplicate-keeper-before.prof",
+      "sha256": "78e4ca1334c81b0514c4dcc845b87e704426dba0e32542507303a6f4eaef5d8e",
+      "total_calls": 3962646,
+      "total_seconds": 1.8454603999999997,
+      "functions": [
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 107,
+          "function": "index",
+          "primitive_calls": 204137,
+          "calls": 204137,
+          "own_seconds": 0.35023150000000003,
+          "cumulative_seconds": 0.6558636
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 242,
+          "function": "fill",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 0.0050247,
+          "cumulative_seconds": 1.5479824000000002
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\duplicates_panel.py",
+          "line": 289,
+          "function": "_rebuild",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 0.0016243000000000002,
+          "cumulative_seconds": 1.8221496000000001
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\core\\node.py",
+          "line": 69,
+          "function": "path",
+          "primitive_calls": 101026,
+          "calls": 101026,
+          "own_seconds": 0.07549,
+          "cumulative_seconds": 0.22351890000000002
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\duplicates_panel.py",
+          "line": 296,
+          "function": "<lambda>",
+          "primitive_calls": 100000,
+          "calls": 100000,
+          "own_seconds": 0.0203895,
+          "cumulative_seconds": 0.2411849
+        },
+        {
+          "source": "build\\duplicates_panel_keeper_baseline.py",
+          "line": 190,
+          "function": "choose_kept_copy",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 0.0017813000000000002,
+          "cumulative_seconds": 1.8240033000000002
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 139,
+          "function": "flags",
+          "primitive_calls": 205105,
+          "calls": 205105,
+          "own_seconds": 0.0845982,
+          "cumulative_seconds": 0.14203570000000001
+        },
+        {
+          "source": "~",
+          "line": 0,
+          "function": "<method 'expand' of 'PySide6.QtWidgets.QTreeView' objects>",
+          "primitive_calls": 1000,
+          "calls": 1000,
+          "own_seconds": 0.6291421,
+          "cumulative_seconds": 1.5067093
+        },
+        {
+          "source": "~",
+          "line": 0,
+          "function": "<built-in method builtins.sorted>",
+          "primitive_calls": 1000,
+          "calls": 1000,
+          "own_seconds": 0.0212787,
+          "cumulative_seconds": 0.2624636
+        }
+      ]
+    },
+    "after": {
+      "path": "build/duplicate-keeper-after.prof",
+      "sha256": "73f5575f7e860eb8a4b0d24e1296c1ec51fe56f3461e15b1a8b5edde5d50a2be",
+      "total_calls": 61475,
+      "total_seconds": 0.029569300000000003,
+      "functions": [
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 71,
+          "function": "set_group_labels",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 0.0018163,
+          "cumulative_seconds": 0.0170374
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 89,
+          "function": "set_group_keeper",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 3.93e-05,
+          "cumulative_seconds": 0.0001247
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\duplicates_panel.py",
+          "line": 190,
+          "function": "choose_kept_copy",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 3.4200000000000005e-05,
+          "cumulative_seconds": 0.029096300000000002
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 107,
+          "function": "index",
+          "primitive_calls": 2011,
+          "calls": 2011,
+          "own_seconds": 0.0013565,
+          "cumulative_seconds": 0.0026796000000000003
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\duplicates_panel.py",
+          "line": 414,
+          "function": "_refresh_group_labels",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_seconds": 0.0007142,
+          "cumulative_seconds": 0.028875500000000002
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\core\\node.py",
+          "line": 69,
+          "function": "path",
+          "primitive_calls": 1000,
+          "calls": 1000,
+          "own_seconds": 0.0011668000000000002,
+          "cumulative_seconds": 0.0033320000000000003
+        },
+        {
+          "source": "D:\\Codes\\FileTree\\je_file_tree\\gui\\grouped_list.py",
+          "line": 139,
+          "function": "flags",
+          "primitive_calls": 1007,
+          "calls": 1007,
+          "own_seconds": 0.0003459,
+          "cumulative_seconds": 0.0005531000000000001
+        }
+      ]
+    }
+  },
+  "semantic_checks": {
+    "choice_guards_decision_replacement_and_estimate_request_unchanged": true,
+    "completion_handler_exact_previous_ast_after_helper_expansion": true,
+    "unchanged_guard_file_hashes_lf": {
+      "je_file_tree/gui/duplicate_savings_worker.py": "69b754fb63d884e7d71650839c2b0e495dc3ea66de96d163a8d8c70638d6afac",
+      "je_file_tree/gui/trash_worker.py": "29d74a9ec859f854e5c89a3af3203dc13ccf532aef63cf211eb066d8cdac586b",
+      "je_file_tree/gui/main_window.py": "e18dc992c91c29e81a95184eff339a1bd9d68ad96b095f9fd983fbfb2989c86c",
+      "je_file_tree/core/duplicate_decisions.py": "ed0475b7ac9465e60e6dd36165f9d8506b83e43e847aa9753ed7cced4f1b48c5",
+      "je_file_tree/core/duplicate_links.py": "06f7da1b92655ed31aaeffb993836620b3d855c0b912d82c55c616a3ce46c573"
+    }
+  },
+  "regression_contracts": [
+    "Held owned worker receives the new keeper decision; manual selection/current/persistent indexes, collapse and column widths survive. Scroll stays within actual resized limits. Old and new labels/fonts are correct.",
+    "Stale savings/checks are cleared, bulk selection is disabled while busy and enabled after controlled checks. New keeper remains excluded and old keeper can become an extra. The original search-result choice stays unchanged.",
+    "Four previous-keeper states include undecided, existing, same and foreign. Repeated Node identities update each matching first-column cell and preserve other roles, tuples, units and groups without resets.",
+    "Invalid group indices and a different Node with the same path are refused before captured state mutation. A 20k captured group remains available after caller list clearance, with only two changed cell notifications and no cell queries.",
+    "Existing completed-estimate state preservation, stale-worker/root guards, list-capture invalidation, keeper/refusal selection and pre-operation checks remain covered by focused/full suites."
+  ],
+  "unchanged_product_images": {
+    "docs/images/main_window_en.png": "9254019e603943446be6045c67dd98804466d4224086a0d84542339f07f84631",
+    "docs/images/main_window_ja.png": "1b9d89e156fdb0e702c30df6b6a5e7e02f50f3f4f4b267198322074fe5731b32",
+    "docs/images/main_window_ko.png": "c4d291661e88ac607ba7ba7f056eac341c5d2dc9ef3decf8fb35541586814ba3",
+    "docs/images/main_window_zh-CN.png": "e10dd6ac6b37b158889b5aaea3a502878c5f890e628ed6ebefeb431eb76c50db",
+    "docs/images/main_window_zh-TW.png": "8dc5de33bed5ed8186d2203e75c76277d8f872e70dd3e601f4fdd23ff17d3db5"
+  },
+  "validation": {
+    "junit_sha256_lf": "e4bdcf7df520eb053f08343bccf6b564a871dafffed652b4aa7856ab6cc93300",
+    "junit_summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "54",
+      "tests": "2315",
+      "time": "364.128",
+      "timestamp": "2026-10-17T07:12:21.369373+08:00"
+    },
+    "full_log": {
+      "path": "build/duplicate-keeper-full-pytest.log",
+      "sha256_lf": "5b962da6883e4cec252e93a19d846caecb7210e7b166a87b79afc24714f28479",
+      "encoding": "utf-8-sig",
+      "text": "..................................s..s.................ssss............. [  3%]\n....................................................ssssssss............ [  6%]\n.............................s..............................s........... [  9%]\n........................................................................ [ 12%]\n........................................................................ [ 15%]\n........................................................................ [ 18%]\n.s...................................................................... [ 21%]\n...............ssssss................................................... [ 24%]\n........................................................................ [ 27%]\n...........s..s......................................................... [ 31%]\n.........................s.............................................. [ 34%]\n........................................................................ [ 37%]\n........................................................................ [ 40%]\n........................................................................ [ 43%]\n.........................................................ss............s [ 46%]\nsss....s.............................................s.................. [ 49%]\n..................................................................s..... [ 52%]\n................................s....................................... [ 55%]\n........................................................................ [ 59%]\n........................................................................ [ 62%]\n.......................................................s................ [ 65%]\n........................................................................ [ 68%]\n........................................................................ [ 71%]\n..............................................sssssssssss......s........ [ 74%]\n..................s..................................................... [ 77%]\n........................................................................ [ 80%]\n........................................................................ [ 83%]\n..............................................................s...ss.... [ 87%]\n........................................................................ [ 90%]\n...............................s........................................ [ 93%]\n........................................................................ [ 96%]\n........................................................................ [ 99%]\n...........                                                              [100%]\n=========================== short test summary info ===========================\nSKIPPED [1] test\\test_archives.py:135: symlink creation requires developer mode or administrator rights\nSKIPPED [1] test\\test_archives.py:176: POSIX FIFOs are unavailable\nSKIPPED [2] test\\test_autostart.py:208: Native descriptor-relative POSIX registration\nSKIPPED [1] test\\test_autostart.py:227: Native POSIX startup path guards\nSKIPPED [1] test\\test_autostart.py:247: Native exclusive POSIX startup publication\nSKIPPED [1] test\\test_bin_empty.py:42: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:62: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:72: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:91: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:100: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:117: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:128: Linux descriptor APIs required\nSKIPPED [1] test\\test_bin_empty.py:150: Linux descriptor APIs required\nSKIPPED [1] test\\test_capacity.py:111: POSIX freedesktop location\nSKIPPED [1] test\\test_change_watch.py:241: native Linux external-alias feed\nSKIPPED [1] test\\test_duplicate_links.py:171: native POSIX extended attributes\nSKIPPED [1] test\\test_finder_bin.py:36: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_finder_bin.py:53: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_finder_bin.py:69: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_finder_bin.py:86: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_finder_bin.py:95: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_finder_bin.py:108: POSIX descriptor APIs required; this does not prove native Finder\nSKIPPED [1] test\\test_history.py:115: POSIX symlink fixture\nSKIPPED [1] test\\test_history.py:157: POSIX descriptor-relative retention\nSKIPPED [1] test\\test_linux_volume_probe.py:32: POSIX symlink fixture\nSKIPPED [1] test\\test_mounts.py:117: Ancestor symlink fixture needs POSIX\nSKIPPED [1] test\\test_mounts.py:132: Actual Linux process mount namespace\nSKIPPED [1] test\\test_mounts.py:196: Linux native statx/fdinfo mount IDs\nSKIPPED [1] test\\test_mounts.py:210: Linux directory descriptors\nSKIPPED [1] test\\test_mounts.py:236: Linux directory descriptors\nSKIPPED [1] test\\test_mounts.py:256: Linux directory descriptors\nSKIPPED [1] test\\test_msi_inventory.py:69: owned directory symlinks unavailable: [WinError 1314] �Τ�ݨS���o���S���v���C: 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_linked_payload_refuses_be0\\\\outside' -> 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_linked_payload_refuses_be0\\\\owned\\\\linked'\nSKIPPED [1] test\\test_namespace_moves.py:161: owned symlink unavailable: [WinError 1314] �Τ�ݨS���o���S���v���C: 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_linked_target_and_invalid0\\\\target' -> 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_linked_target_and_invalid0\\\\linked'\nSKIPPED [1] test\\test_package_posix.py:90: Native symlink fixture unavailable: [WinError 1314] �Τ�ݨS���o���S���v���C: 'Contents\\\\Frameworks' -> 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_internal_framework_links_0\\\\start_file_tree.app\\\\Framework'\nSKIPPED [1] test\\test_priority.py:77: Linux thread priority\nSKIPPED [1] test\\test_scanner.py:94: cannot create symlinks here: [WinError 1314] �Τ�ݨS���o���S���v���C: 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_a_symlinked_folder_is_lis0\\\\sample' -> 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_a_symlinked_folder_is_lis0\\\\sample\\\\loop'\nSKIPPED [1] test\\test_trash_restore.py:114: native Linux descriptor and mount APIs required\nSKIPPED [6] test\\test_trash_restore.py:124: native Linux descriptor and mount APIs required\nSKIPPED [1] test\\test_trash_restore.py:151: native Linux descriptor and mount APIs required\nSKIPPED [1] test\\test_trash_restore.py:167: native Linux descriptor and mount APIs required\nSKIPPED [1] test\\test_trash_restore.py:180: native Linux descriptor and mount APIs required\nSKIPPED [1] test\\test_trash_restore.py:188: native Linux descriptor and mount APIs required\nSKIPPED [1] test\\test_trash_size.py:115: owned POSIX symlinks\nSKIPPED [1] test\\test_trash_undo_gui.py:289: native Linux current-user Trash and mount APIs\nSKIPPED [1] test\\test_verified_copy.py:119: owned symlink unavailable: [WinError 1314] �Τ�ݨS���o���S���v���C: 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_links_special_and_incompl0\\\\source\\\\folder\\\\one' -> 'D:\\\\Codes\\\\tests\\\\duplicate-keeper-full-9b7c1c512640412ab464ea223f5c1034\\\\test_links_special_and_incompl0\\\\source\\\\folder\\\\linked'\nSKIPPED [1] test\\test_verified_copy.py:172: Linux descriptor mount guard\nSKIPPED [1] test\\test_verified_copy.py:190: native POSIX extended attributes\nSKIPPED [1] test\\test_windows_compression_probe.py:23: 8.3 names unavailable on this owned temporary fixture\n2261 passed, 54 skipped in 364.24s (0:06:04)\n"
+    },
+    "focused_log": {
+      "path": "build/duplicate-keeper-focused.log",
+      "sha256_lf": "b447ec6da95cbec93358cb195bad60ddf2718ee0b82341da11eb8e37c03dfbc9",
+      "encoding": "utf-8-sig",
+      "text": "............................................                             [100%]\n44 passed in 9.72s\n"
+    },
+    "red_log": {
+      "path": "build/duplicate-keeper-red.log",
+      "sha256_lf": "dbb6fa0d1a9b23f9a974fc1c6e968d56e81618837d4512470b2a2603a38051b6",
+      "encoding": "utf-8-sig",
+      "text": "F                                                                        [100%]\n================================== FAILURES ===================================\n_____ test_choose_keeper_preserves_view_and_rechecks_the_updated_decision _____\n\npanel = <je_file_tree.gui.duplicates_panel.DuplicatesPanel(0x21c6e1ad180) at 0x0000021C094E3140>\nqapp = <PySide6.QtWidgets.QApplication(0x21c6de765a0) at 0x0000021C09449D40>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000021C70958FC0>\n\n    def test_choose_keeper_preserves_view_and_rechecks_the_updated_decision(panel, qapp, monkeypatch):\n        started, release = threading.Event(), threading.Event()\n        checked = []\n    \n        def blocked(*_args, **_kwargs):\n            started.set()\n            assert release.wait(10)\n            return DuplicateSavings(Savings(3570, 4096, 0, 4096, 1000, False), [], [])\n    \n        monkeypatch.setattr(duplicate_savings_worker, \"estimate_duplicate_savings\", blocked)\n        monkeypatch.setattr(duplicate_savings_worker, \"check_group\",\n                            lambda group, *_args, **_kwargs: checked.append(group) or None)\n        parent = panel.model.index(2, 0)\n        current = panel.model.index(119, 2, parent)\n        chosen = current.data(NODE_ROLE)\n        old = panel.groups[2].kept\n        selection = panel.view.selectionModel()\n        selection.setCurrentIndex(current, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)\n        pinned = QPersistentModelIndex(current)\n        panel.view.collapse(panel.model.index(0, 0))\n        panel.view.setColumnWidth(0, 317)\n        panel.view.scrollTo(current)\n        qapp.processEvents()\n        scroll = panel.view.verticalScrollBar().value()\n        resets = []\n        panel.model.modelReset.connect(lambda: resets.append(True))\n        try:\n            panel.choose_kept_copy()\n            _wait(qapp, started.is_set)\n>           assert [index.data(NODE_ROLE) for index in selection.selectedRows()] == [chosen]\nE           AssertionError: assert [] == [Node(name='2... children=())]\nE             \nE             Right contains one more item: Node(name='2-0119', is_dir=False, size=10, file_count=0, dir_count=0, modified=119, is_link=False, error=None, allocated=0, children=())\nE             Use -v to get more diff\n\ntest\\test_duplicate_keeper_refresh.py:71: AssertionError\n=========================== short test summary info ===========================\nFAILED test/test_duplicate_keeper_refresh.py::test_choose_keeper_preserves_view_and_rechecks_the_updated_decision\n1 failed in 1.54s\n"
+    },
+    "ruff": [
+      {
+        "path": "build/duplicate-keeper-ruff-global.log",
+        "sha256_lf": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "encoding": "utf-8-sig",
+        "text": "All checks passed!\n"
+      },
+      {
+        "path": "build/duplicate-keeper-ruff-pinned.log",
+        "sha256_lf": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "encoding": "utf-8-sig",
+        "text": "All checks passed!\n"
+      }
+    ],
+    "final_changed_test_hashes_lf": {
+      "test/test_duplicate_keeper_refresh.py": "ae001d3f891bb2461a08680401a1750ee867f4ce5aead559c799fbeced00c61b",
+      "test/test_grouped_list.py": "1afac0f3c29c2811137938948cdd635b676a32df66cdfd249515fd926dd92094"
+    },
+    "focused_note": "The 44-case focused run precedes strengthening the foreign-identity input to the same path; the final full suite covers that final input."
+  }
+}

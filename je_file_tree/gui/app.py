@@ -5,11 +5,11 @@ from __future__ import annotations
 import sys
 from collections.abc import Sequence
 
-from PySide6.QtCore import QLocale, QSettings
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QLocale, QSettings, Qt
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from je_file_tree import __version__
-from je_file_tree.gui.i18n import LANGUAGES, match_language, set_language
+from je_file_tree.gui.i18n import LANGUAGES, match_language, set_language, tr
 from je_file_tree.gui.icon import app_icon, claim_taskbar_button
 from je_file_tree.gui import elevation
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
@@ -17,19 +17,33 @@ from je_file_tree.gui.qt_translation import apply_qt_translation
 from je_file_tree.gui.scan_worker import pace_workers
 from je_file_tree.gui.themes import theme_controller
 from je_file_tree.gui.workspace import ScanWorkspace
+from je_file_tree.gui.startup_state import workspace_state
+from je_file_tree.gui.locale_font import apply_language_font
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
 
 
-def create_window(settings: QSettings, folder: str | None = None) -> MainWindow:
-    """Build the window in the remembered (or the system's) language, scanning ``folder`` if given."""
+def _configure_interface(settings: QSettings) -> None:
     language = str(settings.value("language", ""))
     if language not in LANGUAGES:
         language = match_language(QLocale.system().name())
     set_language(language)
     theme_controller().apply(str(settings.value('theme', 'system')))
+    apply_language_font(language)
     apply_qt_translation(language)
+
+
+def _startup_error(settings: QSettings, reason: str) -> None:
+    _configure_interface(settings)
+    box = QMessageBox(QMessageBox.Icon.Warning, tr("app_title"), tr("startup_invalid", reason=reason))
+    box.setTextFormat(Qt.TextFormat.PlainText)
+    box.exec()
+
+
+def create_window(settings: QSettings, folder: str | None = None) -> MainWindow:
+    """Build the window in the remembered (or the system's) language, scanning ``folder`` if given."""
+    _configure_interface(settings)
     window = MainWindow(settings)
     window.setWindowIcon(app_icon())
     if folder:
@@ -62,12 +76,19 @@ def main(argv: Sequence[str]) -> int:
     app.setWindowIcon(app_icon())
     folder = next((argument for argument in argv if not argument.startswith("-")), None)
     settings = QSettings()
+    try:
+        restore = workspace_state(argv)
+    except ValueError as error:
+        _startup_error(settings, str(error))
+        return 2
     # Like TreeSize: ask first, so every folder can be read. Declining keeps this copy.
     background = "--background" in argv
     if not background and wants_admin_prompt(settings) and elevation.relaunch_elevated(list(argv)):
         return 0
     pace_workers()  # background work waits while the window is busy
     window = create_workspace(settings, folder)
+    if restore is not None:
+        restore.restore(window)
     window.show()
     window.start_services()
     if background and window.background.can_hide:
