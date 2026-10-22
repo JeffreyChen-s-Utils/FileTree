@@ -80,6 +80,10 @@ On macOS, use ⌘ instead of Ctrl; use ⌘R to rescan.
 - [Core API](docs/core-api.md) and [architecture](architecture.md): integrate with or develop FileTree.
 - [Update log](docs/updates/README.md): changes and validation records.
 
+## Security
+
+Report vulnerabilities privately. The policy, supported versions, and operator notes are in [SECURITY.md](SECURITY.md).
+
 ## License
 
 [MIT](LICENSE).

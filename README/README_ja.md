@@ -80,6 +80,10 @@ macOS では Ctrl の代わりに ⌘ を使います。再スキャンは ⌘R 
 - [コア API](../docs/core-api.md)と[構成](../architecture.md)：FileTree の連携・開発。
 - [更新履歴](../docs/updates/README.md)：変更内容と検証記録。
 
+## セキュリティ
+
+脆弱性は非公開で報告してください。方針、サポート対象のバージョン、運用上の注意は [SECURITY.md](../SECURITY.md) にあります。
+
 ## ライセンス
 
 [MIT](../LICENSE)。

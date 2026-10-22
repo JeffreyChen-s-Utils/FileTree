@@ -80,6 +80,10 @@ macOS에서는 Ctrl 대신 ⌘를 사용합니다. 다시 스캔은 ⌘R입니�
 - [코어 API](../docs/core-api.md)와 [구조](../architecture.md): FileTree 연동 및 개발.
 - [업데이트 기록](../docs/updates/README.md): 변경 사항과 검증 기록.
 
+## 보안
+
+취약점은 비공개로 보고해 주세요. 정책, 지원 버전, 운영 시 주의 사항은 [SECURITY.md](../SECURITY.md)에 있습니다.
+
 ## 라이선스
 
 [MIT](../LICENSE).

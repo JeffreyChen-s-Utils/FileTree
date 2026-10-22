@@ -80,6 +80,10 @@ macOS 请用 ⌘ 代替 Ctrl，重新扫描则用 ⌘R。
 - [核心 API](../docs/core-api.md)和[项目架构](../architecture.md)：集成或开发 FileTree。
 - [更新记录](../docs/updates/README.md)：功能变更与验证记录。
 
+## 安全
+
+请私下报告漏洞。政策、支持版本与操作者注意事项见 [SECURITY.md](../SECURITY.md)。
+
 ## 许可证
 
 [MIT](../LICENSE)。
