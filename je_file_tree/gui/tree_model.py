@@ -93,6 +93,7 @@ class FolderTreeModel(QAbstractItemModel):
         self._orders: dict[int, list[Node]] = {}
         self._rows: dict[int, int] = {}
         self._queried_parents: set[Node] = set()
+        self._live_presence: dict[int, bool] = {}  # shown folders' child presence at the last live relayout
         self._size_order_changed: set[Node] = set()
         self._icons: dict[str, QIcon] = {}
         self._archives: dict[Node, list[VirtualEntry]] = {}
@@ -155,8 +156,63 @@ class FolderTreeModel(QAbstractItemModel):
         self.endResetModel()
 
     def refresh(self) -> None:
-        """Show what a running scan has added since the last refresh, keeping expansion and selection."""
+        """Show what a running scan has added since the last refresh, keeping expansion and selection.
+
+        A live tick whose shown folders keep their members, order and child presence only repaints:
+        natively a full relayout of 100,000 shown rows took about 0.58 s per tick (U-20261017-76).
+        """
+        if self._live and self._live_rows_unchanged():
+            self._repaint_live_folders()
+            return
         self._relayout(lambda: None)
+        self._live_presence = self._shown_presence() if self._live else {}
+
+    def _repaint_live_folders(self) -> None:
+        """Notify the root and every shown folder row: during a scan only folder totals change.
+
+        A file row's own values are final when the scanner adds it; only its share of the growing
+        parent changes, which the view repaints on screen (ResultsView.refresh_live). One range over
+        every shown row made Qt query hasChildren 100,000 times (about 0.3 s, U-20261017-76).
+        """
+        last = len(COLUMN_KEYS) - 1
+        if self._root is not None:
+            self.dataChanged.emit(self.index(0, 0), self.index(0, last), [])
+        for parent in tuple(self._queried_parents):
+            parent_index = self.index_for(parent)
+            if not parent_index.isValid():
+                continue
+            start = None
+            order = self._orders.get(id(parent), ())
+            for row, node in enumerate((*order, None)):
+                if node is not None and node.is_dir:
+                    start = row if start is None else start
+                elif start is not None:
+                    self.dataChanged.emit(self.index(start, 0, parent_index),
+                                          self.index(row - 1, last, parent_index), [])
+                    start = None
+
+    def _shown_presence(self) -> dict[int, bool]:
+        """Whether each shown folder has entries, which decides its expand arrow; reads frozen live orders."""
+        presence = {} if self._root is None else {id(self._root): bool(self._root.children)}
+        for parent in tuple(self._queried_parents):
+            for node in self._ordered(parent):
+                if node.is_dir:
+                    presence[id(node)] = bool(node.children)
+        return presence
+
+    def _live_rows_unchanged(self) -> bool:
+        """Every shown sibling group still has the same members in the same sorted order."""
+        key, descending = sort_key(self._sort_column), self._sort_order == Qt.SortOrder.DescendingOrder
+        for parent in tuple(self._queried_parents):
+            frozen = self._orders.get(id(parent))
+            if frozen is None:
+                return False
+            current = sorted(list(self._archives.get(parent, parent.children)), key=key, reverse=descending)
+            if len(current) != len(frozen):
+                return False
+            if any(now is not before for now, before in zip(current, frozen, strict=True)):
+                return False
+        return self._shown_presence() == self._live_presence
 
     def finish_live(self) -> None:
         """The scan is done: show its final, sorted tree without collapsing what the user opened."""
@@ -332,8 +388,11 @@ class FolderTreeModel(QAbstractItemModel):
             return QModelIndex()
         if not parent.isValid():
             return self.createIndex(0, column, self._root) if row == 0 else QModelIndex()
-        folder = self._entry(parent)
-        children = self._ordered(folder) if folder is not None else []
+        # Called for every visible row on each relayout: read the cached order directly (U-20261017-75).
+        folder = parent.internalPointer()
+        children = self._orders.get(id(folder))
+        if children is None:
+            children = self._ordered(folder) if folder is not None else ()
         if not 0 <= row < len(children):
             return QModelIndex()
         return self.createIndex(row, column, children[row])
@@ -364,10 +423,14 @@ class FolderTreeModel(QAbstractItemModel):
         """Qt: inspect existing/frozen child presence without sorting or copying unopened rows."""
         if not parent.isValid():
             return self._root is not None
-        node = self._entry(parent)
+        node = parent.internalPointer()
         if parent.column() != 0 or node is None:
             return False
-        return self.has_entry_children(node)
+        # Inlined has_entry_children: Qt asks this for every visible row on each relayout (U-20261017-75).
+        children = self._orders.get(id(node))
+        if children is None:
+            children = self._archives.get(node, node.children)
+        return bool(children) or self.can_preview(node)
 
     def has_entry_children(self, node: Node | VirtualEntry) -> bool:
         """Inspect cached/raw child presence and preview eligibility without creating rows or sorting."""
@@ -605,6 +668,8 @@ class FolderTreeModel(QAbstractItemModel):
         if not self._live and (not children or (self._sort_column in (SIZE, SHARE, DRIVE_SHARE)
                                                and self._sort_order == Qt.SortOrder.DescendingOrder
                                                and folder not in self._size_order_changed)):
+            if children:
+                self._orders[id(folder)] = children  # the unsorted order too; every relayout clears it
             return children
         descending = self._sort_order == Qt.SortOrder.DescendingOrder
         cached = sorted(list(children), key=sort_key(self._sort_column), reverse=descending)

@@ -122,7 +122,9 @@ During the synchronous `setModel` and header-state restoration, a nested, except
 relayouts. Different keys/directions still sort immediately. The scope ends before restoring expansion,
 selection and current indexes; explicit refresh and ordinary repeated sorts retain live-snapshot semantics.
 
-Result-table `TableProxy` retains Qt filtering but delegates sorting to `_TableModel`. A separate
+Result-table `TableProxy` delegates sorting to `_TableModel` and matches an any-column fixed-string
+filter against each row's cached, case-folded display text (`_TableModel.filter_text`, cleared by
+`set_rows` and `refresh`); other filter kinds use Qt's own matching (U-20261017-74). A separate
 row-ordinal permutation leaves captured records intact and evaluates each sort key once; strings
 use UTF-16 code units to match QString, numbers retain raw values, and ties retain prior display order.
 Replacement resets the permutation and reapplies the active column/direction. Sorting emits vertical
@@ -471,11 +473,15 @@ checks and explicit current-user opt-in remain in the unchanged native helper.
 The window tracks settings dialogs independently from source-operation reviews, preserving existing
 scan/live-monitor readers while settings are open; shutdown retains both kinds until their workers join.
 
-`themes` owns one QApplication controller: System restores native style and a zero-resolve-mask
-palette, while explicit Light/Dark use Fusion and complete colour roles. ThemeMenu persists the choice
-and startup restores it before constructing windows. Palette/style events discard chart caches.
-`colours` selects label ink by sRGB contrast; treemap shading is retained only when its endpoints
-meet the same minimum contrast. Sunburst/age labels share this logic; bars use palette text roles.
+`themes` owns one QApplication controller. Light/Dark, and System resolved from the platform's
+colour scheme (re-applied when it changes), use `fluent_style`: Fluent tokens fitted to the platform
+accent captured at start-up, a complete palette, `FluentStyle` (Fusion with drawn close/clear glyphs)
+and one application style sheet; widgets opt in through `role` properties or object names and carry
+no style sheet of their own. System under high contrast keeps the native style and an empty palette.
+Explicit themes also request the matching platform colour scheme (Qt 6.8+) for the title bar.
+ThemeMenu persists the choice and startup restores it before constructing windows. Palette/style events discard chart caches.
+`colours` selects label ink by sRGB contrast and blends colours; treemap tiles are flat (1 px gap,
+rounded corners from 8 px) and folder fills blend the palette's text over its base by depth. Sunburst/age labels share this logic; bars use palette text roles.
 
 `chart_accessibility` attaches one QObject event filter per chart, exposing translated accessible
 names, current-root/selection facts and keyboard instructions. It navigates only cached/bounded layout
@@ -508,13 +514,17 @@ and never restarts a timer or publishes partial text. Current-list CSV sends tex
 ListStream to ExportWorker and core.export_table_csv, which writes atomically with formula escaping.
 Ctrl+C is scoped to each view and produces quoted TSV of selected rows. MainWindow cancels captures
 before joining writers on close, preventing blocked queue consumers; failed writers stop producers.
-`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row during the existing
-cooperative capture turns. One application-owned controller supersedes pending copies across all
+`gui.clipboard_copy` extends ListCapture to escape and encode each TSV row as UTF-8 bytes during the
+existing cooperative capture turns and publishes them as `text/plain;charset=utf-8` through
+`QClipboard.setMimeData`, so no multi-megabyte `str` is converted to a QString on the GUI thread;
+Qt decodes the bytes only for a reader that asks (U-20261017-70). An `atexit` hook hands a copy that is
+still on the clipboard back to Qt as text before interpreter shutdown: Qt destroying the Python-created
+QMimeData during finalization would otherwise crash the process. One application-owned controller supersedes pending copies across all
 views, rejects stale/reentrant replies, and publishes only complete current results on the GUI thread.
 Observed clipboard changes, application exit, view/ancestor close and explicit top-level hide cancel
 pending preparation; the temporary event filter never consumes events. Finished/canceled captures
 close their text buffers. The public synchronous `copy_table` helper retains its original contract.
-Final string extraction and native clipboard access remain synchronous and cannot be preempted;
+Final byte extraction and native clipboard access remain synchronous and cannot be preempted;
 yielding preparation does not establish that the whole operation or custom callbacks are pause-free.
 
 Native clipboard measurement is isolated in `tools.measure_clipboard_tail` and
@@ -523,7 +533,8 @@ creates a named create-only noninteractive station and desktop before importing 
 protected owner/System DACL. Exact names and noninteractive flags gate clipboard access. The real
 copy shortcut/capture publishes to that private station; a separate base-interpreter child on the
 same desktop validates and joins only the explicitly inherited private handles before reading
-bounded CF_UNICODETEXT. Retain every capture/heartbeat sample, string-extraction
+bounded CF_UNICODETEXT. Retain every capture/heartbeat sample (the longest gaps placed against the
+reader's `GetClipboardData` call on the shared QPC clock), string-extraction
 and setter durations, native readback hash, runtime/source identity, raw output and cleanup result.
 Reader/GUI/helper bounds are 30/45/60 seconds; no interactive/existing-station fallback or elevation.
 Destroy Qt only after a scope recheck, then retire this thread's remaining windows on the private
@@ -977,7 +988,9 @@ files, 0 for files whose data is elsewhere (cloud placeholders, offline), never 
 Each finished folder's files are added to the running totals of every folder above it. The root is handed
 out first (`started`), so `FolderTreeModel` shows the tree in live mode while it grows: each folder's
 children are a sorted copy frozen until the next `refresh()`, which the window calls every 700 ms (a layout
-change that moves persistent indexes, so expanded folders, selection and scroll position survive). The
+change that moves persistent indexes, so expanded folders, selection and scroll position survive). A tick
+whose shown folders keep their members, sorted order and child presence only notifies the root and folder
+rows and repaints the visible tree, since file rows' own values are final when added (U-20261017-76). The
 calling thread reports progress about ten times a second and watches the cancel event. When every folder
 is read, totals are added up again bottom-up and children sorted largest first; `analyse()` (largest
 files, per-type totals) runs still off the GUI thread and `succeeded(ScanOutcome)` ends live mode. Stop
@@ -997,7 +1010,7 @@ gate first. Normal whole-root scan replacement uses `worker_lifecycle.ThreadFenc
 request. Pending replacements retain the ordinary scan/source-operation exclusion and Stop discards them.
 Old workers stay owned until joining; no thread is terminated. Background receipts are finalized before
 foreground dispatch. Folder validation runs in ScanWorker. Welcome DriveWorker discovers volumes once
-per coalesced request and publishes immutable scalar DriveSnapshot values; language/unit/action updates
+per coalesced request, first when the page is shown (never from its constructor), and publishes immutable scalar DriveSnapshot values; language/unit/action updates
 render the cache without storage I/O. Tab destruction still cancels/joins these owned workers.
 
 **Show.** `ResultsView.show_outcome` hands the tree to `FolderTreeModel` (which wraps the `Node`s, sorts
@@ -1072,6 +1085,10 @@ GUI failure-flow fixtures model both complete and unsupported holder diagnostics
 inspect the modal report. The unattended-test guard dismisses any unhandled failure report and
 fails fixture teardown, preventing a platform-specific dialog from silently awaiting a user.
 
+Bulk questions and reports that list every entry (Trash with copies, copy errors, case-only renames,
+duplicate links) set their details through `gui.lazy_details.set_lazy_details`: the standard box
+starts with a placeholder and builds the complete list when the details are first shown or the box is
+copied, never as a native dialog; tests read it with `full_details` (U-20261018-80).
 `gui.entry_move_prompt.confirm_entry_move` presents ordinary Trash and protected-folder Yes/No
 questions with PlainText set before assigning captured names/paths. Preserve Qt's ordinary default
 choice and the protected question's explicit No, standard dismissal results and application modality;
@@ -1182,12 +1199,13 @@ place; membership changes still use their existing rebuilds.
 
 Grouped-list preference changes retain captured membership. `GroupedListModel.set_unit` validates
 the unit and emits size-column display ranges for nonempty groups; `retranslate` notifies the
-column headings and each explicit keeper name. Neither resets the model. CleanupPanel shares
+column headings through `titles`, the header's own `HeaderTitles` model (so a title change never relays
+out the tree; U-20261017-73), and each explicit keeper name. Neither resets the model. CleanupPanel shares
 title/explanation formatting between its initial rebuild and preference updates; its constructor
 keeps the initial column geometry. DuplicatesPanel refreshes bounded exact/photo labels, folder
 matches and status without re-sorting members, rebuilding thumbnails or replacing a running worker.
 `_photo_groups` shares the existing group/member cap between initial capture and label refresh.
-Normal Qt data/header notifications still cancel mixed-format list captures. Selection, current
+Normal Qt data/header notifications, including the header model's, still cancel mixed-format list captures. Selection, current
 and persistent indexes, collapsed groups and column widths survive; viewport resize can clamp scroll.
 
 For Qt 6.9+, `build_view` sets the [native update threshold](https://doc.qt.io/qt-6/qabstractitemview.html#updateThreshold-prop) to zero so grouped size ranges repaint
@@ -1286,7 +1304,11 @@ contract. ja/ko system locales select their language on first use. Native Qt ja/
 standard buttons/dialogs and all four non-English catalogues are required in runtime/package checks.
 README/Nuitka parity and generated screenshots cover all five languages; OS fonts provide glyphs.
 locale_font chooses installed Japanese/Korean UI families on each retranslation while preserving
-the captured system size/style, restoring that base for other languages. It neither bundles nor
+the captured system size/style, restoring that base for other languages. `apply_language_font` sets
+it as the application font, so widgets created later and dialogs get it too: under an application
+style sheet Qt no longer passes a window's font on to children created after it. Bold, scaled
+labels use `emphasise`, which marks them so `apply_language_font` re-applies their font: on macOS a
+widget with a font of its own does not take later application-font changes. It neither bundles nor
 installs fonts; missing families retain normal system fallback across workspace and result tabs.
 
 ## 5. Extension points
@@ -1419,8 +1441,8 @@ Diagnostic fields stay capped at 512
 characters and device arguments at 128, with explicit unknown/truncation states; clipped JSON is
 never used as authority. Retain the original busy error and mounted-check refusal alongside the
 fresh registration. Native image absence and normal cleanup guards remain mandatory after success.
-The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery still requires
-its own native cleanup evidence under #96.
+The captured native busy/UUID match is in `apfs-20261017-uuid-refusal.json`; recovery is verified
+natively (U-20261017-60), and the refusal no longer reproduces in hosted samples (U-20261018-83).
 
 After the third native busy refusal only, `tools.macos_busy_observer` records read-only image/device
 associations. It checks the private image/scratch identity and fresh complete registration/volume

@@ -9,7 +9,7 @@ from PySide6.QtCore import QLocale, QSettings, Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from je_file_tree import __version__
-from je_file_tree.gui.i18n import LANGUAGES, current_language, match_language, set_language, tr
+from je_file_tree.gui.i18n import LANGUAGES, match_language, set_language, tr
 from je_file_tree.gui.icon import app_icon, claim_taskbar_button
 from je_file_tree.gui import elevation
 from je_file_tree.gui.main_window import ASK_ADMIN_KEY, MainWindow, read_flag
@@ -18,7 +18,7 @@ from je_file_tree.gui.scan_worker import pace_workers
 from je_file_tree.gui.themes import theme_controller
 from je_file_tree.gui.workspace import ScanWorkspace
 from je_file_tree.gui.startup_state import workspace_state
-from je_file_tree.gui.locale_font import language_font
+from je_file_tree.gui.locale_font import apply_language_font
 
 ORGANIZATION = "JE-Chen"
 APPLICATION = "FileTree"
@@ -30,6 +30,7 @@ def _configure_interface(settings: QSettings) -> None:
         language = match_language(QLocale.system().name())
     set_language(language)
     theme_controller().apply(str(settings.value('theme', 'system')))
+    apply_language_font(language)
     apply_qt_translation(language)
 
 
@@ -37,7 +38,6 @@ def _startup_error(settings: QSettings, reason: str) -> None:
     _configure_interface(settings)
     box = QMessageBox(QMessageBox.Icon.Warning, tr("app_title"), tr("startup_invalid", reason=reason))
     box.setTextFormat(Qt.TextFormat.PlainText)
-    box.setFont(language_font(current_language(), box.font()))
     box.exec()
 
 

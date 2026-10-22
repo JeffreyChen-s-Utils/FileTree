@@ -293,12 +293,13 @@ def test_retranslation_notifies_headers_and_every_repeated_keeper_name_only(qapp
     model.set_groups([("group", [kept, extra, kept]), ("empty", [])], "B", keepers=[kept, None])
     changes, headers, resets = [], [], []
     model.dataChanged.connect(lambda first, last, roles: changes.append((first, last, roles)))
-    model.headerDataChanged.connect(lambda *args: headers.append(args))
+    model.titles.headerDataChanged.connect(lambda *args: headers.append(args))
+    model.headerDataChanged.connect(lambda *args: headers.append(("tree model", *args)))
     model.modelReset.connect(lambda: resets.append(True))
     try:
         i18n.set_language("ko")
         model.retranslate()
-        assert headers == [(Qt.Horizontal, 0, 3)] and not resets
+        assert headers == [(Qt.Horizontal, 0, 3)] and not resets  # only the header's title model
         assert [first.row() for first, _last, _roles in changes] == [0, 2]
         for first, last, roles in changes:
             assert first == last and first.column() == 0 and roles == [Qt.DisplayRole]
@@ -445,3 +446,33 @@ def test_unbatched_groups_keep_original_expansion(qapp, monkeypatch, group_count
     finally:
         view.setModel(None)
         view.close()
+
+
+def test_the_header_reads_titles_from_its_own_model_and_relays_out_nothing(qapp):
+    """U-20261017-73: a tree-model header notification relaid out every grouped row (about 0.6 s natively)."""
+    from je_file_tree.gui import i18n
+
+    language = i18n.current_language()
+    model = GroupedListModel()
+    model.set_groups([("group", [Node(str(row), False) for row in range(50)])], "B")
+    view = grouped_list.build_view(model)
+    view.setAttribute(Qt.WA_DontShowOnScreen)
+    view.show()
+    qapp.processEvents()
+    header = view.header()
+    layouts = []
+    model.layoutChanged.connect(lambda *_: layouts.append(True))
+    try:
+        assert header.model() is model.titles and header.count() == len(grouped_list.COLUMNS)
+        i18n.set_language("ja")
+        model.retranslate()
+        qapp.processEvents()
+        titles = [header.model().headerData(column, Qt.Horizontal) for column in range(header.count())]
+        assert titles == [i18n.tr(key) for key in grouped_list.COLUMNS]
+        assert [model.headerData(column, Qt.Horizontal) for column in range(4)] == titles  # readers of the model
+        assert model.titles.rowCount() == 0 and not layouts
+        assert view.model() is model and model.rowCount(model.index(0, 0)) == 50
+    finally:
+        i18n.set_language(language)
+        view.close()
+        view.deleteLater()

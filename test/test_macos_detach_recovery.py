@@ -10,6 +10,15 @@ import pytest
 from tools import macos_owned_image as owned
 
 
+@pytest.fixture(autouse=True)
+def _no_host_refusal_log(monkeypatch):
+    """Unit tests never read the host's unified log (macOS would run the real `log show`).
+
+    Cases that check the refusal log install their own stub over this one.
+    """
+    monkeypatch.setattr(owned, "refusal_log", lambda *_args: {"status": "not-read-in-unit-tests"})
+
+
 @pytest.fixture
 def captured_image(tmp_path, monkeypatch):
     path = Path(__file__).resolve().parents[1] / "docs/updates/apfs-20261017-uuid-refusal.json"

@@ -241,7 +241,7 @@ def test_temporary_windows_reader_refusals_only_retry_publication(tmp_path, monk
     target = tmp_path / "active.json"
     recorder.write_record(target, {"phase": "call"})
     assert json.loads(target.read_text(encoding="utf-8")) == {"phase": "call"}
-    assert len(attempts) == 3 and pauses == [.01, .01]
+    assert len(attempts) == 3 and pauses == [.01, .02]  # doubling waits
     assert len(set(attempts)) == 1
 
 
@@ -264,6 +264,7 @@ def test_permanent_or_unrelated_write_failure_is_bounded_and_visible(tmp_path, m
     with pytest.raises(PermissionError, match="owned persistent refusal"):
         recorder.write_record(target, {"phase": "call"})
     assert len(attempts) == attempts_expected and len(pauses) == attempts_expected - 1
+    assert pauses == [min(.01 * 2 ** attempt, .64) for attempt in range(attempts_expected - 1)]
     assert json.loads(target.read_text(encoding="utf-8")) == {"phase": "prior"}
 
 

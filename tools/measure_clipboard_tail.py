@@ -20,6 +20,7 @@ _RESULT = "FILETREE_CLIPBOARD_RESULT "
 _MAX_ROWS = 100_000
 _MAX_WIDTH = 512
 _GUI_WAIT_MS = 45000
+_KEPT_GAPS = 5
 
 
 def _validate(rows: int, width: int) -> None:
@@ -40,7 +41,7 @@ def _consumer(scope: PrivateStation) -> subprocess.Popen:
 
 
 def _instrument(app, scope: PrivateStation, state: dict) -> object:
-    from PySide6.QtCore import QObject, QTimer, Signal  # noqa: PLC0415 - import only after private scope verification
+    from PySide6.QtCore import QObject, QTimer, Signal  # noqa: PLC0415 - import only after scope verification
     from PySide6.QtWidgets import QApplication  # noqa: PLC0415
 
     scope.check()
@@ -49,13 +50,14 @@ def _instrument(app, scope: PrivateStation, state: dict) -> object:
     class Publication(QObject):
         dataChanged = Signal()  # noqa: N815 - QClipboard-compatible proxy over the real private clipboard
 
-        def setText(self, text):  # noqa: N802
+        def setMimeData(self, mime):  # noqa: N802
             scope.check()
-            print("FILETREE_CLIPBOARD_PHASE set-text-start", flush=True)
+            print("FILETREE_CLIPBOARD_PHASE publish-start", flush=True)
             started = time.perf_counter()
-            board.setText(text)
-            state.update(set_text_ms=(time.perf_counter()-started)*1000, text=text, characters=len(text))
-            print("FILETREE_CLIPBOARD_PHASE set-text-complete", flush=True)
+            board.setMimeData(mime)  # the clipboard takes ownership; its bytes are read only in _verify
+            state.update(publish_ms=(time.perf_counter()-started)*1000, published=mime,
+                         published_at_ms=time.perf_counter()*1000)
+            print("FILETREE_CLIPBOARD_PHASE publish-complete", flush=True)
             QTimer.singleShot(0, state["start_consumer"])
 
     proxy = Publication(app)
@@ -77,11 +79,11 @@ def _capture_class(state: dict):
             super()._chunk()
             state["callbacks_ms"].append((time.perf_counter()-started)*1000)
 
-        def encoded_text(self):
+        def encoded_utf8(self):
             started = time.perf_counter()
-            text = super().encoded_text()
+            data = super().encoded_utf8()
             state["extract_ms"] = (time.perf_counter()-started)*1000
-            return text
+            return data
 
     return TimedCapture
 
@@ -117,7 +119,13 @@ def _read_result(process: subprocess.Popen, state: dict, scope: PrivateStation) 
 
 def _verify(state: dict, model, root, nodes) -> None:
     from je_file_tree.core.export import spreadsheet_text  # noqa: PLC0415
+    from je_file_tree.gui.clipboard_copy import UTF8_TEXT  # noqa: PLC0415
 
+    # Read the published bytes only now, after the timed loop, so decoding never shows as a GUI pause.
+    published = state.get("published")
+    require(published is not None and published.formats() == [UTF8_TEXT], "Copy was not published as UTF-8 text")
+    state["text"] = bytes(published.data(UTF8_TEXT)).decode("utf-8")
+    state["characters"] = len(state["text"])
     expected = (state["header"], *state["rows"])
     reader = csv.reader(io.StringIO(state["text"]), delimiter="\t")
     count = 0
@@ -153,9 +161,30 @@ def _clear(app, scope, state, view, proxy, readers) -> None:
     app.processEvents()
 
 
+def _keep_gap(gaps: list[dict], start: float, end: float) -> None:
+    """Keep the ``_KEPT_GAPS`` longest heartbeat gaps, as ``perf_counter`` milliseconds, longest first."""
+    gaps.append({"start_ms": start*1000, "end_ms": end*1000, "ms": (end-start)*1000})
+    gaps.sort(key=lambda gap: gap["ms"], reverse=True)
+    del gaps[_KEPT_GAPS:]
+
+
+def _place_gaps(state: dict) -> None:
+    """Add each kept gap's overlap with the reader's GetClipboardData call (same QPC clock, Windows).
+
+    A gap inside that call is the GUI thread rendering the published text for the reader on demand.
+    """
+    marks = state.get("native", {}).get("marks_ms", {})
+    start, end = marks.get("data_start_ms"), marks.get("data_end_ms")
+    for gap in state["largest_gaps"]:
+        if start is None or end is None:
+            gap["in_get_clipboard_data_ms"] = None
+            continue
+        gap["in_get_clipboard_data_ms"] = max(0.0, min(gap["end_ms"], end) - max(gap["start_ms"], start))
+
+
 def _public_state(state: dict) -> dict:
     return {key: value for key, value in state.items() if key not in
-            {"board", "text", "rows", "header", "start_consumer"}}
+            {"board", "text", "rows", "header", "start_consumer", "published"}}
 
 
 def _timers(loop, pulse):
@@ -179,6 +208,7 @@ def _consumer_starter(scope: PrivateStation, state: dict, reader: list, loop, cl
             state["late_consumer_start"] = "skipped: queued start ran after the probe began closing"
             return
         try:
+            state["reader_started_at_ms"] = time.perf_counter()*1000
             reader.append(_consumer(scope))
             print("FILETREE_CLIPBOARD_PHASE native-reader-started", flush=True)
         except (OSError, RuntimeError) as error:
@@ -194,7 +224,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
     from PySide6.QtWidgets import QApplication  # noqa: PLC0415
     from je_file_tree.gui import clipboard_copy  # noqa: PLC0415
 
-    state = {"callbacks_ms": [], "heartbeat_ms": []}
+    state = {"callbacks_ms": [], "heartbeat_ms": [], "largest_gaps": []}
     loop, reader = QEventLoop(), []
     original_getter, original_capture = QApplication.clipboard, clipboard_copy._ClipboardCapture
     require(getattr(app, "_filetree_clipboard_copy", None) is None, "A fresh clipboard controller is required")
@@ -205,6 +235,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
     def pulse():
         now = time.perf_counter()
         state["heartbeat_ms"].append((now-last[0])*1000)
+        _keep_gap(state["largest_gaps"], last[0], now)
         last[0] = now
         if reader and reader[0].poll() is not None:
             loop.quit()
@@ -222,6 +253,7 @@ def _run_qt(app, scope: PrivateStation, rows: int, width: int, report: dict) -> 
         state["total_ms"] = (time.perf_counter()-started)*1000
         require(reader and reader[0].poll() is not None, "Private clipboard probe did not finish")
         _read_result(reader[0], state, scope)
+        _place_gaps(state)
         scope.check()
         _verify(state, model, root, nodes)
         require(len(view.selectionModel().selectedRows()) == rows, "Source selection changed")

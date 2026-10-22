@@ -238,12 +238,20 @@ class PrivateStation:
         self.close()
 
 
-def _read_text(native: _Native, station: str, desktop: str) -> tuple[str, int]:
+def _read_text(native: _Native, station: str, desktop: str, marks: dict[str, float]) -> tuple[str, int]:
+    """Read CF_UNICODETEXT, recording ``perf_counter`` milliseconds around each clipboard call in ``marks``.
+
+    On Windows ``perf_counter`` is the raw QueryPerformanceCounter, so the publishing process can place
+    its own pauses against these marks (measured within 1 µs of QPC, 2026-10-18).
+    """
     guard(native, station, desktop)
+    marks["open_start_ms"] = time.perf_counter()*1000
     native.checked(native.open_clipboard(None))
     try:
         guard(native, station, desktop)
+        marks["data_start_ms"] = time.perf_counter()*1000
         handle = native.checked(native.clipboard_data(13))
+        marks["data_end_ms"] = time.perf_counter()*1000
         size = native.size(handle)
         require(_UTF16_UNIT <= size <= _MAX_BYTES and size % _UTF16_UNIT == 0,
                 "Native clipboard payload size refused")
@@ -256,6 +264,7 @@ def _read_text(native: _Native, station: str, desktop: str) -> tuple[str, int]:
         require(bool(separator), "Native clipboard text lacks a terminator")
     finally:
         native.checked(native.close_clipboard())
+        marks["closed_ms"] = time.perf_counter()*1000
     return text, size
 
 
@@ -281,16 +290,18 @@ def read_private(station: str, desktop: str, parent: int, station_handle: int, d
     watchdog = threading.Timer(30, os._exit, args=(124,))
     watchdog.daemon = True
     started = time.perf_counter()
+    marks: dict[str, float] = {}
     watchdog.start()
     try:
-        text, size = _read_text(native, station, desktop)
+        text, size = _read_text(native, station, desktop, marks)
     finally:
         watchdog.cancel()
         watchdog.join()
     elapsed = (time.perf_counter()-started)*1000
     normalized = text.replace("\r\n", "\n")
     return {"scope": scope, "parent_pid": parent, "bytes": size, "characters": len(text),
-            "read_ms": elapsed, "normalized_sha256": hashlib.sha256(normalized.encode("utf-8")).hexdigest()}
+            "read_ms": elapsed, "marks_ms": marks,
+            "normalized_sha256": hashlib.sha256(normalized.encode("utf-8")).hexdigest()}
 
 
 if __name__ == "__main__":

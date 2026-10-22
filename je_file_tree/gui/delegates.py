@@ -41,7 +41,7 @@ class ShareBarDelegate(QStyledItemDelegate):
         if isinstance(share, float) and share > 0:
             area = QRectF(option.rect).adjusted(_BAR_MARGIN, _BAR_MARGIN, -_BAR_MARGIN, -_BAR_MARGIN)
             area.setWidth(max(1.0, area.width() * min(share, 1.0)))
-            colour = QColor(option.palette.highlight().color())
+            colour = QColor(option.palette.accent().color())  # views use a pale selection tint
             colour.setAlpha(bar_alpha(option.palette.base().color()))
             painter.save()
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)

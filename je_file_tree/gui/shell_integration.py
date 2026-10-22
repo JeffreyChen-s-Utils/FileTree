@@ -142,7 +142,12 @@ def set_enabled(enabled: bool, label: str) -> None:
 
 
 def show_properties(path: str, parent_handle: int = 0) -> bool:
-    """Invoke the native Properties verb for one filesystem entry, without running its contents."""
+    """Invoke the native Properties verb for one filesystem entry, without running its contents.
+
+    Runs on the GUI thread: the shell opens the sheet on a thread of its own, and a worker caller
+    would make the GUI window a cross-thread owner. Measured on a separate desktop (U-20261018-81):
+    88–361 ms for the first call in a process, 8–10 ms afterwards, 21–76 ms for a folder.
+    """
     if not supported():
         return False
     info = _ShellExecuteInfo()

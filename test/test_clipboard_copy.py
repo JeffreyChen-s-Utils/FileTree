@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QTableView, QVBoxLayout
 import pytest
 
 from je_file_tree.core.node import Node
-from je_file_tree.gui import grouped_list, list_transfer as transfer
+from je_file_tree.gui import clipboard_copy, grouped_list, list_transfer as transfer
 
 
 class _Clipboard(QObject):
@@ -30,6 +30,10 @@ class _Clipboard(QObject):
         self.text = value
         self.writes.append(value)
         self.dataChanged.emit()
+
+    def setMimeData(self, mime):  # noqa: N802 - copies publish UTF-8 bytes, decoded only on request
+        assert mime.formats() == [clipboard_copy.UTF8_TEXT]
+        self.setText(mime.text())
 
 
 @pytest.fixture
@@ -244,6 +248,7 @@ class Sink(QObject):
     dataChanged=Signal()
     writes=[]
     def setText(self,text): self.writes.append(text);self.dataChanged.emit()
+    def setMimeData(self,mime): self.setText(mime.text())
 app=QApplication([]);sink=Sink();QApplication.clipboard=staticmethod(lambda:sink)
 model=GroupedListModel();model.set_groups([('owned',[Node(str(i),False) for i in range(10000)])],'auto')
 view=build_view(model);select_entries(model,view,skip_first=False)
@@ -306,14 +311,42 @@ def test_clipboard_change_during_row_encoding_does_not_write_to_closed_buffer(qa
 def test_clipboard_change_after_completion_before_publication_keeps_external_text(qapp, monkeypatch, clipboard):
     view, _model = _view(1)
     capture = _start(view)
-    original = capture.encoded_text
+    original = capture.encoded_utf8
 
     def encoded():
         clipboard.setText('external')
         return original()
 
-    monkeypatch.setattr(capture, 'encoded_text', encoded)
+    monkeypatch.setattr(capture, 'encoded_utf8', encoded)
     _finish(capture)
     assert clipboard.writes == ['external'] and capture._output.closed
     assert qapp._filetree_clipboard_copy._current is None
     view.deleteLater()
+
+
+def test_a_published_copy_survives_interpreter_shutdown_as_text():
+    """U-20261017-70: a Python-created QMimeData destroyed during finalization crashed the process."""
+    script = """
+import atexit, json
+from PySide6.QtWidgets import QApplication
+from je_file_tree.core.node import Node
+from je_file_tree.gui.grouped_list import GroupedListModel,build_view,select_entries
+from je_file_tree.gui.clipboard_copy import _controller
+app=QApplication([])
+model=GroupedListModel();model.set_groups([('owned',[Node(n,False) for n in ('a','資料夾😀')])],'auto')
+view=build_view(model);select_entries(model,view,skip_first=False)
+owner=_controller();owner.copy(view);capture=owner._current
+while capture._active:
+    capture._timer.stop();capture._chunk()
+published=app.clipboard().mimeData().formats()
+atexit.register(lambda: print(json.dumps({'formats':published,'text':app.clipboard().text()}),flush=True))
+"""
+    environment = dict(os.environ, QT_QPA_PLATFORM='offscreen',
+                       PYTHONPATH=str(Path(__file__).resolve().parents[1]))
+    result = subprocess.run(  # noqa: S603 - fresh owned offscreen app and in-memory rows
+        [sys.executable, '-c', script], capture_output=True, env=environment, timeout=30, check=False)
+    assert result.returncode == 0, (hex(result.returncode & 0xFFFFFFFF), result.stderr[-2000:])
+    record = json.loads(result.stdout.decode('utf-8'))
+    assert record['formats'] == [clipboard_copy.UTF8_TEXT]
+    rows = list(csv.reader(io.StringIO(record['text']), delimiter='\t'))
+    assert len(rows) == 3 and [row[0] for row in rows[1:]] == ['a', '資料夾😀']  # header + both rows

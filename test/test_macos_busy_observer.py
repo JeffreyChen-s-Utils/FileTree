@@ -20,6 +20,15 @@ from tools.macos_detach_identity import registration, volume_binding
 _ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def _no_host_refusal_log(monkeypatch):
+    """Unit tests never read the host's unified log (macOS would run the real `log show`).
+
+    Cases that check the refusal log install their own stub over this one.
+    """
+    monkeypatch.setattr(owned, "refusal_log", lambda *_args: {"status": "not-read-in-unit-tests"})
+
+
 @pytest.fixture
 def scope(tmp_path, monkeypatch):
     proof = json.loads((_ROOT / "docs/updates/apfs-20261017-repeated-busy.json").read_text(encoding="utf-8"))

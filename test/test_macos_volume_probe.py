@@ -14,6 +14,15 @@ from tools import macos_owned_image as owned
 from tools import validate_macos_volume as probe
 
 
+@pytest.fixture(autouse=True)
+def _no_host_refusal_log(monkeypatch):
+    """Unit tests never read the host's unified log (macOS would run the real `log show`).
+
+    Cases that check the refusal log install their own stub over this one.
+    """
+    monkeypatch.setattr(owned, "refusal_log", lambda *_args: {"status": "not-read-in-unit-tests"})
+
+
 def test_wrong_platform_refuses_before_creating_evidence(tmp_path, monkeypatch):
     monkeypatch.setattr(owned.sys, "platform", "linux")
     monkeypatch.setattr(probe.sys, "argv", ["probe", "--evidence", str(tmp_path / "evidence")])

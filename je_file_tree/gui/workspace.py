@@ -9,7 +9,7 @@ from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QToolButton
 
 from je_file_tree.gui.i18n import current_language, tr
-from je_file_tree.gui.locale_font import language_font
+from je_file_tree.gui.locale_font import apply_language_font
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
@@ -24,7 +24,6 @@ class ScanWorkspace(QMainWindow):
 
     def __init__(self, settings: QSettings, first: MainWindow) -> None:
         super().__init__()
-        self._language_base_font = self.font()
         self.settings = settings
         self.operations = OperationGroup()
         self._scan_defaults: ScanDefaults | None = None
@@ -152,7 +151,7 @@ class ScanWorkspace(QMainWindow):
 
     def retranslate(self) -> None:
         """Language is application-wide; translate every result tab and the workspace controls."""
-        self.setFont(language_font(current_language(), self._language_base_font))
+        apply_language_font(current_language())
         self.new_action.setText(tr("workspace_new"))
         self.new_button.setText(tr("workspace_new"))
         self.new_button.setToolTip(tr("workspace_new_tip"))

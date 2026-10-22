@@ -11,6 +11,7 @@ import pytest
 from test_gui import _wait, window as window  # noqa: PLC0414 - shared pytest fixture
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.scanner import ScanProgress, scan
+from je_file_tree.gui.bin_labels import bin_key
 from je_file_tree.gui import i18n
 from je_file_tree.gui.app import create_window
 from je_file_tree.gui.delegates import PathTailDelegate, bar_alpha
@@ -274,8 +275,11 @@ def test_drive_rows_show_native_roots_fill_and_nearly_full_warning(window, qapp,
     page.drive_rows = (DriveSnapshot("Q:/filetree-owned/", "System", 1000, 50),
                        DriveSnapshot("R:/filetree-owned/", "", 1000, 600))
     page.retranslate()
-    full_button, full_bar = page._drives.itemAtPosition(0, 0).widget(), page._drives.itemAtPosition(0, 1).widget()
-    roomy_bar = page._drives.itemAtPosition(2, 1).widget()
+    full, roomy = page.drive_cards
+    full_button, full_bar, roomy_bar = full.button, full.bar, roomy.bar
+    assert full.property("role") == "card" and page._bin_labels[bin_key("Q:/filetree-owned/")][1] is full.bin_label
+    assert full_button.isFlat() and full_button.font().bold()  # the card's title, still a keyboard-focusable button
+    assert page._drives.indexOf(roomy) == 1 and page._drives.getItemPosition(1)[:2] == (0, 1)  # two cards per row
     shown = QDir.toNativeSeparators("Q:/filetree-owned/")
     assert full_button.text() == f"System  ({shown})"
     assert full_bar.toolTip() == i18n.tr("welcome_drive_used", percent="95.0 %")
@@ -288,7 +292,7 @@ def test_drive_rows_show_native_roots_fill_and_nearly_full_warning(window, qapp,
     assert requested == ["Q:/filetree-owned/"]  # the scan keeps the native root Qt reported
     assert window._worker is None and window._pending_scan is None  # nothing was scanned
     page.set_unit("KB")
-    free = page._drives.itemAtPosition(0, 2).widget()
+    free = page.drive_cards[0].free
     assert free.text() == i18n.tr("welcome_drive_free", free=format_size(50, "KB"), total=format_size(1000, "KB"))
     assert page.scan_all.minimumHeight() == page._choose.minimumHeight()
 
@@ -335,3 +339,12 @@ def test_empty_hint_survives_its_view_being_destroyed(qapp):
     view.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)  # raised from eventFilter before
     model.appendRow(QStandardItem("after"))  # a model outliving the view no longer reaches the hint
+
+
+def test_scan_state_chip_takes_a_tone_per_state(window, qapp, sample_tree):
+    overview = window.results.overview
+    assert overview.state.property("role") == "chip"
+    assert window.results.capacity.summary.property("role") == "caption"
+    for state, tone in (("complete", "success"), ("partial", "caution"), ("live", "accent"), ("empty", "")):
+        overview.show_totals(None, state)
+        assert overview.state.property("tone") == tone, state

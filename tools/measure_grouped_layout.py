@@ -87,7 +87,7 @@ def _apply(model: grouped_list.GroupedListModel, operation: str, captured: _Capt
     if operation in ("headers", "language"):
         i18n.set_language("zh-TW")
     if operation == "headers":
-        model.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, len(grouped_list.COLUMNS) - 1)
+        model.titles.retranslate()  # the production heading refresh (U-20261017-73)
     elif operation == "unit":
         model.set_unit("MB")
     elif operation == "labels":
@@ -147,6 +147,7 @@ def measure(app: QApplication, operation: str, groups: int = 1000, members: int 
         notifications[kind] += 1
 
     model.headerDataChanged.connect(lambda *_: notified("headers"))
+    model.titles.headerDataChanged.connect(lambda *_: notified("headers"))
     model.dataChanged.connect(lambda *_: notified("data"))
     model.modelReset.connect(lambda: notified("resets"))
     if isinstance(model, _CountedModel):

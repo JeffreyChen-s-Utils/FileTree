@@ -87,7 +87,7 @@ class ScanBar(QFrame):
         self._busy.setFixedWidth(_BUSY_BAR_WIDTH)
         # A long path must not widen the window: the label takes any width and elides.
         self._current.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        self._current.setStyleSheet("color: palette(placeholder-text);")
+        self._current.setProperty("role", "caption")
         self._stop.clicked.connect(self.stop_requested)
         self._pause.clicked.connect(self.pause_requested)
         self._pause.toggled.connect(self._update)
@@ -98,7 +98,7 @@ class ScanBar(QFrame):
         row = QHBoxLayout(self)
         texts.addWidget(self._feedback)
         self._feedback.setWordWrap(True)
-        self._feedback.setStyleSheet("color: palette(placeholder-text);")
+        self._feedback.setProperty("role", "caption")
         row.setContentsMargins(12, 10, 12, 10)
         row.addWidget(self._busy)
         row.addLayout(texts, 1)

@@ -21,6 +21,7 @@ class CapacityPanel(QWidget):
         self.unit = "auto"
         self.summary = QLabel()
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
+        self.summary.setProperty("role", "caption")
         self.summary.setWordWrap(True)
         self.details = QPushButton()
         self.details.clicked.connect(self._show_details)

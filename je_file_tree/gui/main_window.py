@@ -6,7 +6,7 @@ import json
 import os
 from collections.abc import Callable, Sequence
 
-from PySide6.QtCore import QByteArray, QPoint, QSettings, QSignalBlocker, QThread, Qt, QTimer, Signal
+from PySide6.QtCore import QByteArray, QEvent, QPoint, QSettings, QSignalBlocker, QSize, QThread, Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (
@@ -37,7 +37,7 @@ from je_file_tree.core.scanner import DEFAULT_WORKERS, ScanOptions
 from je_file_tree.core.system_files import system_file
 from je_file_tree.core.trash_size import TrashUsage
 from je_file_tree.gui import elevation, file_actions, shell_integration
-from je_file_tree.gui.locale_font import language_font
+from je_file_tree.gui.locale_font import apply_language_font
 from je_file_tree.gui.shell_dialog import ShellIntegrationDialog
 from je_file_tree.gui.elevation_dialog import ElevationDialog
 from je_file_tree.gui.startup_state import WorkspaceState
@@ -63,6 +63,8 @@ from je_file_tree.gui.skipped_dialog import SkippedEntriesDialog
 from je_file_tree.gui.entry_report import EntryReportDialog
 from je_file_tree.gui.failed_dialog import FailedEntriesDialog
 from je_file_tree.gui.entry_move_prompt import confirm_entry_move
+from je_file_tree.gui.lazy_details import set_lazy_details
+from je_file_tree.gui.fluent_icons import palette_icon
 from je_file_tree.gui.volumes import VolumesDialog
 from je_file_tree.gui.bin_dialog import BinDialog
 from je_file_tree.gui.exclusions_dialog import ExclusionsDialog
@@ -95,6 +97,7 @@ _MAX_RECENT = 10
 _UNITS = (AUTO_UNIT, *SIZE_UNITS[1:5])
 _LISTED_NAMES = 8  # entries named in a Recycle Bin question; the rest are counted
 _MAX_REFUSAL_NOTICE = 1024
+_ACTION_ICONS = {"open": "folder", "rescan": "refresh", "stop": "stop", "help": "help"}
 _STATUS_TIMEOUT_MS = 8000
 ASK_ADMIN_KEY = "ask_admin_at_start"
 EXCLUSIONS_KEY = "exclusions"
@@ -129,7 +132,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
-        self._operations, self._language_base_font = operations, self.font()
+        self._operations = operations
         self._close_all: Callable[[], object] | None = None
         self._background_settings: Callable[[], object] | None = None
         self._background_pause: Callable[..., tuple[QThread, ...]] | None = None
@@ -758,8 +761,9 @@ class MainWindow(QMainWindow):
         question.setTextFormat(Qt.TextFormat.PlainText)
         question.setText(self._trash_question(nodes) + "\n\n" + tr("copy_trash_confirm")
                          + ("\n\n" + tr("copy_redirect") if copies.redirect else ""))
-        question.setDetailedText("\n\n".join(f"{proof.item.source}\n→ {proof.item.destination}"
-                                            for proof in copies.proofs if proof.item.node in selected))
+        items = [proof.item for proof in copies.proofs if proof.item.node in selected]
+        if items:
+            set_lazy_details(question, lambda: "\n\n".join(f"{item.source}\n→ {item.destination}" for item in items))
         question.setDefaultButton(QMessageBox.StandardButton.No)
         return question.exec()
 
@@ -834,9 +838,10 @@ class MainWindow(QMainWindow):
                                  QMessageBox.StandardButton.Ok, self)
             report.setTextFormat(Qt.TextFormat.PlainText)
             report.setText(tr("copy_errors"))
-            report.setDetailedText("\n\n".join(
+            errors = list(result.copy_errors)
+            set_lazy_details(report, lambda: "\n\n".join(
                 tr("copy_" + phase + "_failed", source=source, destination=destination, reason=reason)
-                for source, destination, phase, reason in result.copy_errors))
+                for source, destination, phase, reason in errors))
             report.exec()
 
     def _holder_lines(self, result: MoveResult) -> str:
@@ -1079,7 +1084,7 @@ class MainWindow(QMainWindow):
 
     def retranslate(self) -> None:
         """Re-read every translated text."""
-        self.setFont(language_font(current_language(), self._language_base_font))
+        apply_language_font(current_language())
         self.setWindowTitle(tr("app_title_admin") if elevation.is_elevated() else tr("app_title"))
         for key, action in self._actions.items():
             action.setText(tr(f"action_{key}"))
@@ -1397,9 +1402,9 @@ class MainWindow(QMainWindow):
         toolbar = QToolBar()
         toolbar.setObjectName("main_toolbar")
         toolbar.setMovable(False)
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-        toolbar.setStyleSheet("QToolBar { spacing: 6px; padding: 6px; }"
-                             "QToolButton, QPushButton, QLineEdit { min-height: 28px; }")
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        toolbar.setIconSize(QSize(18, 18))
+        self._paint_action_icons()
         toolbar.addAction(self._actions["open"])
         toolbar.addAction(self._actions["rescan"])
         toolbar.addAction(self._actions["stop"])
@@ -1414,6 +1419,17 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         toolbar.addAction(self._actions["help"])
         self.addToolBar(toolbar)
+
+    def _paint_action_icons(self) -> None:
+        """Draw the tool bar's line icons in the current palette's text colour."""
+        for key, name in _ACTION_ICONS.items():
+            self._actions[key].setIcon(palette_icon(name, self.palette()))
+
+    def changeEvent(self, event: QEvent) -> None:  # noqa: N802 - Qt's name
+        """Qt: repaint action icons when the theme (palette) changes."""
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.PaletteChange and hasattr(self, "_actions"):
+            self._paint_action_icons()
 
     def _update_path_button(self) -> None:
         ready = bool(self.path_edit.text().strip()) and not self.operation_busy and not self._closing

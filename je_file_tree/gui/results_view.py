@@ -120,6 +120,7 @@ _AGE_SHARE_COLUMN = 2
 _COMPACT_NAVIGATION_WIDTH = 1000
 CHART_TAB, LARGEST_TAB, SEARCH_TAB, CLEANUP_TAB, TYPES_TAB, AGE_TAB, CHANGES_TAB, PROBLEMS_TAB = range(8)
 USERS_TAB = 8
+_TAB_ICONS = ("chart", "largest", "search", "cleanup", "types", "age", "changes", "problems", "users")
 SUGGESTIONS_PAGE, DUPLICATES_PAGE = range(2)  # the pages of the Clean up tab
 
 
@@ -263,6 +264,7 @@ class ResultsView(QWidget):
             return
         self._live_ticks += 1
         self.tree_model.refresh()
+        self.tree.viewport().update()  # file rows' shares of their growing parents; repainted on screen only
         self._update_overview()
         if self._live_ticks % 3 == 0:
             self.charts.invalidate()
@@ -749,17 +751,20 @@ class ResultsView(QWidget):
         layout.setSpacing(8)
         layout.addWidget(self.scan_bar)
         layout.addWidget(self.overview)
-        layout.addWidget(self.summary)
-        layout.addWidget(self.capacity)
+        captions = QVBoxLayout()  # the path summary and capacity line read as one caption block
+        captions.setSpacing(2)
+        captions.addWidget(self.summary)
+        captions.addWidget(self.capacity)
+        layout.addLayout(captions)
         self._assemble_navigation(splitter, layout)
 
     def _assemble_navigation(self, splitter: QSplitter, layout: QVBoxLayout) -> None:
         self.tabs.tabBar().hide()
-        self.navigation = ResultNavigation(self.tabs)
+        self.navigation = ResultNavigation(self.tabs, icons=_TAB_ICONS)
         self._analysis_hint = QLabel()
         self._analysis_hint.setWordWrap(True)
         self._analysis_hint.setTextFormat(Qt.TextFormat.PlainText)
-        self._analysis_hint.setStyleSheet("color: palette(placeholder-text);")
+        self._analysis_hint.setProperty("role", "caption")
         header = QWidget()
         row = QHBoxLayout(header)
         row.setContentsMargins(0, 0, 0, 0)
