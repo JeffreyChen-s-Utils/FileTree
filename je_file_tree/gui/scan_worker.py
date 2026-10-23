@@ -51,6 +51,7 @@ class ScanOutcome:
     partial: bool = False
     capacity: CapacityLedger | None = None
     chart_categories: list[CategoryStat] | None = None
+    top_folders: tuple[Node, ...] | None = None
 
 
 def pace_workers(connect: bool = True) -> None:
@@ -82,7 +83,7 @@ def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
     summary = summarise(result.root, LARGEST_FILES_LIMIT)
     return ScanOutcome(result, summary.largest, summary.extensions, category_stats(summary.extensions),
                        summary.ages, summary.now, partial, capacity_ledger(result.root, partial=partial),
-                       summary.counted_categories)
+                       summary.counted_categories, summary.top_folders)
 
 
 class AnalyseWorker(QThread):

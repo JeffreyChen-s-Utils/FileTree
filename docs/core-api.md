@@ -1,5 +1,9 @@
 # FileTree core Python API
 
+`analysis.Summary.top_folders` is an additive tuple containing up to three largest direct nonlinked
+folders. `summarise` computes it on the same caller/worker as the existing statistics; older positional
+construction remains valid because the new field defaults to an empty tuple.
+
 Worker failures are re-raised by `scan` after its worker pool joins; the first failure wins over
 cancellation. `ScanResult.warnings` also reports an explicitly requested experimental MFT scan
 falling back to the ordinary backend. Existing signatures, result fields and CLI JSON keys remain.

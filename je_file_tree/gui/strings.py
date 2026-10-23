@@ -11,6 +11,16 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "highlights_title": 'Scan highlights',
+    "highlights_waiting": 'Waiting for scan analysis…',
+    "highlights_folders": 'Largest direct folders — select one to locate it.',
+    "highlights_partial": 'Partial results: sizes describe only the entries read.',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": 'Clean up: analysis pending…',
+    "highlights_cleanup": 'Review {count} candidates ({size})',
+    "highlights_cleanup_hint": 'Candidate bytes require review and do not represent immediately recoverable space.',
+    "highlights_coverage_unknown": 'Coverage not yet available',
+    "highlights_coverage": 'Scan limits: {skipped} skipped, {denied} unreadable, {pending} pending',
     "shell_reading": "Reading Explorer registration…",
     "shell_saving": "Saving Explorer registration…",
     "shell_waiting": "Waiting for the current Explorer settings request to finish… A started Save continues.",
@@ -1466,6 +1476,16 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "highlights_title": '掃描重點',
+    "highlights_waiting": '等待掃描分析…',
+    "highlights_folders": '最大的直屬資料夾；點選即可定位。',
+    "highlights_partial": '結果不完整；大小只包含已讀取的項目。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '清理：等待分析…',
+    "highlights_cleanup": '審查 {count} 個候選項目（{size}）',
+    "highlights_cleanup_hint": '候選資料量需要審查，不代表可立即釋出的空間。',
+    "highlights_coverage_unknown": '尚無掃描範圍資料',
+    "highlights_coverage": '掃描限制：略過 {skipped}、無法讀取 {denied}、待掃描 {pending}',
     "shell_reading": "正在讀取檔案總管登錄…",
     "shell_saving": "正在儲存檔案總管登錄…",
     "shell_waiting": "正在等待目前的檔案總管設定作業完成…已開始的儲存會繼續執行。",
@@ -2787,6 +2807,16 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "highlights_title": '扫描重点',
+    "highlights_waiting": '等待扫描分析…',
+    "highlights_folders": '最大的直属文件夹；点击即可定位。',
+    "highlights_partial": '结果不完整；大小只包含已读取的项目。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '清理：等待分析…',
+    "highlights_cleanup": '检查 {count} 个候选项目（{size}）',
+    "highlights_cleanup_hint": '候选数据量需要检查，不代表可立即释放的空间。',
+    "highlights_coverage_unknown": '暂无扫描范围数据',
+    "highlights_coverage": '扫描限制：跳过 {skipped}、无法读取 {denied}、待扫描 {pending}',
     "shell_reading": "正在读取资源管理器注册项…",
     "shell_saving": "正在保存资源管理器注册项…",
     "shell_waiting": "正在等待当前资源管理器设置操作完成…已开始的保存会继续执行。",
@@ -4120,6 +4150,16 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "highlights_title": 'スキャンの要点',
+    "highlights_waiting": 'スキャン分析を待機中…',
+    "highlights_folders": '直下の大きいフォルダーを選んで表示します。',
+    "highlights_partial": '不完全な結果：サイズは読み取れた項目のみです。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '整理：分析を待機中…',
+    "highlights_cleanup": '候補 {count} 件を確認（{size}）',
+    "highlights_cleanup_hint": '候補の容量は確認が必要で、すぐに空く容量ではありません。',
+    "highlights_coverage_unknown": 'スキャン範囲はまだ不明です',
+    "highlights_coverage": 'スキャン制限：除外 {skipped}、読取不可 {denied}、未読 {pending}',
     "shell_reading": "エクスプローラーの登録を読み取り中…",
     "shell_saving": "エクスプローラーの登録を保存中…",
     "shell_waiting": "現在のエクスプローラー設定の処理が終わるまで待機中…開始済みの保存は続行します。",
@@ -5797,6 +5837,16 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "highlights_title": '스캔 핵심 정보',
+    "highlights_waiting": '스캔 분석 대기 중…',
+    "highlights_folders": '바로 아래의 큰 폴더를 선택하여 위치를 확인하세요.',
+    "highlights_partial": '불완전한 결과: 읽은 항목의 크기만 포함합니다.',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '정리: 분석 대기 중…',
+    "highlights_cleanup": '후보 {count}개 검토 ({size})',
+    "highlights_cleanup_hint": '후보 데이터 크기는 검토가 필요하며 즉시 확보할 수 있는 공간이 아닙니다.',
+    "highlights_coverage_unknown": '스캔 범위 정보가 아직 없습니다',
+    "highlights_coverage": '스캔 제한: 제외 {skipped}, 읽기 불가 {denied}, 대기 {pending}',
     "shell_reading": "탐색기 등록을 읽는 중…",
     "shell_saving": "탐색기 등록을 저장하는 중…",
     "shell_waiting": "현재 탐색기 설정 요청이 끝날 때까지 기다리는 중…이미 시작한 저장은 계속됩니다.",

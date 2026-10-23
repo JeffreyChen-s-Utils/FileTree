@@ -1,5 +1,7 @@
 # FileTree — Detailed usage and technical notes
 
+Highlights below the result cards use worker-captured statistics only. They distinguish pending, completed-empty and partial analyses, preserve collapse/selection state across language and unit changes, and do not query storage on the GUI thread.
+
 [Project introduction and quick start](../README.md)
 
 Unexpected worker or analysis failures report an error after owned scan threads finish; they never publish a successful result. CLI failures retain the existing error JSON and exit code 3. Explicit experimental MFT requests that fall back to ordinary scanning add a scan note; the backend stays disabled by default. Windows virtual-disk compaction accepts only absolute fixed-local-drive paths, retaining an extended drive prefix throughout pinning and opening, and refuses UNC/device/relative paths. Show in file manager uses the system Windows Explorer and quotes drive roots correctly.

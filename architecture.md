@@ -11,6 +11,13 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`Summary.top_folders` captures at most three direct nonlinked folders on the analysis worker;
+`ScanOutcome.top_folders` carries them to `ResultHighlights`. The collapsible guidance renders those
+references, the captured capacity coverage and `CleanupPanel.proposal_summary` only. Its buttons
+reuse tree selection and existing analysis-page navigation. Structural mutations invalidate folder
+highlights until the existing summary worker replies. Rendering never iterates children or queries
+storage; language/unit changes retain selection and expansion.
+
 Scan workers transfer their first failure from priority setup/cleanup, pacing, reading or merging to
 the caller after all owned threads join. Each taken task releases its busy count exactly once;
 failure takes precedence over cancellation. The GUI terminal boundary logs unexpected exceptions

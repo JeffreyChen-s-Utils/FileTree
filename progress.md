@@ -8,7 +8,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ## Open
 
 - **#115** [UNVERIFIED] Check actual Windows Explorer selection for drive roots, spaces, commas and Unicode names. Native CommandLineToArgvW parsing is covered; argument parsing alone does not establish Explorer's visible selection behavior.
-- **#116** (P1) Add collapsible scan-result highlights using captured largest-folder, cleanup and coverage data, with navigation to existing analyses.
 - **#117** (P2) Add named single-path scan presets with existing validated scan options and explicit scan activation; never persist operation approvals or experimental MFT.
 - **#118** (P2) Add a persistent cleanup completion summary for moved/skipped/failed entries and existing history, undo and rescan actions, without equating moved bytes with free space.
 

@@ -78,6 +78,7 @@ from je_file_tree.gui.i18n import format_duration, tr
 from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.result_navigation import AnalysisTabs, ResultNavigation
 from je_file_tree.gui.result_overview import ResultOverview
+from je_file_tree.gui.result_highlights import ResultHighlights
 from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.archives import ArchiveController
 from je_file_tree.gui.search_panel import SearchPanel
@@ -335,7 +336,7 @@ class ResultsView(QWidget):
             errors = self._outcome.result.errors
             errors[:] = [error for error in errors if error[0] != old.path and not error[0].startswith(prefix)]
             errors.extend(fresh.errors)
-            self._outcome = dataclasses.replace(self._outcome, capacity=None)
+            self._outcome = dataclasses.replace(self._outcome, capacity=None, top_folders=None)
             self.problems_model.set_rows(errors)
         self.charts.set_view_root(new if inside_old else view_root)
         self.search.rerun()
@@ -353,6 +354,7 @@ class ResultsView(QWidget):
             self._outcome = dataclasses.replace(self._outcome, capacity=capacity)
             self.capacity.set_ledger(capacity)
             self.tree_model.set_drive_total(capacity.total)
+            self._update_overview()
 
     def clear_capacity(self) -> None:
         """Discard an old capacity ledger after an external OS-bin operation."""
@@ -360,6 +362,7 @@ class ResultsView(QWidget):
         self.tree_model.set_drive_total(None)
         if self._outcome is not None:
             self._outcome = dataclasses.replace(self._outcome, capacity=None)
+            self._update_overview()
 
     def apply_summary(self, summary: Summary) -> None:
         """Show recomputed largest files and per-type and per-age totals for the tree on screen."""
@@ -370,7 +373,9 @@ class ResultsView(QWidget):
         largest = [node for node in summary.largest if node.is_in(root)]
         self._outcome = dataclasses.replace(outcome, largest=largest, extensions=summary.extensions,
                                             categories=category_stats(summary.extensions), ages=summary.ages,
-                                            now=summary.now, chart_categories=summary.counted_categories)
+                                            now=summary.now, chart_categories=summary.counted_categories,
+                                            top_folders=summary.top_folders)
+        self._update_overview()
         self._categories = (summary.counted_categories if summary.counted_categories is not None
                             else self._outcome.categories)
         self.charts.set_age_reference(summary.now)
@@ -382,6 +387,7 @@ class ResultsView(QWidget):
     def set_unit(self, unit: str) -> None:
         """Show sizes in ``unit``."""
         self.overview.unit = unit
+        self.highlights.unit = unit
         self.overview.retranslate()
         self.tree_model.set_unit(unit)
         self.capacity.unit = unit
@@ -496,7 +502,7 @@ class ResultsView(QWidget):
         self._outcome = dataclasses.replace(outcome, extensions=extensions, ages=ages,
                                             categories=category_stats(extensions),
                                             largest=[file for file in outcome.largest if file.is_in(root)],
-                                            capacity=None)
+                                            capacity=None, top_folders=None)
         self._categories = self._outcome.categories
         if self._scope is None:
             self._largest_all = [file for file in self._largest_all if file.is_in(root)]
@@ -521,6 +527,7 @@ class ResultsView(QWidget):
         self.tree_filter.retranslate()
         self.charts.retranslate()
         self.capacity.retranslate()
+        self.highlights.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.refresh()
         self._show_all.setText(tr("largest_show_all"))
@@ -562,8 +569,13 @@ class ResultsView(QWidget):
     # --- building ---------------------------------------------------------
 
     def _build_cleanup_panels(self) -> None:
+        self.highlights = ResultHighlights()
         self.duplicates = DuplicatesPanel()
         self.cleanup = CleanupPanel()
+        self.cleanup.summary_changed.connect(lambda: self.highlights.show_cleanup(self.cleanup.proposal_summary))
+        self.highlights.folder_requested.connect(self.select_node)
+        self.highlights.cleanup_requested.connect(self._show_cleanup_highlight)
+        self.highlights.problems_requested.connect(lambda: self.tabs.setCurrentIndex(PROBLEMS_TAB))
         self.users = UsersPanel()
         self.cleanup_pages = QTabWidget()
 
@@ -751,6 +763,7 @@ class ResultsView(QWidget):
         layout.setSpacing(8)
         layout.addWidget(self.scan_bar)
         layout.addWidget(self.overview)
+        layout.addWidget(self.highlights)
         captions = QVBoxLayout()  # the path summary and capacity line read as one caption block
         captions.setSpacing(2)
         captions.addWidget(self.summary)
@@ -795,7 +808,16 @@ class ResultsView(QWidget):
         else:
             state = "live" if self.scan_bar.isVisibleTo(self) else "empty"
         self.overview.show_totals(root, state, len(outcome.result.errors) if outcome else 0)
+        folders = outcome.top_folders if outcome is not None else None
+        if root is not None and folders is not None:
+            folders = tuple(node for node in folders if node.parent is root)
+        coverage = outcome.capacity.coverage if outcome is not None and outcome.capacity is not None else None
+        self.highlights.show_scan(folders, state, coverage)
         self._analysis_hint.setText(tr("overview_live_hint" if outcome is None else "overview_result_hint"))
+
+    def _show_cleanup_highlight(self) -> None:
+        self.tabs.setCurrentIndex(CLEANUP_TAB)
+        self.cleanup_pages.setCurrentIndex(SUGGESTIONS_PAGE)
 
     def _tree_with_details(self) -> QWidget:
         column = QWidget()

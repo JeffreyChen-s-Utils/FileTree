@@ -8,6 +8,12 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **Result highlights:** a keyboard-collapsible section below the metric cards links the three largest
+  direct folders to the tree, candidate cleanup data to Clean up, and skipped/unreadable/pending
+  coverage to Problems. Pending analysis differs from a completed empty result; partial sizes remain
+  explicit. Candidate bytes never imply free-space recovery. The section keeps its expansion and the
+  tree's selection across language/unit changes, using worker-captured data without source queries.
+
 - **Welcome:** a primary folder chooser beside all-drive scanning, followed by a short workflow hint,
   cached drive rows, grouped drive tools and recent folders. The content scrolls when many drives or
   recent entries exceed the window height. Recent-path buttons preserve literal ampersands and expose
