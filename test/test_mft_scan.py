@@ -97,6 +97,7 @@ def test_corrupt_candidate_is_discarded_before_ordinary_fallback_without_second_
     with caplog.at_level("DEBUG", logger="je_file_tree.core.mft_scan"):
         result = scanner.scan(root, options=scanner.ScanOptions(experimental_mft=True), on_root=published.append)
     assert result.backend == "ordinary" and result.root is published[0] and len(published) == 1
+    assert scanner.MFT_FALLBACK in result.warnings
     assert result.root.file_count == 3 and closed == [True]
     assert "Discarded experimental NTFS candidate: owned raw metadata fixture" in caplog.text
 

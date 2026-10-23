@@ -1195,8 +1195,10 @@ def test_show_items_needs_a_session_bus(qapp: QApplication, monkeypatch: pytest.
     assert file_actions.show_items("/home/me/x") is False
 
 
-def test_explorer_command_always_quotes_the_path() -> None:
-    assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
+def test_explorer_command_always_quotes_the_path(monkeypatch) -> None:
+    monkeypatch.setattr(file_actions, "_explorer_path", lambda: "C:\\Windows\\explorer.exe")
+    assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == (
+        '"C:\\Windows\\explorer.exe" /select,"C:\\trip,day1\\a.jpg"')
 
 
 @pytest.mark.parametrize("path", ['C:\\bad" /root,evil', "C:\\bad\nname", "C:\\bad\x00name", ""])

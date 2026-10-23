@@ -9,6 +9,7 @@ from __future__ import annotations
 import threading
 import time
 import os
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -34,6 +35,7 @@ from je_file_tree.core.search import Query, search
 from je_file_tree.gui.i18n import tr
 
 LARGEST_FILES_LIMIT = 1000
+_LOG = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -312,6 +314,17 @@ class ScanWorker(QThread):
     def run(self) -> None:
         """Thread body: scan, analyse, report."""
         try:
+            self._run_scan()
+        except MountChangedError:
+            self.failed.emit(tr("scan_mount_changed"))
+        except (OSError, ValueError) as error:
+            self.failed.emit(getattr(error, "strerror", None) or str(error))
+        except Exception as error:  # noqa: BLE001 - terminal GUI boundary; retain diagnostics and signal failure
+            _LOG.exception("Unexpected scan or analysis failure")
+            self.failed.emit(str(error) or type(error).__name__)
+
+    def _run_scan(self) -> None:
+        try:
             if not self._validate_path():
                 return
             scanning = scan_roots if isinstance(self.path, tuple) else scan
@@ -319,12 +332,6 @@ class ScanWorker(QThread):
                           cancel=self._cancel, on_root=self.started.emit, pause=self._pause)
         except ScanCancelledError as stopped:
             self.cancelled.emit(self._analyse(stopped.partial, partial=True) if stopped.partial else None)
-            return
-        except MountChangedError:
-            self.failed.emit(tr("scan_mount_changed"))
-            return
-        except (OSError, ValueError) as error:
-            self.failed.emit(getattr(error, "strerror", None) or str(error))
             return
         if self._cancel.is_set():
             self.cancelled.emit(self._analyse(result, partial=True))

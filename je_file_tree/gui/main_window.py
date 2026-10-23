@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from je_file_tree.gui.reasons import problem_text
+
 import json
 import os
 from collections.abc import Callable, Sequence
@@ -384,7 +386,8 @@ class MainWindow(QMainWindow):
         self._update_actions()
 
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
         self._follow.adopt(root)
 
     def _scan_failed(self, reason: str) -> None:
@@ -403,7 +406,8 @@ class MainWindow(QMainWindow):
         self._update_actions()
         self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
 
     def _scan_ended(self) -> None:
         self._worker = None
@@ -642,7 +646,8 @@ class MainWindow(QMainWindow):
         analyser.start()
         self._follow.adopt(root)
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
 
     def _without_managed(self, nodes: list[Node]) -> list[Node]:
         # 10k managed refusals: the old full warning label took 5.14 s to display.

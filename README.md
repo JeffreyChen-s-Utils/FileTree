@@ -48,6 +48,7 @@ For running from source or building a standalone app, see the [detailed guide](d
 3. **Review anything you want to remove**, then right-click → **Move to Recycle Bin**. FileTree asks for confirmation, displaying filenames and paths as written.
 
 You can stop a scan at any time; the results collected so far stay visible and are marked incomplete.
+Unexpected scan failures are reported as errors; results are never marked complete after a worker fails.
 Starting a new scan cancels pending folder-list calculations and discards their old results.
 
 ## Things to know

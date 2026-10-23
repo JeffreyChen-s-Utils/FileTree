@@ -7,6 +7,11 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 
 ## Open
 
+- **#115** [UNVERIFIED] Check actual Windows Explorer selection for drive roots, spaces, commas and Unicode names. Native CommandLineToArgvW parsing is covered; argument parsing alone does not establish Explorer's visible selection behavior.
+- **#116** (P1) Add collapsible scan-result highlights using captured largest-folder, cleanup and coverage data, with navigation to existing analyses.
+- **#117** (P2) Add named single-path scan presets with existing validated scan options and explicit scan activation; never persist operation approvals or experimental MFT.
+- **#118** (P2) Add a persistent cleanup completion summary for moved/skipped/failed entries and existing history, undo and rescan actions, without equating moved bytes with free space.
+
 - **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
 
 - **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.

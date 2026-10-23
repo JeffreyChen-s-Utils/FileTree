@@ -11,6 +11,15 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+Scan workers transfer their first failure from priority setup/cleanup, pacing, reading or merging to
+the caller after all owned threads join. Each taken task releases its busy count exactly once;
+failure takes precedence over cancellation. The GUI terminal boundary logs unexpected exceptions
+and emits one failure even during partial-result analysis; CLI errors retain its JSON/exit-3 protocol.
+An explicitly requested but discarded MFT candidate adds a stable warning to the ordinary result.
+Local compaction path validation precedes pinning and keeps extended drive namespaces unchanged
+through native opening, rejecting UNC/device/relative forms. Explorer is resolved through the native
+Windows directory API, and quoted trailing backslashes are escaped.
+
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
 | Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `pacing.py` (background work gives way to the window), `treemap.py` (layout), `sunburst.py` (rings), `tree_layout.py` (bounded hierarchy rows), `formatting.py`, `export.py` (CSV / JSON) |

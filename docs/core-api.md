@@ -1,5 +1,9 @@
 # FileTree core Python API
 
+Worker failures are re-raised by `scan` after its worker pool joins; the first failure wins over
+cancellation. `ScanResult.warnings` also reports an explicitly requested experimental MFT scan
+falling back to the ordinary backend. Existing signatures, result fields and CLI JSON keys remain.
+
 Import functions from `je_file_tree.core`'s modules. The core uses the standard library and does not
 import Qt, create a window or require a display. The package installation still includes PySide6 for
 the desktop application. Work on a completed scan; running scans publish a mutable tree whose totals
@@ -69,7 +73,7 @@ Capacity and recovery estimates are experimental measurements with the limits de
 
 | Module | Public entry points | Result and meaning |
 |---|---|---|
-| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False, exact_windows_allocation=False, count_hard_links=False, experimental_mft=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures, `.elapsed` in seconds including pauses, `.backend` (`ordinary` or explicitly selected `mft` audit) |
+| `scanner` | `scan(path, *, options=None, progress=None, cancel=None, progress_interval=0.1, on_root=None, pause=None)`; `ScanOptions(include_hidden=True, workers=..., exclude=(), gentle=False, file_times=False, windows_owners=False, exact_windows_allocation=False, count_hard_links=False, experimental_mft=False)` | `ScanResult.root`, `.errors` as `(path, reason)` pairs, `.warnings` for priority failures or explicit MFT fallback, `.elapsed` in seconds including pauses, `.backend` (`ordinary` or explicitly selected `mft` audit) |
 | `node` | `Node.path`, `.iter_nodes()`, `.iter_files()` | Nodes are returned by scans; `name`, `is_dir`, `is_link`, `size`, `allocated`, `file_count`, `dir_count`, `modified`, `error`, `children`, `parent` describe the snapshot; optional `accessed`/`created` return timestamps or None; `owner` is a file's POSIX uid, captured Windows SID bytes or None |
 | `analysis` | `summarise(root, limit=1000, *, now=None, cancel=None)`, `largest_files`, `extension_stats`, `category_stats`, `age_stats` | `Summary.largest`, `.extensions`, `.ages`, `.now` retain named totals; optional `.counted_categories` supplies counted chart bytes with named counts, or None when accounting is off |
 | `hard_links` | `account_hard_links(root, *, cancel=None)`; `ScanOptions(count_hard_links=False)` | Optional `ScanResult.hard_links` describes `.aliases`, `.logical_overcount`, `.allocation_overcount`, `.unknown`; worker-only recorded-stat accounting without OS/payload queries; `Node.accounted_size/accounted_allocated` preserve named size/allocation; lexical first observed name contributes, proven aliases count zero; inconsistent/unknown groups stay named; reapply after tree mutation; canceled surveys retain previous accounting |

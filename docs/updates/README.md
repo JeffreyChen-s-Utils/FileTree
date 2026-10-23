@@ -58,6 +58,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10-e](2026-10-e.md) | 2026-10 |
 | [2026-10-d](2026-10-d.md) | 2026-10 |
 | [2026-10-c](2026-10-c.md) | 2026-10 |
 | [2026-10-b](2026-10-b.md) | 2026-10 |
@@ -68,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261023-01 | 2026-10-23 | Close scan-worker and Windows path review findings | #done #scanner #windows | [2026-10-e](2026-10-e.md) |
 | U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-89 | 2026-10-18 | Emphasised labels follow the language font on macOS | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-88 | 2026-10-18 | Welcome page drives as cards | #gui #ux | [2026-10-d](2026-10-d.md) |
