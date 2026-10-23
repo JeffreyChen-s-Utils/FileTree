@@ -1,5 +1,7 @@
 # FileTree — Detailed usage and technical notes
 
+Preset editors are read-only settings dialogs: they do not pause ongoing scans or background readers, and application shutdown closes them before disposal. Free-space comparisons require known nonzero recorded device and inode identifiers; unavailable identities remain unknown.
+
 After a Trash batch, a compact result header keeps moved logical bytes and moved/skipped/failed counts in the tab until the next batch or dismissal. Open its scrollable details for refusal reasons, operation records, existing time-limited Undo and an explicit rescan of the original folder. Details close before opening another action. Later scans of the same recorded root may show the observed free-space change since the earlier scan, with observation times in the tooltip; it includes other activity and is not attributed to cleanup. Missing comparable observations stay unknown. Emptying the bin remains a separate reviewed operation.
 
 Named scan presets retain one absolute path and the existing six scan flags, worker count and exclusions. Add or Update captures the current options; Rename keeps the saved options. Loading fills the path and choices without starting a scan or replacing results; press Scan path explicitly. Workers and exclusions keep their workspace scope. Presets never contain operation approvals, administrator consent or experimental MFT. Invalid stored data is reported and retained.

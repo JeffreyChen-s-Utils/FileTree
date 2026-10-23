@@ -19,7 +19,8 @@ waiting without inventing a completion percentage or implying that an incomplete
   Add/Update capture current scan options; Rename preserves saved choices. Load fills inputs and
   reports that Scan path is still required. Existing results/selection remain. Invalid settings
   produce a translated error without overwriting data. No administrator or source-operation
-  approvals are saved, and active scans/source reviews disable the editor.
+  approvals are saved. Current-tab scans/source reviews disable the editor; opening it does not
+  suspend peer readers. The settings-dialog shutdown contract closes it safely with the application.
 
 - **Result highlights:** a keyboard-collapsible section below the metric cards links the three largest
   direct folders to the tree, candidate cleanup data to Clean up, and skipped/unreadable/pending

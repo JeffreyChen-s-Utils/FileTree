@@ -6,6 +6,7 @@ import threading
 from types import SimpleNamespace
 
 from PySide6.QtCore import Qt
+from shiboken6 import isValid
 
 from test_gui import _wait, window as window  # noqa: PLC0414
 from je_file_tree.core.scanner import scan
@@ -143,6 +144,41 @@ def test_stop_close_joins_native_header_and_suppresses_late_information(window, 
     dialog._information(worker, info, "")
     assert dialog.info_worker is None and all(row.info is None for row in dialog.model.rows())
     dialog.deleteLater()
+
+
+def test_joined_header_is_retired_before_queued_finished_cleanup(window, qapp, tmp_path, monkeypatch):
+    root, inventory = _fixture(tmp_path, monkeypatch)
+    monkeypatch.setattr(gui, "sys", SimpleNamespace(platform="win32"))
+    disk = next(disk for disk in inventory.rows if disk.kind == "vhdx")
+    entered = threading.Event()
+    info = VirtualDiskInfo(disk, (), 67108864, 4194304, 3, False, None)
+
+    def header(_disk, *, cancel):
+        entered.set()
+        assert cancel.wait(10)
+        return info
+
+    monkeypatch.setattr(gui, "inspect_virtual_disk", header)
+    dialog = gui.VirtualDisksDialog(root, "auto", window)
+    _wait(qapp, lambda: dialog.model.rowCount() == 2 and not dialog.worker.isRunning())
+    queued = []
+    monkeypatch.setattr(gui, "after_threads", lambda _workers, done, _parent: queued.append(done))
+    _select(dialog, disk)
+    dialog.inspect_selected()
+    _wait(qapp, entered.is_set)
+    worker = dialog.info_worker
+    try:
+        dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
+        assert not isValid(worker) or not worker.isRunning()
+        assert dialog.info_worker is None
+        for done in queued:
+            done()
+        dialog._information(worker, info, "")
+        assert all(row.info is None for row in dialog.model.rows())
+    finally:
+        dialog.shutdown()
+        dialog.deleteLater()
 
 
 def test_main_window_requires_results_serializes_owned_dialog_and_joins_at_close(

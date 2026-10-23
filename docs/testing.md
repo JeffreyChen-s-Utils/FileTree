@@ -1,5 +1,14 @@
 # Test diagnostics
 
+## Owned GUI fixture teardown
+
+The shared window fixture waits for `_close_ready`, schedules deletion, then sends only that
+window's `DeferredDelete` event. A native offscreen check confirmed that ordinary `processEvents`
+alone left the closed C++ window valid, whereas targeted delivery destroyed it. This avoids retaining
+closed fixture trees across the suite and respects actual worker-join readiness before destruction.
+It neither flushes unrelated widgets nor changes production event processing. PowerShell deadlines,
+runtime initialization failures and retained failure evidence remain visible.
+
 ## Grouped view layout measurements
 
 Run each operation in its own process, without concurrent tests or benchmarks:

@@ -12,7 +12,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 ## What you can do
 
 - Result highlights link the largest direct folders, cleanup candidates and scan limits to their existing views.
-- Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse.
+- Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse. Opening the editor keeps other tabs scanning.
 - Keep the last cleanup counts visible, with operation records, available Undo and an explicit rescan of the original folder.
 - **Find large files and folders**: see the biggest items first, including after cleaning or rescanning a folder. Charts show their share of the space. Browsing and filtering reuse sorted rows and sort unopened subfolders only when needed.
 - **Search and filter**: find files by name, type, size or last change. Sorting, units and tree filters keep visible selections. Tree filters reuse unchanged results, map each opened group once, and skip hidden archive members. Tree filters keep large selections and their gaps while retaining less cached data. Large result lists sort with one value calculation per row.
@@ -52,6 +52,7 @@ For running from source or building a standalone app, see the [detailed guide](d
 
 You can stop a scan at any time; the results collected so far stay visible and are marked incomplete.
 Unexpected scan failures are reported as errors; results are never marked complete after a worker fails.
+If worker startup fails, already started workers finish before the error is shown.
 Starting a new scan cancels pending folder-list calculations and discards their old results.
 
 ## Things to know

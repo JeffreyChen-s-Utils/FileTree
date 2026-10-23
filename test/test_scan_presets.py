@@ -105,3 +105,32 @@ def test_invalid_stored_settings_show_an_error_and_preserve_data(window, monkeyp
     monkeypatch.setattr(QMessageBox, "warning", lambda *_args: warnings.append(True))
     window.configure_scan_presets()
     assert warnings == [True] and window.settings.value(PRESETS_KEY) == "invalid"
+
+
+def test_preset_editor_does_not_suspend_source_readers(window, monkeypatch):
+    suspended = []
+    monkeypatch.setattr(window, "pending_source_workers", lambda: suspended.append(True) or ())
+
+    def execute(dialog):
+        assert not window.operation_busy and not suspended
+        assert dialog in window._settings_dialogs
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(ScanPresetsDialog, "exec", execute)
+    window.configure_scan_presets()
+    assert not suspended and not window._settings_dialogs
+
+
+def test_application_can_close_while_preset_editor_is_open(window, monkeypatch):
+    def execute(dialog):
+        window.close()
+        assert window._close_ready
+        assert dialog.result() == QDialog.DialogCode.Rejected
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(ScanPresetsDialog, "exec", execute)
+    try:
+        window.configure_scan_presets()
+        assert not window._settings_dialogs
+    finally:
+        window._closing = False

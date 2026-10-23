@@ -15,6 +15,8 @@ from types import SimpleNamespace
 import pytest
 from PySide6.QtCore import (
     QAbstractEventDispatcher,
+    QCoreApplication,
+    QEvent,
     QEventLoop,
     QItemSelectionModel,
     QModelIndex,
@@ -80,6 +82,7 @@ def window(qapp: QApplication, tmp_path: Path):
     main.close()
     _wait(qapp, lambda: main._close_ready)
     main.deleteLater()
+    QCoreApplication.sendPostedEvents(main, QEvent.Type.DeferredDelete)
     i18n.set_language(i18n.DEFAULT_LANGUAGE)
     apply_qt_translation(i18n.DEFAULT_LANGUAGE)
 

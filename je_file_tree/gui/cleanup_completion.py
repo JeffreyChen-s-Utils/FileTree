@@ -124,6 +124,8 @@ class CleanupCompletion(QWidget):
         self._summary = summary
         self._source = (root.path or "") if root is not None else ""
         self._identity = unpack_snapshot(root.snapshot).identity if root is not None and root.snapshot else None
+        if self._identity is not None and not all(self._identity):
+            self._identity = None
         self._before = baseline.free if baseline is not None else None
         self._before_at = baseline.measured_at if baseline is not None else 0.0
         self._after_at, self._delta = 0.0, None

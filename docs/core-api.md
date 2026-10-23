@@ -12,6 +12,8 @@ construction remains valid because the new field defaults to an empty tuple.
 Worker failures are re-raised by `scan` after its worker pool joins; the first failure wins over
 cancellation. `ScanResult.warnings` also reports an explicitly requested experimental MFT scan
 falling back to the ordinary backend. Existing signatures, result fields and CLI JSON keys remain.
+Partial pool-start failures join only successfully started threads. Calling-thread progress failures
+also stop/join the pool and cannot replace an earlier recorded worker failure.
 
 Import functions from `je_file_tree.core`'s modules. The core uses the standard library and does not
 import Qt, create a window or require a display. The package installation still includes PySide6 for

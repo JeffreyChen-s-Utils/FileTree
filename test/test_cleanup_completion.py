@@ -2,6 +2,7 @@
 
 import dataclasses
 import json
+from types import SimpleNamespace
 
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
@@ -125,6 +126,18 @@ def test_summary_navigation_uses_captured_source_and_never_extends_undo(qapp, sa
         assert completion._summary is None and not completion.rescan.isEnabled()
     finally:
         completion.deleteLater()
+
+
+@pytest.mark.parametrize("identity", [(0, 0), (1, 0), (0, 1)])
+def test_unknown_root_identity_never_produces_a_free_space_delta(window, sample_tree, monkeypatch, identity):
+    outcome = analyse(scan(sample_tree))
+    monkeypatch.setattr("je_file_tree.gui.cleanup_completion.unpack_snapshot",
+                        lambda _snapshot: SimpleNamespace(identity=identity))
+    baseline = dataclasses.replace(outcome.capacity, free=1000, measured_at=10)
+    completion = window.results.completion
+    completion.show_summary(MoveSummary(0, 1, 0, 0), outcome.result.root, baseline)
+    completion.observe(outcome.result.root, dataclasses.replace(baseline, free=1500, measured_at=20))
+    assert completion._delta is None
 
 
 def test_main_window_keeps_existing_failure_reports_and_shows_captured_totals(window, sample_tree, monkeypatch):

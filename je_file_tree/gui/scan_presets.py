@@ -6,7 +6,7 @@ import os
 
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import (
-    QComboBox, QDialog, QDialogButtonBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit,
+    QComboBox, QDialogButtonBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit,
     QMessageBox, QPushButton, QVBoxLayout, QWidget,
 )
 
@@ -15,6 +15,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_preferences import (
     SCAN_FLAGS, decode_scan_preferences, encode_scan_preferences, valid_scan_preferences,
 )
+from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
 PRESETS_KEY = "scan_presets_v1"
 MAX_PRESETS = 32
@@ -84,7 +85,7 @@ def write_presets(settings: QSettings, presets: tuple[ScanPreset, ...]) -> None:
     settings.setValue(PRESETS_KEY, payload)
 
 
-class ScanPresetsDialog(QDialog):
+class ScanPresetsDialog(WorkerDialog):
     """Edit retained choices and explicitly load one; a scan is always a separate action."""
 
     def __init__(self, settings: QSettings, path: str, options: ScanOptions, parent: QWidget | None = None) -> None:
@@ -187,3 +188,7 @@ class ScanPresetsDialog(QDialog):
         if 0 <= index < len(self.items):
             self.chosen = self.items[index]
             self.accept()
+
+    def shutdown(self, *, wait: bool = True) -> None:
+        """Close a metadata-only editor; there are no native workers or source operations to join."""
+        self.reject()

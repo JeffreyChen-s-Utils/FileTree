@@ -286,17 +286,21 @@ class _Crawler:
             raise ScanCancelledError
         threads = [threading.Thread(target=self._work, name=f"file-tree-scan-{number}", daemon=True)
                    for number in range(max(1, self._options.workers))]
-        for thread in threads:
-            thread.start()
+        started: list[threading.Thread] = []
         try:
+            for thread in threads:
+                thread.start()
+                started.append(thread)
             while not self._done.wait(interval):
                 if cancel is not None and cancel.is_set():
                     break
                 if progress is not None:
                     progress(self.snapshot())
+        except BaseException as error:  # noqa: BLE001 - stop and join owned threads, then re-raise the first failure
+            self._fail(error)
         finally:
             self._stop()
-            for thread in threads:
+            for thread in started:
                 thread.join()
         if self._failure is not None:
             raise self._failure

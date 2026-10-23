@@ -1493,7 +1493,7 @@ class MainWindow(QMainWindow):
         self._actions["elevate"].setEnabled(
             not self._closing and not self.operation_busy and not self._settings_dialogs)
         scanning = self._worker is not None or self.operation_busy
-        self._actions["scan_presets"].setEnabled(not scanning and not self._closing)
+        self._actions["scan_presets"].setEnabled(not scanning and not self._closing and not self._settings_dialogs)
         self.welcome.presets.setEnabled(self._actions["scan_presets"].isEnabled())
         self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
@@ -1596,20 +1596,21 @@ class MainWindow(QMainWindow):
 
     def configure_scan_presets(self) -> None:
         """Manage named choices; loading changes inputs but never starts or replaces a scan."""
-        if self._worker is not None or self.operation_busy or self._closing or self._path_dialogs:
+        if self._worker is not None or self.operation_busy or self._closing or self._settings_dialogs:
             return
         try:
             dialog = ScanPresetsDialog(self.settings, self.path_edit.text(), self._scan_options(), self)
         except (ValueError, TypeError, RecursionError):
             QMessageBox.warning(self, tr("action_scan_presets"), tr("presets_read_failed"))
             return
-        self._path_dialogs.add(dialog)
+        self._settings_dialogs.add(dialog)
         self._update_actions()
         try:
             if dialog.exec() == QDialog.DialogCode.Accepted and dialog.chosen is not None and not self._closing:
                 self._apply_scan_preset(dialog.chosen)
         finally:
-            self._path_dialogs.discard(dialog)
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
             self._update_actions()
             dialog.deleteLater()
 

@@ -83,6 +83,72 @@ def test_first_failure_survives_priority_cleanup_failure(tmp_path, monkeypatch):
     assert caught.value is first
 
 
+def test_partial_worker_startup_failure_joins_started_threads(tmp_path, monkeypatch):
+    original_start = threading.Thread.start
+    original_join = threading.Thread.join
+    original_read = scanner._read_folder
+    entered, release = threading.Event(), threading.Event()
+    failure = RuntimeError("owned second-thread start failure")
+    started, joined = [], []
+
+    def start(thread):
+        if not thread.name.startswith("file-tree-scan-"):
+            return original_start(thread)
+        if thread.name == "file-tree-scan-1":
+            assert entered.wait(5)
+            release.set()
+            raise failure
+        original_start(thread)
+        started.append(thread)
+
+    def join(thread, *args, **kwargs):
+        if thread.name.startswith("file-tree-scan-"):
+            joined.append(thread)
+        return original_join(thread, *args, **kwargs)
+
+    def read(*args):
+        entered.set()
+        assert release.wait(5)
+        return original_read(*args)
+
+    monkeypatch.setattr(threading.Thread, "start", start)
+    monkeypatch.setattr(threading.Thread, "join", join)
+    monkeypatch.setattr(scanner, "_read_folder", read)
+    monkeypatch.setattr(scanner, "give_way", lambda: None)
+    try:
+        with pytest.raises(RuntimeError) as caught:
+            scanner.scan(tmp_path, options=scanner.ScanOptions(workers=4))
+        assert caught.value is failure
+        assert joined == started and len(started) == 1
+        assert not started[0].is_alive()
+    finally:
+        release.set()
+        for thread in started:
+            original_join(thread, timeout=5)
+
+
+def test_worker_failure_is_not_overwritten_by_later_progress_callback_failure(tmp_path, monkeypatch):
+    first, second = RuntimeError("owned worker failure"), ValueError("owned progress failure")
+    original_snapshot = scanner._Crawler.snapshot
+
+    def snapshot(crawler):
+        crawler._fail(first)
+        return original_snapshot(crawler)
+
+    def progress(_value):
+        raise second
+
+    def run_work(crawler):
+        # Leave completion pending until the calling thread takes its next progress snapshot.
+        crawler._done.wait(5)
+
+    monkeypatch.setattr(scanner._Crawler, "snapshot", snapshot)
+    monkeypatch.setattr(scanner._Crawler, "_work", run_work)
+    with pytest.raises(RuntimeError) as caught:
+        scanner.scan(tmp_path, options=scanner.ScanOptions(workers=1), progress=progress, progress_interval=0.001)
+    assert caught.value is first
+
+
 def test_simultaneous_failures_finish_all_workers(tmp_path, monkeypatch):
     for name in ("left", "right"):
         (tmp_path / name).mkdir()

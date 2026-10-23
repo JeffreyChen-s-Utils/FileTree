@@ -17,13 +17,16 @@ resizing the analysis workspace. Its records/undo/original-folder rescan actions
 and guards, closing details before dispatch. A hidden result page closes its popup. No obsolete Node
 tree or capacity ledger is retained: only source identity, baseline free bytes/time and later scalar
 observations are copied. Only newer same-root observations update the displayed free-space delta;
-it explicitly includes unrelated activity and never substitutes moved bytes for freed space.
+both recorded device/inode values must be nonzero. The delta explicitly includes unrelated activity
+and never substitutes moved bytes for freed space.
 
 `gui.scan_presets` retains versioned named single-path choices in QSettings, using the existing
 scan-preference codec and rejecting private backends or extra authority fields. The welcome page and
 Options open its editor. Explicit loading updates scan inputs and ordinary preferences without
 starting a worker or replacing results; concurrency/exclusions retain workspace-wide semantics.
 Running workers retain immutable options. Invalid stored data is reported without replacement.
+The editor is registered with read-only settings dialogs, outside source-operation exclusion, so
+opening it does not suspend readers. Its explicit shutdown rejects the editor during application close.
 
 `Summary.top_folders` captures at most three direct nonlinked folders on the analysis worker;
 `ScanOutcome.top_folders` carries them to `ResultHighlights`. The collapsible guidance renders those
@@ -40,6 +43,12 @@ An explicitly requested but discarded MFT candidate adds a stable warning to the
 Local compaction path validation precedes pinning and keeps extended drive namespaces unchanged
 through native opening, rejecting UNC/device/relative forms. Explorer is resolved through the native
 Windows directory API, and quoted trailing backslashes are escaped.
+
+Pool startup records each successfully started thread inside the same guarded run scope. If a later
+start or calling-thread progress callback fails, stop dispatch and join the already started subset;
+never attempt to join an unstarted thread or overwrite an earlier recorded worker failure.
+Virtual-disk dialogs also retire their optional header worker immediately after an explicit joined
+shutdown. A queued finished callback is idempotent; closing readiness does not depend on its delivery.
 
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
