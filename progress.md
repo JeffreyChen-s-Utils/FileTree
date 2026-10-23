@@ -8,7 +8,6 @@ Cross-repo and workspace items live in `D:\Codes\progress.md`.
 ## Open
 
 - **#115** [UNVERIFIED] Check actual Windows Explorer selection for drive roots, spaces, commas and Unicode names. Native CommandLineToArgvW parsing is covered; argument parsing alone does not establish Explorer's visible selection behavior.
-- **#118** (P2) Add a persistent cleanup completion summary for moved/skipped/failed entries and existing history, undo and rescan actions, without equating moved bytes with free space.
 
 - **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
 

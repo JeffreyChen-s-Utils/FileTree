@@ -11,6 +11,48 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "completion_title": 'Last cleanup result',
+    "completion_undo": 'Undo available moves',
+    "completion_rescan": 'Rescan original folder',
+    "completion_dismiss": 'Dismiss summary',
+    "completion_source": 'Source: {path}',
+    "completion_counts": (
+        'Moved: {moved} ({size}); skipp'
+        'ed: {skipped}; failed: {failed'
+        '}'
+    ),
+    "completion_space": (
+        'Observed free-space change bet'
+        'ween scans: {change} (includes'
+        ' other activity)'
+    ),
+    "completion_measurements": (
+        'Scan observations: {before} → '
+        '{after}'
+    ),
+    "completion_space_pending": (
+        'No later comparable scan obser'
+        'vation yet. Unknown is not zer'
+        'o.'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": (
+        'More reasons are available in '
+        'the operation records.'
+    ),
+    "completion_errors": (
+        'Journal errors: {journal}; cop'
+        'y-finalization errors: {copies'
+        '}.'
+    ),
+    "completion_hint": (
+        'Moved bytes are logical data, '
+        'not space freed. Emptying the '
+        'Recycle Bin is a separate acti'
+        'on. Review operation records a'
+        'nd failure reports for details'
+        '.'
+    ),
     "action_scan_presets_tip": "Save and load named paths and scan options without starting a scan",
     "action_scan_presets": 'Scan presets…',
     "presets_empty": 'No saved presets',
@@ -1508,6 +1550,30 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "completion_title": '上次清理結果',
+    "completion_undo": '復原可還原項目',
+    "completion_rescan": '重新掃描原資料夾',
+    "completion_dismiss": '關閉摘要',
+    "completion_source": '來源：{path}',
+    "completion_counts": (
+        '已移入：{moved}（{size}）；略過：{skippe'
+        'd}；失敗：{failed}'
+    ),
+    "completion_space": (
+        '掃描間觀測的可用空間變化：{change}（包含其他活動）'
+    ),
+    "completion_measurements": '掃描觀測時間：{before} → {after}',
+    "completion_space_pending": '尚無後續可比較的掃描觀測；未知不等於零。',
+    "completion_reason": '{reason}：{count}',
+    "completion_more": '完整原因可在操作紀錄中檢視。',
+    "completion_errors": (
+        '紀錄寫入錯誤：{journal}；複製收尾錯誤：{copie'
+        's}。'
+    ),
+    "completion_hint": (
+        '移入大小是邏輯資料量，不等於已釋出空間；清空資源回收筒需另行'
+        '操作。詳情請查看操作紀錄與失敗報告。'
+    ),
     "action_scan_presets_tip": "儲存及載入具名路徑與掃描選項，不會自動開始掃描",
     "action_scan_presets": '常用掃描設定…',
     "presets_empty": '尚無常用設定',
@@ -2861,6 +2927,30 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "completion_title": '上次清理结果',
+    "completion_undo": '撤销可恢复项目',
+    "completion_rescan": '重新扫描原文件夹',
+    "completion_dismiss": '关闭摘要',
+    "completion_source": '来源：{path}',
+    "completion_counts": (
+        '已移入：{moved}（{size}）；跳过：{skippe'
+        'd}；失败：{failed}'
+    ),
+    "completion_space": (
+        '扫描间观测的可用空间变化：{change}（包含其他活动）'
+    ),
+    "completion_measurements": '扫描观测时间：{before} → {after}',
+    "completion_space_pending": '暂无后续可比较的扫描观测；未知不等于零。',
+    "completion_reason": '{reason}：{count}',
+    "completion_more": '完整原因可在操作记录中查看。',
+    "completion_errors": (
+        '记录写入错误：{journal}；复制收尾错误：{copie'
+        's}。'
+    ),
+    "completion_hint": (
+        '移入大小是逻辑数据量，不等于已释放空间；清空回收站需另行操作'
+        '。详情请查看操作记录与失败报告。'
+    ),
     "action_scan_presets_tip": "保存及加载命名路径与扫描选项，不会自动开始扫描",
     "action_scan_presets": '常用扫描设置…',
     "presets_empty": '暂无常用设置',
@@ -4226,6 +4316,35 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "completion_title": '前回の整理結果',
+    "completion_undo": '可能な移動を元に戻す',
+    "completion_rescan": '元のフォルダーを再スキャン',
+    "completion_dismiss": '概要を閉じる',
+    "completion_source": '対象: {path}',
+    "completion_counts": (
+        '移動: {moved}（{size}）、除外: {skipp'
+        'ed}、失敗: {failed}'
+    ),
+    "completion_space": (
+        'スキャン間の空き容量変化: {change}（他の操作を含む'
+        '）'
+    ),
+    "completion_measurements": 'スキャン観測時刻: {before} → {after}',
+    "completion_space_pending": (
+        '比較できる後続の観測はまだありません。不明はゼロではありませ'
+        'ん。'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": 'すべての理由は操作履歴で確認できます。',
+    "completion_errors": (
+        '履歴エラー: {journal}、コピー終了処理エラー: {'
+        'copies}。'
+    ),
+    "completion_hint": (
+        '移動量は論理データ量で、解放された容量ではありません。ごみ箱'
+        'を空にする操作は別途必要です。詳細は操作履歴と失敗レポートを'
+        'ご覧ください。'
+    ),
     "action_scan_presets_tip": "名前付きのパスと設定を保存・読み込みます。スキャンは開始しません",
     "action_scan_presets": 'スキャン設定…',
     "presets_empty": '保存済み設定はありません',
@@ -5935,6 +6054,35 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "completion_title": '최근 정리 결과',
+    "completion_undo": '복원 가능한 이동 취소',
+    "completion_rescan": '원래 폴더 다시 스캔',
+    "completion_dismiss": '요약 닫기',
+    "completion_source": '원본: {path}',
+    "completion_counts": (
+        '이동: {moved} ({size}); 제외: {ski'
+        'pped}; 실패: {failed}'
+    ),
+    "completion_space": (
+        '스캔 사이에 관측한 여유 공간 변화: {change} '
+        '(다른 활동 포함)'
+    ),
+    "completion_measurements": '스캔 관측 시간: {before} → {after}',
+    "completion_space_pending": (
+        '비교 가능한 후속 스캔 관측이 아직 없습니다. 알 수 '
+        '없음은 0이 아닙니다.'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": '전체 이유는 작업 기록에서 확인할 수 있습니다.',
+    "completion_errors": (
+        '기록 오류: {journal}; 복사 마무리 오류: {'
+        'copies}.'
+    ),
+    "completion_hint": (
+        '이동 크기는 논리 데이터양이며 확보된 공간이 아닙니다.'
+        ' 휴지통 비우기는 별도 작업입니다. 자세한 내용은 작업'
+        ' 기록과 실패 보고서에서 확인하세요.'
+    ),
     "action_scan_presets_tip": "이름을 지정한 경로와 옵션을 저장하고 불러옵니다. 스캔은 시작하지 않습니다",
     "action_scan_presets": '자주 쓰는 스캔 설정…',
     "presets_empty": '저장된 설정 없음',

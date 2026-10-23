@@ -1,5 +1,10 @@
 # FileTree core Python API
 
+`operations.summarise_moves(result)` returns immutable `MoveSummary` counts, logical moved bytes,
+refusal-reason frequencies and auxiliary-error counts from captured data without opening paths or
+walking descendants. `MoveResult.summary` is additive and defaults to `None`; GUI operation workers
+populate it before delivery. It contains no source-operation authority and makes no free-space claim.
+
 `analysis.Summary.top_folders` is an additive tuple containing up to three largest direct nonlinked
 folders. `summarise` computes it on the same caller/worker as the existing statistics; older positional
 construction remains valid because the new field defaults to an empty tuple.

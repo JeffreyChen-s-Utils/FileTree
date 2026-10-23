@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from je_file_tree.gui.reasons import problem_text
 from je_file_tree.gui.scan_presets import ScanPreset, ScanPresetsDialog
+from je_file_tree.core.operations import MoveSummary
 
 import json
 import os
@@ -797,7 +798,14 @@ class MainWindow(QMainWindow):
         self.results.setEnabled(True)
         self._update_actions()
         moved, failed = result.moved, result.failed
-        moved_size = format_size(sum(node.size for node in moved), self._unit)
+        summary = result.summary or MoveSummary(len(moved), len(result.skipped), len(failed),
+                                               sum(node.size for node in moved),
+                                               journal_errors=len(result.journal_errors),
+                                               copy_errors=len(result.copy_errors))
+        moved_size = format_size(summary.moved_bytes, self._unit)
+        outcome = self.results.outcome
+        self.results.completion.show_summary(summary, outcome.result.root if outcome is not None else None,
+                                             outcome.capacity if outcome is not None else None)
         if moved:
             self._analyser = None
             outcome = self.results.outcome
@@ -818,6 +826,7 @@ class MainWindow(QMainWindow):
         unavailable = self._undo.offer(worker)
         self.statusBar().showMessage(done + ("\n" + unavailable if unavailable else ""), _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
+        self._update_actions()
         QTimer.singleShot(0, self._rescan_after_trash)
 
     def _show_failed(self, result: MoveResult) -> None:
@@ -1441,6 +1450,10 @@ class MainWindow(QMainWindow):
         self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
+        self.results.completion.records_requested.connect(self.show_recent_actions)
+        self.results.completion.undo_requested.connect(self._undo.undo)
+        self.results.completion.rescan_requested.connect(self.start_scan)
+        self._undo.timer.timeout.connect(self._update_actions)
         self.welcome.drives_changed.connect(self._update_actions)
         self.results.duplicates.link_requested.connect(self.show_duplicate_links)
         self.results.cleanup.review_requested.connect(self.move_to_trash)
@@ -1511,10 +1524,11 @@ class MainWindow(QMainWindow):
         self._update_bin_buttons()
 
     def _update_bin_buttons(self) -> None:
-        idle = (not self._closing and not self._bin_labels.busy
-                and self._worker is None and not self.operation_busy)
+        ready = not self._closing and self._worker is None and not self.operation_busy
+        idle = ready and not self._bin_labels.busy
         self.welcome.bin_refresh.setEnabled(idle)
         self.results.cleanup.bin_refresh.setEnabled(idle and self.results.outcome is not None)
+        self.results.completion.set_actions(undo=ready and self._undo.available, rescan=ready)
 
     def refresh_bin_labels(self) -> None:
         """Refresh read-only drive totals off the GUI thread, retaining the current scan's scope."""

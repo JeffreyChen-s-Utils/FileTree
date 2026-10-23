@@ -11,6 +11,14 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`TrashWorker` prepares an immutable, scalar `MoveSummary` before delivery. The persistent
+`CleanupCompletion` header retains counts/logical bytes and opens scrollable transient details without
+resizing the analysis workspace. Its records/undo/original-folder rescan actions reuse existing owners
+and guards, closing details before dispatch. A hidden result page closes its popup. No obsolete Node
+tree or capacity ledger is retained: only source identity, baseline free bytes/time and later scalar
+observations are copied. Only newer same-root observations update the displayed free-space delta;
+it explicitly includes unrelated activity and never substitutes moved bytes for freed space.
+
 `gui.scan_presets` retains versioned named single-path choices in QSettings, using the existing
 scan-preference codec and rejecting private backends or extra authority fields. The welcome page and
 Options open its editor. Explicit loading updates scan inputs and ordinary preferences without

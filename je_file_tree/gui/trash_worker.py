@@ -15,7 +15,7 @@ from je_file_tree.core.copy_approval import CopyApproval, redirect_copy
 from je_file_tree.core.no_replace import anchored_directory
 from je_file_tree.core.verified_copy import verify_copy
 from je_file_tree.core.lock_holders import find_holders
-from je_file_tree.core.operations import move_batch, validate_tree
+from je_file_tree.core.operations import move_batch, summarise_moves, validate_tree
 from je_file_tree.core.recurring import ProposalContext
 from je_file_tree.core.operations import MoveReceipt, MoveResult
 from je_file_tree.core.windows_trash import recycle_reason
@@ -82,6 +82,7 @@ class TrashWorker(QThread):
                 break
             result.holders[node] = find_holders(node, cancel=self._cancel)
         self.result = result
+        result.summary = summarise_moves(result)
         self.done.emit(result)
 
     def _prepare_statistics(self, result: MoveResult) -> None:

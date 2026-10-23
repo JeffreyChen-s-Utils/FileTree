@@ -79,6 +79,7 @@ from je_file_tree.gui.scan_bar import ScanBar
 from je_file_tree.gui.result_navigation import AnalysisTabs, ResultNavigation
 from je_file_tree.gui.result_overview import ResultOverview
 from je_file_tree.gui.result_highlights import ResultHighlights
+from je_file_tree.gui.cleanup_completion import CleanupCompletion
 from je_file_tree.gui.scan_worker import AnalyseWorker, ScanOutcome, wait_for
 from je_file_tree.gui.archives import ArchiveController
 from je_file_tree.gui.search_panel import SearchPanel
@@ -292,6 +293,7 @@ class ResultsView(QWidget):
         self._outcome = outcome
         self.charts.set_age_reference(outcome.now)
         root = outcome.result.root
+        self.completion.observe(root, outcome.capacity)
         self.scan_bar.hide()
         if self.tree_model.root is root:
             self.tree_model.finish_live()
@@ -352,6 +354,7 @@ class ResultsView(QWidget):
         """Show a refreshed whole-tree ledger computed after a branch rescan."""
         if self._outcome is not None:
             self._outcome = dataclasses.replace(self._outcome, capacity=capacity)
+            self.completion.observe(self._outcome.result.root, capacity)
             self.capacity.set_ledger(capacity)
             self.tree_model.set_drive_total(capacity.total)
             self._update_overview()
@@ -388,6 +391,8 @@ class ResultsView(QWidget):
         """Show sizes in ``unit``."""
         self.overview.unit = unit
         self.highlights.unit = unit
+        self.completion.unit = unit
+        self.completion.retranslate()
         self.overview.retranslate()
         self.tree_model.set_unit(unit)
         self.capacity.unit = unit
@@ -528,6 +533,7 @@ class ResultsView(QWidget):
         self.charts.retranslate()
         self.capacity.retranslate()
         self.highlights.retranslate()
+        self.completion.retranslate()
         for model in (self.largest_model, self.types_model, self.problems_model, self.age_model):
             model.refresh()
         self._show_all.setText(tr("largest_show_all"))
@@ -569,6 +575,7 @@ class ResultsView(QWidget):
     # --- building ---------------------------------------------------------
 
     def _build_cleanup_panels(self) -> None:
+        self.completion = CleanupCompletion()
         self.highlights = ResultHighlights()
         self.duplicates = DuplicatesPanel()
         self.cleanup = CleanupPanel()
@@ -764,6 +771,7 @@ class ResultsView(QWidget):
         layout.addWidget(self.scan_bar)
         layout.addWidget(self.overview)
         layout.addWidget(self.highlights)
+        layout.addWidget(self.completion)
         captions = QVBoxLayout()  # the path summary and capacity line read as one caption block
         captions.setSpacing(2)
         captions.addWidget(self.summary)

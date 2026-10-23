@@ -14,6 +14,8 @@ from je_file_tree.core.protected import Protection, protection_of
 from je_file_tree.core.snapshot import Snapshot, stat_snapshot, unpack_snapshot
 from je_file_tree.core.system_files import system_file
 
+_SUMMARY_BATCH = 128
+
 
 @dataclass(slots=True)
 class MoveReceipt:
@@ -21,6 +23,19 @@ class MoveReceipt:
 
     success: bool
     destination: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class MoveSummary:
+    """Captured batch counts and logical moved bytes; no Node references or free-space inference."""
+
+    moved: int
+    skipped: int
+    failed: int
+    moved_bytes: int
+    skip_reasons: tuple[tuple[str, int], ...] = ()
+    journal_errors: int = 0
+    copy_errors: int = 0
 
 
 @dataclass(slots=True)
@@ -35,6 +50,23 @@ class MoveResult:
     destinations: dict[Node, str | None] = field(default_factory=dict)
     journal_errors: list[str] = field(default_factory=list)
     copy_errors: list[tuple[str, str, str, str]] = field(default_factory=list)
+    summary: MoveSummary | None = None
+
+
+def summarise_moves(result: MoveResult) -> MoveSummary:
+    """Summarise captured outcomes on the operation worker, retaining truth even after cancellation."""
+    moved_bytes = 0
+    reasons: dict[str, int] = {}
+    for index, node in enumerate(result.moved):
+        if index % _SUMMARY_BATCH == 0:
+            give_way()
+        moved_bytes += node.size
+    for index, (_node, reason) in enumerate(result.skipped):
+        if index % _SUMMARY_BATCH == 0:
+            give_way()
+        reasons[reason] = reasons.get(reason, 0) + 1
+    return MoveSummary(len(result.moved), len(result.skipped), len(result.failed), moved_bytes,
+                       tuple(sorted(reasons.items())), len(result.journal_errors), len(result.copy_errors))
 
 
 def revalidate(node: Node, root: Node, *, places: Sequence[Protection] = (),

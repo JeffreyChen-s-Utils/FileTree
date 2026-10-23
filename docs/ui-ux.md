@@ -8,6 +8,13 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **Cleanup completion:** a compact header retains moved/skipped/failed counts and logical moved
+  bytes across rescans. Its transient scrollable details preserve the analysis pane's geometry,
+  show refusal reasons and point to complete existing reports/records. Records, existing expiring
+  Undo and original-folder rescan reuse their guards; details close before dispatch. Free-space
+  changes are separately dated same-root scan observations including other activity; missing
+  observations remain unknown. No bin emptying or new operation approval is implied.
+
 - **Named presets:** the welcome page and Options offer the same editor for one-path presets.
   Add/Update capture current scan options; Rename preserves saved choices. Load fills inputs and
   reports that Scan path is still required. Existing results/selection remain. Invalid settings
