@@ -11,6 +11,12 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`gui.scan_presets` retains versioned named single-path choices in QSettings, using the existing
+scan-preference codec and rejecting private backends or extra authority fields. The welcome page and
+Options open its editor. Explicit loading updates scan inputs and ordinary preferences without
+starting a worker or replacing results; concurrency/exclusions retain workspace-wide semantics.
+Running workers retain immutable options. Invalid stored data is reported without replacement.
+
 `Summary.top_folders` captures at most three direct nonlinked folders on the analysis worker;
 `ScanOutcome.top_folders` carries them to `ResultHighlights`. The collapsible guidance renders those
 references, the captured capacity coverage and `CleanupPanel.proposal_summary` only. Its buttons

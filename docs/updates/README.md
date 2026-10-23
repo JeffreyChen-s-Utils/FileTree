@@ -69,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261023-03 | 2026-10-23 | Save and explicitly load named single-path scan presets | #done #gui #settings | [2026-10-e](2026-10-e.md) |
 | U-20261023-02 | 2026-10-23 | Guide scan results with captured folder and cleanup highlights | #done #gui #analysis | [2026-10-e](2026-10-e.md) |
 | U-20261023-01 | 2026-10-23 | Close scan-worker and Windows path review findings | #done #scanner #windows | [2026-10-e](2026-10-e.md) |
 | U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |

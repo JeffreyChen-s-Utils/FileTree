@@ -1,5 +1,7 @@
 # FileTree — Detailed usage and technical notes
 
+Named scan presets retain one absolute path and the existing six scan flags, worker count and exclusions. Add or Update captures the current options; Rename keeps the saved options. Loading fills the path and choices without starting a scan or replacing results; press Scan path explicitly. Workers and exclusions keep their workspace scope. Presets never contain operation approvals, administrator consent or experimental MFT. Invalid stored data is reported and retained.
+
 Highlights below the result cards use worker-captured statistics only. They distinguish pending, completed-empty and partial analyses, preserve collapse/selection state across language and unit changes, and do not query storage on the GUI thread.
 
 [Project introduction and quick start](../README.md)

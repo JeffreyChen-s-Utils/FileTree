@@ -84,6 +84,7 @@ class WelcomePage(QWidget):
     scan_all_requested = Signal()
     overview_requested = Signal()
     bins_requested = Signal()
+    presets_requested = Signal()
     bin_refresh_requested = Signal()
     drives_changed = Signal()
 
@@ -107,6 +108,8 @@ class WelcomePage(QWidget):
         self._overview = QPushButton()
         self._overview.clicked.connect(self.overview_requested)
         self._bins = QPushButton()
+        self.presets = QPushButton()
+        self.presets.clicked.connect(self.presets_requested)
         self._bins.clicked.connect(self.bins_requested)
         self.bin_refresh = QPushButton()
         self.bin_refresh.clicked.connect(self.bin_refresh_requested)
@@ -204,6 +207,7 @@ class WelcomePage(QWidget):
         self._overview.setText(tr("action_volumes"))
         self._overview.setToolTip(tr("action_volumes_tip"))
         self._bins.setText(tr("action_bins"))
+        self.presets.setText(tr("action_scan_presets"))
         self.bin_refresh.setText(tr("bin_labels_refresh"))
         self.bin_refresh.setToolTip(tr("bin_labels_hint"))
         self._recent_title.setText(tr("welcome_recent"))
@@ -248,7 +252,7 @@ class WelcomePage(QWidget):
         column.addWidget(self._drives_title)
         column.addLayout(self._drives)
         tools = QHBoxLayout()
-        for button in (self._overview, self._bins, self.bin_refresh):
+        for button in (self._overview, self._bins, self.bin_refresh, self.presets):
             tools.addWidget(button)
         column.addLayout(tools)
         column.addSpacing(8)

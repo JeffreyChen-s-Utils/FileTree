@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from je_file_tree.gui.reasons import problem_text
+from je_file_tree.gui.scan_presets import ScanPreset, ScanPresetsDialog
 
 import json
 import os
@@ -1277,6 +1278,7 @@ class MainWindow(QMainWindow):
             ("history", None, self.show_history),
             ("recurring", None, self.show_recurring),
             ("history_settings", None, self.configure_history),
+            ("scan_presets", None, self.configure_scan_presets),
             ("projects", None, self.show_projects),
             ("programs", None, self.show_programs),
             ("virtual_disks", None, self.show_virtual_disks),
@@ -1387,10 +1389,8 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])
         options_menu = bar.addMenu("")
-        options_menu.addAction(self._actions["cleanup_policy"])
-        options_menu.addAction(self._actions["gentle"])
-        options_menu.addAction(self._actions["scan_workers"])
-        options_menu.addAction(self._actions["history_settings"])
+        for key in ("cleanup_policy", "gentle", "scan_workers", "scan_presets", "history_settings"):
+            options_menu.addAction(self._actions[key])
         for key in ("check_updates", "follow_changes", "background_monitor"):
             options_menu.addAction(self._actions[key])
         for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
@@ -1446,6 +1446,7 @@ class MainWindow(QMainWindow):
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
+        self.welcome.presets_requested.connect(self.configure_scan_presets)
         self.welcome.scan_all_requested.connect(self.scan_all_drives)
         self.welcome.overview_requested.connect(self.show_volumes)
         self.welcome.bins_requested.connect(self.show_bins)
@@ -1479,6 +1480,8 @@ class MainWindow(QMainWindow):
         self._actions["elevate"].setEnabled(
             not self._closing and not self.operation_busy and not self._settings_dialogs)
         scanning = self._worker is not None or self.operation_busy
+        self._actions["scan_presets"].setEnabled(not scanning and not self._closing)
+        self.welcome.presets.setEnabled(self._actions["scan_presets"].isEnabled())
         self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
@@ -1576,6 +1579,40 @@ class MainWindow(QMainWindow):
                 self.settings.setValue("history_limit_mib", dialog.limit.value())
         finally:
             dialog.deleteLater()
+
+    def configure_scan_presets(self) -> None:
+        """Manage named choices; loading changes inputs but never starts or replaces a scan."""
+        if self._worker is not None or self.operation_busy or self._closing or self._path_dialogs:
+            return
+        try:
+            dialog = ScanPresetsDialog(self.settings, self.path_edit.text(), self._scan_options(), self)
+        except (ValueError, TypeError, RecursionError):
+            QMessageBox.warning(self, tr("action_scan_presets"), tr("presets_read_failed"))
+            return
+        self._path_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted and dialog.chosen is not None and not self._closing:
+                self._apply_scan_preset(dialog.chosen)
+        finally:
+            self._path_dialogs.discard(dialog)
+            self._update_actions()
+            dialog.deleteLater()
+
+    def _apply_scan_preset(self, preset: ScanPreset) -> None:
+        options = preset.options
+        keys = ("include_hidden", "gentle_scan", "capture_file_times", "capture_owners",
+                "exact_allocation", "count_hard_links")
+        for (action, field), key in zip(SCAN_FLAGS, keys, strict=True):
+            with QSignalBlocker(self._actions[action]):
+                self._actions[action].setChecked(getattr(options, field))
+            self.settings.setValue(key, getattr(options, field))
+        self.settings.setValue(SCAN_WORKERS_KEY, options.workers)
+        self.settings.setValue(EXCLUSIONS_KEY, list(options.exclude))
+        if self._scan_defaults is not None:
+            self._scan_defaults.workers, self._scan_defaults.exclude = options.workers, options.exclude
+        self.path_edit.setText(preset.path)
+        self.statusBar().showMessage(tr("presets_loaded", name=preset.name), _STATUS_TIMEOUT_MS)
 
     def show_file_times(self) -> None:
         """Query optional recorded file dates on an owned worker, without opening scanned payloads."""

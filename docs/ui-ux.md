@@ -8,6 +8,12 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **Named presets:** the welcome page and Options offer the same editor for one-path presets.
+  Add/Update capture current scan options; Rename preserves saved choices. Load fills inputs and
+  reports that Scan path is still required. Existing results/selection remain. Invalid settings
+  produce a translated error without overwriting data. No administrator or source-operation
+  approvals are saved, and active scans/source reviews disable the editor.
+
 - **Result highlights:** a keyboard-collapsible section below the metric cards links the three largest
   direct folders to the tree, candidate cleanup data to Clean up, and skipped/unreadable/pending
   coverage to Problems. Pending analysis differs from a completed empty result; partial sizes remain

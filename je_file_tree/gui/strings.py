@@ -11,6 +11,38 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "action_scan_presets_tip": "Save and load named paths and scan options without starting a scan",
+    "action_scan_presets": 'Scan presets…',
+    "presets_empty": 'No saved presets',
+    "presets_hint": (
+        'Add and Update save the current scan opt'
+        'ions with the entered path. Load fills t'
+        'he inputs; press Scan path to start. Con'
+        'currency and exclusions apply to the wor'
+        'kspace.'
+    ),
+    "presets_saved": 'Saved presets',
+    "presets_name": 'Name',
+    "presets_add": 'Add current options',
+    "presets_update": 'Update selected',
+    "presets_rename": 'Rename',
+    "presets_remove": 'Delete preset',
+    "presets_load": 'Load',
+    "presets_options": (
+        'Workers: {workers}; exclusions: {exclusi'
+        'ons}; enabled: {flags}'
+    ),
+    "presets_no_flags": 'none',
+    "presets_invalid": (
+        'Use a unique name (1–80 characters), an '
+        'absolute path and valid scan options. At'
+        ' most 32 presets are supported.'
+    ),
+    "presets_read_failed": (
+        'Saved presets could not be read. Existin'
+        'g data has been retained.'
+    ),
+    "presets_loaded": 'Loaded {name}. Press Scan path to start.',
     "highlights_title": 'Scan highlights',
     "highlights_waiting": 'Waiting for scan analysis…',
     "highlights_folders": 'Largest direct folders — select one to locate it.',
@@ -1476,6 +1508,28 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "action_scan_presets_tip": "儲存及載入具名路徑與掃描選項，不會自動開始掃描",
+    "action_scan_presets": '常用掃描設定…',
+    "presets_empty": '尚無常用設定',
+    "presets_hint": (
+        '新增與更新會儲存目前的掃描選項及輸入的路徑。載入只填入設定，請按「掃描路徑」開始'
+        '。執行緒數與排除規則適用於工作區。'
+    ),
+    "presets_saved": '已儲存設定',
+    "presets_name": '名稱',
+    "presets_add": '新增目前選項',
+    "presets_update": '更新所選',
+    "presets_rename": '重新命名',
+    "presets_remove": '刪除設定',
+    "presets_load": '載入',
+    "presets_options": '執行緒：{workers}；排除規則：{exclusions}；已啟用：{flags}',
+    "presets_no_flags": '無',
+    "presets_invalid": (
+        '請使用不重複的名稱（1–80 字）、絕對路徑及有效掃描選項。最多可儲存 32 組'
+        '設定。'
+    ),
+    "presets_read_failed": '無法讀取常用設定，原有資料已保留。',
+    "presets_loaded": '已載入 {name}，請按「掃描路徑」開始。',
     "highlights_title": '掃描重點',
     "highlights_waiting": '等待掃描分析…',
     "highlights_folders": '最大的直屬資料夾；點選即可定位。',
@@ -2807,6 +2861,28 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "action_scan_presets_tip": "保存及加载命名路径与扫描选项，不会自动开始扫描",
+    "action_scan_presets": '常用扫描设置…',
+    "presets_empty": '暂无常用设置',
+    "presets_hint": (
+        '新增与更新会保存当前扫描选项及输入的路径。加载只填入设置，请按“扫描路径”开始。'
+        '线程数与排除规则适用于工作区。'
+    ),
+    "presets_saved": '已保存设置',
+    "presets_name": '名称',
+    "presets_add": '新增当前选项',
+    "presets_update": '更新所选',
+    "presets_rename": '重命名',
+    "presets_remove": '删除设置',
+    "presets_load": '加载',
+    "presets_options": '线程：{workers}；排除规则：{exclusions}；已启用：{flags}',
+    "presets_no_flags": '无',
+    "presets_invalid": (
+        '请使用不重复的名称（1–80 字）、绝对路径及有效扫描选项。最多可保存 32 组'
+        '设置。'
+    ),
+    "presets_read_failed": '无法读取常用设置，原有数据已保留。',
+    "presets_loaded": '已加载 {name}，请按“扫描路径”开始。',
     "highlights_title": '扫描重点',
     "highlights_waiting": '等待扫描分析…',
     "highlights_folders": '最大的直属文件夹；点击即可定位。',
@@ -4150,6 +4226,28 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "action_scan_presets_tip": "名前付きのパスと設定を保存・読み込みます。スキャンは開始しません",
+    "action_scan_presets": 'スキャン設定…',
+    "presets_empty": '保存済み設定はありません',
+    "presets_hint": (
+        '追加・更新は現在のスキャン設定と入力パスを保存します。読み込み後、「パスをスキャ'
+        'ン」で開始します。並列数と除外はワークスペース共通です。'
+    ),
+    "presets_saved": '保存済み設定',
+    "presets_name": '名前',
+    "presets_add": '現在の設定を追加',
+    "presets_update": '選択を更新',
+    "presets_rename": '名前を変更',
+    "presets_remove": '設定を削除',
+    "presets_load": '読み込む',
+    "presets_options": 'ワーカー: {workers}、除外: {exclusions}、有効: {flags}',
+    "presets_no_flags": 'なし',
+    "presets_invalid": (
+        '重複しない名前（1～80 文字）、絶対パス、有効なスキャン設定を指定してください'
+        '。最大 32 件です。'
+    ),
+    "presets_read_failed": '保存済み設定を読み取れません。既存データは保持しました。',
+    "presets_loaded": '{name} を読み込みました。「パスをスキャン」で開始してください。',
     "highlights_title": 'スキャンの要点',
     "highlights_waiting": 'スキャン分析を待機中…',
     "highlights_folders": '直下の大きいフォルダーを選んで表示します。',
@@ -5837,6 +5935,29 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "action_scan_presets_tip": "이름을 지정한 경로와 옵션을 저장하고 불러옵니다. 스캔은 시작하지 않습니다",
+    "action_scan_presets": '자주 쓰는 스캔 설정…',
+    "presets_empty": '저장된 설정 없음',
+    "presets_hint": (
+        '추가와 업데이트는 현재 스캔 옵션과 입력한 경로를 저장합니다. 불러온 후'
+        ' 경로 스캔을 눌러 시작하세요. 스레드 수와 제외 규칙은 작업 공간에 적'
+        '용됩니다.'
+    ),
+    "presets_saved": '저장된 설정',
+    "presets_name": '이름',
+    "presets_add": '현재 옵션 추가',
+    "presets_update": '선택 업데이트',
+    "presets_rename": '이름 바꾸기',
+    "presets_remove": '설정 삭제',
+    "presets_load": '불러오기',
+    "presets_options": '스레드: {workers}; 제외 규칙: {exclusions}; 사용: {flags}',
+    "presets_no_flags": '없음',
+    "presets_invalid": (
+        '중복되지 않는 이름(1–80자), 절대 경로, 올바른 스캔 옵션을 사용하'
+        '세요. 최대 32개를 저장할 수 있습니다.'
+    ),
+    "presets_read_failed": '저장된 설정을 읽을 수 없습니다. 기존 데이터는 유지했습니다.',
+    "presets_loaded": '{name} 설정을 불러왔습니다. 경로 스캔을 눌러 시작하세요.',
     "highlights_title": '스캔 핵심 정보',
     "highlights_waiting": '스캔 분석 대기 중…',
     "highlights_folders": '바로 아래의 큰 폴더를 선택하여 위치를 확인하세요.',
