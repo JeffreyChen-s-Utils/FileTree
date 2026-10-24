@@ -770,9 +770,9 @@ shiboken6==6.12.0 \
     # via
     #   -c .github/requirements/test.txt
     #   pyside6-essentials
-texttable==1.7.0 \
-    --hash=sha256:2d2068fb55115807d3ac77a4ca68fa48803e84ebb0ee2340f858107a36522638 \
-    --hash=sha256:72227d592c82b3d7f672731ae73e4d1f88cd8e2ef5b075a7a7f01a23a3743917
+texttable==1.7.1 \
+    --hash=sha256:ce71fc5928ede6cd7a60dbe3cb2845e6df8f5598fe435252ea1b31722415fda7 \
+    --hash=sha256:f1af220bea35ea5cf2bc86105a46a3ca4c5acadf3949cb5a8d3a088d6c03dbda
     # via
     #   -c .github/requirements/test.txt
     #   py7zr
