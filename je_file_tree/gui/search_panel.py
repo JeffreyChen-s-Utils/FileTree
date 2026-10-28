@@ -65,6 +65,7 @@ class SearchPanel(QWidget):
         self._current: SearchWorker | None = None
         self._running: set[SearchWorker] = set()
         self._result: SearchResult | None = None
+        self._validation_error = False
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
         self._timer.setInterval(SEARCH_DELAY_MS)
@@ -111,6 +112,11 @@ class SearchPanel(QWidget):
         name = name.strip()
         if not name:
             return
+        try:
+            self.query()
+        except ValueError:
+            self.rerun()
+            return
         self._searches[name] = {"text": self.box.text(), **self.filters.state()}
         self._fill_saved(select=name)
         self.saved_changed.emit(dict(self._searches))
@@ -127,7 +133,15 @@ class SearchPanel(QWidget):
         """Search for what the box holds (after typing, Enter, or a change to the tree)."""
         self._timer.stop()
         self.stop()
-        query = self.query()
+        self._result = None
+        self.model.set_rows([])
+        self._validation_error = False
+        try:
+            query = self.query()
+        except ValueError:
+            self._validation_error = True
+            self._update_summary()
+            return
         if self._root is None or accepts(query, time.time()) is None:
             self._result = None
             self.model.set_rows([])
@@ -198,9 +212,12 @@ class SearchPanel(QWidget):
         self._update_summary()
 
     def _update_summary(self) -> None:
+        self._save_button.setEnabled(self._root is not None and not self._validation_error)
         self.summary.setText(self._summary_text())
 
     def _summary_text(self) -> str:
+        if self._validation_error:
+            return tr("search_range_invalid")
         if self._current is not None:
             return tr("search_running")
         result = self._result

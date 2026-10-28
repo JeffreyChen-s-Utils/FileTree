@@ -1190,7 +1190,12 @@ on a `SearchWorker` thread: names are matched case-insensitively (plain text any
 patterns against the whole name, several separated by `;`) and the 1,000 largest matches are shown with the
 count and size of all. A new search stops the one before (it checks once per folder) and only the latest
 result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
-move to the Recycle Bin or a folder rescan.
+move to the Recycle Bin or a folder rescan. `SearchRangeDialog` validates a draft before updating
+`SearchFilters`; optional exact integer byte bounds stay in the existing saved keys. Only custom date
+mode stores ISO `date_start` / `date_through` keys. GUI calendar conversion computes each local midnight
+independently and passes inclusive `modified_since` / exclusive `modified_before` timestamps in `Query`.
+Relative presets keep rolling semantics. Invalid persisted bounds cancel current work, clear rows and
+prevent saving; late workers cannot repopulate results. Valid new queries also clear stale rows.
 
 **Clean up.** The Clean up tab has two pages. *Suggestions* (`CleanupPanel`): after every scan a
 `CleanupWorker` runs `core.cleanup.find_cleanup`, one walk that tests each folder against the rules' path

@@ -540,6 +540,15 @@ The [reviewed native evidence](updates/mounts-20261009-freebsd.json) confirms al
 same-device behavior. The diagnostic refuses desktop hosts and accepts no existing mount selector.
 Phase JSON uses explicit UTF-8 atomic writes; even an initial evidence-write error enters owned cleanup.
 
+## Custom search ranges
+
+In **Search**, choose **Custom ranges…** to set either or both size bounds and calendar dates. Sizes include both endpoints. Choose B, KiB, MiB, GiB or TiB; decimals such as 1.5 KiB are accepted only when they equal a whole number of bytes. The largest supported bound is 9223372036854775807 B. Leave a field blank for no limit.
+
+Dates use `YYYY-MM-DD` and local time. Both dates are included, through the midnight starting the following day (exclusive). Each midnight is converted separately, so daylight-saving days need not be 24 hours. Unknown modification times do not match date filters. Week/month/year presets remain relative to each search; custom dates replace those relative conditions. Choosing custom dates without an endpoint shows an error until a date is entered through **Custom ranges…**.
+
+**OK** applies all valid bounds together. Applying with both dates blank also clears a previous relative date preset. **Cancel** leaves the search unchanged. Invalid or reversed bounds keep the dialog open. Exact sizes and dates survive saved searches, restart and language changes. A malformed saved range clears old results, stops the previous search and prevents saving until corrected. A new valid search also clears old rows while it runs.
+
+
 ## Command line without a window
 
 The console entry uses only the core and never imports Qt. It writes the same atomic CSV/JSON exports

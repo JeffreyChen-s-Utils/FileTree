@@ -1332,8 +1332,24 @@ EN: dict[str, str] = {
     "search_hint": ("Type part of a name or a pattern with * and ?, choose conditions, or both, to find files "
                     "and folders anywhere in the scan."),
     "search_running": "Searching…",
-    "search_larger": "Larger than",
-    "search_smaller": "Smaller than",
+    'search_larger': 'At least (inclusive)',
+    'search_smaller': 'At most (inclusive)',
+    'search_custom_ranges': 'Custom ranges…',
+    'search_changed_custom': 'custom dates',
+    'search_exact_bytes': '{value} B (exact)',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': 'From date (inclusive)',
+    'search_date_through': 'Through date (inclusive)',
+    'search_range_hint': ('Leave either bound blank for no limit. Sizes use'
+        ' exact bytes; dates use local time (YYYY-MM-DD).'),
+    'search_range_size_error': ('Enter a nonnegative size in whole bytes, up to 9223'
+        '372036854775807 B. Fractional bytes are not allowed.'),
+    'search_range_order_error': ('The minimum size must '
+        'not exceed the maximum.'),
+    'search_range_date_error': ('Enter valid local dates as YYYY-MM-DD,'
+        ' with the start no later than the end.'),
+    'search_range_invalid': ('Invalid search ranges. Correct the size o'
+        'r date bounds before searching or saving.'),
     "search_no_limit": "no limit",
     "search_changed": "Changed",
     "search_changed_any": "any time",
@@ -2727,8 +2743,21 @@ ZH_TW: dict[str, str] = {
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "輸入名稱的一部分或含 * 和 ? 的樣式、選擇條件，或兩者一起，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
-    "search_larger": "大於",
-    "search_smaller": "小於",
+    'search_larger': '至少（含）',
+    'search_smaller': '至多（含）',
+    'search_custom_ranges': '自訂範圍…',
+    'search_changed_custom': '自訂日期',
+    'search_exact_bytes': '{value} B（精確）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '起始日期（含）',
+    'search_date_through': '結束日期（含）',
+    'search_range_hint': '留空表示不限。大小使用精確位元組；日期使用本機時間（YYYY-MM-DD）。',
+    'search_range_size_error': ('請輸入非負整數位元組，最多 9223372036'
+        '854775807 B，不接受不足一位元組的數值。'),
+    'search_range_order_error': '大小下限不可超過上限。',
+    'search_range_date_error': ('請以 YYYY-MM-DD 輸入有效'
+        '的本機日期，起始日期不可晚於結束日期。'),
+    'search_range_invalid': '搜尋範圍無效。請修正大小或日期範圍後再搜尋或儲存。',
     "search_no_limit": "不限",
     "search_changed": "修改時間",
     "search_changed_any": "不限",
@@ -4104,8 +4133,21 @@ ZH_CN: dict[str, str] = {
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "输入名称的一部分或含 * 和 ? 的模式、选择条件，或两者一起，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",
-    "search_larger": "大于",
-    "search_smaller": "小于",
+    'search_larger': '至少（含）',
+    'search_smaller': '至多（含）',
+    'search_custom_ranges': '自定义范围…',
+    'search_changed_custom': '自定义日期',
+    'search_exact_bytes': '{value} B（精确）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '开始日期（含）',
+    'search_date_through': '结束日期（含）',
+    'search_range_hint': '留空表示不限。大小使用精确字节；日期使用本地时间（YYYY-MM-DD）。',
+    'search_range_size_error': ('请输入非负整数字节，最多 9223372036'
+        '854775807 B，不接受不足一字节的数值。'),
+    'search_range_order_error': '大小下限不能超过上限。',
+    'search_range_date_error': ('请以 YYYY-MM-DD 输入有效'
+        '的本地日期，开始日期不能晚于结束日期。'),
+    'search_range_invalid': '搜索范围无效。请修正大小或日期范围后再搜索或保存。',
     "search_no_limit": "不限",
     "search_changed": "修改时间",
     "search_changed_any": "不限",
@@ -5845,8 +5887,23 @@ JA: dict[str, str] = {
         '場所にあるファイルとフォルダーを検索します。'
     ),
     'search_running': '検索中…',
-    'search_larger': 'より大きい',
-    'search_smaller': 'より小さい',
+    'search_larger': '最小サイズ（含む）',
+    'search_smaller': '最大サイズ（含む）',
+    'search_custom_ranges': '範囲を指定…',
+    'search_changed_custom': '日付指定',
+    'search_exact_bytes': '{value} B（正確）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '開始日（含む）',
+    'search_date_through': '終了日（含む）',
+    'search_range_hint': ('空欄は制限なし。サイズは正確なバイト数、日付'
+        'はローカル時間（YYYY-MM-DD）です。'),
+    'search_range_size_error': ('0 以上、9223372036854775807 B 以下の整'
+        '数バイト数を入力してください。1 バイト未満の端数は使えません。'),
+    'search_range_order_error': '最小サイズは最大サイズ以下にしてください。',
+    'search_range_date_error': ('有効なローカル日付を YYYY-MM-DD 形'
+        '式で入力し、開始日を終了日以前にしてください。'),
+    'search_range_invalid': ('検索範囲が無効です。サイズまたは日付の範'
+        '囲を修正してから検索・保存してください。'),
     'search_no_limit': '制限なし',
     'search_changed': '変更されました',
     'search_changed_any': 'いつでも',
@@ -7448,8 +7505,23 @@ KO: dict[str, str] = {
         '치에서나 파일과 폴더를 찾습니다.'
     ),
     'search_running': '검색 중…',
-    'search_larger': '다음보다 큼',
-    'search_smaller': '보다 작음',
+    'search_larger': '최소 크기(포함)',
+    'search_smaller': '최대 크기(포함)',
+    'search_custom_ranges': '범위 지정…',
+    'search_changed_custom': '날짜 지정',
+    'search_exact_bytes': '{value} B(정확)',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '시작 날짜(포함)',
+    'search_date_through': '종료 날짜(포함)',
+    'search_range_hint': ('비워 두면 제한이 없습니다. 크기는 정확한 바이트 '
+        '수이며 날짜는 현지 시간(YYYY-MM-DD)입니다.'),
+    'search_range_size_error': ('0 이상 9223372036854775807 B 이하의 정수 '
+        '바이트를 입력하세요. 1바이트 미만의 소수는 허용되지 않습니다.'),
+    'search_range_order_error': '최소 크기는 최대 크기를 초과할 수 없습니다.',
+    'search_range_date_error': ('유효한 현지 날짜를 YYYY-MM-DD 형식으로 입'
+        '력하고 시작 날짜를 종료 날짜 이전으로 지정하세요.'),
+    'search_range_invalid': ('검색 범위가 잘못되었습니다. 검색하거나 저장'
+        '하기 전에 크기 또는 날짜 범위를 수정하세요.'),
     'search_no_limit': '제한 없음',
     'search_changed': '변경됨',
     'search_changed_any': '언제든지',
