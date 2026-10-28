@@ -28,12 +28,14 @@ def test_full_scan_history_chart_and_modal_comparison_use_earlier_saved_tree(
     def select_earlier(dialog):
         _wait(qapp, lambda: not dialog._running)
         assert dialog.model.rowCount() == 2
-        assert dialog.chart.entries[0].size == 1000 and dialog.chart.entries[-1].size == 1300
-        assert "1,000 B" in dialog.chart.accessibleDescription() and "1.3 KB" in dialog.chart.accessibleDescription()
+        assert dialog.chart.points[0].size == 1000 and dialog.chart.points[-1].size == 1300
+        assert "1,000 B" in dialog.chart.accessibleDescription()
+        assert dialog.trend_view.item(1, 1).text() == '1.3 KB'
         dialog.resize(870, 640)
         dialog.show()
         qapp.processEvents()
         assert not dialog.chart.grab().isNull()
+        dialog.tabs.setCurrentWidget(dialog.view)
         dialog.view.setCurrentIndex(dialog.model.index(0, 0))
         assert dialog.compare_button.isEnabled()
         dialog.compare_selected()
@@ -144,12 +146,12 @@ def test_dialog_stop_close_join_and_late_reply_are_ignored(window, qapp, sample_
     original = store.read(str(sample_tree))
     started = threading.Event()
 
-    def waiting(_root, *, cancel, **_kwargs):
+    def waiting(_store, _query, *, cancel):
         started.set()
         assert cancel.wait(10)
         return original
 
-    monkeypatch.setattr(store, "read", waiting)
+    monkeypatch.setattr(history, "query_trend", waiting)
     dialog = HistoryDialog(store, str(sample_tree), "auto", window)
     _wait(qapp, started.is_set)
     dialog.stop()
@@ -188,6 +190,7 @@ def test_history_ready_waits_asynchronously_for_join_before_enabling_comparison(
         QTimer.singleShot(20, release.set)
         _wait(qapp, lambda: not dialog._running)
         assert release.is_set() and dialog.worker.wait(0) and dialog.model.rowCount() == 1
+        dialog.tabs.setCurrentWidget(dialog.view)
         dialog.view.setCurrentIndex(dialog.model.index(0, 0))
         dialog.compare_selected()
         _wait(qapp, lambda: bool(compared))

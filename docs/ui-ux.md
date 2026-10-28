@@ -8,6 +8,18 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **History trends:** a copyable full path, loaded-folder chooser and root action make scope explicit.
+  The chooser pages through captured direct folders on its own cancellable workers and retains the
+  query on Cancel. Recent 30/90-day and all-history choices share custom local date boundaries and
+  optional calendars. Invalid text remains and receives focus. Chart and table share point indices,
+  including same-time observations and unknown markers in a separate band. Arrows navigate points;
+  Tab leaves tables. Selected details distinguish unknown size from unknown change and expose exact
+  bytes beside global-unit signed changes. Empty, single, capped and incompatible results have
+  separate explanations. Full-root comparison remains an independent tab. Compact bottom actions
+  keep the table usable on a 1024×768 logical desktop. `tools/verify_trend_ux.py` uses hidden native
+  windows, private history and actual keyboard focus; local contrast simulation does not verify
+  operating-system contrast or screen readers.
+
 - **Workspace templates:** a labelled save section captures the workspace when the manager opens.
   Add and Update name that source; edits in the separate load preview apply only to this load and
   require another path check. Active tabs have a text label. Beside Replace tabs, live counts explain
@@ -130,3 +142,5 @@ themes without displaying windows. Offscreen widget tests do not establish real-
 or native macOS/Linux interaction; those existing verification items remain in `progress.md`.
 
 Search derives its removable condition summary from SearchFilters.state(), with explicit entire-scan scope. Name, each size bound, dates, type and kind have keyboard-accessible removal actions. Filter controls and long summaries scroll independently above the retained result table. Optional dates use a localized calendar with explicit acceptance; errors remain beside the input and move focus to that field. Typing immediately invalidates old results before the debounce delay. Native evidence is reproducible with tools/verify_search_ux.py; contrast is a local simulated palette.
+
+Budget tables use arrow keys for row selection and Tab to leave for the editor. Opening or expanding search scrolls its focused name field into view. Calendar minimum geometry includes every week under the applied stylesheet. The budget/search probes send keys only to actual focus and exercise each language/theme/desktop combination at a checked native pixel ratio; hidden-window action setup does not establish operating-system shortcut delivery or screen-reader speech.

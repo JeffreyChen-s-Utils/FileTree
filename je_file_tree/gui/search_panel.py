@@ -112,6 +112,7 @@ class SearchPanel(QWidget):
         self.controls_scroll.setVisible(visible)
         if visible:
             self.box.setFocus()
+            self.controls_scroll.ensureWidgetVisible(self.box)
 
     def _edited(self, _text: str) -> None:
         self.stop()
@@ -213,7 +214,8 @@ class SearchPanel(QWidget):
         worker.start()
 
     def stop(self, *, wait: bool = False) -> None:
-        """Stop every search still running; with ``wait``, until their threads have ended."""
+        """Cancel pending input and stop running searches; ``wait`` joins their threads."""
+        self._timer.stop()
         self._current = None
         for worker in list(self._running):
             worker.stop()
@@ -225,6 +227,7 @@ class SearchPanel(QWidget):
         self.conditions_view.edit.setChecked(True)
         self.box.setFocus()
         self.box.selectAll()
+        self.controls_scroll.ensureWidgetVisible(self.box)
 
     def retranslate(self) -> None:
         """Re-read every translated text (and the sizes, after a change of unit)."""

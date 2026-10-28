@@ -69,6 +69,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261028-12 | 2026-10-28 | 整合歷史趨勢導航與共用鍵盤修正 | #done #gui #ux #history | [2026-10-e](2026-10-e.md) |
+| U-20261028-11 | 2026-10-28 | 確認搜尋測試清理修正通過跨平台檢查 | #done #tests #gui | [2026-10-e](2026-10-e.md) |
 | U-20261028-10 | 2026-10-28 | 明確清理獨立搜尋測試面板 | #incident #tests #gui | [2026-10-e](2026-10-e.md) |
 | U-20261028-09 | 2026-10-28 | 分開範本儲存來源與載入預覽 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
 | U-20261028-08 | 2026-10-28 | 顯示與逐項解除搜尋條件 | #done #gui #ux #search | [2026-10-e](2026-10-e.md) |

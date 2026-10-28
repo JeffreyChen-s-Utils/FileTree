@@ -185,6 +185,8 @@ Read-only virtual-disk discovery merges Windows `\\?\UNC\server\share` registrat
 
 The application opens independent **scan tabs**. Use **New scan tab** or `Ctrl+T` for another drive/folder, and `Ctrl+W` to close the active tab (closing the last tab exits). Up to 16 tabs can scan concurrently; each owns its tree, result views, filters, workers and history capture. Closing one joins its own workers; Quit joins every tab. Language changes apply to all tabs. Source-operation reviews, Trash, Undo, copying, renaming, hard-link replacement, compression and disk compaction share one busy guard across tabs; snapshots and approvals are still rechecked separately for each source. Combined roots remain one read-only tab. Scan concurrency and gentle priority apply per tab, so reduce workers or enable gentle scanning when running several scans. The `create_window` Python integration still creates one window; the GUI entry point uses `create_workspace`.
 
+In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search.
+
 ## Features
 
 The welcome page groups folder/drive scanning, drive tools and recent folders in a scrollable layout. The path toolbar has an explicit **Scan path** button; Enter uses the same enabled action, and empty input cannot start a scan. Results show four counters for logical size, recorded allocation, files and folders, with an explicit live/finished/incomplete state and a shortcut to unreadable entries. Recorded allocation may be estimated or shared; it is not a savings estimate. Scan exclusions and mount boundaries still apply after completion. Choose an analysis in the sidebar, or the dropdown in a narrow window; keyboard navigation and existing menu shortcuts select the same views. The selected-folder list scope remains available above the views. During scanning, elapsed feedback continues between worker replies; Pause stops the activity animation, while Stop explains that current filesystem calls may need to finish before partial results appear. Full current paths remain in tooltips. New labels follow all five languages, size units and System/Light/Dark palettes. The saved tree/analysis split is restored when reopening; first-display defaults do not replace it, and both panes remain noncollapsible. Folder columns keep the nearest folders when a path is shortened, and empty lists say why (a complete scan with no unreadable entries, or nothing matching a filter). Drive rows show their root in native form and the used share in the bar’s tooltip, and the bar turns red from 90 % used. See the [UI and UX design](ui-ux.md).
@@ -416,6 +418,20 @@ boolean flags, days 0–36500, exclusions). Invalid saved settings disable sugge
 manual risk cannot be downgraded, and no custom executable rules are supported.
 
 ### Seeing what grew
+
+Use **Choose loaded folder…** to browse the current scan one level at a time, or **Return to root**.
+The full folder path is copyable. The chooser pages through recorded direct folders without reading
+source directories; Cancel keeps the existing query. Choose the last 30 or 90 days, all retained
+history, or custom dates with optional endpoints and a calendar. Recent periods include today and
+the preceding 29 or 89 local dates. Both endpoint midnights are converted separately across daylight
+saving changes. Invalid input stays visible and receives focus when Apply is pressed.
+
+Selecting a chart point selects the corresponding table row and shows its date, size, signed change
+and exact bytes. Arrow keys visit every observation, including identical timestamps. Unknown sizes
+occupy a separate marker band and break the line. Size and change have separate unknown reasons.
+Changes use the window's size unit with exact-byte tooltips and accessible text. Empty history,
+one observation, capped periods and incompatible records have separate explanations. Tab leaves each
+table; arrow keys move within it. The full-root comparison tab retains its independent selection.
 
 For a completed single-root scan, select a folder and open **File → Scan history…**. The root-relative
 folder field starts at that selection; change it or leave it blank for the root. Enter optional local

@@ -29,8 +29,10 @@ from je_file_tree.gui.app import create_workspace  # noqa: E402
 from je_file_tree.gui.folder_budget_dialog import FolderBudgetDialog  # noqa: E402
 from je_file_tree.gui.folder_budget_store import FolderBudgetStore  # noqa: E402
 from je_file_tree.gui.i18n import LANGUAGES, set_language, tr  # noqa: E402
+from je_file_tree.gui.qt_translation import apply_qt_translation  # noqa: E402
 from je_file_tree.gui.search_ranges import exact_bytes  # noqa: E402
 from je_file_tree.gui.themes import theme_controller  # noqa: E402
+from verify_keyboard import key, prepare_hidden, press, replace_text, select_all, tab_to, verify_scale  # noqa: E402
 
 
 def require(condition: bool, message: str) -> None:
@@ -51,7 +53,7 @@ def wait(app: QApplication, condition) -> None:
 
 def hidden_open(dialog: FolderBudgetDialog) -> None:
     """Keep a production dialog off screen before opening it."""
-    dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+    prepare_hidden(dialog)
     _ORIGINAL_OPEN(dialog)
 
 
@@ -165,6 +167,74 @@ def observation_states(app: QApplication, workspace, dialog, source: Path) -> No
             'Budget state examples were not established')
 
 
+def select_last_rule(dialog: FolderBudgetDialog) -> None:
+    """Select the final rule using table navigation rather than a selection setter."""
+    tab_to(dialog, dialog.table)
+    key(dialog, Qt.Key.Key_Home, Qt.KeyboardModifier.ControlModifier)
+    for _ in range(dialog.table.rowCount() - 1):
+        key(dialog, Qt.Key.Key_Down)
+
+
+def type_binary_limit(dialog: FolderBudgetDialog, value: str) -> None:
+    """Type an exact KiB amount and choose its unit through the keyboard."""
+    replace_text(dialog, dialog.limit, value)
+    tab_to(dialog, dialog.unit)
+    key(dialog, Qt.Key.Key_Home)
+    key(dialog, Qt.Key.Key_Down)
+
+
+def keyboard_budget(workspace, dialog, output: Path) -> FolderBudgetDialog:
+    """Add, edit, cancel and reopen a rule using the actual focus chain in each configuration."""
+    original_count = len(workspace.budgets.rows)
+    target = str(output.parent.resolve() / ('Keyboard-資料夾-&-' + 'long-path-' * 14))
+    press(dialog, dialog.new_button)
+    replace_text(dialog, dialog.name, 'Keyboard budget')
+    original_chooser = QFileDialog.getExistingDirectory
+    QFileDialog.getExistingDirectory = lambda *_args: target
+    try:
+        press(dialog, dialog.choose_button)
+    finally:
+        QFileDialog.getExistingDirectory = original_chooser
+    select_all(dialog, dialog.path, target)
+    type_binary_limit(dialog, '1.5')
+    press(dialog, dialog.add_button)
+    require(len(workspace.budgets.rows) == original_count + 1, 'Keyboard Add did not save a rule')
+    select_last_rule(dialog)
+    identity = dialog.selected_identity
+    require(identity == workspace.budgets.rows[-1].rule.identity, 'Keyboard row selection chose another rule')
+    require(exact_bytes(dialog.limit.text(), dialog.unit.currentText()) == LIMIT_BYTES,
+            'Keyboard-created limit did not round trip')
+    type_binary_limit(dialog, '1.5009765625')
+    press(dialog, dialog.update_button)
+    select_last_rule(dialog)
+    replace_text(dialog, dialog.name, 'Unsubmitted keyboard draft')
+    replace_text(dialog, dialog.limit, '-1')
+    draft = dialog._input()
+    press(dialog, dialog.update_button)
+    require(dialog._input() == draft and dialog.focusWidget() is dialog.limit and dialog.error.isVisible(),
+            'Keyboard validation lost the draft, field focus or visible error')
+    require(dialog.grab().save(str(output)), 'Could not capture the keyboard validation error')
+    key(dialog, Qt.Key.Key_Escape)
+    require(workspace._budget_dialog is None, 'Keyboard Escape did not close the draft')
+    fresh = FolderBudgetStore(QSettings(workspace.settings.fileName(), QSettings.Format.IniFormat))
+    row = next(row for row in fresh.rows if row.rule.identity == identity)
+    require(row.rule.name == 'Keyboard budget' and row.rule.limit == LIMIT_BYTES + 1,
+            'Keyboard Update or cancellation changed the persisted exact value')
+    press(workspace, workspace.budget_button)
+    dialog = workspace._budget_dialog
+    require(dialog is not None, 'Keyboard reopening failed')
+    if dialog.focusWidget() is None:
+        dialog.table.setFocus()
+    select_last_rule(dialog)
+    require(dialog.selected_identity == identity, 'Reopened keyboard selection lost the rule')
+    require(exact_bytes(dialog.limit.text(), dialog.unit.currentText()) == LIMIT_BYTES + 1,
+            'Reopened exact limit was rounded')
+    select_all(dialog, dialog.path, target)
+    press(dialog, dialog.delete_button)
+    require(len(workspace.budgets.rows) == original_count, 'Keyboard rule cleanup failed')
+    return dialog
+
+
 def capture(app: QApplication, workspace, dialog, args) -> list[dict[str, object]]:
     """Check rendered geometry and save each requested language/theme/size combination."""
     records = []
@@ -173,10 +243,16 @@ def capture(app: QApplication, workspace, dialog, args) -> list[dict[str, object
     sizes = ((1024, 768), (1366, 768)) if args.width is None else ((args.width, args.height),)
     for language in languages:
         set_language(language)
+        apply_qt_translation(language)
         workspace.retranslate()
         for theme in themes:
             palette(theme)
             for width, height in sizes:
+                dialog.resize(min(990, width - 40), min(620, height - 80))
+                app.processEvents()
+                name = f'budget-{language}-{theme}-{width}x{height}'
+                ratio = verify_scale(dialog)
+                dialog = keyboard_budget(workspace, dialog, args.output / f'{name}-error.png')
                 dialog.resize(min(990, width - 40), min(620, height - 80))
                 app.processEvents()
                 require(dialog.width() <= width and dialog.height() <= height,
@@ -197,11 +273,11 @@ def capture(app: QApplication, workspace, dialog, args) -> list[dict[str, object
                 require(dialog.table.item(3, 6).text() == tr('budget_not_scanned'),
                         'New rule and changed limit are indistinguishable')
                 require('1,536 B' in dialog.table.item(0, 2).toolTip(), 'Exact limit is missing')
-                name = f'budget-{language}-{theme}-{width}x{height}.png'
-                require(dialog.grab().save(str(args.output / name)), 'Could not save budget screenshot')
-                records.append({'image': name, 'language': language, 'theme': theme,
+                require(dialog.grab().save(str(args.output / f'{name}.png')), 'Could not save budget screenshot')
+                records.append({'image': f'{name}.png', 'error_image': f'{name}-error.png',
+                                'keyboard_journey': 'passed', 'language': language, 'theme': theme,
                                 'desktop': [width, height], 'dialog': [dialog.width(), dialog.height()],
-                                'device_pixel_ratio': dialog.devicePixelRatioF()})
+                                'device_pixel_ratio': ratio})
     return records
 
 
@@ -226,19 +302,21 @@ def main() -> None:
         settings.setValue('language', 'en')
         settings.setValue('check_updates', False)
         workspace = create_workspace(settings)
-        workspace.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+        prepare_hidden(workspace)
         workspace.show()
+        workspace.budget_button.setFocus()
         dialog = exercise(app, workspace, source)
         observation_states(app, workspace, dialog, source)
         records = capture(app, workspace, dialog, args)
-        dialog.reject()
+        workspace._budget_dialog.reject()
         workspace.close()
         wait(app, lambda: workspace._close_ready)
     result = {'checks': 'passed', 'scale_factor': os.environ.get('QT_SCALE_FACTOR', 'default'),
               'contrast': 'simulated local palette; native OS contrast not changed or verified',
+              'keyboard_setup': 'Initial focus seeded only when a newly opened hidden dialog has no focus.',
               'chooser': 'OS chooser return stubbed; production button and input exercised', 'captures': records}
     (args.output / 'budget-ux.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
-    sys.stdout.write(f'Budget UX verified; {len(records)} captures written to {args.output}\n')
+    sys.stdout.write(f'Budget UX verified; {len(records)} configurations written to {args.output}\n')
 
 
 if __name__ == '__main__':

@@ -30,6 +30,8 @@ class CalendarDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(self.calendar)
         layout.addWidget(self.buttons)
+        self.calendar.ensurePolished()
+        self.calendar.setMinimumSize(self.calendar.layout().sizeHint())
         self.calendar.setFocus()
 
 

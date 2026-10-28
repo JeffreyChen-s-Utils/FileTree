@@ -423,6 +423,17 @@ zero. Adjacent differences require compatible metadata; the full-period net uses
 and is withheld when the period is capped. `gui.history` owns editable root-relative folder and local
 inclusive-date controls, cancellable queries, a gap-aware chart, bounded contribution rows and the
 existing historical comparison selection. Query work never walks the live source on the GUI thread.
+`MainWindow.show_history` passes the loaded root to `HistoryDialog`; its initial query already uses
+the selected relative folder, keeping the full path, chart and rows in the same scope. `gui.loaded_folder` owns a separate
+`WorkerDialog` and cancellable direct-child page workers; it never enumerates descendants or source
+directories. Accepted nodes become relative paths by their parent chain. History scheduling waits only
+for its own retired history readers, so navigation does not block queries; dismissal fences every
+descendant worker. `OptionalDateEdit` preserves literal drafts and optional calendar endpoints. Recent
+periods use one captured local date and the same independently converted midnights as custom queries.
+One `HistoryTrend` supplies chart/table point indices, exact details and separate size/change reasons;
+duplicate timestamps and unknown sizes remain keyboard-selectable. Selection setters do not emit.
+`format_change` uses the active unit, with exact-byte accessible text/tooltips. Full-root comparison
+retains its original model, selection and saved-scan loading flow.
 
 MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded default on invalid values) and
 passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
@@ -1244,7 +1255,7 @@ independently and passes inclusive `modified_since` / exclusive `modified_before
 Relative presets keep rolling semantics. Invalid persisted bounds cancel current work, clear rows and
 prevent saving; late workers cannot repopulate results. Valid new queries also clear stale rows.
 
-SearchPanel owns query edits and worker identity. SearchFilters.state()/apply() remains the sole condition representation; SearchConditions derives labels and emits removal requests without storing a second query. Text edits cancel old work immediately, while the existing timer only delays launching new work. OptionalDateEdit owns an asynchronous CalendarDialog whose accepted ISO date changes only the parent range draft. SearchRangeDialog commits only after exact-byte and inclusive local-calendar validation; cancellation leaves the active query untouched.
+SearchPanel owns query edits and worker identity. SearchFilters.state()/apply() remains the sole condition representation; SearchConditions derives labels and emits removal requests without storing a second query. Text edits cancel old work immediately, while the existing timer only delays launching new work. Stopping the panel also cancels that timer, so closing cannot launch a pending query. OptionalDateEdit owns an asynchronous CalendarDialog whose accepted ISO date changes only the parent range draft. SearchRangeDialog commits only after exact-byte and inclusive local-calendar validation; cancellation leaves the active query untouched.
 
 **Clean up.** The Clean up tab has two pages. *Suggestions* (`CleanupPanel`): after every scan a
 `CleanupWorker` runs `core.cleanup.find_cleanup`, one walk that tests each folder against the rules' path

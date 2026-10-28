@@ -6,7 +6,7 @@ import pytest
 from PySide6.QtCore import QCoreApplication, QDate, QEvent, QLocale, Qt
 from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtGui import QTextDocument
-from PySide6.QtWidgets import QDialogButtonBox, QTableView
+from PySide6.QtWidgets import QDialogButtonBox, QTableView, QWidget
 
 from je_file_tree.core.node import Node
 from je_file_tree.core.search import SearchResult
@@ -58,6 +58,42 @@ def test_individual_removal_and_clear_preserve_saved_and_root(panel, qapp):
     panel._found(stale, SearchResult([root], 1, 99))
     assert panel.model.rowCount() == 0 and panel._result is None
     assert 'C:/A<&' in panel.conditions_view.scope.text()
+
+
+@pytest.mark.parametrize('collapsed', [False, True])
+def test_reentering_search_reveals_focused_name_after_scrolling(panel, qapp, collapsed):
+    panel.resize(520, 450)
+    panel.focus()
+    qapp.processEvents()
+    scroll = panel.controls_scroll
+    scroll.setFixedHeight(40)
+    qapp.processEvents()
+    scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
+    assert scroll.verticalScrollBar().value() > 0
+    if collapsed:
+        panel.conditions_view.edit.setChecked(False)
+        panel.conditions_view.edit.setFocus()
+        QTest.keyClick(panel.focusWidget(), Qt.Key.Key_Space)
+    else:
+        panel.focus()
+    qapp.processEvents()
+    assert panel.focusWidget() is panel.box
+    viewport = scroll.viewport()
+    top = panel.box.mapTo(viewport, panel.box.rect().topLeft()).y()
+    assert top >= 0 and top + panel.box.height() <= viewport.height()
+
+
+def test_stopping_search_cancels_pending_debounce_before_close(panel, qapp):
+    panel._timer.setInterval(0)
+    timeout = QSignalSpy(panel._timer.timeout)
+    panel.box.setText('pending query')
+    assert panel._timer.isActive()
+    panel.stop(wait=True)
+    panel.close()
+    assert not panel._timer.isActive()
+    qapp.processEvents()
+    assert timeout.count() == 0
+    assert panel._current is None
 
 
 @pytest.mark.parametrize('bad', [True, [], MAX_BYTES + 1, -1])
@@ -122,6 +158,27 @@ def test_calendar_keyboard_cancel_accept_clear_and_parent_draft(qapp):
     assert date.text() == ''
     dialog.reject()
     assert dialog.values is None
+
+
+@pytest.mark.parametrize('language', ['en', 'zh-TW', 'zh-CN', 'ja', 'ko'])
+def test_styled_calendar_keeps_every_week_visible_within_small_desktop(qapp, language):
+    previous = current_language()
+    parent = QWidget()
+    parent.setStyleSheet('QTableView { border: 1px solid black; }')
+    set_language(language)
+    dialog = CalendarDialog('2020-01-01', parent)
+    dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+    try:
+        dialog.show()
+        qapp.processEvents()
+        grid = dialog.calendar.findChild(QTableView)
+        last = grid.model().index(grid.model().rowCount() - 1, grid.model().columnCount() - 1)
+        assert grid.viewport().rect().contains(grid.visualRect(last))
+        assert dialog.width() <= 1024 and dialog.height() <= 768
+    finally:
+        dialog.reject()
+        parent.deleteLater()
+        set_language(previous)
 
 
 def test_invalid_date_focus_and_open_boundary(qapp):

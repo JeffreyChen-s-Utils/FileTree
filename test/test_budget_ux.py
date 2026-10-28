@@ -44,6 +44,28 @@ def _publish(store, amount, *, when=1_700_000_000.0, reason=None):
     store.publish(BudgetBatch((observation,)))
 
 
+def test_arrow_selection_then_tab_reaches_editor_without_changing_rule(tmp_path, qapp):
+    dialog, store = _dialog(tmp_path, qapp)
+    store.put('first', str(tmp_path / 'first'), 1536)
+    second = store.put('second', str(tmp_path / 'second'), 1537)
+    dialog.table.setFocus()
+    QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_Down)
+    QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_Down)
+    assert dialog.selected_identity == second.identity
+    before = dialog._input()
+    QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_Tab)
+    assert dialog.focusWidget() is dialog.name
+    assert dialog._input() == before
+    QTest.keyClicks(dialog.focusWidget(), 'draft')
+    draft = dialog._input()
+    QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_Tab)
+    assert dialog.focusWidget() is dialog.path
+    assert dialog._input() == draft
+    assert dialog.selected_identity == second.identity
+    assert store.rows[1].rule.name == 'second'
+    dialog.reject()
+
+
 def test_observation_units_exact_values_and_old_limit_are_distinct(tmp_path, qapp):
     dialog, store = _dialog(tmp_path, qapp, unit='KB')
     rule = store.put('data', str(tmp_path / 'data'), 1536)

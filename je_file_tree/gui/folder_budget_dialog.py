@@ -33,6 +33,7 @@ class FolderBudgetDialog(QDialog):
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setTabKeyNavigation(False)
         self.table.itemSelectionChanged.connect(self._selection)
         self.name, self.path, self.limit = QLineEdit(), QLineEdit(selected_path), QLineEdit()
         self.name.setMaxLength(MAX_NAME)
