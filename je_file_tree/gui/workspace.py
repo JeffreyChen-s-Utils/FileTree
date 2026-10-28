@@ -19,7 +19,7 @@ from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
 from je_file_tree.gui.scan_preferences import ScanDefaults
 from je_file_tree.core.scanner import ScanOptions
-from je_file_tree.gui.workspace_templates import WorkspaceTemplate
+from je_file_tree.gui.workspace_templates import ReplacementImpact, TabImpact, WorkspaceTemplate
 from je_file_tree.gui.workspace_templates_dialog import WorkspaceTemplatesDialog
 
 
@@ -36,6 +36,7 @@ class ScanWorkspace(QMainWindow):
         self.tabs.setMovable(True)
         self.tabs.tabCloseRequested.connect(self.close_tab)
         self.tabs.currentChanged.connect(self._activated)
+        self.tabs.tabBar().tabMoved.connect(self._refresh_template_impact)
         self.setCentralWidget(self.tabs)
         self._closing, self._services = False, False
         self._force_close = False
@@ -109,6 +110,7 @@ class ScanWorkspace(QMainWindow):
         window.shutdown_finished.connect(lambda: QTimer.singleShot(0, self, lambda: self._remove_closed_tab(window)))
         window.path_edit.textChanged.connect(lambda: self._label(window))
         window.scan_scope_changed.connect(lambda: self._label(window))
+        window.scan_activity_changed.connect(self._refresh_template_impact)
         window.size_unit_changed.connect(lambda _unit: self._budget_unit())
         window.results.tree_model.modelReset.connect(lambda: self._label(window))
         self.tabs.setCurrentIndex(self.tabs.addTab(window, tr("workspace_empty")))
@@ -151,11 +153,13 @@ class ScanWorkspace(QMainWindow):
             title = tr("multi_roots")
         self.tabs.setTabText(index, title.replace("&", "&&"))
         self.tabs.setTabToolTip(index, "\n".join(scope) if isinstance(scope, tuple) else path)
+        self._refresh_template_impact()
 
     def _activated(self, _index: int) -> None:
         if self.tabs.count() and not self._closing and self._replacement is None:
             self.current._update_actions()
             self._budget_unit()
+        self._refresh_template_impact()
 
     def _budget_unit(self) -> None:
         if self._budget_dialog is not None and self.current is not None:
@@ -179,6 +183,7 @@ class ScanWorkspace(QMainWindow):
             return
         self.tabs.removeTab(index)
         self.operations.windows.remove(window)
+        self._refresh_template_impact()
         window.deleteLater()
         if self._replacement is not None:
             if not self.operations.windows:
@@ -205,8 +210,22 @@ class ScanWorkspace(QMainWindow):
             QMessageBox.warning(self, tr("workspace_templates"), tr("templates_invalid"))
             return
         self._templates_dialog = dialog
+        self._refresh_template_impact()
+        dialog.replacement_requested.connect(self._refresh_template_impact)
         dialog.finished.connect(lambda result: self._templates_finished(dialog, result))
         dialog.open()
+
+    def replacement_impact(self) -> ReplacementImpact:
+        """Read live tab ownership, including queued scans, without inspecting the filesystem."""
+        return ReplacementImpact(tuple(TabImpact(
+            self.tabs.tabText(index).replace("&&", "&"), window.capture_scan_scope(),
+            index == self.tabs.currentIndex(), window._worker is not None,
+            window.results.outcome is not None,
+        ) for index in range(self.tabs.count()) for window in (self.tabs.widget(index),)))
+
+    def _refresh_template_impact(self) -> None:
+        if self._templates_dialog is not None:
+            self._templates_dialog.set_replacement_impact(self.replacement_impact())
 
     def show_budgets(self, selected_path: str = "") -> None:
         """Show one workspace manager; its rows are the persisted alert surface."""

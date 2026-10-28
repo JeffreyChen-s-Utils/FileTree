@@ -39,6 +39,14 @@ BackgroundMonitor, then joined pages are replaced with idle inputs and transient
 Application close wins over validation and retirement. Background dispatch is guarded during
 replacement; no template restores results, approvals or scanner authority. Restart still scans.
 
+`ScanWorkspace.replacement_impact` owns a bounded `ReplacementImpact` of typed per-tab titles,
+complete next-scan scopes, active state, scan ownership and result presence. The dialog only renders
+that value. Tab changes and `MainWindow.scan_activity_changed` refresh it, including queued owners,
+branch scans, terminal results and pending cancellation; replacement requests refresh it again.
+Ownership, rather than thread running state, includes queued and stopping scans. The immutable
+opening `WorkspaceState` remains the save source; the editable load draft and availability report
+stay separate, and path edits invalidate the report without changing saved templates.
+
 `TrashWorker` prepares an immutable, scalar `MoveSummary` before delivery. The persistent
 `CleanupCompletion` header retains counts/logical bytes and opens scrollable transient details without
 resizing the analysis workspace. Its records/undo/original-folder rescan actions reuse existing owners

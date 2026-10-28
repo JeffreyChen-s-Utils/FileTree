@@ -69,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261028-09 | 2026-10-28 | 分開範本儲存來源與載入預覽 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
 | U-20261028-08 | 2026-10-28 | 顯示與逐項解除搜尋條件 | #done #gui #ux #search | [2026-10-e](2026-10-e.md) |
 | U-20261028-07 | 2026-10-28 | 改善容量預算的精確編輯與觀察狀態 | #done #gui #ux #capacity | [2026-10-e](2026-10-e.md) |
 | U-20261028-06 | 2026-10-28 | Persist independent folder budgets and reminder episodes | #done #capacity #gui | [2026-10-e](2026-10-e.md) |

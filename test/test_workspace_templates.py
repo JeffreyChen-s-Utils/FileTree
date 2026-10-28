@@ -5,7 +5,9 @@ import json
 import os
 import threading
 
-from PySide6.QtCore import QSettings, QTimer
+from PySide6.QtCore import QSettings, QTimer, Qt
+from PySide6.QtGui import QTextDocument
+from PySide6.QtWidgets import QMessageBox
 import pytest
 
 from test_gui import _wait
@@ -299,3 +301,144 @@ def test_saved_template_actions_preserve_current_capture(workspace, tmp_path, qa
     assert dialog.chosen == state
     assert workspace.current is page and page._worker is None and not page._closing
     dialog.deleteLater()
+
+
+def _open_templates(workspace, monkeypatch):
+    original = WorkspaceTemplatesDialog.open
+
+    def hidden(dialog):
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+        original(dialog)
+
+    monkeypatch.setattr(WorkspaceTemplatesDialog, "open", hidden)
+    workspace.show_templates()
+    return workspace._templates_dialog
+
+
+def test_preview_edit_never_changes_saved_opening_snapshot(workspace, tmp_path, qapp, monkeypatch):
+    page = workspace.current
+    page.prepare_scan_scope(str(tmp_path))
+    dialog = _open_templates(workspace, monkeypatch)
+    opening = dialog.current
+    dialog.name.setText("Opening")
+    dialog.saved_buttons["add"].click()
+    dialog.table.item(0, 2).setText(str(tmp_path / "missing"))
+    dialog.check.click()
+    _wait(qapp, lambda: dialog.report is not None)
+    assert "1" in dialog.impact_summary.text()
+    assert dialog._draft != opening
+    page.prepare_scan_scope(str(tmp_path / "later-workspace-input"))
+    dialog.saved_buttons["update"].click()
+    assert read_templates(workspace.settings)[0].state == opening
+    assert dialog.current == opening and dialog.report is None
+    dialog.name.setText("")
+    dialog.saved_buttons["update"].click()
+    assert dialog.name.text() == "" and dialog.focusWidget() is dialog.name
+    assert read_templates(workspace.settings)[0].state == opening
+    dialog.reject()
+
+
+def test_live_impact_tracks_queued_owner_and_tab_changes(workspace, tmp_path, qapp, monkeypatch):
+    dialog = _open_templates(workspace, monkeypatch)
+    first = workspace.current
+    monkeypatch.setattr(first, "_dispatch_scan", lambda _worker: None)
+    first.start_scan(str(tmp_path))
+    assert dialog._impact.tabs[0].scanning and not first._worker.isRunning()
+    second = workspace.add_tab()
+    second.prepare_scan_scope((str(tmp_path), str(tmp_path / "other")))
+    assert len(dialog._impact.tabs) == 2 and dialog._impact.tabs[1].active
+    assert str(tmp_path / "other") in dialog.impact_details.toPlainText()
+    workspace.tabs.tabBar().moveTab(1, 0)
+    assert dialog._impact.tabs[0].scope == second.capture_scan_scope()
+    first.stop_scan()
+    assert not any(tab.scanning for tab in dialog._impact.tabs)
+    workspace.close_tab(1)
+    _wait(qapp, lambda: workspace.tabs.count() == 1)
+    assert len(dialog._impact.tabs) == 1
+    dialog.reject()
+
+
+@pytest.mark.parametrize("terminal", ["success", "failure", "cancel"])
+def test_live_impact_updates_during_open_dialog(workspace, tmp_path, qapp, monkeypatch, terminal):
+    entered, release = threading.Event(), threading.Event()
+    original = scan_worker.scan
+
+    def held(path, **kwargs):
+        entered.set()
+        assert release.wait(5)
+        if terminal == "failure":
+            raise OSError("fixture failure")
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(scan_worker, "scan", held)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *_args: None)
+    page = workspace.current
+    page.start_scan(str(tmp_path))
+    _wait(qapp, entered.is_set)
+    dialog = _open_templates(workspace, monkeypatch)
+    assert dialog._impact.tabs[0].scanning
+    if terminal == "cancel":
+        page.stop_scan()
+        assert dialog._impact.tabs[0].scanning
+    release.set()
+    _wait(qapp, lambda: page._worker is None)
+    assert not dialog._impact.tabs[0].scanning
+    assert dialog._impact.tabs[0].has_result == (page.results.outcome is not None)
+    assert (page.results.outcome is not None) == (terminal != "failure")
+    old = page.results.outcome
+    dialog.reject()
+    assert workspace.current is page and page.results.outcome is old
+
+
+def test_literal_tooltips_and_stale_check_reply(workspace, tmp_path):
+    dialog = WorkspaceTemplatesDialog(workspace.settings, _state(str(tmp_path)), workspace)
+    path = str(tmp_path / '<folder>&literal')
+    dialog.table.item(0, 2).setText(path)
+    document = QTextDocument()
+    document.setHtml(dialog.table.item(0, 2).toolTip())
+    assert document.toPlainText() == path
+    worker = object()
+    dialog._worker = worker
+    reason = '<missing>&unavailable'
+    dialog._checked(worker, ((reason,),))
+    document.setHtml(dialog.table.item(0, 3).toolTip())
+    assert document.toPlainText() == reason
+    dialog._worker = None
+    dialog.table.item(0, 2).setText(str(tmp_path))
+    dialog._checked(worker, ((reason,),))
+    assert dialog.report is None and not dialog.load.isEnabled()
+    dialog.reject()
+    dialog.deleteLater()
+
+
+def test_branch_owner_and_late_terminal_do_not_restore_impact(workspace, tmp_path, qapp, monkeypatch):
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    (nested / "data.bin").write_bytes(b"data")
+    page = workspace.current
+    page.start_scan(str(tmp_path))
+    _wait(qapp, lambda: page._worker is None)
+    outcome = page.results.outcome
+    node = next(child for child in outcome.result.root.children if child.path == str(nested))
+    entered, release = threading.Event(), threading.Event()
+    original = scan_worker.scan
+
+    def held(path, **kwargs):
+        entered.set()
+        assert release.wait(5)
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(scan_worker, "scan", held)
+    dialog = _open_templates(workspace, monkeypatch)
+    page.rescan_folder(node)
+    _wait(qapp, entered.is_set)
+    worker = page._worker
+    assert dialog._impact.tabs[0].scanning and dialog._impact.tabs[0].has_result
+    page.stop_scan()
+    worker.cancelled.emit(None)
+    assert not dialog._impact.tabs[0].scanning
+    worker.succeeded.emit(outcome)
+    assert not dialog._impact.tabs[0].scanning and page.results.outcome is outcome
+    release.set()
+    _wait(qapp, lambda: worker not in page._scan_workers)
+    dialog.reject()

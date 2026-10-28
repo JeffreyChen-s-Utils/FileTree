@@ -135,6 +135,7 @@ class MainWindow(QMainWindow):
 
     shutdown_finished = Signal()
     scan_scope_changed = Signal()
+    scan_activity_changed = Signal()
     size_unit_changed = Signal(str)
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
@@ -382,6 +383,7 @@ class MainWindow(QMainWindow):
         self._worker = worker
         self._pending_scan = worker
         self.results.begin_scan()
+        self.scan_activity_changed.emit()
         self.pages.setCurrentIndex(RESULTS_PAGE)
         self._update_actions()
         self._live_timer.start()
@@ -399,6 +401,7 @@ class MainWindow(QMainWindow):
     def _release_scan(self, worker: ScanWorker) -> None:
         if self._closing and self._worker is worker:
             self._worker = None
+            self.scan_activity_changed.emit()
         self._scan_workers.discard(worker)
         worker.deleteLater()
 
@@ -415,6 +418,7 @@ class MainWindow(QMainWindow):
         self.results.scan_bar.stopping()
         if worker is self._pending_scan:
             self._pending_scan = self._worker = None
+            self.scan_activity_changed.emit()
             worker.deleteLater()
             self._live_timer.stop()
             self._back_from_scan()
@@ -422,6 +426,7 @@ class MainWindow(QMainWindow):
         if wait:
             wait_for(worker)
             self._worker = None
+            self.scan_activity_changed.emit()
             self._live_timer.stop()
 
     def _is_current(self, worker: ScanWorker) -> bool:
@@ -447,6 +452,7 @@ class MainWindow(QMainWindow):
             except (OSError, ValueError) as error:
                 self.statusBar().showMessage(tr("budget_save_error", reason=display_error(str(error))))
         self.results.show_outcome(outcome)
+        self.scan_activity_changed.emit()
         self.pages.setCurrentIndex(RESULTS_PAGE)
         root = outcome.result.root
         for source in root.children if root.path is None else (root,):
@@ -472,6 +478,7 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
             return
         self.results.show_outcome(outcome)
+        self.scan_activity_changed.emit()
         self._update_actions()
         self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
         if outcome.result.warnings:
@@ -480,6 +487,7 @@ class MainWindow(QMainWindow):
 
     def _scan_ended(self) -> None:
         self._worker = None
+        self.scan_activity_changed.emit()
         self._live_timer.stop()
         if self._trash_rescans:
             QTimer.singleShot(0, self._rescan_after_trash)
@@ -680,6 +688,7 @@ class MainWindow(QMainWindow):
         worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
         worker.finished.connect(lambda: after_threads((worker,), lambda: self._release_scan(worker), self))
         self._worker = worker
+        self.scan_activity_changed.emit()
         self._scan_workers.add(worker)
         self.results.scan_bar.start()
         self._update_actions()
@@ -690,6 +699,7 @@ class MainWindow(QMainWindow):
         if worker is self._worker:
             if self._closing:
                 self._worker = None
+                self.scan_activity_changed.emit()
             else:
                 self._branch_cancelled()
         self._release_scan(worker)

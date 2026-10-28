@@ -17,6 +17,24 @@ MAX_NAME = 80
 _FIRST_PRINTABLE = 32
 
 
+@dataclass(frozen=True, slots=True)
+class TabImpact:
+    """One existing tab affected by replacement, captured without walking its tree."""
+
+    title: str
+    scope: str | tuple[str, ...] | None
+    active: bool
+    scanning: bool
+    has_result: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ReplacementImpact:
+    """Live affected tabs in visual order; independent of the saved opening snapshot."""
+
+    tabs: tuple[TabImpact, ...] = ()
+
+
 def absolute_root(path: str) -> bool:
     """Require native absolute paths; Windows accepts drive-rooted or UNC paths, never bare roots."""
     if not path or "\0" in path:

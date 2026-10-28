@@ -12,7 +12,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 ## What you can do
 
 - Set exact folder limits in Folder budgets. Read usage and excess in your chosen size unit, with a separate observation time and clear waiting or unknown states.
-- Save named workspace templates for several tabs, preview and check their paths, then explicitly replace tabs. Loaded tabs wait for Start.
+- Save named workspace templates from the tabs captured when the manager opens. Edit a separate load preview, review live replacement counts, and load idle tabs.
 - Result highlights link the largest direct folders, cleanup candidates and scan limits to their existing views.
 - Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse. Opening the editor keeps other tabs scanning.
 - Keep the last cleanup counts visible, with operation records, available Undo and an explicit rescan of the original folder.

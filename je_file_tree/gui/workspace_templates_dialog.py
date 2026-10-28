@@ -1,12 +1,13 @@
 """Preview and check named workspaces before explicitly replacing their result tabs."""
 
 from dataclasses import replace
+from html import escape
 import os
 import stat
 
-from PySide6.QtCore import QSettings, QThread, Qt, Signal
+from PySide6.QtCore import QSettings, QSignalBlocker, QThread, Qt, Signal
 from PySide6.QtWidgets import (
-    QComboBox, QDialogButtonBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit,
+    QComboBox, QDialogButtonBox, QFormLayout, QGroupBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QPlainTextEdit, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
@@ -14,7 +15,7 @@ from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_preferences import SCAN_FLAGS
 from je_file_tree.gui.startup_state import WorkspaceState
 from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker
-from je_file_tree.gui.workspace_templates import WorkspaceTemplate, read_templates, write_templates
+from je_file_tree.gui.workspace_templates import ReplacementImpact, WorkspaceTemplate, read_templates, write_templates
 
 
 _PATH_COLUMN = 2
@@ -52,6 +53,8 @@ class ScopeCheckWorker(QThread):
 class WorkspaceTemplatesDialog(WorkerDialog):
     """Manage persisted metadata and stage an explicitly checked replacement without scanning."""
 
+    replacement_requested = Signal()
+
     def __init__(self, settings: QSettings, current: WorkspaceState, parent: QWidget | None = None) -> None:
         items = read_templates(settings)
         super().__init__(parent)
@@ -62,18 +65,30 @@ class WorkspaceTemplatesDialog(WorkerDialog):
         self._worker: ScopeCheckWorker | None = None
         self._draft = current
         self._rows: list[tuple[int, int]] = []
+        self._impact = ReplacementImpact()
         self.setWindowTitle(tr("workspace_templates"))
-        self.resize(900, 560)
+        self.resize(940, 680)
         self.list, self.name = QComboBox(), QLineEdit()
-        self.list.setPlaceholderText(tr("presets_empty"))
+        self.list.setPlaceholderText(tr("templates_select"))
         self.table = QTableWidget(0, 4)
+        self.table.setTabKeyNavigation(False)
         self.table.setHorizontalHeaderLabels([tr("templates_tab"), tr("templates_kind"),
                                              tr("column_path"), tr("templates_status")])
-        self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setColumnWidth(2, 400)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Interactive)
+        self.table.setColumnWidth(3, 160)
+        self.table.setMinimumHeight(100)
         self.details = QPlainTextEdit()
         self.details.setReadOnly(True)
-        self.details.setMaximumHeight(90)
+        self.details.setMaximumHeight(50)
+        self.details.setTabChangesFocus(True)
+        self.impact_summary = QLabel()
+        self.impact_summary.setWordWrap(True)
+        self.impact_details = QPlainTextEdit()
+        self.impact_details.setReadOnly(True)
+        self.impact_details.setTabChangesFocus(True)
+        self.impact_details.setMaximumHeight(76)
         self.status = QLabel()
         self.status.setWordWrap(True)
         self.check = QPushButton(tr("templates_check"))
@@ -89,28 +104,60 @@ class WorkspaceTemplatesDialog(WorkerDialog):
 
     def _build(self) -> None:
         layout = QVBoxLayout(self)
-        hint = QLabel(tr("templates_hint"))
-        hint.setWordWrap(True)
-        layout.addWidget(hint)
+        saved = QGroupBox(tr("templates_save_section"))
+        save_layout = QVBoxLayout(saved)
+        source = QLabel(tr("templates_save_source"))
+        source.setWordWrap(True)
+        save_layout.addWidget(source)
         form = QFormLayout()
         form.addRow(tr("templates_saved"), self.list)
         form.addRow(tr("presets_name"), self.name)
-        layout.addLayout(form)
+        save_layout.addLayout(form)
+        actions = QHBoxLayout()
+        self.saved_buttons = {}
+        for action, key in (("add", "templates_add_current"), ("update", "templates_update_current"),
+                            ("rename", "presets_rename"), ("remove", "templates_remove")):
+            button = QPushButton(tr(key))
+            button.clicked.connect(lambda _checked=False, action=action: self._edit_saved(action))
+            self.saved_buttons[action] = button
+            actions.addWidget(button)
+        save_layout.addLayout(actions)
+        layout.addWidget(saved)
+        self.preview_hint = QLabel(tr("templates_preview_hint"))
+        self.preview_hint.setWordWrap(True)
+        layout.addWidget(self.preview_hint)
         layout.addWidget(self.table)
         layout.addWidget(self.details)
         layout.addWidget(self.status)
-        actions = QHBoxLayout()
-        for action, key in (("add", "presets_add"), ("update", "presets_update"),
-                            ("rename", "presets_rename"), ("remove", "presets_remove")):
-            button = QPushButton(tr(key))
-            button.clicked.connect(lambda _checked=False, action=action: self._edit_saved(action))
-            actions.addWidget(button)
-        actions.addWidget(self.check)
-        layout.addLayout(actions)
+        layout.addWidget(self.check)
+        layout.addWidget(self.impact_summary)
+        layout.addWidget(self.impact_details)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+        self.cancel = buttons.button(QDialogButtonBox.StandardButton.Cancel)
         buttons.rejected.connect(self.reject)
         buttons.addButton(self.load, QDialogButtonBox.ButtonRole.AcceptRole)
         layout.addWidget(buttons)
+        order = (self.list, self.name, *self.saved_buttons.values(), self.table, self.details,
+                 self.check, self.impact_details, self.load, self.cancel)
+        for before, after in zip(order, order[1:], strict=False):
+            QWidget.setTabOrder(before, after)
+        self.set_replacement_impact(self._impact)
+
+    def set_replacement_impact(self, impact: ReplacementImpact) -> None:
+        """Render the workspace's live snapshot without changing saved or staged inputs."""
+        self._impact = impact
+        unavailable = sum(bool(reason) for issues in self.report or () for reason in issues)
+        self.impact_summary.setText(tr("templates_impact", tabs=len(impact.tabs),
+            scans=sum(tab.scanning for tab in impact.tabs), results=sum(tab.has_result for tab in impact.tabs),
+            unavailable=unavailable if self.report is not None else tr("templates_unchecked")))
+        lines = []
+        for index, tab in enumerate(impact.tabs):
+            state = tr("templates_active") if tab.active else ""
+            if tab.scanning:
+                state += " " + tr("templates_scanning")
+            scope = tab.scope if isinstance(tab.scope, tuple) else (tab.scope or tr("workspace_empty"),)
+            lines.append(f"{index + 1}. {tab.title} {state}\n" + "\n".join(scope))
+        self.impact_details.setPlainText("\n".join(lines))
 
     def _fill(self, index: int = -1) -> None:
         self.list.blockSignals(True)
@@ -118,6 +165,11 @@ class WorkspaceTemplatesDialog(WorkerDialog):
         self.list.addItems([item.name for item in self.items])
         self.list.setCurrentIndex(index)
         self.list.blockSignals(False)
+        self._saved_actions(index)
+
+    def _saved_actions(self, index: int) -> None:
+        for action in ("update", "rename", "remove"):
+            self.saved_buttons[action].setEnabled(0 <= index < len(self.items))
 
     def _invalidate(self) -> None:
         if self._worker is not None:
@@ -125,8 +177,14 @@ class WorkspaceTemplatesDialog(WorkerDialog):
             self._worker = None
         self.report = None
         self.load.setEnabled(False)
+        with QSignalBlocker(self.table):
+            for row in range(self.table.rowCount()):
+                self.table.item(row, 3).setText(tr("templates_unchecked"))
+                self.table.item(row, 3).setToolTip(f"<p>{escape(tr('templates_unchecked'))}</p>")
+        self.set_replacement_impact(self._impact)
 
     def _selected(self, index: int) -> None:
+        self._saved_actions(index)
         if 0 <= index < len(self.items):
             self.name.setText(self.items[index].name)
             self._preview(self.items[index].state)
@@ -134,6 +192,8 @@ class WorkspaceTemplatesDialog(WorkerDialog):
     def _preview(self, state: WorkspaceState) -> None:
         self._invalidate()
         self._draft = state
+        self.preview_hint.setText(tr("templates_preview_hint"))
+        self.status.setText(tr("templates_unchecked"))
         self._rows = []
         self.table.blockSignals(True)
         self.table.setRowCount(0)
@@ -145,9 +205,10 @@ class WorkspaceTemplatesDialog(WorkerDialog):
                 row = self.table.rowCount()
                 self.table.insertRow(row)
                 self._rows.append((tab, root_index))
-                label = f"{tab + 1} *" if tab == state.active else str(tab + 1)
+                label = f"{tab + 1} ({tr('templates_active')})" if tab == state.active else str(tab + 1)
                 for column, text in enumerate((label, kind, root, tr("templates_unchecked"))):
                     item = QTableWidgetItem(text)
+                    item.setToolTip(f"<p>{escape(text)}</p>")
                     if column != _PATH_COLUMN:
                         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                     self.table.setItem(row, column, item)
@@ -162,7 +223,10 @@ class WorkspaceTemplatesDialog(WorkerDialog):
     def _edited(self, item: QTableWidgetItem) -> None:
         if item.column() != _PATH_COLUMN:
             return
+        with QSignalBlocker(self.table):
+            item.setToolTip(f"<p>{escape(item.text())}</p>")
         self._invalidate()
+        self.preview_hint.setText(tr("templates_preview_modified"))
         self.status.setText(tr("templates_unchecked"))
 
     def _table_state(self) -> WorkspaceState:
@@ -196,6 +260,7 @@ class WorkspaceTemplatesDialog(WorkerDialog):
             write_templates(self.settings, tuple(items))
         except ValueError:
             self.status.setText(tr("templates_invalid"))
+            self.name.setFocus()
             return
         self.items = items
         self._fill(min(index, len(items) - 1))
@@ -209,6 +274,7 @@ class WorkspaceTemplatesDialog(WorkerDialog):
             self._draft = draft
         except ValueError:
             self.status.setText(tr("templates_invalid"))
+            self.table.setFocus()
             return
         worker = ScopeCheckWorker(self._draft, self)
         self._worker = worker
@@ -231,13 +297,15 @@ class WorkspaceTemplatesDialog(WorkerDialog):
         for row, (tab, root) in enumerate(self._rows):
             reason = report[tab][root] if report[tab] else tr("workspace_empty")
             self.table.item(row, 3).setText(reason or tr("templates_ready"))
-            self.table.item(row, 3).setToolTip(reason or tr("templates_ready"))
+            self.table.item(row, 3).setToolTip(f"<p>{escape(reason or tr('templates_ready'))}</p>")
         self.table.blockSignals(False)
         self.status.setText(tr("templates_checked"))
         self.load.setEnabled(True)
+        self.set_replacement_impact(self._impact)
 
     def _load(self) -> None:
         if self.report is not None:
+            self.replacement_requested.emit()
             self.chosen = self._draft
             self.accept()
 

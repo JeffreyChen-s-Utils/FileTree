@@ -11,6 +11,29 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "templates_select": "Select a saved template",
+    "templates_remove": "Delete template",
+    "templates_save_section": "Save opening workspace",
+    "templates_save_source": (
+        'Add and Update save the tabs and optio'
+        'ns captured when this dialog opened. P'
+        'review edits below are not saved.'),
+    "templates_add_current": "Add opening tabs",
+    "templates_update_current": "Update from opening tabs",
+    "templates_preview_hint": (
+        'Load preview · Edit paths for this loa'
+        'd only, then check them. Loaded tabs w'
+        'ait for Start.'),
+    "templates_preview_modified": (
+        'Modified for this load only · Check pa'
+        'ths again before replacing tabs.'),
+    "templates_active": "Active",
+    "templates_scanning": "Scanning",
+    "templates_impact": (
+        'Replace will close {tabs} tabs, stop {'
+        'scans} scans and close {results} resul'
+        'ts. Unavailable preview paths: {unavai'
+        'lable}.'),
     "templates_saved": 'Saved templates',
     'workspace_templates': 'Workspace templates…',
     'templates_tab': 'Tab',
@@ -1626,6 +1649,19 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "templates_select": "選擇已儲存範本",
+    "templates_remove": "刪除範本",
+    "templates_save_section": "儲存開啟時的工作區",
+    "templates_save_source": "新增與更新儲存開啟此視窗時擷取的分頁與選項；不會儲存下方的預覽修改。",
+    "templates_add_current": "新增開啟時分頁",
+    "templates_update_current": "以開啟時分頁更新",
+    "templates_preview_hint": "載入預覽 · 路徑修改僅供此次載入，修改後請檢查。載入後按開始才掃描。",
+    "templates_preview_modified": "已修改，僅供此次載入 · 取代分頁前請重新檢查路徑。",
+    "templates_active": "作用中",
+    "templates_scanning": "掃描中",
+    "templates_impact": (
+        '取代將關閉 {tabs} 個分頁、停止 {scans} 個掃描並關閉 {re'
+        'sults} 份結果。預覽中不可用路徑：{unavailable}。'),
     "templates_saved": '已儲存範本',
     'workspace_templates': '工作區範本…',
     'templates_tab': '分頁',
@@ -3067,6 +3103,19 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "templates_select": "选择已保存模板",
+    "templates_remove": "删除模板",
+    "templates_save_section": "保存打开时的工作区",
+    "templates_save_source": "添加和更新保存打开此窗口时记录的标签页和选项；不保存下方的预览修改。",
+    "templates_add_current": "添加打开时标签页",
+    "templates_update_current": "用打开时标签页更新",
+    "templates_preview_hint": "加载预览 · 路径修改仅用于此次加载，修改后请检查。加载后点击开始才扫描。",
+    "templates_preview_modified": "已修改，仅用于此次加载 · 替换标签页前请重新检查路径。",
+    "templates_active": "活动",
+    "templates_scanning": "扫描中",
+    "templates_impact": (
+        '替换将关闭 {tabs} 个标签页、停止 {scans} 个扫描并关闭 {r'
+        'esults} 份结果。预览中不可用路径：{unavailable}。'),
     "templates_saved": '已保存模板',
     'workspace_templates': '工作区模板…',
     'templates_tab': '标签页',
@@ -4520,6 +4569,24 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "templates_select": "保存済みテンプレートを選択",
+    "templates_remove": "テンプレートを削除",
+    "templates_save_section": "開いた時点のワークスペースを保存",
+    "templates_save_source": (
+        "追加と更新は、この画面を開いた時点のタブと設定を保存します。"
+        "下のプレビューの変更は保存しません。"),
+    "templates_add_current": "開始時のタブを追加",
+    "templates_update_current": "開始時のタブで更新",
+    "templates_preview_hint": (
+        '読み込みプレビュー · パスの変更は今回の読み込みだけに適用します。確認後に'
+        '置換し、開始を押すとスキャンします。'),
+    "templates_preview_modified": "今回の読み込みだけ変更済み · 置換する前にパスを再確認してください。",
+    "templates_active": "選択中",
+    "templates_scanning": "スキャン中",
+    "templates_impact": (
+        '置換でタブ {tabs} 個を閉じ、スキャン {scans} 件を停止し、結'
+        '果 {results} 件を閉じます。利用できないプレビューパス：{unav'
+        'ailable}。'),
     "templates_saved": '保存済みテンプレート',
     'workspace_templates': 'ワークスペースのテンプレート…',
     'templates_tab': 'タブ',
@@ -6326,6 +6393,24 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "templates_select": "저장한 템플릿 선택",
+    "templates_remove": "템플릿 삭제",
+    "templates_save_section": "창을 열 때의 작업 공간 저장",
+    "templates_save_source": (
+        '추가와 업데이트는 이 창을 열 때의 탭과 옵션을 저장합니다. 아래 미'
+        '리 보기의 변경은 저장하지 않습니다.'),
+    "templates_add_current": "열 때의 탭 추가",
+    "templates_update_current": "열 때의 탭으로 업데이트",
+    "templates_preview_hint": (
+        '불러오기 미리 보기 · 경로 변경은 이번 불러오기에만 적용됩니다. 확'
+        '인 후 교체하고 시작을 눌러 검사하세요.'),
+    "templates_preview_modified": "이번 불러오기만 수정됨 · 탭 교체 전에 경로를 다시 확인하세요.",
+    "templates_active": "활성",
+    "templates_scanning": "검사 중",
+    "templates_impact": (
+        '교체하면 탭 {tabs}개를 닫고 검사 {scans}개를 중지하며 결'
+        '과 {results}개를 닫습니다. 미리 보기의 사용할 수 없는 경로'
+        ': {unavailable}.'),
     "templates_saved": '저장한 템플릿',
     'workspace_templates': '작업 공간 템플릿…',
     'templates_tab': '탭',

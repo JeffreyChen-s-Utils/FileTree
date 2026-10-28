@@ -8,6 +8,14 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **Workspace templates:** a labelled save section captures the workspace when the manager opens.
+  Add and Update name that source; edits in the separate load preview apply only to this load and
+  require another path check. Active tabs have a text label. Beside Replace tabs, live counts explain
+  which tabs, scans and results will close and how many checked preview paths are unavailable.
+  Complete existing scopes remain copyable in scrollable details. Tab reaches the name, save actions,
+  preview, check, replacement and cancel; arrows navigate preview cells. Cancel preserves tabs and
+  results, and replacement retires workers asynchronously before installing idle inputs.
+
 - **Folder budgets:** the table follows the active tab's display unit and provides exact-byte
   tooltips and accessible descriptions. Observation time stays separate from usage. Never-scanned
   rules and limits awaiting a new full scan have distinct text; a changed limit retains dated old
