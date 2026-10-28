@@ -25,6 +25,8 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 - **Use your language**: switch between English, Traditional Chinese, Simplified Chinese, Japanese and Korean.
 - **Explorer folder menu (Windows)**: add Scan with FileTree from Options. Settings stay responsive; an active Save finishes before closing.
 
+Applied search conditions stay above the results. Remove one condition or clear them all, and choose dates from a calendar.
+
 ## Install
 
 ### Windows: no Python needed

@@ -120,3 +120,5 @@ and theme changes without data/selection loss. The full regression suite and Ruf
 fixture. Native Windows review also checks welcome/results/live compact views across all three
 themes without displaying windows. Offscreen widget tests do not establish real-world hanging paths
 or native macOS/Linux interaction; those existing verification items remain in `progress.md`.
+
+Search derives its removable condition summary from SearchFilters.state(), with explicit entire-scan scope. Name, each size bound, dates, type and kind have keyboard-accessible removal actions. Filter controls and long summaries scroll independently above the retained result table. Optional dates use a localized calendar with explicit acceptance; errors remain beside the input and move focus to that field. Typing immediately invalidates old results before the debounce delay. Native evidence is reproducible with tools/verify_search_ux.py; contrast is a local simulated palette.

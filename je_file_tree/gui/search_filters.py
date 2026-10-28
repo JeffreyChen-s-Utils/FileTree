@@ -6,13 +6,16 @@ from collections.abc import Mapping
 from typing import Any
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QGridLayout, QLabel, QPushButton, QWidget
+from PySide6.QtWidgets import QComboBox, QGridLayout, QLabel, QPushButton, QSizePolicy, QWidget
 
 from je_file_tree.core.analysis import CATEGORIES
 from je_file_tree.core.formatting import format_size
 from je_file_tree.core.search import ANY, KINDS
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.search_ranges import MAX_BYTES, SearchRangeDialog, calendar_bounds, validate_sizes
+
+FILTER_PAIR_WIDTH = 250
+MAX_FILTER_PAIRS = 3
 
 SIZE_STEPS = (1 << 20, 10 << 20, 100 << 20, 1 << 30, 10 << 30)
 _DAY = 86400.0
@@ -47,16 +50,38 @@ class SearchFilters(QWidget):
         self.category = QComboBox()
         self.kind = QComboBox()
         self._labels = [QLabel() for _ in range(5)]
-        layout = QGridLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        places = ((0, 0), (0, 2), (0, 4), (1, 0), (1, 2))
-        for label, combo, (row, column) in zip(self._labels, self._combos(), places, strict=True):
-            layout.addWidget(label, row, column)
-            layout.addWidget(combo, row, column + 1)
+        self._layout = QGridLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._columns = 0
+        for label, combo in zip(self._labels, self._combos(), strict=True):
+            label.setBuddy(combo)
+            combo.setMinimumContentsLength(1)
+            combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+            combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             combo.currentIndexChanged.connect(lambda _index: self.changed.emit())
-        layout.addWidget(self.custom, 1, 4, 1, 2)
-        layout.setColumnStretch(6, 1)
+        self._arrange(MAX_FILTER_PAIRS)
         self.retranslate()
+
+    def resizeEvent(self, event) -> None:
+        """Keep filter inputs reachable as the result pane narrows."""
+        super().resizeEvent(event)
+        self._arrange(max(1, min(MAX_FILTER_PAIRS, self.width() // FILTER_PAIR_WIDTH)))
+
+    def _arrange(self, columns: int) -> None:
+        if columns == self._columns:
+            return
+        self._columns = columns
+        for widget in (*self._labels, *self._combos(), self.custom):
+            self._layout.removeWidget(widget)
+        for column in range(MAX_FILTER_PAIRS * 2):
+            self._layout.setColumnStretch(column, 0)
+        for index, (label, combo) in enumerate(zip(self._labels, self._combos(), strict=True)):
+            row, group = divmod(index, columns)
+            self._layout.addWidget(label, row, group * 2)
+            self._layout.addWidget(combo, row, group * 2 + 1)
+            self._layout.setColumnStretch(group * 2 + 1, 1)
+        row, group = divmod(len(self._labels), columns)
+        self._layout.addWidget(self.custom, row, group * 2, 1, 2)
 
     def conditions(self) -> dict[str, Any]:
         """The choices as ``Query`` fields."""
@@ -92,6 +117,18 @@ class SearchFilters(QWidget):
             combo.blockSignals(False)
         self.changed.emit()
 
+    def remove_condition(self, key: str) -> None:
+        """Clear one filter through the same state application path as saved searches."""
+        defaults = {"min_size": None, "max_size": None, "changed": "any", "category": None, "kind": ANY}
+        if key not in defaults:
+            return
+        state = self.state()
+        state[key] = defaults[key]
+        if key == "changed":
+            state.pop("date_start", None)
+            state.pop("date_through", None)
+        self.apply(state)
+
     def retranslate(self) -> None:
         """Re-read every translated text, keeping the choices."""
         current = self.state()
@@ -99,6 +136,7 @@ class SearchFilters(QWidget):
         for label, key in zip(self._labels, ("search_larger", "search_smaller", "search_changed", "search_type",
                                              "search_show"), strict=True):
             label.setText(tr(key))
+            label.buddy().setAccessibleName(tr(key))
         sizes = [(tr("search_no_limit"), None)] + [(format_size(step), step) for step in SIZE_STEPS]
         _fill(self.min_size, sizes)
         _fill(self.max_size, sizes)

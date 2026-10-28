@@ -1236,6 +1236,8 @@ independently and passes inclusive `modified_since` / exclusive `modified_before
 Relative presets keep rolling semantics. Invalid persisted bounds cancel current work, clear rows and
 prevent saving; late workers cannot repopulate results. Valid new queries also clear stale rows.
 
+SearchPanel owns query edits and worker identity. SearchFilters.state()/apply() remains the sole condition representation; SearchConditions derives labels and emits removal requests without storing a second query. Text edits cancel old work immediately, while the existing timer only delays launching new work. OptionalDateEdit owns an asynchronous CalendarDialog whose accepted ISO date changes only the parent range draft. SearchRangeDialog commits only after exact-byte and inclusive local-calendar validation; cancellation leaves the active query untouched.
+
 **Clean up.** The Clean up tab has two pages. *Suggestions* (`CleanupPanel`): after every scan a
 `CleanupWorker` runs `core.cleanup.find_cleanup`, one walk that tests each folder against the rules' path
 endings (indexed by their last name) and each file against their name patterns, suggesting a matching

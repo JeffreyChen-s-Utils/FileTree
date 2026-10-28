@@ -74,7 +74,16 @@ def test_sidebar_keyboard_compact_chooser_and_comparison_stay_in_sync(window, qa
     assert results.tabs.tabBar().isHidden()
     assert navigation.list.item(CHANGES_TAB).isHidden()
     assert navigation.combo.findData(CHANGES_TAB) == -1
-    assert results.tabs.minimumSizeHint().width() < results.tabs.widget(SEARCH_TAB).minimumSizeHint().width()
+    active_size = results.tabs.minimumSizeHint()
+    search = results.tabs.widget(SEARCH_TAB)
+    original_minimum = search.minimumWidth()
+    try:
+        search.setMinimumWidth(active_size.width() * 2)
+        qapp.processEvents()
+        assert results.tabs.minimumSizeHint() == active_size
+        assert results.splitter.sizes()[0] >= results.tree.columnWidth(0) + results.tree.columnWidth(SIZE)
+    finally:
+        search.setMinimumWidth(original_minimum)
     assert results.splitter.sizes()[0] >= results.tree.columnWidth(0) + results.tree.columnWidth(SIZE)
     QTest.keyClick(navigation.list, Qt.Key.Key_Down)
     assert results.tabs.currentIndex() == LARGEST_TAB

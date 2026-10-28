@@ -558,6 +558,8 @@ Phase JSON uses explicit UTF-8 atomic writes; even an initial evidence-write err
 
 ## Custom search ranges
 
+Search shows each active name, size bound, date, type and entry kind above the results, with a separate Clear action and Clear all conditions. Clearing keeps saved searches and the selected folder. Search always covers the entire scan, including every source in a combined scan; the selected-folder switch applies only to Largest files, File types and Age. Custom dates may be empty or typed, or chosen from a calendar. Calendar Cancel and range Cancel keep the original query; accepted start and end dates include the entire local day. Invalid fields retain their input and receive focus. Long conditions and filter controls scroll while results remain visible. Choose Edit conditions to expand the search inputs; the applied conditions remain above the results.
+
 In **Search**, choose **Custom ranges…** to set either or both size bounds and calendar dates. Sizes include both endpoints. Choose B, KiB, MiB, GiB or TiB; decimals such as 1.5 KiB are accepted only when they equal a whole number of bytes. The largest supported bound is 9223372036854775807 B. Leave a field blank for no limit.
 
 Dates use `YYYY-MM-DD` and local time. Both dates are included, through the midnight starting the following day (exclusive). Each midnight is converted separately, so daylight-saving days need not be 24 hours. Unknown modification times do not match date filters. Week/month/year presets remain relative to each search; custom dates replace those relative conditions. Choosing custom dates without an endpoint shows an error until a date is entered through **Custom ranges…**.

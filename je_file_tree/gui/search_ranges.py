@@ -6,11 +6,13 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QDialogButtonBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, QWidget,
 )
 
 from je_file_tree.gui.i18n import tr
+from je_file_tree.gui.optional_date import OptionalDateEdit
 
 INPUT_LIMIT = 128
 MAX_BYTES = (1 << 63) - 1
@@ -101,50 +103,121 @@ class SearchRangeDialog(QDialog):
         self.minimum = QLineEdit(_size_text(state.get("min_size")))
         self.maximum = QLineEdit(_size_text(state.get("max_size")))
         self.min_unit, self.max_unit = QComboBox(), QComboBox()
+        self.field_errors: dict[QWidget, QLabel] = {}
         form = QFormLayout()
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         for field, unit, key in ((self.minimum, self.min_unit, "search_larger"),
                                  (self.maximum, self.max_unit, "search_smaller")):
             field.setMaxLength(INPUT_LIMIT)
             unit.addItems(UNITS)
+            unit.setAccessibleName(tr(key) + " " + tr("search_size_unit"))
+            row = QHBoxLayout()
+            row.addWidget(field, 1)
+            row.addWidget(unit)
+            self._add_field(form, field, key, row)
+        self.start = OptionalDateEdit(_date_text(state.get("date_start")))
+        self.through = OptionalDateEdit(_date_text(state.get("date_through")))
+        for field, key in ((self.start, "search_date_start"), (self.through, "search_date_through")):
             row = QHBoxLayout()
             row.addWidget(field)
-            row.addWidget(unit)
-            form.addRow(tr(key), row)
-        self.start = QLineEdit(str(state.get("date_start") or ""))
-        self.through = QLineEdit(str(state.get("date_through") or ""))
-        for field, key in ((self.start, "search_date_start"), (self.through, "search_date_through")):
-            field.setMaxLength(INPUT_LIMIT)
-            field.setPlaceholderText(tr("search_date_format"))
-            form.addRow(tr(key), field)
+            self._add_field(form, field, key, row)
         self.error = QLabel()
         self.error.setWordWrap(True)
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        self.error.setTextFormat(Qt.TextFormat.PlainText)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setText(tr('date_accept'))
+        self.buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('date_cancel'))
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
         layout = QVBoxLayout(self)
         hint = QLabel(tr("search_range_hint"))
         hint.setWordWrap(True)
         layout.addWidget(hint)
         layout.addLayout(form)
         layout.addWidget(self.error)
-        layout.addWidget(buttons)
+        layout.addWidget(self.buttons)
         self.setMinimumWidth(460)
 
-    def accept(self) -> None:
-        """Commit a valid draft, or leave the dialog open with the validation error."""
+    def _add_field(self, form: QFormLayout, field: QWidget, key: str, row: QHBoxLayout) -> None:
+        label = QLabel(tr(key))
+        label.setBuddy(field)
+        field.setAccessibleName(tr(key))
+        if isinstance(field, OptionalDateEdit):
+            field.edit.setAccessibleName(tr(key))
+        error = QLabel()
+        error.setTextFormat(Qt.TextFormat.PlainText)
+        error.setWordWrap(True)
+        error.hide()
+        self.field_errors[field] = error
+        block = QVBoxLayout()
+        block.addLayout(row)
+        block.addWidget(error)
+        form.addRow(label, block)
+
+    def _fail(self, field: QWidget, message: str) -> None:
+        self.field_errors[field].setText(message)
+        self.field_errors[field].show()
+        field.setAccessibleDescription(message)
+        self.error.setText(tr("search_fix_field"))
+        field.setFocus()
+        if isinstance(field, OptionalDateEdit):
+            field.edit.setAccessibleDescription(message)
+            field.edit.selectAll()
+        elif isinstance(field, QLineEdit):
+            field.selectAll()
+
+    def _sizes(self) -> tuple[int | None, int | None] | None:
+        values = []
+        for field, unit in ((self.minimum, self.min_unit), (self.maximum, self.max_unit)):
+            try:
+                values.append(exact_bytes(field.text(), unit.currentText()))
+            except ValueError as error:
+                self._fail(field, str(error))
+                return None
         try:
-            minimum = exact_bytes(self.minimum.text(), self.min_unit.currentText())
-            maximum = exact_bytes(self.maximum.text(), self.max_unit.currentText())
-            validate_sizes(minimum, maximum)
-            start, through = self.start.text().strip(), self.through.text().strip()
+            validate_sizes(*values)
+        except ValueError as error:
+            self._fail(self.maximum, str(error))
+            return None
+        return values[0], values[1]
+
+    def _dates(self) -> tuple[str, str] | None:
+        start, through = self.start.text().strip(), self.through.text().strip()
+        for field, value in ((self.start, start), (self.through, through)):
+            try:
+                calendar_bounds(value if field is self.start else "", value if field is self.through else "")
+            except ValueError as error:
+                self._fail(field, str(error))
+                return None
+        try:
             calendar_bounds(start, through)
         except ValueError as error:
-            self.error.setText(str(error))
+            self._fail(self.through, str(error))
+            return None
+        return start, through
+
+    def accept(self) -> None:
+        """Commit a valid draft, or retain it and focus the field that needs correction."""
+        for field, error in self.field_errors.items():
+            error.hide()
+            field.setAccessibleDescription("")
+            if isinstance(field, OptionalDateEdit):
+                field.edit.setAccessibleDescription("")
+        self.error.clear()
+        sizes = self._sizes()
+        if sizes is None:
             return
-        self.values = {"min_size": minimum, "max_size": maximum,
-                       "date_start": start, "date_through": through}
+        dates = self._dates()
+        if dates is None:
+            return
+        self.values = {"min_size": sizes[0], "max_size": sizes[1],
+                       "date_start": dates[0], "date_through": dates[1]}
         super().accept()
 
 
 def _size_text(value: Any) -> str:
+    return "" if value is None else str(value)
+
+
+def _date_text(value: Any) -> str:
     return "" if value is None else str(value)
