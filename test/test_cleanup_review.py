@@ -141,6 +141,7 @@ def test_details_keyboard_selection_scroll_and_tab_escape(qapp, tmp_path) -> Non
     dialog = CleanupReview([node], {node: "build_output"}, [], "B", root)
     try:
         dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+        dialog.details.setFixedHeight(dialog.details.fontMetrics().lineSpacing() * 3)
         dialog.resize(980, 600)
         dialog.show()
         qapp.processEvents()
@@ -152,6 +153,11 @@ def test_details_keyboard_selection_scroll_and_tab_escape(qapp, tmp_path) -> Non
         assert dialog.focusWidget() is dialog.details
         QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_A, Qt.KeyboardModifier.ControlModifier)
         assert dialog.details.textCursor().selectedText().replace("\u2029", "\n") == dialog.model.details_text(0)
+        QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_Home, Qt.KeyboardModifier.ControlModifier)
+        qapp.processEvents()
+        assert dialog.details.textCursor().atStart()
+        assert dialog.details.verticalScrollBar().value() == 0
+        assert dialog.details.verticalScrollBar().maximum() > 0
         QTest.keyClick(dialog.focusWidget(), Qt.Key.Key_End, Qt.KeyboardModifier.ControlModifier)
         qapp.processEvents()
         assert dialog.details.verticalScrollBar().value() > 0

@@ -69,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261029-06 | 2026-10-29 | 明確建立清理詳情鍵盤測試的捲動條件 | #incident #tests #gui | [2026-10-e](2026-10-e.md) |
 | U-20261029-05 | 2026-10-29 | 完成七項體驗改善的版面與鍵盤驗收 | #done #gui #ux #accessibility | [2026-10-e](2026-10-e.md) |
 | U-20261029-04 | 2026-10-29 | 精簡清理審閱並保留完整操作資訊 | #done #gui #ux #cleanup | [2026-10-e](2026-10-e.md) |
 | U-20261029-03 | 2026-10-29 | 銜接資料夾詳細資訊與趨勢及容量預算 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
