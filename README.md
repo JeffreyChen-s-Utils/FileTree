@@ -11,7 +11,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ## What you can do
 
-- Set a byte limit for each folder in Folder budgets. Completed scans show dated usage, excess and a persistent over-limit reminder.
+- Set exact folder limits in Folder budgets. Read usage and excess in your chosen size unit, with a separate observation time and clear waiting or unknown states.
 - Save named workspace templates for several tabs, preview and check their paths, then explicitly replace tabs. Loaded tabs wait for Start.
 - Result highlights link the largest direct folders, cleanup candidates and scan limits to their existing views.
 - Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse. Opening the editor keeps other tabs scanning.

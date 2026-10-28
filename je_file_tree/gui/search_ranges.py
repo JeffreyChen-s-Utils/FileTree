@@ -17,6 +17,24 @@ MAX_BYTES = (1 << 63) - 1
 UNITS = ("B", "KiB", "MiB", "GiB", "TiB")
 
 
+def editable_size(value: int, preferred: str = "auto") -> tuple[str, str]:
+    """Return an exact, finite input value and binary unit without display rounding."""
+    validate_sizes(value, None)
+    display_units = ("B", "KB", "MB", "GB", "TB", "PB")
+    if preferred == "auto":
+        power = 0
+        while power < len(UNITS) - 1 and value >= 1024 ** (power + 1):
+            power += 1
+    else:
+        power = min(display_units.index(preferred), len(UNITS) - 1)
+    whole, remainder = divmod(value, 1024 ** power)
+    if not remainder:
+        return str(whole), UNITS[power]
+    digits = 10 * power
+    fraction = str(remainder * 5 ** digits).zfill(digits).rstrip("0")
+    return f"{whole}.{fraction}", UNITS[power]
+
+
 def exact_bytes(text: str, unit: str) -> int | None:
     """Parse a nonnegative exact byte count, rejecting fractions and overflow."""
     if not text.strip():

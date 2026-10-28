@@ -69,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261028-07 | 2026-10-28 | 改善容量預算的精確編輯與觀察狀態 | #done #gui #ux #capacity | [2026-10-e](2026-10-e.md) |
 | U-20261028-06 | 2026-10-28 | Persist independent folder budgets and reminder episodes | #done #capacity #gui | [2026-10-e](2026-10-e.md) |
 | U-20261028-05 | 2026-10-28 | Track selected-folder growth across compatible saved scans | #done #history #gui | [2026-10-e](2026-10-e.md) |
 | U-20261028-04 | 2026-10-28 | Save and explicitly restore named workspace templates | #done #gui #settings | [2026-10-e](2026-10-e.md) |

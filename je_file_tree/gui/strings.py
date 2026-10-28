@@ -7985,9 +7985,10 @@ KO: dict[str, str] = {
 }
 
 EN.update({
+    "budget_close": "Close",
     "action_folder_budgets": "Folder budgets…", "action_folder_budgets_tip": "Manage folder limits and dated usage",
     "budget_title": "Folder budgets", "budget_name": "Name", "budget_path": "Folder path",
-    "budget_limit": "Limit", "budget_usage": "Last scan usage (bytes)", "budget_excess": "Excess (bytes)",
+    "budget_limit": "Limit", "budget_usage": "Last usage", "budget_excess": "Excess",
     "budget_status": "Status", "budget_add": "Add", "budget_update": "Update", "budget_delete": "Delete",
     "budget_new": "New", "budget_waiting": "Waiting for full scan", "budget_unknown": "Unknown",
     "budget_over": "Over limit", "budget_within": "Within limit", "budget_alerted": "{status}, reminder recorded",
@@ -8002,11 +8003,28 @@ EN.update({
     "budget_missing_rule": "This budget no longer exists", "budget_too_many": "Too many budgets",
     "budget_settings_locked": "Budget settings are busy", "budget_storage_unavailable": "Budget storage is unavailable",
     "budget_read_failed": "Could not read budget settings", "budget_write_failed": "Could not save budget settings",
+    "budget_observed": "Observed at",
+    "budget_not_scanned": "Not scanned yet",
+    "budget_changed_limit": "Limit changed; waiting for full scan",
+    "budget_input_unit": "Limit unit (binary)",
+    "budget_choose": "Choose folder…",
+    "budget_empty": "No folder budgets yet. Choose a folder, enter a name and a limit, then select Add.",
+    "budget_edit_hint": (
+        'Limits use exact binary units. Adding or editing a budg'
+        'et does not scan. Usage is the last observation, not li'
+        've usage. A changed limit needs a new full scan.'
+    ),
+    "budget_keep_draft": "Your unsaved input was kept. Save it or select New before choosing another target.",
+    "budget_editing": "Editing the selected budget",
+    "budget_creating": "New budget",
+    "budget_exact": "Exact size: {value}",
+    "budget_invalid_name": "Enter a budget name",
 })
 ZH_TW.update({
+    "budget_close": "關閉",
     "action_folder_budgets": "資料夾容量預算…", "action_folder_budgets_tip": "管理資料夾上限與上次掃描用量",
     "budget_title": "資料夾容量預算", "budget_name": "名稱", "budget_path": "資料夾路徑",
-    "budget_limit": "上限", "budget_usage": "上次掃描用量（位元組）", "budget_excess": "超額（位元組）",
+    "budget_limit": "上限", "budget_usage": "上次用量", "budget_excess": "超額量",
     "budget_status": "狀態", "budget_add": "新增", "budget_update": "更新", "budget_delete": "刪除",
     "budget_new": "新規則", "budget_waiting": "等待完整掃描", "budget_unknown": "未知",
     "budget_over": "超過上限", "budget_within": "未超過上限", "budget_alerted": "{status}，已記錄提醒",
@@ -8021,11 +8039,26 @@ ZH_TW.update({
     "budget_missing_rule": "此預算已不存在", "budget_too_many": "預算數量過多",
     "budget_settings_locked": "預算設定忙碌中", "budget_storage_unavailable": "無法使用預算儲存位置",
     "budget_read_failed": "無法讀取預算設定", "budget_write_failed": "無法儲存預算設定",
+    "budget_observed": "觀察時間",
+    "budget_not_scanned": "尚未掃描",
+    "budget_changed_limit": "上限已變更，等待完整掃描",
+    "budget_input_unit": "上限單位（二進位）",
+    "budget_choose": "選擇資料夾…",
+    "budget_empty": "尚未設定資料夾容量預算。選擇資料夾，輸入名稱與上限，再按新增。",
+    "budget_edit_hint": (
+        '上限使用精確二進位單位。新增或編輯預算不會開始掃描。用量為上次觀察，並非即時用量；變更上限後須重新完整掃描。'
+    ),
+    "budget_keep_draft": "已保留尚未儲存的輸入。請先儲存或按新規則，再選擇其他目標。",
+    "budget_editing": "正在編輯選取的預算",
+    "budget_creating": "新增預算",
+    "budget_exact": "精確大小：{value}",
+    "budget_invalid_name": "請輸入預算名稱",
 })
 ZH_CN.update({
+    "budget_close": "关闭",
     "action_folder_budgets": "文件夹容量预算…", "action_folder_budgets_tip": "管理文件夹上限和上次扫描用量",
     "budget_title": "文件夹容量预算", "budget_name": "名称", "budget_path": "文件夹路径",
-    "budget_limit": "上限", "budget_usage": "上次扫描用量（字节）", "budget_excess": "超额（字节）",
+    "budget_limit": "上限", "budget_usage": "上次用量", "budget_excess": "超出量",
     "budget_status": "状态", "budget_add": "添加", "budget_update": "更新", "budget_delete": "删除",
     "budget_new": "新规则", "budget_waiting": "等待完整扫描", "budget_unknown": "未知",
     "budget_over": "超过上限", "budget_within": "未超过上限", "budget_alerted": "{status}，已记录提醒",
@@ -8040,11 +8073,27 @@ ZH_CN.update({
     "budget_missing_rule": "此预算已不存在", "budget_too_many": "预算数量过多",
     "budget_settings_locked": "预算设置正忙", "budget_storage_unavailable": "预算存储位置不可用",
     "budget_read_failed": "无法读取预算设置", "budget_write_failed": "无法保存预算设置",
+    "budget_observed": "观测时间",
+    "budget_not_scanned": "尚未扫描",
+    "budget_changed_limit": "上限已更改，等待完整扫描",
+    "budget_input_unit": "上限单位（二进制）",
+    "budget_choose": "选择文件夹…",
+    "budget_empty": "尚未设置文件夹容量预算。选择文件夹，输入名称和上限，再点击添加。",
+    "budget_edit_hint": (
+        '上限使用精确的二进制单位。添加或编辑预算不会开始扫描。用量为上次观测，并非实时用量；更改上限后需要重新完整扫描'
+        '。'
+    ),
+    "budget_keep_draft": "已保留尚未保存的输入。请先保存或点击新规则，再选择其他目标。",
+    "budget_editing": "正在编辑所选预算",
+    "budget_creating": "新建预算",
+    "budget_exact": "精确大小：{value}",
+    "budget_invalid_name": "请输入预算名称",
 })
 JA.update({
+    "budget_close": "閉じる",
     "action_folder_budgets": "フォルダー容量予算…", "action_folder_budgets_tip": "上限と前回のスキャン使用量を管理",
     "budget_title": "フォルダー容量予算", "budget_name": "名前", "budget_path": "フォルダーのパス",
-    "budget_limit": "上限", "budget_usage": "前回の使用量（バイト）", "budget_excess": "超過分（バイト）",
+    "budget_limit": "上限", "budget_usage": "前回の使用量", "budget_excess": "超過量",
     "budget_status": "状態", "budget_add": "追加", "budget_update": "更新", "budget_delete": "削除",
     "budget_new": "新規", "budget_waiting": "完全スキャン待ち", "budget_unknown": "不明",
     "budget_over": "上限超過", "budget_within": "上限以内", "budget_alerted": "{status}、通知済み",
@@ -8059,11 +8108,27 @@ JA.update({
     "budget_missing_rule": "この予算はもうありません", "budget_too_many": "予算が多すぎます",
     "budget_settings_locked": "予算設定は使用中です", "budget_storage_unavailable": "予算の保存先を利用できません",
     "budget_read_failed": "予算設定を読み取れません", "budget_write_failed": "予算設定を保存できません",
+    "budget_observed": "観測日時",
+    "budget_not_scanned": "未スキャン",
+    "budget_changed_limit": "上限を変更済み。完全スキャン待ち",
+    "budget_input_unit": "上限の単位（二進）",
+    "budget_choose": "フォルダーを選択…",
+    "budget_empty": "容量予算はまだありません。フォルダーを選び、名前と上限を入力して追加してください。",
+    "budget_edit_hint": (
+        '上限は正確な二進単位です。追加や編集ではスキャンしません。使用量は前回の観測値で、現在の値ではありません。上限'
+        '変更後は新しい完全スキャンが必要です。'
+    ),
+    "budget_keep_draft": "未保存の入力を保持しました。保存するか新規を選んでから、別の対象を選択してください。",
+    "budget_editing": "選択した予算を編集中",
+    "budget_creating": "新しい予算",
+    "budget_exact": "正確なサイズ：{value}",
+    "budget_invalid_name": "予算名を入力してください",
 })
 KO.update({
+    "budget_close": "닫기",
     "action_folder_budgets": "폴더 용량 예산…", "action_folder_budgets_tip": "폴더 한도와 마지막 스캔 사용량 관리",
     "budget_title": "폴더 용량 예산", "budget_name": "이름", "budget_path": "폴더 경로",
-    "budget_limit": "한도", "budget_usage": "마지막 스캔 사용량(바이트)", "budget_excess": "초과분(바이트)",
+    "budget_limit": "한도", "budget_usage": "최근 사용량", "budget_excess": "초과량",
     "budget_status": "상태", "budget_add": "추가", "budget_update": "업데이트", "budget_delete": "삭제",
     "budget_new": "새 규칙", "budget_waiting": "전체 스캔 대기", "budget_unknown": "알 수 없음",
     "budget_over": "한도 초과", "budget_within": "한도 이내", "budget_alerted": "{status}, 알림 기록됨",
@@ -8080,6 +8145,21 @@ KO.update({
     "budget_settings_locked": "예산 설정이 사용 중입니다",
     "budget_storage_unavailable": "예산 저장소를 사용할 수 없습니다",
     "budget_read_failed": "예산 설정을 읽을 수 없습니다", "budget_write_failed": "예산 설정을 저장할 수 없습니다",
+    "budget_observed": "관측 시간",
+    "budget_not_scanned": "아직 스캔하지 않음",
+    "budget_changed_limit": "한도 변경됨, 전체 스캔 대기 중",
+    "budget_input_unit": "한도 단위(이진)",
+    "budget_choose": "폴더 선택…",
+    "budget_empty": "폴더 예산이 없습니다. 폴더를 선택하고 이름과 한도를 입력한 다음 추가하세요.",
+    "budget_edit_hint": (
+        '한도는 정확한 이진 단위를 사용합니다. 추가나 편집은 스캔을 시작하지 않습니다. 사용량은 마지막 관'
+        '측값이며 실시간 값이 아닙니다. 한도 변경 후 새 전체 스캔이 필요합니다.'
+    ),
+    "budget_keep_draft": "저장하지 않은 입력을 유지했습니다. 저장하거나 새 규칙을 선택한 후 다른 대상을 선택하세요.",
+    "budget_editing": "선택한 예산 편집 중",
+    "budget_creating": "새 예산",
+    "budget_exact": "정확한 크기: {value}",
+    "budget_invalid_name": "예산 이름을 입력하세요",
 })
 
 STRINGS: dict[str, dict[str, str]] = {"en": EN, "zh-TW": ZH_TW, "zh-CN": ZH_CN, "ja": JA, "ko": KO}

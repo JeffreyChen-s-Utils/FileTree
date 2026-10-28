@@ -135,6 +135,7 @@ class MainWindow(QMainWindow):
 
     shutdown_finished = Signal()
     scan_scope_changed = Signal()
+    size_unit_changed = Signal(str)
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
@@ -1155,6 +1156,7 @@ class MainWindow(QMainWindow):
         self.results.set_unit(unit)
         self.welcome.set_unit(unit)
         self._unit_actions[unit].setChecked(True)
+        self.size_unit_changed.emit(unit)
 
     def change_language(self, code: str) -> None:
         """Switch every text to another language and remember it."""

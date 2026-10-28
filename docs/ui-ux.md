@@ -8,6 +8,15 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **Folder budgets:** the table follows the active tab's display unit and provides exact-byte
+  tooltips and accessible descriptions. Observation time stays separate from usage. Never-scanned
+  rules and limits awaiting a new full scan have distinct text; a changed limit retains dated old
+  usage but cannot produce current excess. The editor converts byte integers into exact finite
+  binary-unit input without display rounding. Row refresh, language and unit changes preserve the
+  unsubmitted form and its identity selection. An external path request does not overwrite a dirty
+  form. Choose folder only fills the path. Labels have buddies, validation focuses its input, the
+  form scrolls, and the action row stays outside the scroll area.
+
 - **Cleanup completion:** a compact header retains moved/skipped/failed counts and logical moved
   bytes across rescans. Its transient scrollable details preserve the analysis pane's geometry,
   show refusal reasons and point to complete existing reports/records. Records, existing expiring

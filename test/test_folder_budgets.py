@@ -315,7 +315,7 @@ def test_workspace_manager_prefills_real_selection_and_retranslates(tmp_path, qa
     set_language("zh-TW")
     workspace.retranslate()
     assert dialog.name_label.text() == "名稱"
-    assert "超過上限" in dialog.table.item(0, 5).text()
+    assert "超過上限" in dialog.table.item(0, 6).text()
     dialog.name.setText("錯誤")
     dialog.path.setText("relative")
     dialog.limit.setText("1")

@@ -20,6 +20,14 @@ observations; normal and scheduled successful scans publish through that owner. 
 cancelled and failed scans have no budget publication. This feature grants no cleanup authority.
 Retired scheduled workers discard late budget batches when their workspace owner quiesces or closes.
 
+`MainWindow.size_unit_changed` and active-tab changes update only the budget dialog's display unit.
+The dialog owns the unsubmitted form; store publications rebuild its bounded observation table with
+selection signals blocked and preserve the selected rule identity without refilling that form.
+`search_ranges.editable_size` uses integer arithmetic for exact binary-unit editor input; formatted
+observation strings never feed persistence. Limit-version mismatch retains dated old usage with an
+explicit waiting state and unknown excess. The settings schema and reminder state remain unchanged.
+
+
 `gui.workspace_templates` stores immutable `WorkspaceTemplate` values under a separate bounded,
 strict QSettings key. It reuses the public `WorkspaceState` value codec and scan preferences while
 requiring native fully qualified paths. `WorkspaceTemplatesDialog` attaches an editable per-root

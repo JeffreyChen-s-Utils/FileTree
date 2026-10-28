@@ -109,6 +109,7 @@ class ScanWorkspace(QMainWindow):
         window.shutdown_finished.connect(lambda: QTimer.singleShot(0, self, lambda: self._remove_closed_tab(window)))
         window.path_edit.textChanged.connect(lambda: self._label(window))
         window.scan_scope_changed.connect(lambda: self._label(window))
+        window.size_unit_changed.connect(lambda _unit: self._budget_unit())
         window.results.tree_model.modelReset.connect(lambda: self._label(window))
         self.tabs.setCurrentIndex(self.tabs.addTab(window, tr("workspace_empty")))
         self._label(window)
@@ -154,6 +155,11 @@ class ScanWorkspace(QMainWindow):
     def _activated(self, _index: int) -> None:
         if self.tabs.count() and not self._closing and self._replacement is None:
             self.current._update_actions()
+            self._budget_unit()
+
+    def _budget_unit(self) -> None:
+        if self._budget_dialog is not None and self.current is not None:
+            self._budget_dialog.set_unit(self.current._unit)
 
     def close_tab(self, index: int) -> None:
         """Cancel only this tab; keep its ownership until its asynchronous shutdown completes."""
@@ -208,9 +214,9 @@ class ScanWorkspace(QMainWindow):
             return
         if self._budget_dialog is not None:
             if selected_path:
-                self._budget_dialog.path.setText(selected_path)
+                self._budget_dialog.select_path(selected_path)
             return
-        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path)
+        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path, unit=self.current._unit)
         self._budget_dialog = dialog
         dialog.finished.connect(lambda _result: self._budget_finished(dialog))
         dialog.open()
