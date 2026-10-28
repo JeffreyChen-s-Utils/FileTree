@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from PySide6.QtCore import QSignalBlocker, Qt
 from PySide6.QtWidgets import (
@@ -19,12 +20,14 @@ from je_file_tree.gui.folder_budget_store import (
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.search_ranges import UNITS, editable_size, exact_bytes
 
+BudgetFilter = Literal["all", "over", "unknown"]
+
 
 class FolderBudgetDialog(QDialog):
     """Edit bounded rules without scanning sources or changing the current tree."""
 
     def __init__(self, store: FolderBudgetStore, parent: QWidget | None = None, *,
-                 selected_path: str = "", unit: str = "auto") -> None:
+                 selected_path: str = "", unit: str = "auto", status_filter: BudgetFilter = "all") -> None:
         super().__init__(parent)
         self.store = store
         self._display_unit = unit
@@ -35,7 +38,11 @@ class FolderBudgetDialog(QDialog):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setTabKeyNavigation(False)
         self.table.itemSelectionChanged.connect(self._selection)
-        self.name, self.path, self.limit = QLineEdit(), QLineEdit(selected_path), QLineEdit()
+        self.status_filter = QComboBox()
+        for value in ("all", "over", "unknown"):
+            self.status_filter.addItem("", value)
+        self.status_filter.currentIndexChanged.connect(self._apply_filter)
+        self.name, self.path, self.limit = QLineEdit(), QLineEdit(), QLineEdit()
         self.name.setMaxLength(MAX_NAME)
         self.path.setMaxLength(MAX_PATH)
         self.limit.setMaxLength(128)
@@ -57,6 +64,9 @@ class FolderBudgetDialog(QDialog):
         self.resize(990, 620)
         store.changed.connect(self.refresh)
         self.retranslate()
+        self.set_filter(status_filter)
+        if selected_path:
+            self.select_path(selected_path)
 
     def _build(self) -> None:
         self.name_label, self.path_label, self.limit_label = (QLabel() for _ in range(3))
@@ -92,21 +102,31 @@ class FolderBudgetDialog(QDialog):
         self.close_buttons.rejected.connect(self.reject)
         buttons.addWidget(self.close_buttons)
         layout = QVBoxLayout(self)
+        self.filter_label = QLabel()
+        self.filter_label.setBuddy(self.status_filter)
+        filters = QHBoxLayout()
+        filters.addWidget(self.filter_label)
+        filters.addWidget(self.status_filter, 1)
+        layout.addLayout(filters)
         layout.addWidget(self.empty_hint)
         layout.addWidget(self.table, 3)
         layout.addWidget(self.editor_scroll, 2)
         layout.addLayout(buttons)
-        fields = (self.table, self.name, self.path, self.choose_button, self.limit, self.unit,
+        fields = (self.status_filter, self.table, self.name, self.path, self.choose_button, self.limit, self.unit,
                   self.new_button, self.add_button, self.update_button, self.delete_button,
                   self.close_buttons.button(QDialogButtonBox.StandardButton.Close))
         for before, after in zip(fields, fields[1:], strict=False):
             QWidget.setTabOrder(before, after)
-        for column, width in enumerate((95, 135, 110, 110, 135, 100, 240)):
+        for column, width in enumerate((95, 135, 110, 110, 135, 100, 220)):
             self.table.setColumnWidth(column, width)
 
     def retranslate(self) -> None:
         """Translate controls and observations without replacing the edited input."""
         self.setWindowTitle(tr("budget_title"))
+        self.filter_label.setText(tr("budget_filter"))
+        self.status_filter.setAccessibleName(tr("budget_filter"))
+        for index in range(self.status_filter.count()):
+            self.status_filter.setItemText(index, tr("budget_filter_" + self.status_filter.itemData(index)))
         for label, field, key in ((self.name_label, self.name, "budget_name"),
                                   (self.path_label, self.path, "budget_path"),
                                   (self.limit_label, self.limit, "budget_limit")):
@@ -132,14 +152,55 @@ class FolderBudgetDialog(QDialog):
         self.refresh()
 
     def select_path(self, path: str) -> None:
-        """Prefill an explicit target only when no unsubmitted edit would be lost."""
+        """Locate a normalized existing identity, guarding unsubmitted edits before changing context."""
         if self._input() != self._clean_input:
             self.error.setText(tr("budget_keep_draft"))
             return
+        try:
+            normalized = budget_path(path)
+        except ValueError as error:
+            self.error.setText(display_error(str(error)))
+            return
+        self.set_filter("all")
+        for index, row in enumerate(self.store.rows):
+            if budget_path(row.rule.path) == normalized:
+                self.table.selectRow(index)
+                self._selection()
+                self.table.scrollToItem(self.table.item(index, 0))
+                self.name.setFocus()
+                return
         self._new()
         self.path.setText(path)
         self._clean_input = self._input()
         self.path.setFocus()
+
+    def set_filter(self, status_filter: BudgetFilter) -> None:
+        """Change only the temporary visible row set, retaining identity and the editor draft."""
+        index = self.status_filter.findData(status_filter)
+        if index < 0:
+            raise ValueError("Unknown budget filter")
+        self.status_filter.setCurrentIndex(index)
+        self._apply_filter()
+
+    def _apply_filter(self) -> None:
+        chosen = self.status_filter.currentData()
+        visible = 0
+        selected = None
+        with QSignalBlocker(self.table):
+            for index, row in enumerate(self.store.rows):
+                matches = (chosen in ("all", row.status)
+                           or chosen == "unknown" and row.status == "waiting")
+                self.table.setRowHidden(index, not matches)
+                visible += matches
+                if row.rule.identity == self.selected_identity:
+                    selected = (row, matches)
+        self.empty_hint.setText(tr("budget_empty" if not self.store.rows else "budget_filter_empty"))
+        self.empty_hint.setVisible(not visible)
+        if selected is not None and not selected[1]:
+            self.selection_hint.setText(tr("budget_editing_hidden", name=selected[0].rule.name,
+                                           status=self._status(selected[0])))
+        else:
+            self.selection_hint.setText(tr("budget_editing") if self.selected_identity else tr("budget_creating"))
 
     def refresh(self) -> None:
         """Refresh persisted observations, preserving selection and editor contents."""
@@ -156,12 +217,11 @@ class FolderBudgetDialog(QDialog):
             else:
                 self.table.setCurrentCell(-1, -1)
             self.table.resizeRowsToContents()
-        self.empty_hint.setVisible(not self.store.rows)
         if self.store.error:
             self.error.setText(display_error(self.store.error))
         self.update_button.setEnabled(selected is not None)
         self.delete_button.setEnabled(selected is not None)
-        self.selection_hint.setText(tr("budget_editing") if self.selected_identity else tr("budget_creating"))
+        self._apply_filter()
 
     def _fill_row(self, index: int, row: BudgetRow) -> None:
         observation = row.observation

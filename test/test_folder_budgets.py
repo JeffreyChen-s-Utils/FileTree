@@ -299,11 +299,11 @@ def test_workspace_manager_prefills_real_selection_and_retranslates(tmp_path, qa
     dialog.limit.setText("2")
     dialog.add_button.click()
     assert len(workspace.budgets.rows) == 1
-    assert "1 unknown" in workspace.budget_label.text()
+    assert "1 unknown" in workspace.budget_unknown.text()
     workspace.current.start_scan(str(source))
     _wait(qapp, lambda: workspace.current._worker is None)
     assert workspace.budgets.rows[0].status == "over"
-    assert "1 over" in workspace.budget_label.text()
+    assert "1 over" in workspace.budget_over.text()
     _branch_rescan_keeps_budget(workspace, qapp, nested, changing)
     dialog.reject()
     qapp.processEvents()

@@ -1,5 +1,9 @@
 # FileTree — Detailed usage and technical notes
 
+Expand Details to view growth trends or set a budget for the displayed, copyable target folder. A selected file uses its containing folder. Existing budgets open at the saved rule with the exact limit. Unsaved input blocks switching to another target. Unscanned, busy, closing, linked and combined-root selections explain why folder actions are unavailable; the workspace budget manager remains available. Each action rechecks the current scan and selection. Closing the dialog keeps the scan tab, selected entry and tree scroll position.
+
+The workspace over-limit and unknown counts are keyboard buttons. They open the same manager with a temporary status filter; unknown includes rules waiting for a scan. All budgets restores every rule. A filter with no matches has a different message from an empty rule store. Filtering, language changes, unit changes and incoming observations keep the editing identity and draft. If the edited rule is hidden, its name and status remain explained above the form. Filters do not persist or start scans.
+
 The budget table follows the active scan tab's size unit and keeps exact bytes in tooltips and accessible descriptions. Observation time has its own column. Limits remain exact when you select, edit and save a rule, including fractional binary units. Never-scanned rules differ from rules waiting for a full scan after a limit change. The latter retain their dated previous usage, but excess stays unknown until a new full scan. Refreshes, language changes and display-unit changes keep unsubmitted input. An existing editor refuses to replace unsaved input when another folder is requested. Choose folder only fills the path; New starts another draft, and Close or Escape discards unsubmitted input. Field errors focus the relevant input. The form scrolls in small windows while its action buttons remain available.
 
 Folder budgets are available beside New tab and in File for the selected real directory. Add a name, absolute folder path and exact limit in B, KiB, MiB, GiB or TiB; Update and Delete change only the saved rule. A path change starts a new rule. After a complete top-level or successful scheduled scan, the table records dated logical bytes, exact excess and over-limit status. Missing, linked and incompletely scanned folders remain unknown; unrelated scans leave prior observations untouched. Changing a limit waits for another full scan. An over-limit episode is recorded once and rearmed only by a known value at or below the limit, including after restarting FileTree. The persistent workspace status shows over-limit and unknown counts. Budgets do not start scans, remove files or schedule background work. Up to 256 distinct native absolute paths are stored under a settings lock.
@@ -185,7 +189,7 @@ Read-only virtual-disk discovery merges Windows `\\?\UNC\server\share` registrat
 
 The application opens independent **scan tabs**. Use **New scan tab** or `Ctrl+T` for another drive/folder, and `Ctrl+W` to close the active tab (closing the last tab exits). Up to 16 tabs can scan concurrently; each owns its tree, result views, filters, workers and history capture. Closing one joins its own workers; Quit joins every tab. Language changes apply to all tabs. Source-operation reviews, Trash, Undo, copying, renaming, hard-link replacement, compression and disk compaction share one busy guard across tabs; snapshots and approvals are still rechecked separately for each source. Combined roots remain one read-only tab. Scan concurrency and gentle priority apply per tab, so reduce workers or enable gentle scanning when running several scans. The `create_window` Python integration still creates one window; the GUI entry point uses `create_workspace`.
 
-In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search. In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
+In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search.
 
 ## Features
 
@@ -418,6 +422,8 @@ boolean flags, days 0–36500, exclusions). Invalid saved settings disable sugge
 manual risk cannot be downgraded, and no custom executable rules are supported.
 
 ### Seeing what grew
+
+In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
 
 Use **Choose loaded folder…** to browse the current scan one level at a time, or **Return to root**.
 The full folder path is copyable. The chooser pages through recorded direct folders without reading

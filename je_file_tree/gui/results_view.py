@@ -781,6 +781,7 @@ class ResultsView(QWidget):
 
     def _assemble_navigation(self, splitter: QSplitter, layout: QVBoxLayout) -> None:
         self.tabs.tabBar().hide()
+        self.tabs.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.navigation = ResultNavigation(self.tabs, icons=_TAB_ICONS)
         self._analysis_hint = QLabel()
         self._analysis_hint.setWordWrap(True)

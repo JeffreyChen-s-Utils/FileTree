@@ -185,6 +185,10 @@ def type_binary_limit(dialog: FolderBudgetDialog, value: str) -> None:
 
 def keyboard_budget(workspace, dialog, output: Path) -> FolderBudgetDialog:
     """Add, edit, cancel and reopen a rule using the actual focus chain in each configuration."""
+    tab_to(dialog, dialog.status_filter)
+    key(dialog, Qt.Key.Key_Home)
+    key(dialog, Qt.Key.Key_Tab)
+    require(dialog.focusWidget() is dialog.table, 'Budget filter does not lead into the table')
     original_count = len(workspace.budgets.rows)
     target = str(output.parent.resolve() / ('Keyboard-資料夾-&-' + 'long-path-' * 14))
     press(dialog, dialog.new_button)
@@ -301,6 +305,7 @@ def main() -> None:
         settings = QSettings(str(root / 'settings.ini'), QSettings.Format.IniFormat)
         settings.setValue('language', 'en')
         settings.setValue('check_updates', False)
+        settings.setValue('history_enabled', False)
         workspace = create_workspace(settings)
         prepare_hidden(workspace)
         workspace.show()

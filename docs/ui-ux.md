@@ -144,3 +144,17 @@ or native macOS/Linux interaction; those existing verification items remain in `
 Search derives its removable condition summary from SearchFilters.state(), with explicit entire-scan scope. Name, each size bound, dates, type and kind have keyboard-accessible removal actions. Filter controls and long summaries scroll independently above the retained result table. Optional dates use a localized calendar with explicit acceptance; errors remain beside the input and move focus to that field. Typing immediately invalidates old results before the debounce delay. Native evidence is reproducible with tools/verify_search_ux.py; contrast is a local simulated palette.
 
 Budget tables use arrow keys for row selection and Tab to leave for the editor. Opening or expanding search scrolls its focused name field into view. Calendar minimum geometry includes every week under the applied stylesheet. The budget/search probes send keys only to actual focus and exercise each language/theme/desktop combination at a checked native pixel ratio; hidden-window action setup does not establish operating-system shortcut delivery or screen-reader speech.
+
+Details contains a copyable target folder, growth-trend and budget buttons, and explicit unavailable
+reasons for unscanned, busy, closing, linked or combined-root selections. Actions recheck the owning
+window's current context; a file uses its containing folder. Opening and closing preserves the tab,
+tree selection and scroll. The hidden analysis tab bar has no Tab stop; its active page controls and
+visible navigation remain reachable. Focused details controls remain in view after resizing or translation.
+Workspace budget counts are keyboard buttons for over-limit and unknown rules, with waiting included
+in unknown. The temporary filter precedes the table in Tab order. Hidden edited rules show their
+name and status; filtering and refresh keep the draft. No matching rules and no saved rules have
+different messages. Existing folder budgets open by normalized path without creating a duplicate.
+`test/test_context_ux.py` checks these guards, identity, focus and one-query history routing.
+`tools/verify_context_ux.py` repeats the real modal history route, folder budget and count-button paths
+in native hidden windows for five languages, two sizes and light/dark/simulated contrast, checking
+the actual pixel ratio and saving screenshots. It sends Qt events only to the actual focus widget.

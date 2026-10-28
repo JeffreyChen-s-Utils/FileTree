@@ -9,6 +9,7 @@ from je_file_tree.core.operations import MoveSummary
 import json
 import os
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 
 from PySide6.QtCore import QByteArray, QEvent, QPoint, QSettings, QSignalBlocker, QSize, QThread, Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
@@ -128,6 +129,14 @@ def read_workers(settings: QSettings) -> int:
     except (ValueError, TypeError):
         return DEFAULT_WORKERS
     return value if 1 <= value <= _MAX_SCAN_WORKERS else DEFAULT_WORKERS
+
+
+@dataclass(frozen=True, slots=True)
+class FolderContext:
+    """A current loaded folder or the translation key explaining why none is available."""
+
+    node: Node | None
+    reason: str = ""
 
 
 class MainWindow(QMainWindow):
@@ -997,6 +1006,7 @@ class MainWindow(QMainWindow):
             self.move_to_trash(self.results.focused_selection())
 
     def _selection_changed(self, node: Node | None) -> None:
+        self._update_folder_context()
         picked = self.results.selected_nodes()
         if len(picked) > 1:
             size = format_size(sum(entry.size for entry in outermost(picked)), self._unit)
@@ -1272,6 +1282,7 @@ class MainWindow(QMainWindow):
         """Invalidate all replies; optional joins are used only after the closing fence has completed."""
         self._trash_rescans.clear()
         self._closing = True
+        self._update_folder_context()
         self._live_timer.stop()
         self._folder_drops.shutdown(wait=wait)
         self.welcome.shutdown(wait=wait)
@@ -1531,6 +1542,8 @@ class MainWindow(QMainWindow):
         self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
+        self.results.details.history_requested.connect(self.show_history)
+        self.results.details.budget_requested.connect(self._show_context_budget)
         self.results.completion.records_requested.connect(self.show_recent_actions)
         self.results.completion.undo_requested.connect(self._undo.undo)
         self.results.completion.rescan_requested.connect(self.start_scan)
@@ -1566,6 +1579,7 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        self._update_folder_context()
         self._update_path_button()
         if self.operation_busy:
             self.pending_source_workers()
@@ -1727,14 +1741,12 @@ class MainWindow(QMainWindow):
 
     def show_history(self) -> None:
         """Review local history for the full current root and reuse the Changes worker for comparison."""
-        if self._worker is not None or self.operation_busy or self.results.outcome is None:
+        context = self.folder_context()
+        if context.node is None:
             return
         root = self.results.outcome.result.root
-        if root.path is None:
-            return
         store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
-        selected = self.results.selected_node() or root
-        folder = selected if selected.is_dir else selected.parent or root
+        folder = context.node
         relative = os.path.relpath(folder.path, root.path)
         dialog = HistoryDialog(store, root.path, self._unit, self,
                                folder="" if relative == "." else relative, loaded_root=root)
@@ -1986,12 +1998,39 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def show_folder_budgets(self) -> None:
-        """Open the shared manager with a selected real directory prefilled."""
+        """Open the shared manager even when no contextual folder is available."""
         if self._budget_show is None:
             return
-        node = self.results.selected_node()
-        path = node.path if node is not None and node.is_dir and not node.is_link else ""
-        self._budget_show(path or "")
+        context = self.folder_context()
+        self._budget_show(context.node.path if context.node is not None else "")
+
+    def folder_context(self) -> FolderContext:
+        """Resolve current selection against its owning scan without walking source descendants."""
+        if self._closing or self._worker is not None or self.operation_busy:
+            return FolderContext(None, "folder_context_closing" if self._closing else "folder_context_busy")
+        outcome = self.results.outcome
+        if outcome is None:
+            return FolderContext(None, "folder_context_empty")
+        root = outcome.result.root
+        if root.path is None:
+            return FolderContext(None, "folder_context_virtual")
+        selected = self.results.selected_node() or root
+        if not selected.is_in(root) or selected.is_link:
+            return FolderContext(None, "folder_context_link" if selected.is_link else "folder_context_stale")
+        folder = selected if selected.is_dir else selected.parent
+        if folder is None or folder.is_link or folder.path is None:
+            return FolderContext(None, "folder_context_stale")
+        return FolderContext(folder)
+
+    def _update_folder_context(self) -> None:
+        context = self.folder_context()
+        self.results.details.set_folder_context(context.node.path if context.node is not None else "",
+                                               context.reason, budget_available=self._budget_show is not None)
+
+    def _show_context_budget(self) -> None:
+        context = self.folder_context()
+        if context.node is not None and self._budget_show is not None:
+            self._budget_show(context.node.path)
 
     def show_about(self) -> None:
         """Show the version."""

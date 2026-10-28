@@ -27,6 +27,17 @@ selection signals blocked and preserve the selected rule identity without refill
 observation strings never feed persistence. Limit-version mismatch retains dated old usage with an
 explicit waiting state and unknown excess. The settings schema and reminder state remain unchanged.
 
+`MainWindow.folder_context` resolves a typed `FolderContext` from the current result and selection,
+checking scan ownership, shared operation busy state, closing, links and virtual roots. Files use
+their containing folder. `DetailsPanel.set_folder_context` displays its copyable path and unavailable
+reason without calling `set_node` or starting a details worker. Parameterless actions recheck the
+context and reuse `show_history` and the workspace budget entry point. No source traversal is added.
+The workspace's over/unknown count buttons share the singleton budget manager. Temporary filters
+hide rows using `BudgetRow.status`, including waiting rows under unknown, while retaining identity
+and drafts. `select_path` checks dirty input before matching at most 256 normalized existing paths;
+existing rules retain exact limits and unmatched paths start a draft. Hidden edited rules retain
+a visible name/status explanation. Filters neither persist nor query the store again.
+
 
 `gui.workspace_templates` stores immutable `WorkspaceTemplate` values under a separate bounded,
 strict QSettings key. It reuses the public `WorkspaceState` value codec and scan preferences while

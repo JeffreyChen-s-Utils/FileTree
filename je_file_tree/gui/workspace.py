@@ -13,7 +13,7 @@ from je_file_tree.gui.locale_font import apply_language_font
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
-from je_file_tree.gui.folder_budget_dialog import FolderBudgetDialog
+from je_file_tree.gui.folder_budget_dialog import BudgetFilter, FolderBudgetDialog
 from je_file_tree.gui.folder_budget_store import FolderBudgetStore, display_error
 from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
@@ -80,6 +80,12 @@ class ScanWorkspace(QMainWindow):
         self._budget_dialog: FolderBudgetDialog | None = None
         self.budget_label = QLabel(self)
         self.statusBar().addPermanentWidget(self.budget_label)
+        self.budget_over = QToolButton(self)
+        self.budget_unknown = QToolButton(self)
+        for button, status in ((self.budget_over, "over"), (self.budget_unknown, "unknown")):
+            button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+            button.clicked.connect(lambda _checked=False, chosen=status: self.show_budgets(status_filter=chosen))
+            self.statusBar().addPermanentWidget(button)
         self.budgets.changed.connect(self._budget_status)
         self.budget_action = QAction(self)
         self.budget_action.triggered.connect(lambda _checked=False: self.show_budgets())
@@ -227,15 +233,18 @@ class ScanWorkspace(QMainWindow):
         if self._templates_dialog is not None:
             self._templates_dialog.set_replacement_impact(self.replacement_impact())
 
-    def show_budgets(self, selected_path: str = "") -> None:
+    def show_budgets(self, selected_path: str = "", status_filter: BudgetFilter = "all") -> None:
         """Show one workspace manager; its rows are the persisted alert surface."""
         if self._closing:
             return
         if self._budget_dialog is not None:
             if selected_path:
                 self._budget_dialog.select_path(selected_path)
+            else:
+                self._budget_dialog.set_filter(status_filter)
             return
-        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path, unit=self.current._unit)
+        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path, unit=self.current._unit,
+                                    status_filter=status_filter)
         self._budget_dialog = dialog
         dialog.finished.connect(lambda _result: self._budget_finished(dialog))
         dialog.open()
@@ -245,14 +254,14 @@ class ScanWorkspace(QMainWindow):
         dialog.deleteLater()
 
     def _budget_status(self) -> None:
-        if self.budgets.error:
-            self.budget_label.setText(tr("budget_save_error", reason=display_error(self.budgets.error)))
-            return
+        self.budget_label.setText(tr("budget_save_error", reason=display_error(self.budgets.error))
+                                 if self.budgets.error else "")
         over = sum(row.status == "over" for row in self.budgets.rows)
         unknown = sum(row.status in ("unknown", "waiting") for row in self.budgets.rows)
-        self.budget_label.setText(tr("budget_summary", over=over, unknown=unknown))
-        self.budget_label.setToolTip("\n".join(f"{row.rule.name}: {tr('budget_' + row.status)}"
-                                                  for row in self.budgets.rows))
+        for button, status, count in ((self.budget_over, "over", over), (self.budget_unknown, "unknown", unknown)):
+            button.setText(tr("budget_count_" + status, count=count))
+            button.setToolTip(tr("budget_filter_" + status))
+            button.setAccessibleName(button.text())
 
     def _templates_finished(self, dialog: WorkspaceTemplatesDialog, result: int) -> None:
         state, report = dialog.chosen, dialog.report

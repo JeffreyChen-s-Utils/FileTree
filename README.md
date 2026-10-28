@@ -9,11 +9,11 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ![FileTree: folder sizes on the left, a space-usage chart on the right](docs/images/main_window_en.png)
 
-Use arrow keys to select budget rows and Tab to reach the editor. Reopening search brings the name field into view. In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
+Use arrow keys to select budget rows and Tab to reach the editor. Reopening search brings the name field into view.
 
 ## What you can do
 
-- Set exact folder limits in Folder budgets. Read usage and excess in your chosen size unit, with a separate observation time and clear waiting or unknown states.
+- Set exact folder limits in Folder budgets. Read usage and excess in your chosen size unit, with a separate observation time and clear waiting or unknown states. Open trends or budgets for the selected folder from Details. Click an over-limit or unknown count to open matching budgets.
 - Save named workspace templates from the tabs captured when the manager opens. Edit a separate load preview, review live replacement counts, and load idle tabs.
 - Result highlights link the largest direct folders, cleanup candidates and scan limits to their existing views.
 - Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse. Opening the editor keeps other tabs scanning.
@@ -22,7 +22,7 @@ Use arrow keys to select budget rows and Tab to reach the editor. Reopening sear
 - **Search and filter**: find files by name, type, size or last change. Sorting, units and tree filters keep visible selections. Tree filters reuse unchanged results, map each opened group once, and skip hidden archive members. Tree filters keep large selections and their gaps while retaining less cached data. Large result lists sort with one value calculation per row. Custom ranges accept exact sizes and inclusive local dates; saved searches keep those bounds.
 - **Review clean-up suggestions**: inspect caches, temporary files and duplicates before acting. Large lists keep selections when changing units or language; large batches of skipped or failed entries remain available in complete, copyable tables. Keeper choices and space estimates keep your selection and view position. Grouped results open together and retain every listed file.
 - **See what grew**: compare scans to find folders using more space than before.
-- **Track a folder over time**: choose a loaded folder and a recent or custom period in Scan history. Select chart points or rows to read sizes, signed changes and unknown reasons.
+- **Track a folder over time**: choose a loaded folder and a recent or custom period in Scan history. Select chart points or rows to read sizes, signed changes and unknown reasons. In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
 - **Save reports**: export results to CSV, JSON or Excel. Large selected-list copies prepare rows and text in batches; a newer copy in any list replaces the pending one.
 - **Use your language**: switch between English, Traditional Chinese, Simplified Chinese, Japanese and Korean.
 - **Explorer folder menu (Windows)**: add Scan with FileTree from Options. Settings stay responsive; an active Save finishes before closing.

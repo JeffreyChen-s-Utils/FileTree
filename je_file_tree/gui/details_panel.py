@@ -6,7 +6,10 @@ import threading
 import time
 
 from PySide6.QtCore import QSettings, Qt, QThread, QTimer, Signal
-from PySide6.QtWidgets import QLabel, QLayout, QScrollArea, QSizePolicy, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtGui import QResizeEvent
+from PySide6.QtWidgets import (
+    QLabel, QLayout, QLineEdit, QPushButton, QScrollArea, QSizePolicy, QToolButton, QVBoxLayout, QWidget,
+)
 
 from je_file_tree.core.details import Breakdown, breakdown
 from je_file_tree.core.formatting import AUTO_UNIT, format_count, format_size, format_time
@@ -38,6 +41,9 @@ class DetailsWorker(QThread):
 class DetailsPanel(QWidget):
     """Show recorded selection facts; folded and live-scan panes never walk descendants."""
 
+    history_requested = Signal()
+    budget_requested = Signal()
+
     def __init__(self, settings: QSettings | None = None, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._settings = settings
@@ -66,6 +72,7 @@ class DetailsPanel(QWidget):
         for widget in (self.path_label, self.facts, self.distribution):
             widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
             body_layout.addWidget(widget)
+        self._build_context(body_layout)
         self.body = QScrollArea()
         self.body.setWidgetResizable(True)
         self.body.setWidget(body)
@@ -81,6 +88,52 @@ class DetailsPanel(QWidget):
         self.toggle.toggled.connect(self._fold)
         self.toggle.setChecked(settings is not None and settings.value('details_expanded', False, type=bool))
         self._fold(self.toggle.isChecked())
+
+    def _build_context(self, layout: QVBoxLayout) -> None:
+        self._context_reason = "folder_context_empty"
+        self.context_path = QLineEdit()
+        self.context_path.setReadOnly(True)
+        self.context_reason = QLabel()
+        self.context_reason.setWordWrap(True)
+        self.context_reason.setTextFormat(Qt.TextFormat.PlainText)
+        self.history_button, self.budget_button = QPushButton(), QPushButton()
+        self.history_button.clicked.connect(self.history_requested)
+        self.budget_button.clicked.connect(self.budget_requested)
+        for button in (self.history_button, self.budget_button):
+            button.setAutoDefault(False)
+            button.setEnabled(False)
+        for widget in (self.context_path, self.context_reason, self.history_button, self.budget_button):
+            layout.addWidget(widget)
+
+    def set_folder_context(self, path: str, reason: str, *, budget_available: bool) -> None:
+        """Display the owner's resolved target without invalidating selection analysis."""
+        self._context_reason = reason
+        if self.context_path.text() != path:
+            self.context_path.setText(path)
+        self.context_path.setToolTip(path)
+        for button in (self.history_button, self.budget_button):
+            button.setToolTip(path)
+            button.setAccessibleDescription(path)
+        self.history_button.setEnabled(bool(path) and not reason)
+        self.budget_button.setEnabled(bool(path) and not reason and budget_available)
+        self._translate_context()
+
+    def _translate_context(self) -> None:
+        self.context_path.setAccessibleName(tr("folder_context_target"))
+        self.context_path.setPlaceholderText(tr("folder_context_target"))
+        self.context_reason.setText(tr(self._context_reason) if self._context_reason else tr("folder_context_ready"))
+        self.history_button.setText(tr("folder_context_history"))
+        self.budget_button.setText(tr("folder_context_budget"))
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        """Keep the focused context control visible when its scrollable panel changes size."""
+        super().resizeEvent(event)
+        QTimer.singleShot(0, self, self._reveal_focus)
+
+    def _reveal_focus(self) -> None:
+        focused = self.window().focusWidget()
+        if focused is not None and self.body.isAncestorOf(focused):
+            self.body.ensureWidgetVisible(focused)
 
     def set_node(self, node: Node | None, *, live: bool = False, now: float | None = None) -> None:
         """Invalidate stale replies and refresh totals without accessing the filesystem."""
@@ -114,6 +167,8 @@ class DetailsPanel(QWidget):
         )
         self.facts.setText('\n'.join(f'{tr(key)}: {value}' for key, value in fields))
         self.distribution.setText(self._distribution_text())
+        self._translate_context()
+        QTimer.singleShot(0, self, self._reveal_focus)
 
     def _fold(self, expanded: bool) -> None:
         self.body.setVisible(expanded)
