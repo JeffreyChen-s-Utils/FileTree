@@ -11,6 +11,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ## What you can do
 
+- Save named workspace templates for several tabs, preview and check their paths, then explicitly replace tabs. Loaded tabs wait for Start.
 - Result highlights link the largest direct folders, cleanup candidates and scan limits to their existing views.
 - Save named scan presets from the welcome page or Options, then load a path and its scan choices for reuse. Opening the editor keeps other tabs scanning.
 - Keep the last cleanup counts visible, with operation records, available Undo and an explicit rescan of the original folder.

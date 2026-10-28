@@ -11,6 +11,36 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "templates_saved": 'Saved templates',
+    'workspace_templates': 'Workspace templates…',
+    'templates_tab': 'Tab',
+    'templates_kind': 'Scope',
+    'templates_status': 'Availability',
+    'templates_single': 'Single folder',
+    'templates_check': 'Check paths',
+    'templates_replace': 'Replace tabs',
+    'templates_hint': (
+        'Save the current tabs, or select a tem'
+        'plate to preview. Edit paths and check'
+        ' them before replacing tabs. Replaceme'
+        'nt closes existing scans and results. '
+        'Loaded tabs stay idle until Start. Una'
+        'vailable roots are retained; repair th'
+        'em here and check again. Add and Updat'
+        'e save the current workspace.'),
+    'templates_invalid': (
+        'Invalid template data. Use unique name'
+        's and absolute paths. Existing setting'
+        's were not changed.'),
+    'templates_unchecked': 'Not checked',
+    'templates_checking': 'Checking all paths…',
+    'templates_ready': 'Ready',
+    'templates_checked': (
+        'Paths checked. Replace tabs loads all '
+        'inputs, including unavailable roots. S'
+        'tart stays disabled for tabs with erro'
+        'rs.'),
+    'templates_not_folder': 'Not a folder',
     "completion_title": 'Last cleanup result',
     "completion_undo": 'Undo available moves',
     "completion_rescan": 'Rescan original folder',
@@ -1566,6 +1596,27 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "templates_saved": '已儲存範本',
+    'workspace_templates': '工作區範本…',
+    'templates_tab': '分頁',
+    'templates_kind': '範圍',
+    'templates_status': '可用狀態',
+    'templates_single': '單一資料夾',
+    'templates_check': '檢查路徑',
+    'templates_replace': '取代分頁',
+    'templates_hint': (
+        '儲存目前分頁，或選擇範本預覽。可編輯路徑，檢查後再取代分頁。取代會關閉現有掃'
+        '描與結果；載入後須按開始才會掃描。無法使用的路徑會保留，可在此修正後重新檢查'
+        '。新增及更新會儲存目前工作區。'),
+    'templates_invalid': (
+        '範本資料無效。請使用不重複的名稱及絕對路徑。既有設定未變更。'),
+    'templates_unchecked': '尚未檢查',
+    'templates_checking': '正在檢查所有路徑…',
+    'templates_ready': '可使用',
+    'templates_checked': (
+        '路徑檢查完成。取代分頁會載入全部輸入，包含無法使用的路徑。有錯誤的分頁無法開'
+        '始掃描。'),
+    'templates_not_folder': '不是資料夾',
     "completion_title": '上次清理結果',
     "completion_undo": '復原可還原項目',
     "completion_rescan": '重新掃描原資料夾',
@@ -2956,6 +3007,27 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "templates_saved": '已保存模板',
+    'workspace_templates': '工作区模板…',
+    'templates_tab': '标签页',
+    'templates_kind': '范围',
+    'templates_status': '可用状态',
+    'templates_single': '单个文件夹',
+    'templates_check': '检查路径',
+    'templates_replace': '替换标签页',
+    'templates_hint': (
+        '保存当前标签页，或选择模板预览。可编辑路径，检查后再替换标签页。替换会关闭现'
+        '有扫描和结果；加载后须点击开始才会扫描。不可用的路径会保留，可在此修正后重新'
+        '检查。添加和更新会保存当前工作区。'),
+    'templates_invalid': (
+        '模板数据无效。请使用唯一名称和绝对路径。现有设置未更改。'),
+    'templates_unchecked': '尚未检查',
+    'templates_checking': '正在检查所有路径…',
+    'templates_ready': '可用',
+    'templates_checked': (
+        '路径检查完成。替换标签页会加载全部输入，包括不可用的路径。有错误的标签页无法'
+        '开始扫描。'),
+    'templates_not_folder': '不是文件夹',
     "completion_title": '上次清理结果',
     "completion_undo": '撤销可恢复项目',
     "completion_rescan": '重新扫描原文件夹',
@@ -4358,6 +4430,29 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "templates_saved": '保存済みテンプレート',
+    'workspace_templates': 'ワークスペースのテンプレート…',
+    'templates_tab': 'タブ',
+    'templates_kind': '範囲',
+    'templates_status': '利用状況',
+    'templates_single': '単一フォルダー',
+    'templates_check': 'パスを確認',
+    'templates_replace': 'タブを置換',
+    'templates_hint': (
+        '現在のタブを保存するか、テンプレートを選んで確認します。パスを編集し、確認し'
+        'てからタブを置換してください。置換すると既存のスキャンと結果が閉じられます。'
+        '読み込み後は開始を押すまでスキャンしません。利用できないパスも保持されます。'
+        'ここで修正して再確認できます。追加と更新は現在のワークスペースを保存します。'),
+    'templates_invalid': (
+        'テンプレートが無効です。一意の名前と絶対パスを使用してください。既存の設定は'
+        '変更していません。'),
+    'templates_unchecked': '未確認',
+    'templates_checking': 'すべてのパスを確認中…',
+    'templates_ready': '利用可能',
+    'templates_checked': (
+        '確認が完了しました。利用できないパスも含めて読み込みます。エラーがあるタブで'
+        'は開始できません。'),
+    'templates_not_folder': 'フォルダーではありません',
     "completion_title": '前回の整理結果',
     "completion_undo": '可能な移動を元に戻す',
     "completion_rescan": '元のフォルダーを再スキャン',
@@ -6111,6 +6206,30 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "templates_saved": '저장한 템플릿',
+    'workspace_templates': '작업 공간 템플릿…',
+    'templates_tab': '탭',
+    'templates_kind': '범위',
+    'templates_status': '사용 가능 여부',
+    'templates_single': '단일 폴더',
+    'templates_check': '경로 확인',
+    'templates_replace': '탭 교체',
+    'templates_hint': (
+        '현재 탭을 저장하거나 템플릿을 선택하여 미리 봅니다. 경로를 편집하고'
+        ' 확인한 다음 탭을 교체하세요. 교체하면 기존 검사와 결과가 닫힙니다'
+        '. 불러온 탭은 시작을 누를 때까지 검사하지 않습니다. 사용할 수 없'
+        '는 경로도 유지됩니다. 여기서 수정하고 다시 확인하세요. 추가와 업데'
+        '이트는 현재 작업 공간을 저장합니다.'),
+    'templates_invalid': (
+        '잘못된 템플릿입니다. 고유한 이름과 절대 경로를 사용하세요. 기존 설'
+        '정은 변경되지 않았습니다.'),
+    'templates_unchecked': '확인 전',
+    'templates_checking': '모든 경로 확인 중…',
+    'templates_ready': '사용 가능',
+    'templates_checked': (
+        '경로 확인이 완료되었습니다. 사용할 수 없는 경로를 포함한 모든 입력'
+        '을 불러옵니다. 오류가 있는 탭은 시작할 수 없습니다.'),
+    'templates_not_folder': '폴더가 아닙니다',
     "completion_title": '최근 정리 결과',
     "completion_undo": '복원 가능한 이동 취소',
     "completion_rescan": '원래 폴더 다시 스캔',

@@ -11,6 +11,17 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`gui.workspace_templates` stores immutable `WorkspaceTemplate` values under a separate bounded,
+strict QSettings key. It reuses the public `WorkspaceState` value codec and scan preferences while
+requiring native fully qualified paths. `WorkspaceTemplatesDialog` attaches an editable per-root
+preview table, coalesces availability checks on owned workers, and preserves unavailable roots.
+`MainWindow.capture_scan_scope` and `prepare_scan_scope` separate next-scan inputs from existing
+results. Explicit Start dispatches the exact pending single or combined scope. `ScanWorkspace`
+owns replacement: existing tabs retire asynchronously under the same OperationGroup and
+BackgroundMonitor, then joined pages are replaced with idle inputs and transient preferences.
+Application close wins over validation and retirement. Background dispatch is guarded during
+replacement; no template restores results, approvals or scanner authority. Restart still scans.
+
 `TrashWorker` prepares an immutable, scalar `MoveSummary` before delivery. The persistent
 `CleanupCompletion` header retains counts/logical bytes and opens scrollable transient details without
 resizing the analysis workspace. Its records/undo/original-folder rescan actions reuse existing owners

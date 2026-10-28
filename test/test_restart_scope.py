@@ -1,5 +1,8 @@
 """Administrator restart retains explicit scan scopes rather than a single display path."""
 
+import pytest
+
+from test_gui import _wait
 from test_elevation import window as window  # noqa: PLC0414 - isolated integration fixture
 from je_file_tree.gui import elevation
 from je_file_tree.gui.startup_state import WorkspaceState, workspace_state
@@ -51,3 +54,33 @@ def test_invalid_scope_refuses_launch_without_closing(window, monkeypatch):
     window.restart_as_admin()
     assert not requested and not window._settings_dialogs and not window._closing
     assert "Invalid workspace restart" in window.statusBar().currentMessage()
+
+
+@pytest.mark.parametrize("owner_name", ["window", "workspace"])
+@pytest.mark.parametrize("pending", ["single", "combined", "loaded_blank", "cleared"])
+def test_restart_uses_explicit_pending_input_without_resurrecting_results(
+        request, qapp, monkeypatch, tmp_path, owner_name, pending):
+    owner = request.getfixturevalue(owner_name)
+    page = owner.current if owner_name == "workspace" else owner
+    page.start_scan(str(tmp_path))
+    _wait(qapp, lambda: page._worker is None)
+    outcome = page.results.outcome
+    assert outcome is not None and page._last_path == str(tmp_path)
+    if pending == "single":
+        scope = str(tmp_path / "next-folder")
+        page.path_edit.setText(scope)
+    elif pending == "combined":
+        scope = (str(tmp_path),)
+        page.prepare_scan_scope(scope)
+    else:
+        scope = None
+        if pending == "loaded_blank":
+            page.prepare_scan_scope(None)
+        else:
+            page.path_edit.clear()
+    page.retranslate()
+    requested = []
+    monkeypatch.setattr(elevation, "relaunch_elevated", lambda arguments: requested.append(list(arguments)) or False)
+    page.restart_as_admin()
+    assert workspace_state(requested[0]) == WorkspaceState((scope,), options=(page._scan_options(),))
+    assert page.results.outcome is outcome and page._worker is None and not page._closing

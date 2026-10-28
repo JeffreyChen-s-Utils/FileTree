@@ -175,6 +175,8 @@ class BackgroundMonitor(QObject):
 
     def tick(self) -> None:
         """Capacity reads stay off the GUI thread; scheduled source scans wait for every tab to be idle."""
+        if self.workspace._replacement is not None or not self.workspace.tabs.count():
+            return
         if not self.can_hide:
             if (not self.closing and self.active and self.config.enabled and self.tray.isVisible()
                     and not QSystemTrayIcon.isSystemTrayAvailable()):
@@ -249,7 +251,7 @@ class BackgroundMonitor(QObject):
 
     def show_proposals(self) -> None:
         """Show current-session bounded observations while serializing all source-operation owners."""
-        if (self.closing or self.workspace.operations.busy
+        if (self.closing or self.workspace._replacement is not None or self.workspace.operations.busy
                 or any(window._worker is not None or window._analysers
                        for window in self.workspace.operations.windows)):
             return

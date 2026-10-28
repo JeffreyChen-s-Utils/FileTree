@@ -68,9 +68,7 @@ class WorkspaceState:
                 return []
             if isinstance(scope, str) and not scope.startswith("-"):
                 return [scope]
-        value = {"version": 1 if self.options is None else _OPTIONS_VERSION, "tabs": self.tabs, "active": self.active}
-        if self.options is not None:
-            value.update(encode_scan_preferences(self.options))
+        value = encode_workspace_state(self)
         payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
         if len(payload) > _MAX_PAYLOAD:
             raise ValueError("Workspace restart data is too large")
@@ -111,10 +109,11 @@ def workspace_state(arguments: Sequence[str]) -> WorkspaceState | None:
         value = json.loads(values[0], object_pairs_hook=_fields)
     except (ValueError, RecursionError) as error:
         raise ValueError("Invalid workspace restart data") from error
-    return _decode_state(value)
+    return decode_workspace_state(value)
 
 
-def _decode_state(value: object) -> WorkspaceState:
+def decode_workspace_state(value: object) -> WorkspaceState:
+    """Decode bounded workspace values independently of the restart command line."""
     if (not isinstance(value, dict) or type(value.get("version")) is not int
             or value["version"] not in (1, _OPTIONS_VERSION)):
         raise ValueError("Unsupported workspace restart data")
@@ -126,3 +125,12 @@ def _decode_state(value: object) -> WorkspaceState:
     options = (decode_scan_preferences(value["defaults"], value["options"])
                if value["version"] == _OPTIONS_VERSION else None)
     return WorkspaceState(tuple(_scope(scope) for scope in value["tabs"]), value["active"], options)
+
+
+def encode_workspace_state(state: WorkspaceState) -> dict[str, object]:
+    """Encode public scan choices without command-line dispatch semantics."""
+    value: dict[str, object] = {"version": 1 if state.options is None else _OPTIONS_VERSION,
+                                "tabs": state.tabs, "active": state.active}
+    if state.options is not None:
+        value.update(encode_scan_preferences(state.options))
+    return value

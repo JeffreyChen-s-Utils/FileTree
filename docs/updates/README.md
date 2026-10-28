@@ -69,6 +69,9 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261028-04 | 2026-10-28 | Save and explicitly restore named workspace templates | #done #gui #settings | [2026-10-e](2026-10-e.md) |
+| U-20261028-03 | 2026-10-28 | Confirm volume-row readiness across hosted checks | #done #tests | [2026-10-e](2026-10-e.md) |
+| U-20261028-02 | 2026-10-28 | Wait for published volume rows before selecting them | #incident #tests | [2026-10-e](2026-10-e.md) |
 | U-20261028-01 | 2026-10-28 | Support exact sizes and local calendar dates in saved searches | #done #search #gui | [2026-10-e](2026-10-e.md) |
 | U-20261023-05 | 2026-10-23 | Finish worker lifetimes and reject unknown comparison identities | #done #scanner #lifecycle #capacity | [2026-10-e](2026-10-e.md) |
 | U-20261023-04 | 2026-10-23 | Retain scalar cleanup outcomes and separately observed free space | #done #cleanup #gui | [2026-10-e](2026-10-e.md) |
@@ -432,5 +435,3 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 | U-20260926-03 | 2026-09-26 | The Nuitka script asks Qt where its translations are (Linux CI) | #incident #build #nuitka #ci | [2026-09](2026-09.md) |
 | U-20260926-02 | 2026-09-26 | start_file_tree.py and a Nuitka build with Qt's translations | #release #build #nuitka #docs | [2026-09](2026-09.md) |
 | U-20260926-01 | 2026-09-26 | FileTree 0.1.0: scanner, treemap and PySide6 window | #release #scanner #treemap #gui #i18n | [2026-09](2026-09.md) |
-
-| [U-20261028-02](2026-10-e.md#u-20261028-02--2026-10-28--wait-for-published-volume-rows-before-selecting-them--incident-tests) | Wait for published volume rows before selecting them |

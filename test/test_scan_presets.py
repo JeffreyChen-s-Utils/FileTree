@@ -134,3 +134,16 @@ def test_application_can_close_while_preset_editor_is_open(window, monkeypatch):
         assert not window._settings_dialogs
     finally:
         window._closing = False
+
+
+def test_single_path_preset_editor_never_uses_combined_display_as_a_path(window, tmp_path, monkeypatch):
+    scope = (str(tmp_path),)
+    window.prepare_scan_scope(scope)
+
+    def execute(dialog):
+        assert dialog.path.text() == ""
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(ScanPresetsDialog, "exec", execute)
+    window.configure_scan_presets()
+    assert window.capture_scan_scope() == scope and window._worker is None

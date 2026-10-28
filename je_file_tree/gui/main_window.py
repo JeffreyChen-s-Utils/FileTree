@@ -133,6 +133,7 @@ class MainWindow(QMainWindow):
     """The FileTree window."""
 
     shutdown_finished = Signal()
+    scan_scope_changed = Signal()
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
@@ -188,6 +189,9 @@ class MainWindow(QMainWindow):
         self._restore_cleanup_policy()
 
     def _init_scan_state(self) -> None:
+        self._prepared_scope: str | tuple[str, ...] | None = None
+        self._has_prepared_scope = False
+        self._prepared_errors: tuple[str, ...] = ()
         self._restart_arguments: Callable[[], list[str]] | None = None
         self._scan_defaults: ScanDefaults | None = None
         self._worker: ScanWorker | None = None
@@ -263,6 +267,55 @@ class MainWindow(QMainWindow):
             return
         self._begin_scan(tuple(paths), exact_allocation=exact_allocation)
 
+    def capture_scan_scope(self) -> str | tuple[str, ...] | None:
+        """Return next-scan input independently of roots belonging to existing results."""
+        return self._prepared_scope
+
+    def capture_restart_scope(self) -> str | tuple[str, ...] | None:
+        """Prefer explicit next input, including blank; retain result scopes for untouched integrations."""
+        if self._has_prepared_scope:
+            return self.capture_scan_scope()
+        return self._last_roots or self._last_path or None
+
+    def prepare_scan_scope(self, scope: str | tuple[str, ...] | None,
+                           errors: tuple[str, ...] = ()) -> None:
+        """Stage exact inputs without scanning or changing existing results."""
+        if self._prepared_errors:
+            self.statusBar().clearMessage()
+        self._prepared_scope, self._prepared_errors = scope, errors
+        self._has_prepared_scope = True
+        self._render_scan_scope()
+        self.scan_scope_changed.emit()
+        if errors:
+            self.statusBar().showMessage("\n".join(errors))
+
+    def _render_scan_scope(self) -> None:
+        scope = self.capture_scan_scope()
+        self.path_edit.blockSignals(True)
+        self.path_edit.setText(tr("multi_roots") if isinstance(scope, tuple) else scope or "")
+        self.path_edit.blockSignals(False)
+        roots = scope if isinstance(scope, tuple) else (scope,) if scope else ()
+        self.path_edit.setToolTip("\n".join((*roots, *self._prepared_errors)))
+        self._update_path_button()
+
+    def _path_input_changed(self) -> None:
+        if self._prepared_errors:
+            self.statusBar().clearMessage()
+        self._has_prepared_scope = True
+        self._prepared_scope = self.path_edit.text().strip() or None
+        self._prepared_errors = ()
+        self._update_path_button()
+
+    def start_prepared_scan(self) -> None:
+        """Start the exact staged single or combined scope only on explicit request."""
+        scope = self.capture_scan_scope()
+        if self._prepared_errors or scope is None:
+            return
+        if isinstance(scope, tuple):
+            self.start_scan_roots(scope)
+        else:
+            self.start_scan(scope)
+
     def scan_all_drives(self) -> None:
         """Capture the currently ready mounted roots once; discovery does not grant mutation authority."""
         self.start_scan_roots(tuple(volume.root for volume in self.welcome.drive_rows))
@@ -301,8 +354,7 @@ class MainWindow(QMainWindow):
         self._analyser = None
         self._last_roots = path if isinstance(path, tuple) else ()
         self._last_path = path if isinstance(path, str) else ""
-        self.path_edit.setText(self._last_path)
-        self.path_edit.setToolTip("\n".join(self._last_roots) if self._last_roots else self._last_path)
+        self.prepare_scan_scope(path)
         worker = ScanWorker(path, self._scan_options(exact_allocation=exact_allocation), self,
                             history=configured_history(self.settings))
         # Signals of a worker that was replaced (a new scan started while it was
@@ -1115,7 +1167,7 @@ class MainWindow(QMainWindow):
         for unit, action in self._unit_actions.items():
             action.setText(tr("unit_auto") if unit == AUTO_UNIT else unit)
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
-        self.path_edit.setToolTip(tr("path_placeholder"))
+        self._render_scan_scope()
         self.path_edit.setAccessibleName(tr("overview_path"))
         self._scan_path.setText(tr("overview_scan_path"))
         self._scan_path.setToolTip(tr("overview_scan_path_tip"))
@@ -1426,9 +1478,9 @@ class MainWindow(QMainWindow):
         self.path_edit.setClearButtonEnabled(True)
         toolbar.addWidget(self.path_edit)
         self._scan_path = QPushButton()
-        self._scan_path.clicked.connect(lambda: self.start_scan(self.path_edit.text()))
+        self._scan_path.clicked.connect(self.start_prepared_scan)
         self.path_edit.returnPressed.connect(self._scan_path.click)
-        self.path_edit.textChanged.connect(self._update_path_button)
+        self.path_edit.textChanged.connect(self._path_input_changed)
         toolbar.addWidget(self._scan_path)
         toolbar.addSeparator()
         toolbar.addAction(self._actions["help"])
@@ -1446,7 +1498,8 @@ class MainWindow(QMainWindow):
             self._paint_action_icons()
 
     def _update_path_button(self) -> None:
-        ready = bool(self.path_edit.text().strip()) and not self.operation_busy and not self._closing
+        ready = (self.capture_scan_scope() is not None and not self._prepared_errors
+                 and not self.operation_busy and not self._closing)
         self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
@@ -1599,7 +1652,9 @@ class MainWindow(QMainWindow):
         if self._worker is not None or self.operation_busy or self._closing or self._settings_dialogs:
             return
         try:
-            dialog = ScanPresetsDialog(self.settings, self.path_edit.text(), self._scan_options(), self)
+            scope = self.capture_scan_scope()
+            dialog = ScanPresetsDialog(self.settings, scope if isinstance(scope, str) else "",
+                                       self._scan_options(), self)
         except (ValueError, TypeError, RecursionError):
             QMessageBox.warning(self, tr("action_scan_presets"), tr("presets_read_failed"))
             return
@@ -1711,7 +1766,7 @@ class MainWindow(QMainWindow):
             return
         try:
             arguments = (self._restart_arguments() if self._restart_arguments is not None
-                         else WorkspaceState((self._last_roots or self._last_path or None,),
+                         else WorkspaceState((self.capture_restart_scope(),),
                                              options=(self._scan_options(),)).arguments())
         except ValueError as error:
             self.statusBar().showMessage(tr("elevate_failed", reason=str(error)), _STATUS_TIMEOUT_MS)
