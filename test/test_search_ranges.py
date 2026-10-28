@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QTableView
 
 from je_file_tree.core.node import Node
@@ -17,6 +18,20 @@ from je_file_tree.gui.search_filters import SIZE_STEPS, SearchFilters
 from je_file_tree.gui.search_panel import SearchPanel
 from je_file_tree.gui.search_ranges import MAX_BYTES, SearchRangeDialog, calendar_bounds, exact_bytes
 from je_file_tree.gui.tables import LargestFilesModel
+
+
+@pytest.fixture
+def make_panel(qapp):
+    panels = []
+    def create():
+        panel = SearchPanel(QTableView(), LargestFilesModel())
+        panels.append(panel)
+        return panel
+    yield create
+    for panel in panels:
+        panel.stop(wait=True)
+        panel.deleteLater()
+        QCoreApplication.sendPostedEvents(panel, QEvent.Type.DeferredDelete)
 
 
 @pytest.mark.parametrize(('text', 'unit', 'expected'), [
@@ -126,8 +141,8 @@ def test_dialog_drafts_cancel_invalid_and_accept(qapp, monkeypatch):
                                   {'min_size': 20, 'max_size': 10}, {'changed': 'custom'},
                                   {'changed': 'custom', 'date_start': 'wrong'},
                                   {'changed': 'custom', 'date_start': []}])
-def test_invalid_saved_search_clears_results_and_refuses_save(qapp, state):
-    panel = SearchPanel(QTableView(), LargestFilesModel())
+def test_invalid_saved_search_clears_results_and_refuses_save(qapp, state, make_panel):
+    panel = make_panel()
     root = Node('root', True, children=[Node('hit', False, size=10)])
     panel.set_root(root)
     panel.filters.apply({'min_size': 0})
@@ -150,7 +165,6 @@ def test_invalid_saved_search_clears_results_and_refuses_save(qapp, state):
     assert panel.saved.findData('must not save') == -1
     panel.filters.apply({'max_size': 0})
     assert panel._save_button.isEnabled()
-    panel.stop(wait=True)
 
 
 def test_selecting_empty_custom_mode_is_invalid(qapp):
@@ -161,22 +175,20 @@ def test_selecting_empty_custom_mode_is_invalid(qapp):
         filters.conditions()
 
 
-def test_custom_saved_search_restarts_with_exact_bounds(qapp):
-    first = SearchPanel(QTableView(), LargestFilesModel())
+def test_custom_saved_search_restarts_with_exact_bounds(make_panel):
+    first = make_panel()
     first.filters.apply({'min_size': 0, 'max_size': 4429185024, 'changed': 'custom',
                          'date_start': '2026-10-20', 'date_through': '2026-10-20'})
     first.box.setText('*.bin')
     saved = []
     first.saved_changed.connect(saved.append)
     first.save('Exact')
-    restarted = SearchPanel(QTableView(), LargestFilesModel())
+    restarted = make_panel()
     restarted.set_saved(json.loads(json.dumps(saved[0])))
     restarted.saved.setCurrentIndex(restarted.saved.findData('Exact'))
     restarted._load_saved()
     assert restarted.query() == first.query()
     assert restarted.filters.state() == first.filters.state()
-    first.stop(wait=True)
-    restarted.stop(wait=True)
 
 
 def test_one_sided_dates_and_size_overflow():

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from PySide6.QtCore import QDate, QLocale, Qt
+from PySide6.QtCore import QCoreApplication, QDate, QEvent, QLocale, Qt
 from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QDialogButtonBox, QTableView
@@ -30,6 +30,8 @@ def panel(qapp):
     yield widget
     widget.stop(wait=True)
     widget.close()
+    widget.deleteLater()
+    QCoreApplication.sendPostedEvents(widget, QEvent.Type.DeferredDelete)
 
 
 def test_individual_removal_and_clear_preserve_saved_and_root(panel, qapp):
