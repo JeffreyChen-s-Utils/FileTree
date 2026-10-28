@@ -46,6 +46,7 @@ Workspace rule shared by every repository under `D:\Codes` (full text: `D:\Codes
   - **Commit and push frequently.** After each big feature, commit and push to `dev`; do not pile up a
     large batch. `main` takes releases only, through a pull request from `dev` once CI is green.
 - **`progress.md`** holds outstanding work only: no finished items, no history, no rules.
+- **`progress.md` 只能使用繁體中文**：所有標題、說明、狀態標籤與待辦內容均須以繁體中文撰寫，不得使用簡體中文或英文敘述。
 - **`docs/updates/`** records finished work: one batch file per month (`YYYY-MM.md`), one entry per piece
   of work headed `## U-YYYYMMDD-NN · date · title · #tags`, and an index in `docs/updates/README.md`.
   Claim an ID under the lock described there. When a `progress.md` item is done, delete it and add a
