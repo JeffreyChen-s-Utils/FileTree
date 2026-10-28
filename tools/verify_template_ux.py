@@ -27,13 +27,14 @@ from je_file_tree.gui.i18n import LANGUAGES, tr  # noqa: E402
 from je_file_tree.gui.workspace_templates import read_templates  # noqa: E402
 from je_file_tree.gui.workspace_templates_dialog import WorkspaceTemplatesDialog  # noqa: E402
 from verify_budget_ux import palette, require, wait  # noqa: E402
+from verify_keyboard import prepare_hidden, verify_scale  # noqa: E402
 
 _ORIGINAL_OPEN = WorkspaceTemplatesDialog.open
 
 
 def hidden_open(dialog: WorkspaceTemplatesDialog) -> None:
     """Prevent native exposure before opening the real production dialog."""
-    dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+    prepare_hidden(dialog)
     _ORIGINAL_OPEN(dialog)
 
 
@@ -187,7 +188,7 @@ def capture(app: QApplication, dialog, language: str, args) -> list[dict[str, ob
             require(dialog.grab().save(str(args.output / name)), 'Screenshot could not be saved')
             records.append({'image': name, 'language': language, 'theme': theme,
                             'desktop': [width, height], 'dialog': [dialog.width(), dialog.height()],
-                            'device_pixel_ratio': dialog.devicePixelRatioF()})
+                            'device_pixel_ratio': verify_scale(dialog)})
     return records
 
 
@@ -202,6 +203,7 @@ def main() -> None:
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     app = QApplication.instance() or QApplication([])
+    require(app.platformName() != 'offscreen', 'Native verification requires the native Qt platform')
     WorkspaceTemplatesDialog.open = hidden_open
     languages = tuple(LANGUAGES) if args.language == 'all' else (args.language,)
     records = []
@@ -215,7 +217,7 @@ def main() -> None:
             settings.setValue('language', language)
             settings.setValue('check_updates', False)
             workspace = create_workspace(settings)
-            workspace.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
+            prepare_hidden(workspace)
             workspace.show()
             exercise(app, workspace, source)
             dialog = prepare_capture(app, workspace, source)

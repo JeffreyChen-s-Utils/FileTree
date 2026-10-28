@@ -9,7 +9,7 @@ Use the folder tree, colourful chart and largest-file list to decide what to kee
 
 ![FileTree: folder sizes on the left, a space-usage chart on the right](docs/images/main_window_en.png)
 
-Use arrow keys to select budget rows and Tab to reach the editor. Reopening search brings the name field into view.
+Use arrow keys to select budget rows and Tab to reach the editor. Reopening search brings the name field into view. In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
 
 ## What you can do
 

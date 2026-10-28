@@ -5,7 +5,7 @@ from __future__ import annotations
 import heapq
 import threading
 
-from PySide6.QtCore import QThread, Qt, Signal
+from PySide6.QtCore import QEvent, QObject, QThread, Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QDialogButtonBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPushButton,
@@ -68,6 +68,7 @@ class LoadedFolderDialog(WorkerDialog):
         self.path.setAccessibleName(tr('trend_full_path'))
         self.list = QListWidget()
         self.list.setAccessibleName(tr('trend_loaded_folders'))
+        self.list.installEventFilter(self)
         self.list.itemActivated.connect(lambda _item: self.enter())
         self.status = QLabel()
         self.status.setWordWrap(True)
@@ -140,12 +141,15 @@ class LoadedFolderDialog(WorkerDialog):
         if 0 <= row < len(self.rows):
             self.navigate(self.rows[row])
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Keep list activation separate from accepting the currently displayed folder."""
-        if self.focusWidget() is self.list and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        """Enter folders once, independently of platform-specific list activation keys."""
+        if (watched is self.list and isinstance(event, QKeyEvent) and event.type() == QEvent.Type.KeyPress
+                and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
+                and event.modifiers() in (Qt.KeyboardModifier.NoModifier, Qt.KeyboardModifier.KeypadModifier)):
+            self.enter()
             event.accept()
-            return
-        super().keyPressEvent(event)
+            return True
+        return super().eventFilter(watched, event)
 
     def choose(self) -> None:
         """Accept the folder whose full path is displayed."""

@@ -185,7 +185,7 @@ Read-only virtual-disk discovery merges Windows `\\?\UNC\server\share` registrat
 
 The application opens independent **scan tabs**. Use **New scan tab** or `Ctrl+T` for another drive/folder, and `Ctrl+W` to close the active tab (closing the last tab exits). Up to 16 tabs can scan concurrently; each owns its tree, result views, filters, workers and history capture. Closing one joins its own workers; Quit joins every tab. Language changes apply to all tabs. Source-operation reviews, Trash, Undo, copying, renaming, hard-link replacement, compression and disk compaction share one busy guard across tabs; snapshots and approvals are still rechecked separately for each source. Combined roots remain one read-only tab. Scan concurrency and gentle priority apply per tab, so reduce workers or enable gentle scanning when running several scans. The `create_window` Python integration still creates one window; the GUI entry point uses `create_workspace`.
 
-In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search.
+In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search. In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
 
 ## Features
 

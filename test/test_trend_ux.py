@@ -218,6 +218,63 @@ def test_accepted_folder_uses_ancestor_chain_and_root_return(trend_dialog, qapp)
     assert dialog.folder_input.text() == '' and dialog.trend.query.folder == ''
 
 
+@pytest.mark.parametrize('key,modifiers', [
+    (Qt.Key.Key_Return, Qt.KeyboardModifier.NoModifier),
+    (Qt.Key.Key_Enter, Qt.KeyboardModifier.NoModifier),
+    (Qt.Key.Key_Enter, Qt.KeyboardModifier.KeypadModifier),
+])
+@pytest.mark.parametrize('native_activation', [False, True])
+def test_folder_enter_navigates_once_without_accepting(trend_dialog, qapp, key, modifiers, native_activation):
+    root = trend_dialog.loaded_root
+    photos = root.children[0]
+    album = Node('album', True, parent=photos, children=[])
+    photos.children.append(album)
+    trend_dialog.choose_folder()
+    chooser = trend_dialog.folder_dialog
+    _wait(qapp, lambda: bool(chooser.rows))
+    if not native_activation:
+        chooser.list.itemActivated.disconnect()
+    activations = []
+    chooser.list.itemActivated.connect(lambda _item: activations.append(True))
+    chooser.list.setFocus()
+    assert chooser.focusWidget() is chooser.list
+    QTest.keyClick(chooser.focusWidget(), key, modifiers)
+    _wait(qapp, lambda: bool(chooser.rows))
+    assert chooser.current is photos and chooser.rows == (album,)
+    assert chooser.isVisible() and not chooser._closed and chooser.selected is None
+    assert activations == []
+    QTest.keyClick(chooser.focusWidget(), key, modifiers)
+    _wait(qapp, lambda: not chooser.worker.isRunning())
+    assert chooser.current is album and not chooser.rows
+    QTest.keyClick(chooser.focusWidget(), key, modifiers)
+    assert chooser.current is album and chooser.isVisible() and chooser.selected is None
+    QTest.keyClick(chooser.focusWidget(), Qt.Key.Key_Tab)
+    assert chooser.focusWidget() is not chooser.list
+    for _ in range(12):
+        if chooser.focusWidget() is chooser.buttons.button(chooser.buttons.StandardButton.Cancel):
+            break
+        QTest.keyClick(chooser.focusWidget(), Qt.Key.Key_Tab)
+    assert chooser.focusWidget() is chooser.buttons.button(chooser.buttons.StandardButton.Cancel)
+    QTest.keyClick(chooser.focusWidget(), Qt.Key.Key_Space)
+    _wait(qapp, lambda: trend_dialog.folder_dialog is None)
+    assert trend_dialog.folder_input.text() == ''
+
+
+def test_folder_double_click_still_enters_without_accepting(trend_dialog, qapp):
+    trend_dialog.choose_folder()
+    chooser = trend_dialog.folder_dialog
+    _wait(qapp, lambda: bool(chooser.rows))
+    item = chooser.list.item(0)
+    point = chooser.list.visualItemRect(item).center()
+    QTest.mouseClick(chooser.list.viewport(), Qt.MouseButton.LeftButton, pos=point)
+    QTest.mouseDClick(chooser.list.viewport(), Qt.MouseButton.LeftButton, pos=point)
+    _wait(qapp, lambda: not chooser.worker.isRunning())
+    assert chooser.current is trend_dialog.loaded_root.children[0]
+    assert chooser.isVisible() and not chooser._closed and chooser.selected is None
+    chooser.reject()
+    _wait(qapp, lambda: trend_dialog.folder_dialog is None)
+
+
 def test_initial_child_query_matches_full_path_and_retains_full_root_comparison(trend_dialog, qapp):
     parent = trend_dialog
     dialog = HistoryDialog(parent.store, parent.root, 'KB', parent, folder='photos', loaded_root=parent.loaded_root)
