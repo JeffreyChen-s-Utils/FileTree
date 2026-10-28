@@ -89,6 +89,7 @@ from je_file_tree.gui.welcome import WelcomePage
 from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.folder_validation import FolderDrops
+from je_file_tree.gui.folder_budget_store import display_error
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
 from je_file_tree.gui.operation_group import OperationGroup
@@ -189,6 +190,8 @@ class MainWindow(QMainWindow):
         self._restore_cleanup_policy()
 
     def _init_scan_state(self) -> None:
+        self._budget_store = None
+        self._budget_show = None
         self._prepared_scope: str | tuple[str, ...] | None = None
         self._has_prepared_scope = False
         self._prepared_errors: tuple[str, ...] = ()
@@ -355,8 +358,14 @@ class MainWindow(QMainWindow):
         self._last_roots = path if isinstance(path, tuple) else ()
         self._last_path = path if isinstance(path, str) else ""
         self.prepare_scan_scope(path)
+        ticket = None
+        if self._budget_store is not None:
+            try:
+                ticket = self._budget_store.ticket()
+            except (OSError, ValueError) as error:
+                self.statusBar().showMessage(tr("budget_save_error", reason=display_error(str(error))))
         worker = ScanWorker(path, self._scan_options(exact_allocation=exact_allocation), self,
-                            history=configured_history(self.settings))
+                            history=configured_history(self.settings), budget_ticket=ticket)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -431,6 +440,11 @@ class MainWindow(QMainWindow):
 
     def _scan_succeeded(self, outcome: ScanOutcome) -> None:
         self._scan_ended()
+        if self._budget_store is not None and outcome.budget_batch is not None:
+            try:
+                self._budget_store.publish(outcome.budget_batch)
+            except (OSError, ValueError) as error:
+                self.statusBar().showMessage(tr("budget_save_error", reason=display_error(str(error))))
         self.results.show_outcome(outcome)
         self.pages.setCurrentIndex(RESULTS_PAGE)
         root = outcome.result.root
@@ -1350,6 +1364,7 @@ class MainWindow(QMainWindow):
             ("count_hard_links", None, lambda: None),
             ("follow_changes", None, lambda: None),
             ("background_monitor", None, self.configure_background),
+            ("folder_budgets", None, self.show_folder_budgets),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.quit_application),  # Windows has no standard Quit key
@@ -1380,6 +1395,7 @@ class MainWindow(QMainWindow):
         self._actions["follow_changes"].setEnabled(follow_supported())
         self._actions["follow_changes"].toggled.connect(self._follow.configure)
         self._actions["background_monitor"].setEnabled(False)
+        self._actions["folder_budgets"].setEnabled(False)
         self._actions["recurring"].setEnabled(False)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
@@ -1418,7 +1434,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history",
-                    "programs", "virtual_disks", "file_times", "recurring"):
+                    "programs", "virtual_disks", "file_times", "recurring", "folder_budgets"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -1955,6 +1971,14 @@ class MainWindow(QMainWindow):
         finally:
             dialog.shutdown()
             dialog.deleteLater()
+
+    def show_folder_budgets(self) -> None:
+        """Open the shared manager with a selected real directory prefilled."""
+        if self._budget_show is None:
+            return
+        node = self.results.selected_node()
+        path = node.path if node is not None and node.is_dir and not node.is_link else ""
+        self._budget_show(path or "")
 
     def show_about(self) -> None:
         """Show the version."""

@@ -11,7 +11,7 @@ import time
 import os
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
@@ -22,6 +22,7 @@ from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
 from je_file_tree.core.coverage import coverage_of
+from je_file_tree.core.folder_budgets import BudgetBatch, BudgetTicket, observe_budgets
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.similar_photos import PhotoSearchCancelledError
@@ -52,6 +53,7 @@ class ScanOutcome:
     capacity: CapacityLedger | None = None
     chart_categories: list[CategoryStat] | None = None
     top_folders: tuple[Node, ...] | None = None
+    budget_batch: BudgetBatch | None = None
 
 
 def pace_workers(connect: bool = True) -> None:
@@ -286,7 +288,7 @@ class ScanWorker(QThread):
     history_failed = Signal(str)
 
     def __init__(self, path: str | tuple[str, ...], options: ScanOptions, parent: QObject | None = None, *,
-                 history: ScanHistory | None = None) -> None:
+                 history: ScanHistory | None = None, budget_ticket: BudgetTicket | None = None) -> None:
         super().__init__(parent)
         self.path = path
         self._options = options
@@ -294,6 +296,7 @@ class ScanWorker(QThread):
         self._pause = threading.Event()
         self._scanning = True
         self._history = history
+        self._budget_ticket = budget_ticket
 
     def cancel(self) -> None:
         """Ask the scan to stop; ``cancelled`` follows shortly."""
@@ -338,6 +341,13 @@ class ScanWorker(QThread):
             self.cancelled.emit(self._analyse(result, partial=True))
             return
         outcome = self._analyse(result)
+        if self._budget_ticket is not None and self._budget_ticket.rules and outcome.capacity is not None:
+            batch = observe_budgets(result.root, outcome.capacity.coverage,
+                                    self._budget_ticket, outcome.capacity.measured_at, self._cancel)
+            if batch is None:
+                self.cancelled.emit(replace(outcome, partial=True))
+                return
+            outcome = replace(outcome, budget_batch=batch)
         if not self._save_history(outcome):
             self.cancelled.emit(analyse(result, partial=True))
             return

@@ -6,13 +6,15 @@ import os
 
 from PySide6.QtCore import QByteArray, QSettings, QThread, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QMainWindow, QMessageBox, QTabWidget, QToolButton, QWidget
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QTabWidget, QToolButton, QWidget
 
 from je_file_tree.gui.i18n import current_language, tr
 from je_file_tree.gui.locale_font import apply_language_font
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
+from je_file_tree.gui.folder_budget_dialog import FolderBudgetDialog
+from je_file_tree.gui.folder_budget_store import FolderBudgetStore, display_error
 from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
 from je_file_tree.gui.scan_preferences import ScanDefaults
@@ -41,6 +43,7 @@ class ScanWorkspace(QMainWindow):
         self._replacement: WorkspaceState | None = None
         self._replacement_report: tuple[tuple[str, ...], ...] = ()
         self._templates_dialog: WorkspaceTemplatesDialog | None = None
+        self._init_budgets(settings)
         self.background = BackgroundMonitor(self)
         self.new_button = QToolButton(self)
         self.new_button.clicked.connect(lambda _checked=False: self.add_tab())
@@ -52,6 +55,7 @@ class ScanWorkspace(QMainWindow):
         controls = QHBoxLayout(corner)
         controls.setContentsMargins(0, 0, 0, 0)
         controls.addWidget(self.templates_button)
+        controls.addWidget(self.budget_button)
         controls.addWidget(self.new_button)
         self.tabs.setCornerWidget(corner, Qt.Corner.TopRightCorner)
         self.new_action = QAction(self)
@@ -68,6 +72,18 @@ class ScanWorkspace(QMainWindow):
             self.restoreGeometry(geometry)
         self._insert(first)
         self.retranslate()
+        self._budget_status()
+
+    def _init_budgets(self, settings: QSettings) -> None:
+        self.budgets = FolderBudgetStore(settings, self)
+        self._budget_dialog: FolderBudgetDialog | None = None
+        self.budget_label = QLabel(self)
+        self.statusBar().addPermanentWidget(self.budget_label)
+        self.budgets.changed.connect(self._budget_status)
+        self.budget_action = QAction(self)
+        self.budget_action.triggered.connect(lambda _checked=False: self.show_budgets())
+        self.budget_button = QToolButton(self)
+        self.budget_button.setDefaultAction(self.budget_action)
 
     @property
     def current(self) -> MainWindow:
@@ -76,6 +92,9 @@ class ScanWorkspace(QMainWindow):
 
     def _insert(self, window: MainWindow) -> None:
         window._menus["menu_file"].addAction(self.templates_action)
+        window._budget_store = self.budgets
+        window._budget_show = self.show_budgets
+        window._actions["folder_budgets"].setEnabled(True)
         window._operations = self.operations
         window._scan_defaults = self._scan_defaults
         window._close_all = self.quit_application
@@ -183,6 +202,33 @@ class ScanWorkspace(QMainWindow):
         dialog.finished.connect(lambda result: self._templates_finished(dialog, result))
         dialog.open()
 
+    def show_budgets(self, selected_path: str = "") -> None:
+        """Show one workspace manager; its rows are the persisted alert surface."""
+        if self._closing:
+            return
+        if self._budget_dialog is not None:
+            if selected_path:
+                self._budget_dialog.path.setText(selected_path)
+            return
+        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path)
+        self._budget_dialog = dialog
+        dialog.finished.connect(lambda _result: self._budget_finished(dialog))
+        dialog.open()
+
+    def _budget_finished(self, dialog: FolderBudgetDialog) -> None:
+        self._budget_dialog = None
+        dialog.deleteLater()
+
+    def _budget_status(self) -> None:
+        if self.budgets.error:
+            self.budget_label.setText(tr("budget_save_error", reason=display_error(self.budgets.error)))
+            return
+        over = sum(row.status == "over" for row in self.budgets.rows)
+        unknown = sum(row.status in ("unknown", "waiting") for row in self.budgets.rows)
+        self.budget_label.setText(tr("budget_summary", over=over, unknown=unknown))
+        self.budget_label.setToolTip("\n".join(f"{row.rule.name}: {tr('budget_' + row.status)}"
+                                                  for row in self.budgets.rows))
+
     def _templates_finished(self, dialog: WorkspaceTemplatesDialog, result: int) -> None:
         state, report = dialog.chosen, dialog.report
         self._templates_dialog = None
@@ -248,6 +294,7 @@ class ScanWorkspace(QMainWindow):
         """Language is application-wide; translate every result tab and the workspace controls."""
         apply_language_font(current_language())
         self.templates_action.setText(tr("workspace_templates"))
+        self.budget_action.setText(tr("budget_title"))
         self.new_action.setText(tr("workspace_new"))
         self.new_button.setText(tr("workspace_new"))
         self.new_button.setToolTip(tr("workspace_new_tip"))
@@ -258,6 +305,9 @@ class ScanWorkspace(QMainWindow):
         if self.tabs.count():
             self.setWindowTitle(self.current.windowTitle())
         self.background.retranslate()
+        if self._budget_dialog is not None:
+            self._budget_dialog.retranslate()
+        self._budget_status()
 
     def quit_application(self) -> None:
         """Explicit Quit always exits, independently of the opt-in close-to-tray preference."""
@@ -280,6 +330,8 @@ class ScanWorkspace(QMainWindow):
         self._replacement = None
         if self._templates_dialog is not None:
             self._templates_dialog.reject()
+        if self._budget_dialog is not None:
+            self._budget_dialog.reject()
         self.setEnabled(False)
         self.statusBar().showMessage(tr("closing_workers"))
         self.background.shutdown(wait=False)

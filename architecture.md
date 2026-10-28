@@ -11,6 +11,15 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`core.folder_budgets` holds immutable rule, dispatch ticket, observation and batch values. Scan
+workers match bounded targets against the completed tree and target-specific coverage, then carry
+only scalar observations. `gui.folder_budget_store` is the single workspace settings owner: a
+QLockFile transaction allocates scan sequences and persists observations, rule versions and alert
+episodes before any reminder is reported. The workspace manager edits rules and displays dated
+observations; normal and scheduled successful scans publish through that owner. Partial, branch,
+cancelled and failed scans have no budget publication. This feature grants no cleanup authority.
+Retired scheduled workers discard late budget batches when their workspace owner quiesces or closes.
+
 `gui.workspace_templates` stores immutable `WorkspaceTemplate` values under a separate bounded,
 strict QSettings key. It reuses the public `WorkspaceState` value codec and scan preferences while
 requiring native fully qualified paths. `WorkspaceTemplatesDialog` attaches an editable per-root
