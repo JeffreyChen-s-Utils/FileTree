@@ -1228,7 +1228,22 @@ EN: dict[str, str] = {
     'capacity_row_mounts': 'Different-device mount boundaries',
     'capacity_row_coverage': 'Coverage',
     "review_title": "Review clean-up proposals",
-    "review_details": "{path}\nRule: {rule}; protection: {protection}. {consequence}",
+    'review_logical_size': 'Logical size',
+    'review_risk': 'Risk',
+    'review_risk_low': 'Lower risk',
+    'review_risk_manual': 'Review manually',
+    'review_details_label': 'Entry details',
+    'review_scope': 'Scan scope',
+    'review_details': (
+        '{path}\n'
+        'Rule: {rule}\n'
+        'Modified: {modified}\n'
+        'Logical size: {logical}; allocated estimate: {allocated}\n'
+        'Risk: {risk}\n'
+        'Protection: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "Review every path and consequence. Uncheck entries to keep them; Continue opens the confirmations.",
     "review_select": "Move",
     "review_rule": "Rule",
@@ -2758,7 +2773,22 @@ ZH_TW: dict[str, str] = {
     'capacity_row_mounts': '跨磁碟掛載邊界',
     'capacity_row_coverage': '掃描涵蓋範圍',
     "review_title": "審查清理建議",
-    "review_details": "{path}\n規則：{rule}；保護狀態：{protection}。{consequence}",
+    'review_logical_size': '邏輯大小',
+    'review_risk': '風險',
+    'review_risk_low': '較低風險',
+    'review_risk_manual': '需手動審閱',
+    'review_details_label': '項目詳細資訊',
+    'review_scope': '掃描範圍',
+    'review_details': (
+        '{path}\n'
+        '規則：{rule}\n'
+        '修改時間：{modified}\n'
+        '邏輯大小：{logical}；配置空間估計：{allocated}\n'
+        '風險：{risk}\n'
+        '保護狀態：{protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "請檢查每條路徑與移除後果，取消勾選即可保留項目；繼續後才會顯示確認問題。",
     "review_select": "移動",
     "review_rule": "規則",
@@ -4253,7 +4283,22 @@ ZH_CN: dict[str, str] = {
     'capacity_row_mounts': '跨磁盘挂载边界',
     'capacity_row_coverage': '扫描覆盖范围',
     "review_title": "审查清理建议",
-    "review_details": "{path}\n规则：{rule}；保护状态：{protection}。{consequence}",
+    'review_logical_size': '逻辑大小',
+    'review_risk': '风险',
+    'review_risk_low': '较低风险',
+    'review_risk_manual': '需手动审阅',
+    'review_details_label': '项目详细信息',
+    'review_scope': '扫描范围',
+    'review_details': (
+        '{path}\n'
+        '规则：{rule}\n'
+        '修改时间：{modified}\n'
+        '逻辑大小：{logical}；分配空间估计：{allocated}\n'
+        '风险：{risk}\n'
+        '保护状态：{protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "请检查每条路径与删除后果，取消勾选即可保留项目；继续后才会显示确认问题。",
     "review_select": "移动",
     "review_rule": "规则",
@@ -6042,7 +6087,22 @@ JA: dict[str, str] = {
     'capacity_row_mounts': '別デバイスへのマウント境界',
     'capacity_row_coverage': '検査範囲',
     'review_title': 'クリーンアップ提案を検討する',
-    'review_details': '{path}\nルール: {rule};保護: {protection}。 {consequence}',
+    'review_logical_size': '論理サイズ',
+    'review_risk': 'リスク',
+    'review_risk_low': '低リスク',
+    'review_risk_manual': '手動確認が必要',
+    'review_details_label': '項目の詳細',
+    'review_scope': 'スキャン範囲',
+    'review_details': (
+        '{path}\n'
+        'ルール: {rule}\n'
+        '更新日時: {modified}\n'
+        '論理サイズ: {logical}; 割り当て推定: {allocated}\n'
+        'リスク: {risk}\n'
+        '保護: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     'review_hint': (
         'あらゆる道筋と結果を見直してください。エントリを保持するにはチェックを外します。 [続行] をクリックす'
         'ると確認が開きます。'
@@ -7813,7 +7873,22 @@ KO: dict[str, str] = {
     'capacity_row_mounts': '다른 장치의 마운트 경계',
     'capacity_row_coverage': '적용 범위',
     'review_title': '청소 제안 검토',
-    'review_details': '{path}\n규칙: {rule}; 보호: {protection}. {consequence}',
+    'review_logical_size': '논리 크기',
+    'review_risk': '위험',
+    'review_risk_low': '낮은 위험',
+    'review_risk_manual': '수동 검토 필요',
+    'review_details_label': '항목 세부 정보',
+    'review_scope': '스캔 범위',
+    'review_details': (
+        '{path}\n'
+        '규칙: {rule}\n'
+        '수정 시간: {modified}\n'
+        '논리 크기: {logical}; 할당 추정치: {allocated}\n'
+        '위험: {risk}\n'
+        '보호: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     'review_hint': '모든 경로와 결과를 검토하십시오. 항목을 유지하려면 선택을 취소하세요. 계속 확인이 열립니다.',
     'review_select': '이동',
     'review_rule': '규칙',

@@ -37,6 +37,17 @@ waiting without inventing a completion percentage or implying that an incomplete
   form. Choose folder only fills the path. Labels have buddies, validation focuses its input, the
   form scrolls, and the action row stays outside the scroll area.
 
+- **Cleanup review:** four primary columns show selection, path, logical size and risk, with protected
+  reasons beside risk. A copyable scan scope and bounded, scrollable details preserve complete paths,
+  timestamps, allocation estimates, rule evidence and consequences. Lower risk never means safe;
+  unmatched protected paths retain an explicit no-match label. Rule-based manual proposals start
+  unchecked; explicit selections and lower-risk proposals keep their existing initial checks. Arrows
+  navigate rows, Space toggles the checkbox column, and Tab reaches details and fixed action buttons.
+  Read-only details support keyboard selection and copying. Continue returns only checked outermost
+  nodes to the existing confirmations. Cancel returns no approval. Unknown recovery stays unknown,
+  known estimates retain a zero lower bound, and moving to Trash does not free space immediately.
+  `tools/verify_cleanup_ux.py` covers private fixtures in hidden native windows without source moves.
+
 - **Cleanup completion:** a compact header retains moved/skipped/failed counts and logical moved
   bytes across rescans. Its transient scrollable details preserve the analysis pane's geometry,
   show refusal reasons and point to complete existing reports/records. Records, existing expiring

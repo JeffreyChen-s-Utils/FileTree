@@ -69,6 +69,8 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261029-05 | 2026-10-29 | 完成七項體驗改善的版面與鍵盤驗收 | #done #gui #ux #accessibility | [2026-10-e](2026-10-e.md) |
+| U-20261029-04 | 2026-10-29 | 精簡清理審閱並保留完整操作資訊 | #done #gui #ux #cleanup | [2026-10-e](2026-10-e.md) |
 | U-20261029-03 | 2026-10-29 | 銜接資料夾詳細資訊與趨勢及容量預算 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
 | U-20261029-02 | 2026-10-29 | 確認資料夾 Enter 修正通過跨平台檢查 | #done #gui #tests | [2026-10-e](2026-10-e.md) |
 | U-20261029-01 | 2026-10-29 | 明確處理資料夾選擇器的 Enter 導航 | #incident #gui #tests | [2026-10-e](2026-10-e.md) |

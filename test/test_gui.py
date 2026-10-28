@@ -1084,7 +1084,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
 
     def review(dialog):
         dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
-        reviewed.append(dialog.model.data(dialog.model.index(1, 7)))
+        reviewed.append(dialog.model.risk_text(1))
         dialog.model.setData(dialog.model.index(1, 0), Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
         return QDialog.DialogCode.Accepted
 
@@ -1095,7 +1095,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
     monkeypatch.setattr(window, "rescan_folder", lambda _node: None)
     window.move_to_trash([safe, protected])
     _wait(qapp, lambda: window._trash_worker is None)
-    assert reviewed == ["installed programs"]
+    assert len(reviewed) == 1 and "installed programs" in reviewed[0]
     assert moved == [str(tmp_path / "memory.dmp")] and len(questions) == 1
     assert protected.is_in(root) and (tmp_path / "guarded" / "program").read_bytes() == b"important"
 

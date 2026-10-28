@@ -1348,10 +1348,17 @@ rows immediately and ignores replaced workers; acting on incomplete branches req
 
 Group selection emits `CleanupPanel.review_requested`; `MainWindow.move_to_trash` also intercepts manual
 selections containing a current suggestion. `gui/cleanup_review.py` shows a lazy checkbox table of all
-outermost proposed entries, their rules/reasons/consequences, metadata and protection. Unchecked entries
+outermost proposed entries with four columns for selection, path, logical size and risk/protection. Unchecked entries
 never reach the existing protection and Trash questions; rejection does nothing. A cancellable estimate
 worker updates the count and logical/allocated/recovery/free-space fields; Continue waits for that result.
-Full row explanations appear below the table and containing folders can be opened from the dialog.
+`ReviewModel.risk_text` and `details_text` derive presentation from the same nodes, reasons and protected
+places, without hidden duplicate columns or copied row state. The copyable scan scope stays above the
+table; bounded read-only `QPlainTextEdit` details retain complete paths, rule, recorded modification,
+logical/allocated sizes, risk, protection, evidence and consequences. Keyboard selection is explicitly
+enabled, Tab leaves both table and details, and fixed action buttons remain below the recovery summary.
+The path column stretches while the other columns stay bounded. Containing folders can still be opened
+from the dialog. `tools/verify_cleanup_ux.py` exercises hidden native keyboard review, acceptance and
+cancellation over private fixtures in five languages, three palettes and two logical desktop sizes.
 
 **Duplicates.** The Duplicates page (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
 `DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are
