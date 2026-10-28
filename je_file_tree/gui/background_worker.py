@@ -74,7 +74,7 @@ class ScheduledWorker(QThread):
             self.result = scan(self.root, options=self.options, cancel=self.cancel)
             if self.proposal_context is not None:
                 self._prepare_proposal()
-            self.entry = self.history.save(self.result.root, cancel=self.cancel,
+            self.entry = self.history.save(self.result.root, cancel=self.cancel, options=self.options,
                                            baseline=self.proposal.baseline if self.proposal is not None else None)
             self.state = "complete"
         except ScanCancelledError as error:

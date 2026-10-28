@@ -69,6 +69,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261028-05 | 2026-10-28 | Track selected-folder growth across compatible saved scans | #done #history #gui | [2026-10-e](2026-10-e.md) |
 | U-20261028-04 | 2026-10-28 | Save and explicitly restore named workspace templates | #done #gui #settings | [2026-10-e](2026-10-e.md) |
 | U-20261028-03 | 2026-10-28 | Confirm volume-row readiness across hosted checks | #done #tests | [2026-10-e](2026-10-e.md) |
 | U-20261028-02 | 2026-10-28 | Wait for published volume rows before selecting them | #incident #tests | [2026-10-e](2026-10-e.md) |

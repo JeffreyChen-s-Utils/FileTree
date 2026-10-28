@@ -363,7 +363,7 @@ class ScanWorker(QThread):
                 roots = root.children if root.path is None else (root,)
                 for source in roots:
                     if source.snapshot is not None:
-                        self._history.save(source, cancel=self._cancel)
+                        self._history.save(source, cancel=self._cancel, options=self._options)
             except HistoryCancelledError:
                 return False
             except (OSError, ValueError, UnicodeError, RecursionError) as error:

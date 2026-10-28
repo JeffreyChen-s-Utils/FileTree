@@ -25,10 +25,13 @@ from je_file_tree.core.node import Node
 from je_file_tree.core.operation_journal import _lock
 from je_file_tree.core.pacing import give_way
 from je_file_tree.core.recurring import Baseline, MAX_BYTES as MAX_BASELINE_BYTES, dump_baseline, load_baseline
+from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.core.snapshot import unpack_snapshot
 
 DEFAULT_LIMIT = 1024 * 1024 * 1024
 _HEADER_LIMIT = 65536
 _ENTRY_LIMIT = 100000
+_PERIOD_LIMIT = 1000
 _KEY = re.compile(r"[0-9a-f]{64}\Z")
 _NAME = re.compile(r"scan-[0-9]{20}-[0-9a-f]{32}\.json\Z")
 _SUFFIX = ', "root":\n'
@@ -37,6 +40,10 @@ _CHILDREN = ', "children": ['
 
 class HistoryCancelledError(Exception):
     """The caller stopped a history operation; no partial saved tree is published."""
+
+
+class UnsupportedMeasurementError(ValueError):
+    """A dated history entry uses an unknown measurement contract."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +57,44 @@ class HistoryEntry:
     allocated: int
     incomplete: bool
     disk_bytes: int
+    measurement: Measurement | None = None
+    measurement_issue: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Measurement:
+    """Comparable named logical bytes and scan inclusion rules for one root identity."""
+
+    version: int
+    semantics: str
+    include_hidden: bool
+    exclusions: tuple[str, ...]
+    device: int
+    inode: int
+
+
+def _measurement(value: object) -> Measurement:
+    if isinstance(value, dict) and type(value.get("version")) is int and value["version"] != 1:
+        raise UnsupportedMeasurementError("Unsupported history measurement version")
+    if (not isinstance(value, dict) or set(value) != {"version", "semantics", "include_hidden",
+                                                  "exclusions", "device", "inode"}
+            or type(value.get("version")) is not int or value.get("semantics") != "named-logical-bytes/1"
+            or type(value.get("include_hidden")) is not bool or not isinstance(value.get("exclusions"), list)
+            or not all(isinstance(item, str) for item in value["exclusions"])
+            or type(value.get("device")) is not int or type(value.get("inode")) is not int
+            or value["device"] <= 0 or value["inode"] <= 0):
+        raise ValueError("Invalid history measurement metadata")
+    return Measurement(1, "named-logical-bytes/1", value["include_hidden"], tuple(value["exclusions"]),
+                       value["device"], value["inode"])
+
+
+def _scan_measurement(root: Node, options: ScanOptions | None) -> Measurement | None:
+    if options is None or root.snapshot is None:
+        return None
+    identity = unpack_snapshot(root.snapshot).identity
+    if not all(identity):
+        return None
+    return Measurement(1, "named-logical-bytes/1", options.include_hidden, options.exclude, *identity)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +104,16 @@ class HistoryRead:
     entries: list[HistoryEntry]
     count: int
     invalid: int
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryPeriod:
+    """Chronological selected headers after time filtering and the display cap."""
+
+    entries: tuple[HistoryEntry, ...]
+    count: int
+    invalid: int
+    truncated: bool
 
 
 def root_key(path: str) -> str:
@@ -104,7 +159,16 @@ def _header(stream: TextIO, path: Path, info: os.stat_result) -> HistoryEntry:
             raise ValueError("Invalid history total")
     if type(history.get("incomplete")) is not bool:
         raise ValueError("Invalid history coverage")
-    return HistoryEntry(path, root, saved, history["size"], history["allocated"], history["incomplete"], info.st_size)
+    measurement, issue = None, None
+    if "measurement" in history:
+        try:
+            measurement = _measurement(history["measurement"])
+        except UnsupportedMeasurementError:
+            issue = "unsupported"
+        except ValueError:
+            issue = "invalid"
+    return HistoryEntry(path, root, saved, history["size"], history["allocated"], history["incomplete"],
+                        info.st_size, measurement, issue)
 
 
 def _read_entry(path: Path, directory_fd: int | None = None) -> HistoryEntry:
@@ -170,7 +234,7 @@ class ScanHistory:
         self.directory, self.max_bytes = Path(directory), max_bytes
 
     def save(self, root: Node, *, cancel: threading.Event | None = None,
-             baseline: Baseline | None = None) -> HistoryEntry:
+             baseline: Baseline | None = None, options: ScanOptions | None = None) -> HistoryEntry:
         """Save a stable completed tree on its scan worker; retain globally across root buckets.
 
         A scan exceeding the cap is refused before publication. Cancellation preserves prior entries.
@@ -199,6 +263,13 @@ class ScanHistory:
                       "history": {"format": "file-tree-history/1", "id": name, "root": root.path,
                                   "size": root.size, "allocated": root.allocated,
                                   "incomplete": not coverage.complete or bool(coverage.unsafe)}}
+            measurement = _scan_measurement(root, options)
+            if measurement is not None:
+                header["history"]["measurement"] = {
+                    "version": measurement.version, "semantics": measurement.semantics,
+                    "include_hidden": measurement.include_hidden, "exclusions": list(measurement.exclusions),
+                    "device": measurement.device, "inode": measurement.inode,
+                }
             if baseline is not None:
                 if baseline.root != root.path or baseline.size != root.size:
                     raise ValueError("Recurring baseline does not match the saved root")
@@ -255,6 +326,29 @@ class ScanHistory:
                           key=lambda entry: (entry.saved, entry.path.name))
         return HistoryRead(matching[-max(1, limit):], len(matching), invalid)
 
+    def period(self, root: str, *, start: datetime | None = None, end: datetime | None = None,
+               limit: int = 1000, cancel: threading.Event | None = None) -> HistoryPeriod:
+        """Select owned root headers by actual UTC instant before bounding the result."""
+        if type(limit) is not int or not 1 <= limit <= _PERIOD_LIMIT:
+            raise ValueError("History period limit must be 1–1000")
+        if any(value is not None and value.tzinfo is None for value in (start, end)):
+            raise ValueError("History period requires timezone-aware dates")
+        if start is not None and end is not None and start >= end:
+            raise ValueError("History period start must precede end")
+        entries, invalid = self._entries(cancel)
+        key = root_key(root)
+        matching = []
+        for entry in entries:
+            _check(cancel)
+            if entry.path.parent.name != key:
+                continue
+            instant = datetime.fromisoformat(entry.saved).astimezone(timezone.utc)
+            if (start is None or instant >= start.astimezone(timezone.utc)) and (
+                    end is None or instant < end.astimezone(timezone.utc)):
+                matching.append(entry)
+        matching.sort(key=lambda entry: (datetime.fromisoformat(entry.saved).astimezone(timezone.utc), entry.path.name))
+        return HistoryPeriod(tuple(matching[-limit:]), len(matching), invalid, len(matching) > limit)
+
     def _retain(self, latest: Path, cancel: threading.Event | None) -> None:
         entries, _invalid = self._entries(cancel)
         total = sum(entry.disk_bytes for entry in entries)
@@ -280,6 +374,9 @@ def _folder_record(piece: str, entry: HistoryEntry, is_root: bool) -> tuple[dict
         raise ValueError("Invalid history folder")
     if data["size"] < 0:
         raise ValueError("Invalid history folder size")
+    if not is_root and (not data["name"] or data["name"] in {".", ".."}
+                        or any(character in data["name"] for character in ("/", "\\", "\0"))):
+        raise ValueError("Invalid history folder name")
     if is_root and (data["name"] != entry.root or data["size"] != entry.size):
         raise ValueError("History root does not match its header")
     return data, opened

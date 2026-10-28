@@ -1705,7 +1705,10 @@ class MainWindow(QMainWindow):
         if root.path is None:
             return
         store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
-        dialog = HistoryDialog(store, root.path, self._unit, self)
+        selected = self.results.selected_node() or root
+        folder = selected if selected.is_dir else selected.parent or root
+        relative = os.path.relpath(folder.path, root.path)
+        dialog = HistoryDialog(store, root.path, self._unit, self, folder="" if relative == "." else relative)
         dialog.compare_requested.connect(self.results.compare_saved)
         try:
             dialog.exec()

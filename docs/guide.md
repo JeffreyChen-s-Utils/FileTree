@@ -413,6 +413,16 @@ manual risk cannot be downgraded, and no custom executable rules are supported.
 
 ### Seeing what grew
 
+For a completed single-root scan, select a folder and open **File → Scan history…**. The root-relative
+folder field starts at that selection; change it or leave it blank for the root. Enter optional local
+start and end dates (`YYYY-MM-DD`, both inclusive), then press **Apply trend**. The table and chart show
+each retained logical size and its change from the immediately preceding scan. The period net change
+uses the actual first and last observations. The direct-child table includes direct files, and shows
+up to 1,000 contributors with its total count. A capped period has no full-period net claim. Older
+records without scan rules, incomplete scans, missing folders, damaged records and incompatible scan
+rules or root identities appear as unknown; chart lines break at those observations. Select a retained
+scan in the comparison table to use the existing Changes view.
+
 **File → Scan history…** shows this root's retained size-over-time line chart and up to 1,000 scans.
 Select an earlier scan to open the existing Changes tab without choosing a file; Ctrl+C copies rows.
 History is enabled by default with a **1 GiB total cap across all roots**. **Options → Scan history

@@ -10,6 +10,7 @@ from test_gui import _scanned, _wait, window as window  # noqa: PLC0414
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.core.scanner import ScanOptions, scan
 from je_file_tree.gui import history
+from je_file_tree.gui.background_worker import ScheduledWorker
 from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_history
 from je_file_tree.gui.scan_worker import ScanWorker, wait_for
 
@@ -47,6 +48,39 @@ def test_full_scan_history_chart_and_modal_comparison_use_earlier_saved_tree(
     assert (sample_tree / "photos" / "more.jpg").read_bytes() == b"j" * 300
 
 
+def test_trend_apply_before_header_read_restores_comparison_and_invalid_retry(
+        window, qapp, sample_tree, tmp_path):
+    store = ScanHistory(tmp_path / "history")
+    store.save(scan(sample_tree).root, options=ScanOptions())
+    (sample_tree / "photos" / "extra.jpg").write_bytes(b"x" * 17)
+    store.save(scan(sample_tree).root, options=ScanOptions())
+    dialog = HistoryDialog(store, str(sample_tree), "auto", window, folder="photos")
+    try:
+        assert dialog.folder_input.text() == "photos"
+        dialog.apply_trend()
+        _wait(qapp, lambda: not dialog._running)
+        assert dialog.trend_view.rowCount() == 2
+        assert dialog.model.rowCount() == 2
+        assert dialog.chart.points[-1].change == 17
+        assert dialog.tabs.count() == 3 and dialog.tabs.currentWidget() is dialog.trend_view
+        dialog.tabs.setCurrentWidget(dialog.view)
+        dialog.view.setCurrentIndex(dialog.model.index(0, 0))
+        assert dialog.compare_button.isEnabled()
+        dialog.start_input.setText("bad-date")
+        dialog.apply_trend()
+        qapp.processEvents()
+        assert dialog.model.rowCount() == 0 and dialog.trend_view.rowCount() == 0
+        assert not dialog.compare_button.isEnabled()
+        dialog.start_input.clear()
+        dialog.apply_trend()
+        _wait(qapp, lambda: not dialog._running)
+        assert dialog.model.rowCount() == 2 and dialog.trend_view.rowCount() == 2
+    finally:
+        dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
+        dialog.deleteLater()
+
+
 def test_history_settings_accept_cancel_and_running_scan_capture(window, monkeypatch):
     captured = configured_history(window.settings)
     assert captured is not None and captured.max_bytes == 1024 ** 3
@@ -71,6 +105,31 @@ def test_history_settings_accept_cancel_and_running_scan_capture(window, monkeyp
     window.configure_history()
     assert configured_history(window.settings) is None and history.history_limit(window.settings) == 2
     worker.deleteLater()
+
+
+def test_both_scan_producers_save_actual_measurement_options(window, qapp, tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "data").write_bytes(b"x")
+    store = ScanHistory(tmp_path / "history")
+    ordinary = ScanWorker(str(root), ScanOptions(include_hidden=False, exclude=("unused",)), history=store)
+    outcomes = []
+    ordinary.succeeded.connect(outcomes.append)
+    ordinary.start()
+    _wait(qapp, lambda: bool(outcomes))
+    wait_for(ordinary)
+    first = store.read(str(root)).entries[0]
+    assert first.measurement is not None
+    assert first.measurement.include_hidden is False and first.measurement.exclusions == ("unused",)
+    scheduled = ScheduledWorker(str(root), ScanOptions(include_hidden=True), store, window)
+    scheduled.start()
+    _wait(qapp, lambda: scheduled.state == "complete")
+    wait_for(scheduled)
+    assert scheduled.entry is not None and scheduled.entry.measurement is not None
+    assert scheduled.entry.measurement.include_hidden is True
+    assert scheduled.entry.measurement.exclusions == ()
+    ordinary.deleteLater()
+    scheduled.deleteLater()
 
 
 @pytest.mark.parametrize("value", [None, True, 1.5, "bad", 0, 16385])

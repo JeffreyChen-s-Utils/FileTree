@@ -388,6 +388,17 @@ table and settings dialog. Selecting history loads a stable SavedScan on the dia
 then reuses CompareWorker and the existing Changes tab. Stop/close rejects queued replies. History does
 not schedule scans or authorize cleanup.
 
+`core.history` also writes optional versioned measurement metadata for named logical bytes: the
+actual scan inclusion rules and a known nonzero root device/inode. Both foreground and scheduled
+workers pass their captured `ScanOptions`; legacy saves remain readable but have unknown trend
+compatibility. Its `period` inventory filters parsed UTC instants before the 1,000-point cap.
+`core.trends` extracts scalar folder sizes and direct-child contributions through the existing
+iterative history loader, keeping one saved tree at a time. Unknown or incomplete records never become
+zero. Adjacent differences require compatible metadata; the full-period net uses the actual endpoints
+and is withheld when the period is capped. `gui.history` owns editable root-relative folder and local
+inclusive-date controls, cancellable queries, a gap-aware chart, bounded contribution rows and the
+existing historical comparison selection. Query work never walks the live source on the GUI thread.
+
 MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded default on invalid values) and
 passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
 subsequent workers; welcome text explains UNC account/coverage behavior without initiating network I/O.
