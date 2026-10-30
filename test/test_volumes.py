@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from PySide6.QtCore import QByteArray, QRect, Qt
+from PySide6.QtCore import QByteArray, QRect, Qt, QTimer
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QStyle, QStyleOptionViewItem
 
@@ -30,7 +30,7 @@ def test_native_bar_numeric_sort_and_reserved_available_space(qapp, monkeypatch)
     _sources(monkeypatch, [_storage("D:/"), _storage("E:/", free=600, available=600), _storage(ready=False)])
     dialog = volumes.VolumesDialog("auto")
     try:
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _wait(qapp, lambda: dialog.model.rowCount() == 2)
         row = dialog.model.row_at(0)
         assert row.used == 600 and row.available == 300
         assert dialog.model.index(0, 7).data() == "123 B"
@@ -56,7 +56,7 @@ def test_unknown_capacity_cluster_and_partial_trash_remain_unknown(qapp, monkeyp
     monkeypatch.setattr(volumes, "allocation_unit", lambda _root: None)
     dialog = volumes.VolumesDialog("auto")
     try:
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _wait(qapp, lambda: dialog.model.rowCount() == 1)
         assert dialog.model.row_at(0).used is None and dialog.model.row_at(0).available is None
         assert "unknown" in dialog.model.index(0, 6).data().lower()
         assert "Unknown total" in dialog.model.index(0, 7).data()
@@ -86,7 +86,7 @@ def test_volume_rows_are_bounded_with_complete_count(qapp, monkeypatch):
     monkeypatch.setattr(volumes, "trash_usage", lambda root, **_kwargs: calls.append(root) or TrashUsage(0, 0, True))
     dialog = volumes.VolumesDialog("auto")
     try:
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _wait(qapp, lambda: dialog.model.rowCount() == 256)
         assert dialog.model.rowCount() == 256 and len(calls) == 256
         assert "300" in dialog.status.text()
     finally:
@@ -114,8 +114,12 @@ def test_welcome_and_view_share_the_scan_root_controller(qapp, window, monkeypat
     _sources(monkeypatch)
     requested = []
     monkeypatch.setattr(window, "start_scan", requested.append)
+    original_queue = volumes.queue_worker
+    def delayed_queue(worker, current, parent):
+        QTimer.singleShot(50, parent, lambda: original_queue(worker, current, parent))
+    monkeypatch.setattr(volumes, "queue_worker", delayed_queue)
     def execute(dialog):
-        _wait(qapp, lambda: not dialog.worker.isRunning())
+        _wait(qapp, lambda: dialog.proxy.rowCount() == 1)
         dialog._scan(dialog.proxy.index(0, 0))
         return 0
     monkeypatch.setattr(main_module.VolumesDialog, "exec", execute)

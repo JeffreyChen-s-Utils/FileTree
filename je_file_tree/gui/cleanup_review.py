@@ -6,14 +6,14 @@ import threading
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QThread, Qt, Signal
 from PySide6.QtWidgets import (
-    QAbstractItemView, QDialogButtonBox, QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QTableView, QVBoxLayout, QWidget,
+    QAbstractItemView, QDialogButtonBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QPlainTextEdit,
+    QPushButton, QTableView, QVBoxLayout, QWidget,
 )
 
 from je_file_tree.core.formatting import format_count, format_size, format_time
 from je_file_tree.core.cleanup import DETAILS, CleanupGroup
 from je_file_tree.core.node import Node, outermost
-from je_file_tree.core.protected import Protection, protection_of
+from je_file_tree.core.protected import REASONS, Protection, protection_of
 from je_file_tree.core.savings import Savings, estimate_savings
 from je_file_tree.gui import file_actions
 from je_file_tree.gui.i18n import tr
@@ -21,8 +21,7 @@ from je_file_tree.gui.cleanup_text import explanation
 from je_file_tree.gui.scan_worker import wait_for
 from je_file_tree.gui.worker_lifecycle import WorkerDialog
 
-_HEADERS = ("review_select", "column_path", "review_rule", "review_reason", "column_modified",
-            "column_size", "column_allocated", "review_protection", "review_consequence")
+_HEADERS = ("review_select", "column_path", "review_logical_size", "review_risk")
 
 
 class ReviewModel(QAbstractTableModel):
@@ -68,14 +67,29 @@ class ReviewModel(QAbstractTableModel):
             return Qt.CheckState.Checked if node in self.checked else Qt.CheckState.Unchecked
         if role not in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
             return None
-        key, details = self._rule(node)
-        reason = explanation(key, details) if key is not None else tr("review_manual_reason")
-        protection = protection_of(node.path, self._places)
-        values = ("", node.path, tr(f"cleanup_{key}") if key else tr("review_manual"), reason,
-                  format_time(node.modified), format_size(node.size, self._unit),
-                  format_size(node.allocated, self._unit),
-                  tr(f"protected_{protection.reason}") if protection else tr("review_not_protected"), reason)
+        if role == Qt.ItemDataRole.ToolTipRole:
+            return self.details_text(index.row())
+        values = ("", node.path, format_size(node.size, self._unit), self.risk_text(index.row()))
         return values[index.column()]
+
+    def risk_text(self, row: int) -> str:
+        """Short risk and protected-path reason, independent of the current checkbox state."""
+        node = self.nodes[row]
+        _, details = self._rule(node)
+        risk = tr("review_risk_low" if details is not None and details.risk == "low" else "review_risk_manual")
+        protection = protection_of(node.path, self._places)
+        return f"{risk}\n{tr(f'protected_{protection.reason}')}" if protection else risk
+
+    def details_text(self, row: int) -> str:
+        """Complete recorded metadata, evidence and consequences from the proposed entry."""
+        node = self.nodes[row]
+        key, details = self._rule(node)
+        protection = protection_of(node.path, self._places)
+        return tr("review_details", path=node.path, rule=tr(f"cleanup_{key}") if key else tr("review_manual"),
+                  modified=format_time(node.modified), logical=format_size(node.size, self._unit),
+                  allocated=format_size(node.allocated, self._unit), risk=self.risk_text(row),
+                  protection=tr(f"protected_{protection.reason}") if protection else tr("review_not_protected"),
+                  consequence=explanation(key, details) if key is not None else tr("review_manual_reason"))
 
     def _rule(self, node: Node):
         reason = self._reasons.get(node)
@@ -125,25 +139,29 @@ class CleanupReview(WorkerDialog):
                  unit: str, root: Node, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(tr("review_title"))
-        self.resize(1100, 560)
+        self.resize(980, 640)
         self.model = ReviewModel(nodes, reasons, places, unit, self)
-        self.view = QTableView()
-        self.view.setModel(self.model)
-        self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.view.setTextElideMode(Qt.TextElideMode.ElideMiddle)
-        self.view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        self.view.setColumnWidth(1, 250)
+        self._build_table()
         self.summary = QLabel()
         self.summary.setWordWrap(True)
-        self.details = QLabel()
-        self.details.setTextFormat(Qt.TextFormat.PlainText)
-        self.details.setWordWrap(True)
-        self.details.setMaximumHeight(120)
-        self.details.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.details = QPlainTextEdit()
+        self.details.setReadOnly(True)
+        self.details.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |
+                                             Qt.TextInteractionFlag.TextSelectableByKeyboard)
+        self.details.setTabChangesFocus(True)
+        self.details.setAccessibleName(tr("review_details_label"))
+        self.details.setMinimumHeight(100)
+        self.details.setMaximumHeight(170)
+        self.scope = QLineEdit(root.path)
+        self.scope.setReadOnly(True)
+        self.scope.setAccessibleName(tr("review_scope"))
+        self.scope.setToolTip(root.path)
         self.view.selectionModel().currentChanged.connect(lambda _current, _previous: self._show_details())
         self.open_folder = QPushButton(tr("review_open_folder"))
         self.open_folder.clicked.connect(self._open_folder)
+        self.setTabOrder(self.scope, self.view)
+        self.setTabOrder(self.view, self.details)
+        self.setTabOrder(self.details, self.open_folder)
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setText(tr("review_continue"))
         self.buttons.accepted.connect(self.accept)
@@ -153,7 +171,11 @@ class CleanupReview(WorkerDialog):
         bar.addStretch(1)
         bar.addWidget(self.buttons)
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(tr("review_hint")))
+        hint = QLabel(tr("review_hint"))
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        layout.addWidget(QLabel(tr("review_scope")))
+        layout.addWidget(self.scope)
         layout.addWidget(self.view, 1)
         layout.addWidget(self.details)
         layout.addWidget(self.summary)
@@ -163,8 +185,25 @@ class CleanupReview(WorkerDialog):
         self._running: set[_EstimateWorker] = set()
         self.model.selection_changed.connect(self._estimate)
         if self.model.rowCount():
-            self.view.setCurrentIndex(self.model.index(0, 1))
+            self.view.setCurrentIndex(self.model.index(0, 0))
         self._estimate()
+
+    def _build_table(self) -> None:
+        self.view = QTableView()
+        self.view.setModel(self.model)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.view.setTabKeyNavigation(False)
+        self.view.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        header = self.view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        metrics = self.view.fontMetrics()
+        risk = max((tr("review_risk_manual"), *(tr(f"protected_{reason}") for reason in REASONS)),
+                   key=metrics.horizontalAdvance)
+        for column, sample in ((0, tr("review_select")), (2, tr("review_logical_size")), (3, risk)):
+            self.view.setColumnWidth(column, min(260, max(100, metrics.horizontalAdvance(sample) + 24)))
+        self.view.verticalHeader().setDefaultSectionSize(metrics.lineSpacing() * 3 + 8)
 
     def selected_nodes(self) -> list[Node]:
         """The final checked outermost entries."""
@@ -195,12 +234,7 @@ class CleanupReview(WorkerDialog):
         if row < 0:
             self.details.clear()
             return
-        def value(column: int) -> str:
-            return str(self.model.data(self.model.index(row, column)))
-
-        text = tr("review_details", path=value(1), rule=value(2), protection=value(7), consequence=value(8))
-        self.details.setText(text)
-        self.details.setToolTip(text)
+        self.details.setPlainText(self.model.details_text(row))
 
     def _estimate(self) -> None:
         if self._current is not None:

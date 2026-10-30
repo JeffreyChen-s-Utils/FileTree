@@ -8,6 +8,66 @@ waiting without inventing a completion percentage or implying that an incomplete
 
 ## Layout and interaction
 
+- **History trends:** a copyable full path, loaded-folder chooser and root action make scope explicit.
+  The chooser pages through captured direct folders on its own cancellable workers and retains the
+  query on Cancel. Recent 30/90-day and all-history choices share custom local date boundaries and
+  optional calendars. Invalid text remains and receives focus. Chart and table share point indices,
+  including same-time observations and unknown markers in a separate band. Arrows navigate points;
+  Tab leaves tables. Selected details distinguish unknown size from unknown change and expose exact
+  bytes beside global-unit signed changes. Empty, single, capped and incompatible results have
+  separate explanations. Full-root comparison remains an independent tab. Compact bottom actions
+  keep the table usable on a 1024×768 logical desktop. `tools/verify_trend_ux.py` uses hidden native
+  windows, private history and actual keyboard focus; local contrast simulation does not verify
+  operating-system contrast or screen readers.
+
+- **Workspace templates:** a labelled save section captures the workspace when the manager opens.
+  Add and Update name that source; edits in the separate load preview apply only to this load and
+  require another path check. Active tabs have a text label. Beside Replace tabs, live counts explain
+  which tabs, scans and results will close and how many checked preview paths are unavailable.
+  Complete existing scopes remain copyable in scrollable details. Tab reaches the name, save actions,
+  preview, check, replacement and cancel; arrows navigate preview cells. Cancel preserves tabs and
+  results, and replacement retires workers asynchronously before installing idle inputs.
+
+- **Folder budgets:** the table follows the active tab's display unit and provides exact-byte
+  tooltips and accessible descriptions. Observation time stays separate from usage. Never-scanned
+  rules and limits awaiting a new full scan have distinct text; a changed limit retains dated old
+  usage but cannot produce current excess. The editor converts byte integers into exact finite
+  binary-unit input without display rounding. Row refresh, language and unit changes preserve the
+  unsubmitted form and its identity selection. An external path request does not overwrite a dirty
+  form. Choose folder only fills the path. Labels have buddies, validation focuses its input, the
+  form scrolls, and the action row stays outside the scroll area.
+
+- **Cleanup review:** four primary columns show selection, path, logical size and risk, with protected
+  reasons beside risk. A copyable scan scope and bounded, scrollable details preserve complete paths,
+  timestamps, allocation estimates, rule evidence and consequences. Lower risk never means safe;
+  unmatched protected paths retain an explicit no-match label. Rule-based manual proposals start
+  unchecked; explicit selections and lower-risk proposals keep their existing initial checks. Arrows
+  navigate rows, Space toggles the checkbox column, and Tab reaches details and fixed action buttons.
+  Read-only details support keyboard selection and copying. Continue returns only checked outermost
+  nodes to the existing confirmations. Cancel returns no approval. Unknown recovery stays unknown,
+  known estimates retain a zero lower bound, and moving to Trash does not free space immediately.
+  `tools/verify_cleanup_ux.py` covers private fixtures in hidden native windows without source moves.
+
+- **Cleanup completion:** a compact header retains moved/skipped/failed counts and logical moved
+  bytes across rescans. Its transient scrollable details preserve the analysis pane's geometry,
+  show refusal reasons and point to complete existing reports/records. Records, existing expiring
+  Undo and original-folder rescan reuse their guards; details close before dispatch. Free-space
+  changes are separately dated same-root scan observations including other activity; missing
+  observations remain unknown. No bin emptying or new operation approval is implied.
+
+- **Named presets:** the welcome page and Options offer the same editor for one-path presets.
+  Add/Update capture current scan options; Rename preserves saved choices. Load fills inputs and
+  reports that Scan path is still required. Existing results/selection remain. Invalid settings
+  produce a translated error without overwriting data. No administrator or source-operation
+  approvals are saved. Current-tab scans/source reviews disable the editor; opening it does not
+  suspend peer readers. The settings-dialog shutdown contract closes it safely with the application.
+
+- **Result highlights:** a keyboard-collapsible section below the metric cards links the three largest
+  direct folders to the tree, candidate cleanup data to Clean up, and skipped/unreadable/pending
+  coverage to Problems. Pending analysis differs from a completed empty result; partial sizes remain
+  explicit. Candidate bytes never imply free-space recovery. The section keeps its expansion and the
+  tree's selection across language/unit changes, using worker-captured data without source queries.
+
 - **Welcome:** a primary folder chooser beside all-drive scanning, followed by a short workflow hint,
   cached drive rows, grouped drive tools and recent folders. The content scrolls when many drives or
   recent entries exceed the window height. Recent-path buttons preserve literal ampersands and expose
@@ -91,3 +151,21 @@ and theme changes without data/selection loss. The full regression suite and Ruf
 fixture. Native Windows review also checks welcome/results/live compact views across all three
 themes without displaying windows. Offscreen widget tests do not establish real-world hanging paths
 or native macOS/Linux interaction; those existing verification items remain in `progress.md`.
+
+Search derives its removable condition summary from SearchFilters.state(), with explicit entire-scan scope. Name, each size bound, dates, type and kind have keyboard-accessible removal actions. Filter controls and long summaries scroll independently above the retained result table. Optional dates use a localized calendar with explicit acceptance; errors remain beside the input and move focus to that field. Typing immediately invalidates old results before the debounce delay. Native evidence is reproducible with tools/verify_search_ux.py; contrast is a local simulated palette.
+
+Budget tables use arrow keys for row selection and Tab to leave for the editor. Opening or expanding search scrolls its focused name field into view. Calendar minimum geometry includes every week under the applied stylesheet. The budget/search probes send keys only to actual focus and exercise each language/theme/desktop combination at a checked native pixel ratio; hidden-window action setup does not establish operating-system shortcut delivery or screen-reader speech.
+
+Details contains a copyable target folder, growth-trend and budget buttons, and explicit unavailable
+reasons for unscanned, busy, closing, linked or combined-root selections. Actions recheck the owning
+window's current context; a file uses its containing folder. Opening and closing preserves the tab,
+tree selection and scroll. The hidden analysis tab bar has no Tab stop; its active page controls and
+visible navigation remain reachable. Focused details controls remain in view after resizing or translation.
+Workspace budget counts are keyboard buttons for over-limit and unknown rules, with waiting included
+in unknown. The temporary filter precedes the table in Tab order. Hidden edited rules show their
+name and status; filtering and refresh keep the draft. No matching rules and no saved rules have
+different messages. Existing folder budgets open by normalized path without creating a duplicate.
+`test/test_context_ux.py` checks these guards, identity, focus and one-query history routing.
+`tools/verify_context_ux.py` repeats the real modal history route, folder budget and count-button paths
+in native hidden windows for five languages, two sizes and light/dark/simulated contrast, checking
+the actual pixel ratio and saving screenshots. It sends Qt events only to the actual focus widget.

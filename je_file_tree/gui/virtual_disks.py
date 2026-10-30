@@ -298,7 +298,9 @@ class VirtualDisksDialog(WorkerDialog):
         if self.info_worker is not None:
             self.info_worker.cancel.set()
             if wait:
-                wait_for(self.info_worker)
+                worker = self.info_worker
+                wait_for(worker)
+                self._info_finished(worker)
         if wait:
             wait_for(self.worker)
 

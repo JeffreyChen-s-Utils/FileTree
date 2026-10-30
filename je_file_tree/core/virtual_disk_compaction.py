@@ -72,9 +72,10 @@ def _detached(info: VirtualDiskInfo) -> None:
 
 
 def _pin_local(path: str) -> AbstractContextManager[None]:
-    # WSL commonly registers extended drive paths; never turn an extended UNC/device path into local authority.
-    local = path[4:] if path.startswith("\\\\?\\") else path
-    return _pinned_path(local)
+    # Preserve extended-drive semantics; the shared guard rejects UNC/device/relative paths.
+    if os.name != "nt":
+        raise ValueError("Compaction requires a Windows local-drive path")
+    return _pinned_path(path)
 
 
 def prepare_compaction(disk: VirtualDisk, *, cancel: threading.Event | None = None) -> CompactionPlan:
@@ -86,8 +87,8 @@ def prepare_compaction(disk: VirtualDisk, *, cancel: threading.Event | None = No
     default-No approval and confirm the owning machine remains stopped before executing this plan.
     """
     check_cancel(cancel)
-    _eligible(disk)
     with _pin_local(disk.path):
+        _eligible(disk)
         runtime = stopped_runtime(disk, cancel=cancel)
         info = inspect_virtual_disk(disk, cancel=cancel)
         _detached(info)
@@ -154,8 +155,8 @@ def execute_compaction(plan: CompactionPlan, *, machine_stopped: bool,
         if machine_stopped is not True:
             raise ValueError("Explicit stopped-machine confirmation is required")
         _detached(plan.info)
-        _eligible(plan.info.disk)
-        with anchored_directory(plan.info.parents), _pin_local(plan.info.disk.path):
+        with _pin_local(plan.info.disk.path), anchored_directory(plan.info.parents):
+            _eligible(plan.info.disk)
             if stopped_runtime(plan.info.disk, cancel=cancel) != plan.runtime:
                 raise ValueError("Registered runtime source changed since review")
             current = inspect_virtual_disk(plan.info.disk, cancel=cancel)

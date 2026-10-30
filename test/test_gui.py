@@ -15,6 +15,8 @@ from types import SimpleNamespace
 import pytest
 from PySide6.QtCore import (
     QAbstractEventDispatcher,
+    QCoreApplication,
+    QEvent,
     QEventLoop,
     QItemSelectionModel,
     QModelIndex,
@@ -80,6 +82,7 @@ def window(qapp: QApplication, tmp_path: Path):
     main.close()
     _wait(qapp, lambda: main._close_ready)
     main.deleteLater()
+    QCoreApplication.sendPostedEvents(main, QEvent.Type.DeferredDelete)
     i18n.set_language(i18n.DEFAULT_LANGUAGE)
     apply_qt_translation(i18n.DEFAULT_LANGUAGE)
 
@@ -1081,7 +1084,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
 
     def review(dialog):
         dialog.model.setData(dialog.model.index(0, 0), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
-        reviewed.append(dialog.model.data(dialog.model.index(1, 7)))
+        reviewed.append(dialog.model.risk_text(1))
         dialog.model.setData(dialog.model.index(1, 0), Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
         return QDialog.DialogCode.Accepted
 
@@ -1092,7 +1095,7 @@ def test_cleanup_review_can_remove_protected_entries_from_a_mixed_batch(
     monkeypatch.setattr(window, "rescan_folder", lambda _node: None)
     window.move_to_trash([safe, protected])
     _wait(qapp, lambda: window._trash_worker is None)
-    assert reviewed == ["installed programs"]
+    assert len(reviewed) == 1 and "installed programs" in reviewed[0]
     assert moved == [str(tmp_path / "memory.dmp")] and len(questions) == 1
     assert protected.is_in(root) and (tmp_path / "guarded" / "program").read_bytes() == b"important"
 
@@ -1195,8 +1198,10 @@ def test_show_items_needs_a_session_bus(qapp: QApplication, monkeypatch: pytest.
     assert file_actions.show_items("/home/me/x") is False
 
 
-def test_explorer_command_always_quotes_the_path() -> None:
-    assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == 'explorer /select,"C:\\trip,day1\\a.jpg"'
+def test_explorer_command_always_quotes_the_path(monkeypatch) -> None:
+    monkeypatch.setattr(file_actions, "_explorer_path", lambda: "C:\\Windows\\explorer.exe")
+    assert file_actions.explorer_command("C:\\trip,day1\\a.jpg") == (
+        '"C:\\Windows\\explorer.exe" /select,"C:\\trip,day1\\a.jpg"')
 
 
 @pytest.mark.parametrize("path", ['C:\\bad" /root,evil', "C:\\bad\nname", "C:\\bad\x00name", ""])

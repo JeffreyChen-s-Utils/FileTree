@@ -48,7 +48,7 @@ jobs:
           persist-credentials: true  # this job pushes the version commit and the tag
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
 
@@ -100,7 +100,7 @@ jobs:
           git push origin "v$NEW"
 
       - name: Keep the PyPI files for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: pypi-dist
           path: dist/
@@ -127,7 +127,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
 
@@ -136,7 +136,7 @@ jobs:
           python -m pip install --require-hashes --only-binary :all: -r .github/requirements/publish.txt
 
       - name: Fetch the checked Python distributions
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: pypi-dist
           path: ./dist
@@ -165,7 +165,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
 
@@ -233,7 +233,7 @@ jobs:
           publisher: ${{ vars.FILETREE_SIGNING_PUBLISHER }}
 
       - name: Keep the MSI for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-msi
           path: FileTree-*-windows-x64.msi
@@ -250,14 +250,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Package draft archive failed.' }
 
       - name: Keep review drafts without submitting to package stores
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-package-drafts
           path: FileTree-*-package-drafts.zip
           if-no-files-found: error
 
       - name: Keep the standalone ZIP for the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: filetree-standalone
           path: FileTree-*-windows-standalone.zip
@@ -285,39 +285,39 @@ jobs:
           persist-credentials: false
 
       - name: Fetch the PyPI files
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: pypi-dist
           path: ./dist
 
       - name: Fetch the standalone ZIP
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: filetree-standalone
           path: ./release-assets
 
       - name: Fetch the MSI
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: filetree-msi
           path: ./release-assets
 
       - name: Fetch the unpublished store review drafts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: filetree-package-drafts
           path: ./release-assets
 
       - name: Fetch the verified native AppImage
         if: needs.build-posix.result == 'success'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: linux-compiled
           path: ./release-assets/linux
 
       - name: Fetch the verified native app bundle
         if: needs.build-posix.result == 'success'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: macos-compiled
           path: ./release-assets/macos

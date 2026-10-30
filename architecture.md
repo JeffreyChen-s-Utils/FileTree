@@ -11,6 +11,92 @@ safe way to free space (move to the Recycle Bin / Trash, never a permanent delet
 
 ## 2. Layers and directories
 
+`core.folder_budgets` holds immutable rule, dispatch ticket, observation and batch values. Scan
+workers match bounded targets against the completed tree and target-specific coverage, then carry
+only scalar observations. `gui.folder_budget_store` is the single workspace settings owner: a
+QLockFile transaction allocates scan sequences and persists observations, rule versions and alert
+episodes before any reminder is reported. The workspace manager edits rules and displays dated
+observations; normal and scheduled successful scans publish through that owner. Partial, branch,
+cancelled and failed scans have no budget publication. This feature grants no cleanup authority.
+Retired scheduled workers discard late budget batches when their workspace owner quiesces or closes.
+
+`MainWindow.size_unit_changed` and active-tab changes update only the budget dialog's display unit.
+The dialog owns the unsubmitted form; store publications rebuild its bounded observation table with
+selection signals blocked and preserve the selected rule identity without refilling that form.
+`search_ranges.editable_size` uses integer arithmetic for exact binary-unit editor input; formatted
+observation strings never feed persistence. Limit-version mismatch retains dated old usage with an
+explicit waiting state and unknown excess. The settings schema and reminder state remain unchanged.
+
+`MainWindow.folder_context` resolves a typed `FolderContext` from the current result and selection,
+checking scan ownership, shared operation busy state, closing, links and virtual roots. Files use
+their containing folder. `DetailsPanel.set_folder_context` displays its copyable path and unavailable
+reason without calling `set_node` or starting a details worker. Parameterless actions recheck the
+context and reuse `show_history` and the workspace budget entry point. No source traversal is added.
+The workspace's over/unknown count buttons share the singleton budget manager. Temporary filters
+hide rows using `BudgetRow.status`, including waiting rows under unknown, while retaining identity
+and drafts. `select_path` checks dirty input before matching at most 256 normalized existing paths;
+existing rules retain exact limits and unmatched paths start a draft. Hidden edited rules retain
+a visible name/status explanation. Filters neither persist nor query the store again.
+
+
+`gui.workspace_templates` stores immutable `WorkspaceTemplate` values under a separate bounded,
+strict QSettings key. It reuses the public `WorkspaceState` value codec and scan preferences while
+requiring native fully qualified paths. `WorkspaceTemplatesDialog` attaches an editable per-root
+preview table, coalesces availability checks on owned workers, and preserves unavailable roots.
+`MainWindow.capture_scan_scope` and `prepare_scan_scope` separate next-scan inputs from existing
+results. Explicit Start dispatches the exact pending single or combined scope. `ScanWorkspace`
+owns replacement: existing tabs retire asynchronously under the same OperationGroup and
+BackgroundMonitor, then joined pages are replaced with idle inputs and transient preferences.
+Application close wins over validation and retirement. Background dispatch is guarded during
+replacement; no template restores results, approvals or scanner authority. Restart still scans.
+
+`ScanWorkspace.replacement_impact` owns a bounded `ReplacementImpact` of typed per-tab titles,
+complete next-scan scopes, active state, scan ownership and result presence. The dialog only renders
+that value. Tab changes and `MainWindow.scan_activity_changed` refresh it, including queued owners,
+branch scans, terminal results and pending cancellation; replacement requests refresh it again.
+Ownership, rather than thread running state, includes queued and stopping scans. The immutable
+opening `WorkspaceState` remains the save source; the editable load draft and availability report
+stay separate, and path edits invalidate the report without changing saved templates.
+
+`TrashWorker` prepares an immutable, scalar `MoveSummary` before delivery. The persistent
+`CleanupCompletion` header retains counts/logical bytes and opens scrollable transient details without
+resizing the analysis workspace. Its records/undo/original-folder rescan actions reuse existing owners
+and guards, closing details before dispatch. A hidden result page closes its popup. No obsolete Node
+tree or capacity ledger is retained: only source identity, baseline free bytes/time and later scalar
+observations are copied. Only newer same-root observations update the displayed free-space delta;
+both recorded device/inode values must be nonzero. The delta explicitly includes unrelated activity
+and never substitutes moved bytes for freed space.
+
+`gui.scan_presets` retains versioned named single-path choices in QSettings, using the existing
+scan-preference codec and rejecting private backends or extra authority fields. The welcome page and
+Options open its editor. Explicit loading updates scan inputs and ordinary preferences without
+starting a worker or replacing results; concurrency/exclusions retain workspace-wide semantics.
+Running workers retain immutable options. Invalid stored data is reported without replacement.
+The editor is registered with read-only settings dialogs, outside source-operation exclusion, so
+opening it does not suspend readers. Its explicit shutdown rejects the editor during application close.
+
+`Summary.top_folders` captures at most three direct nonlinked folders on the analysis worker;
+`ScanOutcome.top_folders` carries them to `ResultHighlights`. The collapsible guidance renders those
+references, the captured capacity coverage and `CleanupPanel.proposal_summary` only. Its buttons
+reuse tree selection and existing analysis-page navigation. Structural mutations invalidate folder
+highlights until the existing summary worker replies. Rendering never iterates children or queries
+storage; language/unit changes retain selection and expansion.
+
+Scan workers transfer their first failure from priority setup/cleanup, pacing, reading or merging to
+the caller after all owned threads join. Each taken task releases its busy count exactly once;
+failure takes precedence over cancellation. The GUI terminal boundary logs unexpected exceptions
+and emits one failure even during partial-result analysis; CLI errors retain its JSON/exit-3 protocol.
+An explicitly requested but discarded MFT candidate adds a stable warning to the ordinary result.
+Local compaction path validation precedes pinning and keeps extended drive namespaces unchanged
+through native opening, rejecting UNC/device/relative forms. Explorer is resolved through the native
+Windows directory API, and quoted trailing backslashes are escaped.
+
+Pool startup records each successfully started thread inside the same guarded run scope. If a later
+start or calling-thread progress callback fails, stop dispatch and join the already started subset;
+never attempt to join an unstarted thread or overwrite an earlier recorded worker failure.
+Virtual-disk dialogs also retire their optional header worker immediately after an explicit joined
+shutdown. A queued finished callback is idempotent; closing readiness does not depend on its delivery.
+
 | Layer | Path | Depends on | Holds |
 |---|---|---|---|
 | Core | `je_file_tree/core/` | standard library only | `node.py` (the tree), `scanner.py` (parallel scan), `allocation.py` (size on disk), `protected.py` (system and program folders), `exclusions.py` (folders to skip), `analysis.py` (largest files, per-type and per-age totals), `search.py` (find by name), `duplicates.py` (same content), `cleanup.py` (clean-up suggestions), `compare.py` (against a saved scan), `pacing.py` (background work gives way to the window), `treemap.py` (layout), `sunburst.py` (rings), `tree_layout.py` (bounded hierarchy rows), `formatting.py`, `export.py` (CSV / JSON) |
@@ -337,6 +423,28 @@ readable. `gui.history` owns bounded header/tree readers, a palette-based line c
 table and settings dialog. Selecting history loads a stable SavedScan on the dialog worker, closes/joins,
 then reuses CompareWorker and the existing Changes tab. Stop/close rejects queued replies. History does
 not schedule scans or authorize cleanup.
+
+`core.history` also writes optional versioned measurement metadata for named logical bytes: the
+actual scan inclusion rules and a known nonzero root device/inode. Both foreground and scheduled
+workers pass their captured `ScanOptions`; legacy saves remain readable but have unknown trend
+compatibility. Its `period` inventory filters parsed UTC instants before the 1,000-point cap.
+`core.trends` extracts scalar folder sizes and direct-child contributions through the existing
+iterative history loader, keeping one saved tree at a time. Unknown or incomplete records never become
+zero. Adjacent differences require compatible metadata; the full-period net uses the actual endpoints
+and is withheld when the period is capped. `gui.history` owns editable root-relative folder and local
+inclusive-date controls, cancellable queries, a gap-aware chart, bounded contribution rows and the
+existing historical comparison selection. Query work never walks the live source on the GUI thread.
+`MainWindow.show_history` passes the loaded root to `HistoryDialog`; its initial query already uses
+the selected relative folder, keeping the full path, chart and rows in the same scope. `gui.loaded_folder` owns a separate
+`WorkerDialog` and cancellable direct-child page workers; it never enumerates descendants or source
+directories. Accepted nodes become relative paths by their parent chain. History scheduling waits only
+for its own retired history readers, so navigation does not block queries; dismissal fences every
+descendant worker. `OptionalDateEdit` preserves literal drafts and optional calendar endpoints. Recent
+periods use one captured local date and the same independently converted midnights as custom queries.
+One `HistoryTrend` supplies chart/table point indices, exact details and separate size/change reasons;
+duplicate timestamps and unknown sizes remain keyboard-selectable. Selection setters do not emit.
+`format_change` uses the active unit, with exact-byte accessible text/tooltips. Full-root comparison
+retains its original model, selection and saved-scan loading flow.
 
 MainWindow validates persisted scan concurrency (1–32, existing CPU-bounded default on invalid values) and
 passes it through the shared ScanOptions factory for full and branch scans. Changes affect only
@@ -1151,7 +1259,14 @@ on a `SearchWorker` thread: names are matched case-insensitively (plain text any
 patterns against the whole name, several separated by `;`) and the 1,000 largest matches are shown with the
 count and size of all. A new search stops the one before (it checks once per folder) and only the latest
 result is shown. The box is disabled while a scan fills the tree; the search runs again after a scan, a
-move to the Recycle Bin or a folder rescan.
+move to the Recycle Bin or a folder rescan. `SearchRangeDialog` validates a draft before updating
+`SearchFilters`; optional exact integer byte bounds stay in the existing saved keys. Only custom date
+mode stores ISO `date_start` / `date_through` keys. GUI calendar conversion computes each local midnight
+independently and passes inclusive `modified_since` / exclusive `modified_before` timestamps in `Query`.
+Relative presets keep rolling semantics. Invalid persisted bounds cancel current work, clear rows and
+prevent saving; late workers cannot repopulate results. Valid new queries also clear stale rows.
+
+SearchPanel owns query edits and worker identity. SearchFilters.state()/apply() remains the sole condition representation; SearchConditions derives labels and emits removal requests without storing a second query. Text edits cancel old work immediately, while the existing timer only delays launching new work. Stopping the panel also cancels that timer, so closing cannot launch a pending query. OptionalDateEdit owns an asynchronous CalendarDialog whose accepted ISO date changes only the parent range draft. SearchRangeDialog commits only after exact-byte and inclusive local-calendar validation; cancellation leaves the active query untouched.
 
 **Clean up.** The Clean up tab has two pages. *Suggestions* (`CleanupPanel`): after every scan a
 `CleanupWorker` runs `core.cleanup.find_cleanup`, one walk that tests each folder against the rules' path
@@ -1233,10 +1348,17 @@ rows immediately and ignores replaced workers; acting on incomplete branches req
 
 Group selection emits `CleanupPanel.review_requested`; `MainWindow.move_to_trash` also intercepts manual
 selections containing a current suggestion. `gui/cleanup_review.py` shows a lazy checkbox table of all
-outermost proposed entries, their rules/reasons/consequences, metadata and protection. Unchecked entries
+outermost proposed entries with four columns for selection, path, logical size and risk/protection. Unchecked entries
 never reach the existing protection and Trash questions; rejection does nothing. A cancellable estimate
 worker updates the count and logical/allocated/recovery/free-space fields; Continue waits for that result.
-Full row explanations appear below the table and containing folders can be opened from the dialog.
+`ReviewModel.risk_text` and `details_text` derive presentation from the same nodes, reasons and protected
+places, without hidden duplicate columns or copied row state. The copyable scan scope stays above the
+table; bounded read-only `QPlainTextEdit` details retain complete paths, rule, recorded modification,
+logical/allocated sizes, risk, protection, evidence and consequences. Keyboard selection is explicitly
+enabled, Tab leaves both table and details, and fixed action buttons remain below the recovery summary.
+The path column stretches while the other columns stay bounded. Containing folders can still be opened
+from the dialog. `tools/verify_cleanup_ux.py` exercises hidden native keyboard review, acceptance and
+cancellation over private fixtures in five languages, three palettes and two logical desktop sizes.
 
 **Duplicates.** The Duplicates page (`DuplicatesPanel`) runs `core.duplicates.find_duplicates` on a
 `DuplicatesWorker` only when asked: files of the same size (1 MB and up unless another size is chosen) are
@@ -1643,7 +1765,7 @@ guards locked installs, the producer's backend, publisher token isolation and co
 The source distribution carries no tests (`MANIFEST.in`,
 `test/test_sdist_manifest.py`).
 
-Development tooling uses pytest >=9.1.1 and Ruff 0.16.10. The hash-locked CI test requirements
+Development tooling uses pytest >=9.1.1 and Ruff 0.17.1. The hash-locked CI test requirements
 match that pytest floor; the local Ruff requirement, locked CI wheel and dedicated lint job share
 one exact version. `test/test_workflow_actions.py` rejects a partial Ruff update across those files.
 

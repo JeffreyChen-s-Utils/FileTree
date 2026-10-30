@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import ctypes
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -26,7 +27,6 @@ _UNAVAILABLE = 0x2 | 0x4 | 0x200 | 0x400 | 0x1000 | 0x40000 | 0x400000
 _MAX_OUTPUT = 8192
 _TIMEOUT = 120
 _LIMIT = 1000
-_DRIVE_LENGTH = 2
 _FIXED_DRIVE = 3
 
 
@@ -146,14 +146,14 @@ def _validate(node: Node, info: os.stat_result) -> None:
 
 @contextlib.contextmanager
 def _pinned_path(path: str) -> Iterator[None]:
-    normalized = os.path.abspath(path)
-    drive, tail = os.path.splitdrive(normalized)
-    if (len(drive) != _DRIVE_LENGTH or drive[1] != ":" or not tail.startswith("\\")
-            or any(char in tail for char in "*?:\0")):
+    if re.fullmatch(r"(?:\\\\\?\\)?[A-Za-z]:\\[^*?:\x00-\x1f]*", path) is None:
         raise ValueError("Only exact local-drive paths are supported")
+    drive, tail = os.path.splitdrive(path)
     parts = tail.strip("\\").split("\\")
+    if any(part in ("", ".", "..") or "/" in part for part in parts):
+        raise ValueError("Only exact local-drive paths are supported")
     kernel = _kernel()
-    if kernel.GetDriveTypeW(drive + "\\") != _FIXED_DRIVE:
+    if kernel.GetDriveTypeW(drive.removeprefix("\\\\?\\") + "\\") != _FIXED_DRIVE:
         raise ValueError("Only fixed local NTFS drives are supported")
     with contextlib.ExitStack() as stack:
         current = drive + "\\"

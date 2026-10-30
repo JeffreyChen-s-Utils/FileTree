@@ -10,6 +10,7 @@ from test_gui import _scanned, _wait, window as window  # noqa: PLC0414
 from je_file_tree.core.history import ScanHistory
 from je_file_tree.core.scanner import ScanOptions, scan
 from je_file_tree.gui import history
+from je_file_tree.gui.background_worker import ScheduledWorker
 from je_file_tree.gui.history import HistoryDialog, HistorySettings, configured_history
 from je_file_tree.gui.scan_worker import ScanWorker, wait_for
 
@@ -27,12 +28,14 @@ def test_full_scan_history_chart_and_modal_comparison_use_earlier_saved_tree(
     def select_earlier(dialog):
         _wait(qapp, lambda: not dialog._running)
         assert dialog.model.rowCount() == 2
-        assert dialog.chart.entries[0].size == 1000 and dialog.chart.entries[-1].size == 1300
-        assert "1,000 B" in dialog.chart.accessibleDescription() and "1.3 KB" in dialog.chart.accessibleDescription()
+        assert dialog.chart.points[0].size == 1000 and dialog.chart.points[-1].size == 1300
+        assert "1,000 B" in dialog.chart.accessibleDescription()
+        assert dialog.trend_view.item(1, 1).text() == '1.3 KB'
         dialog.resize(870, 640)
         dialog.show()
         qapp.processEvents()
         assert not dialog.chart.grab().isNull()
+        dialog.tabs.setCurrentWidget(dialog.view)
         dialog.view.setCurrentIndex(dialog.model.index(0, 0))
         assert dialog.compare_button.isEnabled()
         dialog.compare_selected()
@@ -45,6 +48,39 @@ def test_full_scan_history_chart_and_modal_comparison_use_earlier_saved_tree(
     assert window.results.changes.saved.saved == first.saved
     assert window.results.changes_model.rows()[0].change == 300
     assert (sample_tree / "photos" / "more.jpg").read_bytes() == b"j" * 300
+
+
+def test_trend_apply_before_header_read_restores_comparison_and_invalid_retry(
+        window, qapp, sample_tree, tmp_path):
+    store = ScanHistory(tmp_path / "history")
+    store.save(scan(sample_tree).root, options=ScanOptions())
+    (sample_tree / "photos" / "extra.jpg").write_bytes(b"x" * 17)
+    store.save(scan(sample_tree).root, options=ScanOptions())
+    dialog = HistoryDialog(store, str(sample_tree), "auto", window, folder="photos")
+    try:
+        assert dialog.folder_input.text() == "photos"
+        dialog.apply_trend()
+        _wait(qapp, lambda: not dialog._running)
+        assert dialog.trend_view.rowCount() == 2
+        assert dialog.model.rowCount() == 2
+        assert dialog.chart.points[-1].change == 17
+        assert dialog.tabs.count() == 3 and dialog.tabs.currentWidget() is dialog.trend_view
+        dialog.tabs.setCurrentWidget(dialog.view)
+        dialog.view.setCurrentIndex(dialog.model.index(0, 0))
+        assert dialog.compare_button.isEnabled()
+        dialog.start_input.setText("bad-date")
+        dialog.apply_trend()
+        qapp.processEvents()
+        assert dialog.model.rowCount() == 0 and dialog.trend_view.rowCount() == 0
+        assert not dialog.compare_button.isEnabled()
+        dialog.start_input.clear()
+        dialog.apply_trend()
+        _wait(qapp, lambda: not dialog._running)
+        assert dialog.model.rowCount() == 2 and dialog.trend_view.rowCount() == 2
+    finally:
+        dialog.reject()
+        _wait(qapp, lambda: not dialog._finish_waiting)
+        dialog.deleteLater()
 
 
 def test_history_settings_accept_cancel_and_running_scan_capture(window, monkeypatch):
@@ -73,6 +109,31 @@ def test_history_settings_accept_cancel_and_running_scan_capture(window, monkeyp
     worker.deleteLater()
 
 
+def test_both_scan_producers_save_actual_measurement_options(window, qapp, tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "data").write_bytes(b"x")
+    store = ScanHistory(tmp_path / "history")
+    ordinary = ScanWorker(str(root), ScanOptions(include_hidden=False, exclude=("unused",)), history=store)
+    outcomes = []
+    ordinary.succeeded.connect(outcomes.append)
+    ordinary.start()
+    _wait(qapp, lambda: bool(outcomes))
+    wait_for(ordinary)
+    first = store.read(str(root)).entries[0]
+    assert first.measurement is not None
+    assert first.measurement.include_hidden is False and first.measurement.exclusions == ("unused",)
+    scheduled = ScheduledWorker(str(root), ScanOptions(include_hidden=True), store, window)
+    scheduled.start()
+    _wait(qapp, lambda: scheduled.state == "complete")
+    wait_for(scheduled)
+    assert scheduled.entry is not None and scheduled.entry.measurement is not None
+    assert scheduled.entry.measurement.include_hidden is True
+    assert scheduled.entry.measurement.exclusions == ()
+    ordinary.deleteLater()
+    scheduled.deleteLater()
+
+
 @pytest.mark.parametrize("value", [None, True, 1.5, "bad", 0, 16385])
 def test_invalid_history_limit_keeps_default(window, value):
     window.settings.setValue("history_limit_mib", value)
@@ -85,12 +146,12 @@ def test_dialog_stop_close_join_and_late_reply_are_ignored(window, qapp, sample_
     original = store.read(str(sample_tree))
     started = threading.Event()
 
-    def waiting(_root, *, cancel, **_kwargs):
+    def waiting(_store, _query, *, cancel):
         started.set()
         assert cancel.wait(10)
         return original
 
-    monkeypatch.setattr(store, "read", waiting)
+    monkeypatch.setattr(history, "query_trend", waiting)
     dialog = HistoryDialog(store, str(sample_tree), "auto", window)
     _wait(qapp, started.is_set)
     dialog.stop()
@@ -129,6 +190,7 @@ def test_history_ready_waits_asynchronously_for_join_before_enabling_comparison(
         QTimer.singleShot(20, release.set)
         _wait(qapp, lambda: not dialog._running)
         assert release.is_set() and dialog.worker.wait(0) and dialog.model.rowCount() == 1
+        dialog.tabs.setCurrentWidget(dialog.view)
         dialog.view.setCurrentIndex(dialog.model.index(0, 0))
         dialog.compare_selected()
         _wait(qapp, lambda: bool(compared))

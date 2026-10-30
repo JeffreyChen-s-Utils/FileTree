@@ -6,7 +6,7 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
-from PySide6.QtCore import QTimer, Signal
+from PySide6.QtCore import QTimer, Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
     QTableView,
     QVBoxLayout,
     QWidget,
@@ -25,6 +26,7 @@ from je_file_tree.core.search import Query, SearchResult, accepts
 from je_file_tree.gui.i18n import tr
 from je_file_tree.gui.scan_worker import SearchWorker, wait_for
 from je_file_tree.gui.search_filters import SearchFilters
+from je_file_tree.gui.search_conditions import SearchConditions
 from je_file_tree.gui.tables import LargestFilesModel
 
 # Typing has to pause this long before a search starts. Searching a scan of 765,000 entries took
@@ -45,6 +47,7 @@ class SearchPanel(QWidget):
     def __init__(self, table: QTableView, model: LargestFilesModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.table = table
+        self.table.setMinimumHeight(80)
         self.model = model
         self.box = QLineEdit()
         self.box.setClearButtonEnabled(True)
@@ -59,17 +62,21 @@ class SearchPanel(QWidget):
         self.saved.activated.connect(lambda _index: self._load_saved())
         self._save_button.clicked.connect(self._ask_to_save)
         self._delete_button.clicked.connect(self.delete_saved)
+        self.conditions_view = SearchConditions()
+        self.conditions_view.remove_requested.connect(self.remove_condition)
+        self.conditions_view.reset_requested.connect(self.clear_conditions)
         self.summary = QLabel()
         self.summary.setWordWrap(True)
         self._root: Node | None = None
         self._current: SearchWorker | None = None
         self._running: set[SearchWorker] = set()
         self._result: SearchResult | None = None
+        self._validation_error = False
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
         self._timer.setInterval(SEARCH_DELAY_MS)
         self._timer.timeout.connect(self.rerun)
-        self.box.textChanged.connect(lambda _text: self._timer.start())
+        self.box.textChanged.connect(self._edited)
         self.box.returnPressed.connect(self.rerun)
         saved_row = QHBoxLayout()
         for widget in (self._saved_label, self.saved, self._save_button, self._delete_button):
@@ -77,12 +84,43 @@ class SearchPanel(QWidget):
         saved_row.addStretch(1)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
-        layout.addWidget(self.box)
-        layout.addWidget(self.filters)
-        layout.addLayout(saved_row)
+        layout.addWidget(self._filter_controls(saved_row))
+        self.controls_scroll.hide()
+        self.conditions_view.edit_requested.connect(self._show_controls)
+        layout.addWidget(self.conditions_view)
         layout.addWidget(self.summary)
         layout.addWidget(table, 1)
         self.set_root(None)
+
+    def _filter_controls(self, saved_row: QHBoxLayout) -> QScrollArea:
+        controls = QWidget()
+        controls_layout = QVBoxLayout(controls)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.addWidget(self.box)
+        controls_layout.addWidget(self.filters)
+        controls_layout.addLayout(saved_row)
+        self.controls_scroll = QScrollArea()
+        self.controls_scroll.setWidgetResizable(True)
+        self.controls_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.controls_scroll.setMinimumHeight(40)
+        self.controls_scroll.setMaximumHeight(160)
+        self.controls_scroll.setWidget(controls)
+        return self.controls_scroll
+
+    def _show_controls(self, visible: bool) -> None:
+        self.conditions_view.scroll.setMinimumHeight(60 if visible else 132)
+        self.controls_scroll.setVisible(visible)
+        if visible:
+            self.box.setFocus()
+            self.controls_scroll.ensureWidgetVisible(self.box)
+
+    def _edited(self, _text: str) -> None:
+        self.stop()
+        self._result = None
+        self.model.set_rows([])
+        self._validation_error = False
+        self._update_summary()
+        self._timer.start()
 
     @property
     def busy(self) -> bool:
@@ -95,6 +133,26 @@ class SearchPanel(QWidget):
         for widget in (self.box, self.filters, self.saved, self._save_button, self._delete_button):
             widget.setEnabled(root is not None)
         self.rerun()
+
+    def remove_condition(self, key: str) -> None:
+        """Remove one active condition without changing scope or saved searches."""
+        if key == "text":
+            self.box.blockSignals(True)
+            self.box.clear()
+            self.box.blockSignals(False)
+            self.rerun()
+            self.conditions_view.edit.setFocus()
+            return
+        self.filters.remove_condition(key)
+        (self.conditions_view.reset if self.conditions_view.reset.isEnabled() else self.conditions_view.edit).setFocus()
+
+    def clear_conditions(self) -> None:
+        """Reset only search input, preserving the scan, selection and saved queries."""
+        self.box.blockSignals(True)
+        self.box.clear()
+        self.box.blockSignals(False)
+        self.filters.apply({})
+        self.conditions_view.edit.setFocus()
 
     def query(self) -> Query:
         """What the box and the conditions ask for."""
@@ -110,6 +168,11 @@ class SearchPanel(QWidget):
         """Save the box and the conditions under ``name`` (replacing a search of that name)."""
         name = name.strip()
         if not name:
+            return
+        try:
+            self.query()
+        except ValueError:
+            self.rerun()
             return
         self._searches[name] = {"text": self.box.text(), **self.filters.state()}
         self._fill_saved(select=name)
@@ -127,7 +190,15 @@ class SearchPanel(QWidget):
         """Search for what the box holds (after typing, Enter, or a change to the tree)."""
         self._timer.stop()
         self.stop()
-        query = self.query()
+        self._result = None
+        self.model.set_rows([])
+        self._validation_error = False
+        try:
+            query = self.query()
+        except ValueError:
+            self._validation_error = True
+            self._update_summary()
+            return
         if self._root is None or accepts(query, time.time()) is None:
             self._result = None
             self.model.set_rows([])
@@ -143,7 +214,8 @@ class SearchPanel(QWidget):
         worker.start()
 
     def stop(self, *, wait: bool = False) -> None:
-        """Stop every search still running; with ``wait``, until their threads have ended."""
+        """Cancel pending input and stop running searches; ``wait`` joins their threads."""
+        self._timer.stop()
         self._current = None
         for worker in list(self._running):
             worker.stop()
@@ -152,8 +224,10 @@ class SearchPanel(QWidget):
 
     def focus(self) -> None:
         """Put the cursor in the search box, its text selected."""
+        self.conditions_view.edit.setChecked(True)
         self.box.setFocus()
         self.box.selectAll()
+        self.controls_scroll.ensureWidgetVisible(self.box)
 
     def retranslate(self) -> None:
         """Re-read every translated text (and the sizes, after a change of unit)."""
@@ -198,9 +272,13 @@ class SearchPanel(QWidget):
         self._update_summary()
 
     def _update_summary(self) -> None:
+        self._save_button.setEnabled(self._root is not None and not self._validation_error)
         self.summary.setText(self._summary_text())
+        self.conditions_view.update_conditions(self.box.text(), self.filters.state(), self._root, self.model.unit)
 
     def _summary_text(self) -> str:
+        if self._validation_error:
+            return tr("search_range_invalid")
         if self._current is not None:
             return tr("search_running")
         result = self._result

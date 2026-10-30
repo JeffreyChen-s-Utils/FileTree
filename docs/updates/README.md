@@ -58,6 +58,7 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | Batch | Covers |
 |---|---|
+| [2026-10-e](2026-10-e.md) | 2026-10 |
 | [2026-10-d](2026-10-d.md) | 2026-10 |
 | [2026-10-c](2026-10-c.md) | 2026-10 |
 | [2026-10-b](2026-10-b.md) | 2026-10 |
@@ -68,6 +69,31 @@ In the same commit: delete the item from `progress.md`, add a `#done` entry here
 
 | ID | Date | Title | Tags | Batch |
 |---|---|---|---|---|
+| U-20261030-01 | 2026-10-30 | 整合 Ruff 0.17.1 與測試鎖定檔相依套件更新 | #migration #tooling #ci | [2026-10-e](2026-10-e.md) |
+| U-20261029-07 | 2026-10-29 | 確認清理鍵盤測試修正通過全部跨平台檢查 | #done #tests #gui | [2026-10-e](2026-10-e.md) |
+| U-20261029-06 | 2026-10-29 | 明確建立清理詳情鍵盤測試的捲動條件 | #incident #tests #gui | [2026-10-e](2026-10-e.md) |
+| U-20261029-05 | 2026-10-29 | 完成七項體驗改善的版面與鍵盤驗收 | #done #gui #ux #accessibility | [2026-10-e](2026-10-e.md) |
+| U-20261029-04 | 2026-10-29 | 精簡清理審閱並保留完整操作資訊 | #done #gui #ux #cleanup | [2026-10-e](2026-10-e.md) |
+| U-20261029-03 | 2026-10-29 | 銜接資料夾詳細資訊與趨勢及容量預算 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
+| U-20261029-02 | 2026-10-29 | 確認資料夾 Enter 修正通過跨平台檢查 | #done #gui #tests | [2026-10-e](2026-10-e.md) |
+| U-20261029-01 | 2026-10-29 | 明確處理資料夾選擇器的 Enter 導航 | #incident #gui #tests | [2026-10-e](2026-10-e.md) |
+| U-20261028-12 | 2026-10-28 | 整合歷史趨勢導航與共用鍵盤修正 | #done #gui #ux #history | [2026-10-e](2026-10-e.md) |
+| U-20261028-11 | 2026-10-28 | 確認搜尋測試清理修正通過跨平台檢查 | #done #tests #gui | [2026-10-e](2026-10-e.md) |
+| U-20261028-10 | 2026-10-28 | 明確清理獨立搜尋測試面板 | #incident #tests #gui | [2026-10-e](2026-10-e.md) |
+| U-20261028-09 | 2026-10-28 | 分開範本儲存來源與載入預覽 | #done #gui #ux #workspace | [2026-10-e](2026-10-e.md) |
+| U-20261028-08 | 2026-10-28 | 顯示與逐項解除搜尋條件 | #done #gui #ux #search | [2026-10-e](2026-10-e.md) |
+| U-20261028-07 | 2026-10-28 | 改善容量預算的精確編輯與觀察狀態 | #done #gui #ux #capacity | [2026-10-e](2026-10-e.md) |
+| U-20261028-06 | 2026-10-28 | Persist independent folder budgets and reminder episodes | #done #capacity #gui | [2026-10-e](2026-10-e.md) |
+| U-20261028-05 | 2026-10-28 | Track selected-folder growth across compatible saved scans | #done #history #gui | [2026-10-e](2026-10-e.md) |
+| U-20261028-04 | 2026-10-28 | Save and explicitly restore named workspace templates | #done #gui #settings | [2026-10-e](2026-10-e.md) |
+| U-20261028-03 | 2026-10-28 | Confirm volume-row readiness across hosted checks | #done #tests | [2026-10-e](2026-10-e.md) |
+| U-20261028-02 | 2026-10-28 | Wait for published volume rows before selecting them | #incident #tests | [2026-10-e](2026-10-e.md) |
+| U-20261028-01 | 2026-10-28 | Support exact sizes and local calendar dates in saved searches | #done #search #gui | [2026-10-e](2026-10-e.md) |
+| U-20261023-05 | 2026-10-23 | Finish worker lifetimes and reject unknown comparison identities | #done #scanner #lifecycle #capacity | [2026-10-e](2026-10-e.md) |
+| U-20261023-04 | 2026-10-23 | Retain scalar cleanup outcomes and separately observed free space | #done #cleanup #gui | [2026-10-e](2026-10-e.md) |
+| U-20261023-03 | 2026-10-23 | Save and explicitly load named single-path scan presets | #done #gui #settings | [2026-10-e](2026-10-e.md) |
+| U-20261023-02 | 2026-10-23 | Guide scan results with captured folder and cleanup highlights | #done #gui #analysis | [2026-10-e](2026-10-e.md) |
+| U-20261023-01 | 2026-10-23 | Close scan-worker and Windows path review findings | #done #scanner #windows | [2026-10-e](2026-10-e.md) |
 | U-20261018-90 | 2026-10-18 | Re-apply emphasised fonts on every language change | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-89 | 2026-10-18 | Emphasised labels follow the language font on macOS | #fix #gui #i18n | [2026-10-d](2026-10-d.md) |
 | U-20261018-88 | 2026-10-18 | Welcome page drives as cards | #gui #ux | [2026-10-d](2026-10-d.md) |

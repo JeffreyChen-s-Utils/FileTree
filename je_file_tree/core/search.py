@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fnmatch
 import heapq
+import math
 import re
 import threading
 import time
@@ -26,7 +27,8 @@ class Query:
     ``text`` is read by ``name_matcher``. Sizes are in bytes. ``changed_within`` and ``unchanged_for``
     are spans in seconds counted back from the moment of the search, so a saved query stays meaningful.
     ``category`` (a key of ``analysis.CATEGORIES``) matches files of that type only; ``kind`` is one of
-    ``KINDS``.
+    ``KINDS``. ``modified_since`` is an inclusive POSIX timestamp; ``modified_before``
+    is exclusive. Unknown or nonfinite modification times fail any active time condition.
     """
 
     text: str = ""
@@ -36,6 +38,8 @@ class Query:
     unchanged_for: float | None = None
     category: str | None = None
     kind: str = ANY
+    modified_since: float | None = None
+    modified_before: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,11 +146,24 @@ def _kept_by_size_and_age(query: Query, now: float) -> Callable[[Node], bool] | 
     most = query.max_size if query.max_size is not None else float("inf")
     since = now - query.changed_within if query.changed_within is not None else float("-inf")
     before = now - query.unchanged_for if query.unchanged_for is not None else None
-    if (query.min_size, query.max_size, query.changed_within, before) == (None, None, None, None):
+    time_active = any(value is not None for value in (
+        query.changed_within, query.unchanged_for, query.modified_since, query.modified_before))
+    if query.min_size is None and query.max_size is None and not time_active:
         return None
-    if before is None:
-        return lambda node: least <= node.size <= most and node.modified >= since
-    return lambda node: least <= node.size <= most and since <= node.modified <= before and node.modified > 0
+    since = max(since, query.modified_since if query.modified_since is not None else float("-inf"))
+    until = query.modified_before if query.modified_before is not None else float("inf")
+
+    def kept(node: Node) -> bool:
+        if not least <= node.size <= most:
+            return False
+        if not time_active:
+            return True
+        modified = node.modified
+        return (math.isfinite(modified) and modified > 0 and since <= modified < until
+                and (before is None or modified <= before))
+
+    return kept
+
 
 
 def _size(node: Node) -> int:

@@ -1,32 +1,38 @@
-# progress.md: FileTree
+# 待辦進度
 
-Outstanding work only. When an item is done, delete it in the same commit and add a `#done` entry to `docs/updates/` (format and query commands: `docs/updates/README.md`). No finished items, no history, no rules (rules live in `CLAUDE.md`).
-Item numbers (`#n`) are never reused. Tags: [DECIDE] needs the owner's decision, [BLOCKED] waits on something else, [UNVERIFIED] observed but not confirmed. Priority: **P1** next, **P2** worth doing, **P3** only if wanted.
-Suggested order: the native-environment gates in #75/#76, then the P2 items.
-Cross-repo and workspace items live in `D:\Codes\progress.md`.
+僅記錄未完成工作。項目完成時，須在同一次提交中刪除該項目，並於 `docs/updates/` 新增 `#done` 紀錄，格式與查詢指令見 `docs/updates/README.md`。不保留已完成項目、歷史或規則，規則另存於 `CLAUDE.md`。
+項目編號不得重複使用。狀態標籤：[待決定] 表示需要使用者決定，[受阻] 表示等待其他條件，[待驗證] 表示已觀察但尚未確認。優先順序：**第一優先**為接下來處理，**第二優先**為值得處理，**第三優先**為使用者有需求時才處理。
+原生環境驗證項目保留追蹤，取得對應環境後繼續驗證。
+跨專案與工作區項目另存於 `D:\Codes\progress.md`。
 
-## Open
+## 未完成項目
 
-- **#114** [BLOCKED] Owner verification on real interactions: Windows UAC consent and cancel for the owned administrator-restart worker (mocked Shell execution and COM apartment checks do not establish it), and the owner's Python-source scan, asynchronous closing and source-operation workflows on the actual hanging paths before claiming all hangs resolved. Needs the owner at the machine.
+### 原生環境驗證
 
-- **#4** [UNVERIFIED] Verify file-manager selection/fallback, Trash behavior, Finder drag-to-scan source preservation, protected GUI duplicate-link approval and original-path symlink creation after approved Trash on macOS. No Mac or macOS VM is available from the owner for Finder interaction/consent.
+- **#136** [待驗證] 在原生作業系統環境確認螢幕閱讀器的實際朗讀、系統高對比模式、原生資料夾選擇器與作業系統快捷鍵派送。現有隱藏視窗驗證使用本機高對比配色模擬、元件鍵盤事件及選擇器回傳值替身，不代表上述系統行為已通過；後續驗證仍須遵守全程背景執行限制。
 
-### Freeing space
+- **#115** [待驗證] 確認 Windows 檔案總管對磁碟根目錄，以及含空白、逗號與 Unicode 字元的名稱，是否實際選取正確項目。目前已涵蓋原生 `CommandLineToArgvW` 解析測試，但僅驗證參數解析，無法證明檔案總管畫面上的選取行為正確。
 
-- **#21** (P2) [BLOCKED] macOS bin querying/Finder-wide emptying remains blocked on a native environment; no Mac is available from the owner. Verify native macOS automation consent, APFS/firmlink scope deduplication, multi-volume coverage, active-operation lifetime and failed/partial metadata refresh; fixture/mocked execution does not prove native behavior.
-- **#76** (P1) [BLOCKED] Validate actual cloud placeholders with a real provider environment (unavailable from the owner); fixtures do not prove provider allocation. Keep unmeasurable shared extents and directory metadata unknown; Windows no-bin outcomes remain unknown. Drive reconciliation remains #75.
+- **#114** [受阻] 需要使用者在實機驗證互動：確認程式所管理的系統管理員重新啟動背景工作，在 Windows 使用者帳戶控制提示中同意與取消的行為。模擬殼層執行及 COM 執行緒模型檢查不足以證明實際行為。此外，必須在使用者實際發生卡住的路徑上，驗證 Python 原始碼掃描、非同步關閉與來源檔案操作流程，才能宣告所有卡住問題已解決。需要使用者在電腦前操作。
 
-### Scanning
+- **#4** [待驗證] 在 macOS 驗證檔案管理員的選取與備援行為、垃圾桶行為、從 Finder 拖曳掃描時保留來源、圖形介面中受保護重複檔案的連結核准，以及經核准移至垃圾桶後在原路徑建立符號連結的行為。使用者目前未提供 Mac 或 macOS 虛擬機，無法驗證 Finder 互動與授權。
 
-- **#33** (P3) [BLOCKED] Validate successful large-real-drive MFT parity and throughput against ordinary scanning before considering default enablement of `ScanOptions.experimental_mft`. A qualified disposable large-drive/admin validation environment has not been supplied. Preserve ordinary visibility, no-follow path authority, exact metadata and incomplete coverage; fallback timings do not establish MFT throughput. The serial audit makes no speed claim.
-- **#35** (P2) [BLOCKED] Measure UNC/mapped-drive worker-count throughput on a genuinely slow remote SMB link before recommending concurrency for that environment. No owner remote share/slow-link validation environment is available; native loopback timings cannot establish remote performance.
-- **#75** (P1) [BLOCKED] Verify same-device mount boundaries on macOS/other POSIX with native traversal guards; no disposable environment for that case is available from the owner. FreeBSD nullfs has a distinct st_dev and cannot prove that case. Unmounted APFS peer capacity remains unknown. The GUI and CLI ledger remain estimates; independently unmeasurable shared/reserved/filesystem metadata, omitted bytes and other-volume totals stay unknown. Direct bin labels and Finder emptying remain #21.
+### 釋放空間
 
-### Over time
+- **#21**（第二優先）[受阻] macOS 垃圾桶查詢與 Finder 全域清空功能仍缺少原生驗證環境，使用者目前未提供 Mac。須驗證 macOS 原生自動化授權、APFS 與 firmlink 範圍去重、多磁碟區涵蓋範圍、執行中操作的生命週期，以及失敗或部分完成時的中繼資料重新整理。測試資料與模擬執行無法證明原生行為。
+- **#76**（第一優先）[受阻] 須在真實雲端服務供應商環境驗證雲端預留位置檔案，目前使用者未提供此環境。測試資料無法證明供應商實際配置的空間。無法量測的共用儲存區段與目錄中繼資料須維持未知，Windows 無資源回收筒時的結果也仍未知。磁碟容量核對仍由 #75 追蹤。
 
-- **#38** (P3) [BLOCKED] Verify OS-native macOS alert interaction, actual user-login startup and Windows/macOS notification display permission. Native Qt widget/registration fixtures do not prove OS-native interaction or a real login; dispatch does not prove display permission. No owner login/macOS desktop validation environment is available; Windows display capture remains unverified.
+### 掃描
 
-### Distribution
+- **#33**（第三優先）[受阻] 須先在真實大型磁碟上成功驗證 MFT 掃描與一般掃描的結果一致性及處理量，才考慮預設啟用 `ScanOptions.experimental_mft`。目前尚未提供合適、可拋棄且具系統管理員權限的大型磁碟驗證環境。須保留一般掃描的可見範圍、不追蹤連結的路徑存取限制、精確中繼資料及涵蓋不完整的狀態。退回一般掃描的耗時無法證明 MFT 處理量，循序稽核亦不宣稱速度優勢。
+- **#35**（第二優先）[受阻] 須在實際緩慢的遠端 SMB 連線上，量測 UNC 路徑與對應磁碟機在不同背景工作數量下的處理量，再建議該環境的並行程度。使用者目前未提供遠端共用資料夾或慢速連線驗證環境，本機回送連線的原生量測無法證明遠端效能。
+- **#75**（第一優先）[受阻] 須透過原生目錄走訪防護，驗證 macOS 與其他 POSIX 系統上同一裝置內的掛載邊界。使用者目前未提供可拋棄的對應驗證環境。FreeBSD 的 nullfs 具有不同的 `st_dev`，無法證明此情境。未掛載的 APFS 同容器磁碟區容量仍未知。圖形介面與命令列的容量帳目仍為估計值；無法獨立量測的共用空間、保留空間、檔案系統中繼資料、遺漏位元組及其他磁碟區總量，均須維持未知。直接顯示垃圾桶標籤與 Finder 清空功能仍由 #21 追蹤。
 
-- **#47** (P2) [BLOCKED] Configure an owner Azure Artifact Signing Public Trust account/profile and OIDC environment identifiers for the opt-in release signing flow (`docs/windows-signing.md`), then verify real timestamped EXE/MSI signatures and downloaded artifact hashes. No signing certificate/service environment is available. macOS Developer ID signing/notarization also requires unavailable owner credentials; unsigned builds do not establish signing or SmartScreen reputation.
-- **#48** (P3) [BLOCKED] Submit reviewed winget/Scoop/Chocolatey drafts for the exact published release artifacts and verify real store installation/upgrades. Store-publishing tokens/accounts remain unavailable from the owner.
+### 長期運作
+
+- **#38**（第三優先）[受阻] 須驗證 macOS 原生警示互動、實際使用者登入時的自動啟動，以及 Windows 與 macOS 通知顯示權限。原生 Qt 元件與註冊測試資料無法證明作業系統原生互動或真實登入行為，成功送出通知也不代表具有顯示權限。使用者目前未提供登入或 macOS 桌面驗證環境，Windows 通知畫面擷取仍待驗證。
+
+### 發布
+
+- **#47**（第二優先）[受阻] 須設定使用者的 Azure Artifact Signing Public Trust 帳戶、設定檔及 OIDC 環境識別資訊，以啟用自選的版本簽署流程，詳見 `docs/windows-signing.md`。接著驗證實際含時間戳記的 EXE 與 MSI 簽章，以及下載成品的雜湊值。目前沒有可用的簽署憑證或服務環境。macOS Developer ID 簽署與公證也需要使用者尚未提供的憑證，未簽署的建置無法證明簽署流程或 SmartScreen 信譽。
+- **#48**（第三優先）[受阻] 須針對確切的已發布版本成品，提交審查過的 winget、Scoop 與 Chocolatey 草稿，並驗證實際套件平台的安裝與升級。使用者目前尚未提供發布所需的權杖或帳戶。

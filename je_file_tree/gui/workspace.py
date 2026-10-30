@@ -6,17 +6,21 @@ import os
 
 from PySide6.QtCore import QByteArray, QSettings, QThread, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QTabWidget, QToolButton
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QTabWidget, QToolButton, QWidget
 
 from je_file_tree.gui.i18n import current_language, tr
 from je_file_tree.gui.locale_font import apply_language_font
 from je_file_tree.gui.main_window import MainWindow
 from je_file_tree.gui.operation_group import OperationGroup
 from je_file_tree.gui.background_monitor import BackgroundMonitor
+from je_file_tree.gui.folder_budget_dialog import BudgetFilter, FolderBudgetDialog
+from je_file_tree.gui.folder_budget_store import FolderBudgetStore, display_error
 from je_file_tree.gui.worker_lifecycle import after_threads
 from je_file_tree.gui.startup_state import MAX_TABS, WorkspaceState
 from je_file_tree.gui.scan_preferences import ScanDefaults
 from je_file_tree.core.scanner import ScanOptions
+from je_file_tree.gui.workspace_templates import ReplacementImpact, TabImpact, WorkspaceTemplate
+from je_file_tree.gui.workspace_templates_dialog import WorkspaceTemplatesDialog
 
 
 class ScanWorkspace(QMainWindow):
@@ -32,14 +36,29 @@ class ScanWorkspace(QMainWindow):
         self.tabs.setMovable(True)
         self.tabs.tabCloseRequested.connect(self.close_tab)
         self.tabs.currentChanged.connect(self._activated)
+        self.tabs.tabBar().tabMoved.connect(self._refresh_template_impact)
         self.setCentralWidget(self.tabs)
         self._closing, self._services = False, False
         self._force_close = False
         self._close_ready = False
+        self._replacement: WorkspaceState | None = None
+        self._replacement_report: tuple[tuple[str, ...], ...] = ()
+        self._templates_dialog: WorkspaceTemplatesDialog | None = None
+        self._init_budgets(settings)
         self.background = BackgroundMonitor(self)
         self.new_button = QToolButton(self)
         self.new_button.clicked.connect(lambda _checked=False: self.add_tab())
-        self.tabs.setCornerWidget(self.new_button, Qt.Corner.TopRightCorner)
+        self.templates_action = QAction(self)
+        self.templates_action.triggered.connect(self.show_templates)
+        self.templates_button = QToolButton(self)
+        self.templates_button.setDefaultAction(self.templates_action)
+        corner = QWidget(self)
+        controls = QHBoxLayout(corner)
+        controls.setContentsMargins(0, 0, 0, 0)
+        controls.addWidget(self.templates_button)
+        controls.addWidget(self.budget_button)
+        controls.addWidget(self.new_button)
+        self.tabs.setCornerWidget(corner, Qt.Corner.TopRightCorner)
         self.new_action = QAction(self)
         self.new_action.setShortcut(QKeySequence("Ctrl+T"))
         self.new_action.triggered.connect(lambda _checked=False: self.add_tab())
@@ -54,6 +73,24 @@ class ScanWorkspace(QMainWindow):
             self.restoreGeometry(geometry)
         self._insert(first)
         self.retranslate()
+        self._budget_status()
+
+    def _init_budgets(self, settings: QSettings) -> None:
+        self.budgets = FolderBudgetStore(settings, self)
+        self._budget_dialog: FolderBudgetDialog | None = None
+        self.budget_label = QLabel(self)
+        self.statusBar().addPermanentWidget(self.budget_label)
+        self.budget_over = QToolButton(self)
+        self.budget_unknown = QToolButton(self)
+        for button, status in ((self.budget_over, "over"), (self.budget_unknown, "unknown")):
+            button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+            button.clicked.connect(lambda _checked=False, chosen=status: self.show_budgets(status_filter=chosen))
+            self.statusBar().addPermanentWidget(button)
+        self.budgets.changed.connect(self._budget_status)
+        self.budget_action = QAction(self)
+        self.budget_action.triggered.connect(lambda _checked=False: self.show_budgets())
+        self.budget_button = QToolButton(self)
+        self.budget_button.setDefaultAction(self.budget_action)
 
     @property
     def current(self) -> MainWindow:
@@ -61,6 +98,10 @@ class ScanWorkspace(QMainWindow):
         return self.tabs.currentWidget()
 
     def _insert(self, window: MainWindow) -> None:
+        window._menus["menu_file"].addAction(self.templates_action)
+        window._budget_store = self.budgets
+        window._budget_show = self.show_budgets
+        window._actions["folder_budgets"].setEnabled(True)
         window._operations = self.operations
         window._scan_defaults = self._scan_defaults
         window._close_all = self.quit_application
@@ -74,6 +115,9 @@ class ScanWorkspace(QMainWindow):
         self.operations.windows.append(window)
         window.shutdown_finished.connect(lambda: QTimer.singleShot(0, self, lambda: self._remove_closed_tab(window)))
         window.path_edit.textChanged.connect(lambda: self._label(window))
+        window.scan_scope_changed.connect(lambda: self._label(window))
+        window.scan_activity_changed.connect(self._refresh_template_impact)
+        window.size_unit_changed.connect(lambda _unit: self._budget_unit())
         window.results.tree_model.modelReset.connect(lambda: self._label(window))
         self.tabs.setCurrentIndex(self.tabs.addTab(window, tr("workspace_empty")))
         self._label(window)
@@ -90,13 +134,13 @@ class ScanWorkspace(QMainWindow):
         """Capture live tabs in visual order; restart performs fresh scans of their explicit roots."""
         windows = [self.tabs.widget(index) for index in range(self.tabs.count())
                    if not self.tabs.widget(index)._closing]
-        scopes = tuple(window._last_roots or window._last_path or None for window in windows)
+        scopes = tuple(window.capture_restart_scope() for window in windows)
         active = windows.index(self.current) if self.current in windows else 0
         return WorkspaceState(scopes, active, tuple(window._scan_options() for window in windows)).arguments()
 
     def add_tab(self, folder: str | None = None) -> MainWindow | None:
         """Create a separate result/worker owner, bounded to sixteen simultaneous tabs."""
-        if self._closing or self.tabs.count() >= MAX_TABS:
+        if self._closing or self._replacement is not None or self.tabs.count() >= MAX_TABS:
             return None
         window = MainWindow(self.settings, operations=self.operations)
         self._insert(window)
@@ -110,18 +154,26 @@ class ScanWorkspace(QMainWindow):
             return
         path = window.path_edit.text()
         title = os.path.basename(os.path.normpath(path)) or path if path else tr("workspace_empty")
-        if window._last_roots:
+        scope = window.capture_scan_scope()
+        if isinstance(scope, tuple):
             title = tr("multi_roots")
         self.tabs.setTabText(index, title.replace("&", "&&"))
-        self.tabs.setTabToolTip(index, "\n".join(window._last_roots) or path)
+        self.tabs.setTabToolTip(index, "\n".join(scope) if isinstance(scope, tuple) else path)
+        self._refresh_template_impact()
 
     def _activated(self, _index: int) -> None:
-        if self.tabs.count() and not self._closing:
+        if self.tabs.count() and not self._closing and self._replacement is None:
             self.current._update_actions()
+            self._budget_unit()
+        self._refresh_template_impact()
+
+    def _budget_unit(self) -> None:
+        if self._budget_dialog is not None and self.current is not None:
+            self._budget_dialog.set_unit(self.current._unit)
 
     def close_tab(self, index: int) -> None:
         """Cancel only this tab; keep its ownership until its asynchronous shutdown completes."""
-        if self._closing or not 0 <= index < self.tabs.count():
+        if self._closing or self._replacement is not None or not 0 <= index < self.tabs.count():
             return
         if self.tabs.count() == 1:
             self.close()
@@ -137,9 +189,132 @@ class ScanWorkspace(QMainWindow):
             return
         self.tabs.removeTab(index)
         self.operations.windows.remove(window)
+        self._refresh_template_impact()
         window.deleteLater()
+        if self._replacement is not None:
+            if not self.operations.windows:
+                self._install_template()
+            return
         self.new_button.setEnabled(True)
         self.operations.refresh(self.current)
+        if self._services:
+            self.current._updates.start()
+
+    def capture_template_state(self) -> WorkspaceState:
+        """Snapshot visual tab order, edited next inputs and transient scan choices."""
+        windows = [self.tabs.widget(index) for index in range(self.tabs.count())]
+        return WorkspaceState(tuple(window.capture_scan_scope() for window in windows),
+                              self.tabs.currentIndex(), tuple(window._scan_options() for window in windows))
+
+    def show_templates(self) -> None:
+        """Preview metadata without changing current scans; replacement requires its explicit action."""
+        if self._closing or self._replacement is not None or self.operations.busy or self._templates_dialog is not None:
+            return
+        try:
+            dialog = WorkspaceTemplatesDialog(self.settings, self.capture_template_state(), self)
+        except ValueError:
+            QMessageBox.warning(self, tr("workspace_templates"), tr("templates_invalid"))
+            return
+        self._templates_dialog = dialog
+        self._refresh_template_impact()
+        dialog.replacement_requested.connect(self._refresh_template_impact)
+        dialog.finished.connect(lambda result: self._templates_finished(dialog, result))
+        dialog.open()
+
+    def replacement_impact(self) -> ReplacementImpact:
+        """Read live tab ownership, including queued scans, without inspecting the filesystem."""
+        return ReplacementImpact(tuple(TabImpact(
+            self.tabs.tabText(index).replace("&&", "&"), window.capture_scan_scope(),
+            index == self.tabs.currentIndex(), window._worker is not None,
+            window.results.outcome is not None,
+        ) for index in range(self.tabs.count()) for window in (self.tabs.widget(index),)))
+
+    def _refresh_template_impact(self) -> None:
+        if self._templates_dialog is not None:
+            self._templates_dialog.set_replacement_impact(self.replacement_impact())
+
+    def show_budgets(self, selected_path: str = "", status_filter: BudgetFilter = "all") -> None:
+        """Show one workspace manager; its rows are the persisted alert surface."""
+        if self._closing:
+            return
+        if self._budget_dialog is not None:
+            if selected_path:
+                self._budget_dialog.select_path(selected_path)
+            else:
+                self._budget_dialog.set_filter(status_filter)
+            return
+        dialog = FolderBudgetDialog(self.budgets, self, selected_path=selected_path, unit=self.current._unit,
+                                    status_filter=status_filter)
+        self._budget_dialog = dialog
+        dialog.finished.connect(lambda _result: self._budget_finished(dialog))
+        dialog.open()
+
+    def _budget_finished(self, dialog: FolderBudgetDialog) -> None:
+        self._budget_dialog = None
+        dialog.deleteLater()
+
+    def _budget_status(self) -> None:
+        self.budget_label.setText(tr("budget_save_error", reason=display_error(self.budgets.error))
+                                 if self.budgets.error else "")
+        over = sum(row.status == "over" for row in self.budgets.rows)
+        unknown = sum(row.status in ("unknown", "waiting") for row in self.budgets.rows)
+        for button, status, count in ((self.budget_over, "over", over), (self.budget_unknown, "unknown", unknown)):
+            button.setText(tr("budget_count_" + status, count=count))
+            button.setToolTip(tr("budget_filter_" + status))
+            button.setAccessibleName(button.text())
+
+    def _templates_finished(self, dialog: WorkspaceTemplatesDialog, result: int) -> None:
+        state, report = dialog.chosen, dialog.report
+        self._templates_dialog = None
+        dialog.deleteLater()
+        if result == QDialog.DialogCode.Accepted and state is not None and report is not None:
+            self.replace_template(state, report)
+
+    def replace_template(self, state: WorkspaceState, report: tuple[tuple[str, ...], ...]) -> bool:
+        """Retire owned tabs asynchronously before installing checked, idle next-scan inputs."""
+        if self._closing or self._replacement is not None or self.operations.busy:
+            return False
+        WorkspaceTemplate("replacement", state)
+        if len(report) != len(state.tabs):
+            raise ValueError("Incomplete workspace validation")
+        for scope, issues in zip(state.tabs, report, strict=True):
+            count = len(scope) if isinstance(scope, tuple) else int(scope is not None)
+            if len(issues) != count or not all(isinstance(issue, str) for issue in issues):
+                raise ValueError("Incomplete root validation")
+        self._replacement, self._replacement_report = state, report
+        self.tabs.setEnabled(False)
+        self.new_action.setEnabled(False)
+        self.close_action.setEnabled(False)
+        self.templates_action.setEnabled(False)
+        self.background.quiesce(wait=False)
+        for window in tuple(self.operations.windows):
+            window.close()
+        return True
+
+    def _install_template(self) -> None:
+        after_threads(tuple(self.background.findChildren(QThread)), self._finish_install_template, self)
+
+    def _finish_install_template(self) -> None:
+        state, report = self._replacement, self._replacement_report
+        if state is None or self._closing:
+            return
+        for scope, issues in zip(state.tabs, report, strict=True):
+            window = MainWindow(self.settings, operations=self.operations)
+            self._insert(window)
+            roots = scope if isinstance(scope, tuple) else (scope,) if scope else ()
+            errors = tuple(f"{root}: {reason}" for root, reason in zip(roots, issues, strict=True) if reason)
+            window.prepare_scan_scope(scope, errors)
+            self._label(window)
+        if state.options is not None:
+            self.restore_scan_preferences(state.options)
+        self.tabs.setCurrentIndex(state.active)
+        self._replacement = None
+        self._replacement_report = ()
+        self.tabs.setEnabled(True)
+        self.new_action.setEnabled(True)
+        self.close_action.setEnabled(True)
+        self.templates_action.setEnabled(True)
+        self.current._update_actions()
         if self._services:
             self.current._updates.start()
 
@@ -152,6 +327,8 @@ class ScanWorkspace(QMainWindow):
     def retranslate(self) -> None:
         """Language is application-wide; translate every result tab and the workspace controls."""
         apply_language_font(current_language())
+        self.templates_action.setText(tr("workspace_templates"))
+        self.budget_action.setText(tr("budget_title"))
         self.new_action.setText(tr("workspace_new"))
         self.new_button.setText(tr("workspace_new"))
         self.new_button.setToolTip(tr("workspace_new_tip"))
@@ -159,8 +336,12 @@ class ScanWorkspace(QMainWindow):
         for window in self.operations.windows:
             window.retranslate()
             self._label(window)
-        self.setWindowTitle(self.current.windowTitle())
+        if self.tabs.count():
+            self.setWindowTitle(self.current.windowTitle())
         self.background.retranslate()
+        if self._budget_dialog is not None:
+            self._budget_dialog.retranslate()
+        self._budget_status()
 
     def quit_application(self) -> None:
         """Explicit Quit always exits, independently of the opt-in close-to-tray preference."""
@@ -180,6 +361,11 @@ class ScanWorkspace(QMainWindow):
             event.ignore()
             return
         self._closing = True
+        self._replacement = None
+        if self._templates_dialog is not None:
+            self._templates_dialog.reject()
+        if self._budget_dialog is not None:
+            self._budget_dialog.reject()
         self.setEnabled(False)
         self.statusBar().showMessage(tr("closing_workers"))
         self.background.shutdown(wait=False)

@@ -125,11 +125,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         if interrupted or cancel.is_set():
             return INTERRUPTED
         return OK if coverage.complete else INCOMPLETE
-    except (OSError, ValueError) as error:
-        _emit(sys.stderr, {"kind": "error", "reason": str(error)})
-        return IO_ERROR
     except (KeyboardInterrupt, ScanCancelledError):
         return INTERRUPTED
+    except Exception as error:  # noqa: BLE001 - CLI boundary preserves the JSON error protocol
+        _emit(sys.stderr, {"kind": "error", "reason": str(error) or type(error).__name__})
+        return IO_ERROR
     finally:
         signal.signal(signal.SIGINT, previous)
 

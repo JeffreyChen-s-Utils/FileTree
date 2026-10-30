@@ -1,6 +1,28 @@
 # FileTree — Detailed usage and technical notes
 
+Clean-up review shows four columns: selection, path, logical size and risk, including protected-path reasons. The scan scope is copyable. Select a row to read its full path, rule, modification time, logical size, allocation estimate, protection, evidence and consequences in the scrollable details. Arrow keys navigate the table; Space toggles the checkbox column. Tab leaves the table and details, and Ctrl+A / Ctrl+C copies the complete details. Lower-risk proposals and explicit manual selections keep their existing initial checks; rules requiring manual review start unchecked. Uncheck entries to keep them. Continue returns only checked outermost entries to the existing protection and Trash confirmations; Cancel approves nothing. The summary distinguishes logical size from recoverable data, retains a zero lower bound and unknown estimates, and explains that moving to Trash does not immediately free space.
+
+Expand Details to view growth trends or set a budget for the displayed, copyable target folder. A selected file uses its containing folder. Existing budgets open at the saved rule with the exact limit. Unsaved input blocks switching to another target. Unscanned, busy, closing, linked and combined-root selections explain why folder actions are unavailable; the workspace budget manager remains available. Each action rechecks the current scan and selection. Closing the dialog keeps the scan tab, selected entry and tree scroll position.
+
+The workspace over-limit and unknown counts are keyboard buttons. They open the same manager with a temporary status filter; unknown includes rules waiting for a scan. All budgets restores every rule. A filter with no matches has a different message from an empty rule store. Filtering, language changes, unit changes and incoming observations keep the editing identity and draft. If the edited rule is hidden, its name and status remain explained above the form. Filters do not persist or start scans.
+
+The budget table follows the active scan tab's size unit and keeps exact bytes in tooltips and accessible descriptions. Observation time has its own column. Limits remain exact when you select, edit and save a rule, including fractional binary units. Never-scanned rules differ from rules waiting for a full scan after a limit change. The latter retain their dated previous usage, but excess stays unknown until a new full scan. Refreshes, language changes and display-unit changes keep unsubmitted input. An existing editor refuses to replace unsaved input when another folder is requested. Choose folder only fills the path; New starts another draft, and Close or Escape discards unsubmitted input. Field errors focus the relevant input. The form scrolls in small windows while its action buttons remain available.
+
+Folder budgets are available beside New tab and in File for the selected real directory. Add a name, absolute folder path and exact limit in B, KiB, MiB, GiB or TiB; Update and Delete change only the saved rule. A path change starts a new rule. After a complete top-level or successful scheduled scan, the table records dated logical bytes, exact excess and over-limit status. Missing, linked and incompletely scanned folders remain unknown; unrelated scans leave prior observations untouched. Changing a limit waits for another full scan. An over-limit episode is recorded once and rearmed only by a known value at or below the limit, including after restarting FileTree. The persistent workspace status shows over-limit and unknown counts. Budgets do not start scans, remove files or schedule background work. Up to 256 distinct native absolute paths are stored under a settings lock.
+
+Workspace templates are available beside New tab and in File. Add and Update save the workspace captured when the manager opened in visual tab order, including edited pending inputs, the active tab (labelled Active in the preview), blank tabs, single roots and combined roots, plus six per-tab scan flags and shared concurrency/exclusions. Select a saved name to preview every root and its options. Edit paths and press Check paths; checks run in the background. Replace tabs explicitly closes existing scans and results, waits for their workers, then installs idle tabs. Cancel leaves existing tabs unchanged. No scan starts until Start; typing in the path field switches a combined input to a single folder. Unavailable roots remain visible and disable Start for that tab. Open the manager again to repair and recheck every root, then replace tabs. Add and Update always save that opening snapshot, even after preview edits or ongoing scans. Preview edits apply only to this load and invalidate the path check. The summary beside Replace tabs updates live with existing tabs, active scans and results to close, plus the checked preview’s unavailable paths. The scrollable details retain complete, copyable paths and label the active tab. Use Tab to reach the name, save actions, preview, Check paths, Replace tabs and Cancel; arrow keys navigate preview cells. Imported preferences do not rewrite saved defaults. Templates contain no results or operation approvals. Storage is bounded to 32 unique names of 80 characters, 16 tabs, 256 roots per combined tab and 1 MiB. Paths must be fully qualified for this operating system; ambiguous paths and malformed settings are reported without overwriting stored data.
+
+Preset editors are read-only settings dialogs: they do not pause ongoing scans or background readers, and application shutdown closes them before disposal. Free-space comparisons require known nonzero recorded device and inode identifiers; unavailable identities remain unknown.
+
+After a Trash batch, a compact result header keeps moved logical bytes and moved/skipped/failed counts in the tab until the next batch or dismissal. Open its scrollable details for refusal reasons, operation records, existing time-limited Undo and an explicit rescan of the original folder. Details close before opening another action. Later scans of the same recorded root may show the observed free-space change since the earlier scan, with observation times in the tooltip; it includes other activity and is not attributed to cleanup. Missing comparable observations stay unknown. Emptying the bin remains a separate reviewed operation.
+
+Named scan presets retain one absolute path and the existing six scan flags, worker count and exclusions. Add or Update captures the current options; Rename keeps the saved options. Loading fills the path and choices without starting a scan or replacing results; press Scan path explicitly. Workers and exclusions keep their workspace scope. Presets never contain operation approvals, administrator consent or experimental MFT. Invalid stored data is reported and retained.
+
+Highlights below the result cards use worker-captured statistics only. They distinguish pending, completed-empty and partial analyses, preserve collapse/selection state across language and unit changes, and do not query storage on the GUI thread.
+
 [Project introduction and quick start](../README.md)
+
+Unexpected worker or analysis failures report an error after owned scan threads finish; they never publish a successful result. CLI failures retain the existing error JSON and exit code 3. Explicit experimental MFT requests that fall back to ordinary scanning add a scan note; the backend stays disabled by default. Windows virtual-disk compaction accepts only absolute fixed-local-drive paths, retaining an extended drive prefix throughout pinning and opening, and refuses UNC/device/relative paths. Show in file manager uses the system Windows Explorer and quotes drive roots correctly.
 
 Administrator restart also captures each tab’s current hidden-file, gentle-scan, file-time, Windows-owner, exact-allocation and hard-link-count choices. Exclusions and concurrency remain workspace-wide and are encoded once. Imported choices are applied before scans without emitting setting-write signals; shared imported defaults remain in memory, including for new tabs. An explicit exclusion/concurrency edit updates the running workspace and saves that choice. Restored flags alone do not replace saved preferences when closing. Running workers retain their original immutable options if preferences change later. Legacy scope-only handoffs still use saved preferences; experimental scanner backends and operation approvals are refused.
 
@@ -168,6 +190,8 @@ Read-only virtual-disk discovery merges Windows `\\?\UNC\server\share` registrat
 **Options → Check for updates daily** is on by default. Thirty seconds after a normal GUI launch, an owned background check asks only `https://pypi.org/pypi/je_file_tree/json` over verified HTTPS for release metadata; this is FileTree’s first automatic network call. No scanned paths or file contents are sent. A newer stable release adds a nonmodal PyPI link in the status bar; updates are never downloaded or installed automatically. Turn the option off to stop scheduling and discard pending replies. A persisted, cross-process claim limits attempts, including failures, to once per elapsed 24 hours. CLI, Python scanning and window construction do not start checks. Replies are capped at 2 MiB, redirects are refused, network reads have timeouts, and closing joins the current request. Offline failures retain diagnostic state without interrupting scans.
 
 The application opens independent **scan tabs**. Use **New scan tab** or `Ctrl+T` for another drive/folder, and `Ctrl+W` to close the active tab (closing the last tab exits). Up to 16 tabs can scan concurrently; each owns its tree, result views, filters, workers and history capture. Closing one joins its own workers; Quit joins every tab. Language changes apply to all tabs. Source-operation reviews, Trash, Undo, copying, renaming, hard-link replacement, compression and disk compaction share one busy guard across tabs; snapshots and approvals are still rechecked separately for each source. Combined roots remain one read-only tab. Scan concurrency and gentle priority apply per tab, so reduce workers or enable gentle scanning when running several scans. The `create_window` Python integration still creates one window; the GUI entry point uses `create_workspace`.
+
+In Folder budgets, arrow keys select a rule and Tab leaves the table for the editor. Opening or expanding search reveals the focused name field even after scrolling. Date calendars keep every week visible; Escape cancels the date draft. Closing search cancels pending text input before it can start another search.
 
 ## Features
 
@@ -401,6 +425,32 @@ manual risk cannot be downgraded, and no custom executable rules are supported.
 
 ### Seeing what grew
 
+In the loaded-folder picker, Enter opens a folder; Use this folder confirms the current folder.
+
+Use **Choose loaded folder…** to browse the current scan one level at a time, or **Return to root**.
+The full folder path is copyable. The chooser pages through recorded direct folders without reading
+source directories; Cancel keeps the existing query. Choose the last 30 or 90 days, all retained
+history, or custom dates with optional endpoints and a calendar. Recent periods include today and
+the preceding 29 or 89 local dates. Both endpoint midnights are converted separately across daylight
+saving changes. Invalid input stays visible and receives focus when Apply is pressed.
+
+Selecting a chart point selects the corresponding table row and shows its date, size, signed change
+and exact bytes. Arrow keys visit every observation, including identical timestamps. Unknown sizes
+occupy a separate marker band and break the line. Size and change have separate unknown reasons.
+Changes use the window's size unit with exact-byte tooltips and accessible text. Empty history,
+one observation, capped periods and incompatible records have separate explanations. Tab leaves each
+table; arrow keys move within it. The full-root comparison tab retains its independent selection.
+
+For a completed single-root scan, select a folder and open **File → Scan history…**. The root-relative
+folder field starts at that selection; change it or leave it blank for the root. Enter optional local
+start and end dates (`YYYY-MM-DD`, both inclusive), then press **Apply trend**. The table and chart show
+each retained logical size and its change from the immediately preceding scan. The period net change
+uses the actual first and last observations. The direct-child table includes direct files, and shows
+up to 1,000 contributors with its total count. A capped period has no full-period net claim. Older
+records without scan rules, incomplete scans, missing folders, damaged records and incompatible scan
+rules or root identities appear as unknown; chart lines break at those observations. Select a retained
+scan in the comparison table to use the existing Changes view.
+
 **File → Scan history…** shows this root's retained size-over-time line chart and up to 1,000 scans.
 Select an earlier scan to open the existing Changes tab without choosing a file; Ctrl+C copies rows.
 History is enabled by default with a **1 GiB total cap across all roots**. **Options → Scan history
@@ -529,6 +579,17 @@ and after opening a directory; JSON includes source preservation and confirmed u
 The [reviewed native evidence](updates/mounts-20261009-freebsd.json) confirms all these cases and source/underlying preservation with completed cleanup. FreeBSD gives nullfs a different device ID; this case does not establish
 same-device behavior. The diagnostic refuses desktop hosts and accepts no existing mount selector.
 Phase JSON uses explicit UTF-8 atomic writes; even an initial evidence-write error enters owned cleanup.
+
+## Custom search ranges
+
+Search shows each active name, size bound, date, type and entry kind above the results, with a separate Clear action and Clear all conditions. Clearing keeps saved searches and the selected folder. Search always covers the entire scan, including every source in a combined scan; the selected-folder switch applies only to Largest files, File types and Age. Custom dates may be empty or typed, or chosen from a calendar. Calendar Cancel and range Cancel keep the original query; accepted start and end dates include the entire local day. Invalid fields retain their input and receive focus. Long conditions and filter controls scroll while results remain visible. Choose Edit conditions to expand the search inputs; the applied conditions remain above the results.
+
+In **Search**, choose **Custom ranges…** to set either or both size bounds and calendar dates. Sizes include both endpoints. Choose B, KiB, MiB, GiB or TiB; decimals such as 1.5 KiB are accepted only when they equal a whole number of bytes. The largest supported bound is 9223372036854775807 B. Leave a field blank for no limit.
+
+Dates use `YYYY-MM-DD` and local time. Both dates are included, through the midnight starting the following day (exclusive). Each midnight is converted separately, so daylight-saving days need not be 24 hours. Unknown modification times do not match date filters. Week/month/year presets remain relative to each search; custom dates replace those relative conditions. Choosing custom dates without an endpoint shows an error until a date is entered through **Custom ranges…**.
+
+**OK** applies all valid bounds together. Applying with both dates blank also clears a previous relative date preset. **Cancel** leaves the search unchanged. Invalid or reversed bounds keep the dialog open. Exact sizes and dates survive saved searches, restart and language changes. A malformed saved range clears old results, stops the previous search and prevents saving until corrected. A new valid search also clears old rows while it runs.
+
 
 ## Command line without a window
 

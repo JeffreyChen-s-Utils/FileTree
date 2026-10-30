@@ -118,6 +118,7 @@ class Summary:
     ages: list[AgeStat]
     now: float
     counted_categories: list[CategoryStat] | None = None
+    top_folders: tuple[Node, ...] = ()
 
 
 class AnalysisCancelledError(RuntimeError):
@@ -139,7 +140,10 @@ def summarise(root: Node, limit: int = 1000, *, now: float | None = None,
     files, sizes, counts = _files_and_extensions(root, accounted=accounted, cancel=cancel)
     largest = heapq.nlargest(limit, _checked_files(files, cancel), key=_file_size) if limit > 0 else []
     counted = category_stats(_extension_list(accounted, counts)) if accounted is not None else None
-    return Summary(largest, _extension_list(sizes, counts), age_stats(_checked_files(files, cancel), now), now, counted)
+    folders = (node for node in _checked_files(root.children, cancel) if node.is_dir and not node.is_link)
+    top_folders = tuple(heapq.nlargest(3, folders, key=_file_size))
+    return Summary(largest, _extension_list(sizes, counts), age_stats(_checked_files(files, cancel), now), now,
+                   counted, top_folders)
 
 
 def _check_cancel(cancel: threading.Event | None) -> None:

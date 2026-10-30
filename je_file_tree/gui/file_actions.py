@@ -14,6 +14,8 @@ file manager, the folder is opened instead.
 from __future__ import annotations
 
 import os
+import ctypes
+import ntpath
 import re
 import subprocess  # nosec B404 - fixed file-manager commands around a local path
 import sys
@@ -35,7 +37,22 @@ def explorer_command(path: str) -> str:
     """The ``explorer`` command line that opens a window with ``path`` selected."""
     if re.fullmatch(r'[^\x00-\x1f"]+', path) is None:
         raise ValueError("Invalid Windows file-manager path")
-    return f'explorer /select,"{os.path.normpath(path)}"'
+    target = ntpath.normpath(path)
+    # A trailing backslash must be doubled before the closing command-line quote.
+    trailing = len(target) - len(target.rstrip("\\"))
+    return f'"{_explorer_path()}" /select,"{target}{chr(92) * trailing}"'
+
+
+def _explorer_path() -> str:
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.GetWindowsDirectoryW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint]
+    kernel.GetWindowsDirectoryW.restype = ctypes.c_uint
+    capacity = 32768
+    buffer = ctypes.create_unicode_buffer(capacity)
+    length = kernel.GetWindowsDirectoryW(buffer, capacity)
+    if not 0 < length < capacity:
+        raise OSError("Windows directory unavailable")
+    return ntpath.join(buffer.value, "explorer.exe")
 
 
 def open_path(path: str) -> bool:

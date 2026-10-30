@@ -175,6 +175,8 @@ class BackgroundMonitor(QObject):
 
     def tick(self) -> None:
         """Capacity reads stay off the GUI thread; scheduled source scans wait for every tab to be idle."""
+        if self.workspace._replacement is not None or not self.workspace.tabs.count():
+            return
         if not self.can_hide:
             if (not self.closing and self.active and self.config.enabled and self.tray.isVisible()
                     and not QSystemTrayIcon.isSystemTrayAvailable()):
@@ -210,8 +212,14 @@ class BackgroundMonitor(QObject):
         except (OSError, ValueError) as error:
             self._failed(str(error))
             return
+        ticket = None
+        try:
+            ticket = self.workspace.budgets.ticket()
+        except (OSError, ValueError):
+            self.workspace._budget_status()
         worker = ScheduledWorker(attempt.root, self.workspace.current._scan_options(), history, self,
-                                 proposal_context=(attempt, config.interval_hours), policy=policy)
+                                 proposal_context=(attempt, config.interval_hours), policy=policy,
+                                 budget_ticket=ticket)
         worker.finished.connect(lambda: after_threads((worker,), lambda: self._scan_finished(worker, attempt), self))
         self.attempt, self.scan = attempt, worker
         self._set_status("background_scanning", attempt.root)
@@ -249,7 +257,7 @@ class BackgroundMonitor(QObject):
 
     def show_proposals(self) -> None:
         """Show current-session bounded observations while serializing all source-operation owners."""
-        if (self.closing or self.workspace.operations.busy
+        if (self.closing or self.workspace._replacement is not None or self.workspace.operations.busy
                 or any(window._worker is not None or window._analysers
                        for window in self.workspace.operations.windows)):
             return
@@ -339,6 +347,11 @@ class BackgroundMonitor(QObject):
         if worker is not self.scan:
             return
         self.scan, self.attempt = None, None
+        if worker.state == "complete" and worker.budget_batch is not None:
+            try:
+                self.workspace.budgets.publish(worker.budget_batch)
+            except (OSError, ValueError):
+                self.workspace._budget_status()
         try:
             self._finish_attempt(replace(attempt, state=worker.state))
         except (OSError, ValueError) as error:

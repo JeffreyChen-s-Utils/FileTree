@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from je_file_tree.gui.reasons import problem_text
+from je_file_tree.gui.scan_presets import ScanPreset, ScanPresetsDialog
+from je_file_tree.core.operations import MoveSummary
+
 import json
 import os
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 
 from PySide6.QtCore import QByteArray, QEvent, QPoint, QSettings, QSignalBlocker, QSize, QThread, Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QKeySequence
@@ -85,6 +90,7 @@ from je_file_tree.gui.welcome import WelcomePage
 from je_file_tree.gui.worker_lifecycle import WorkerDialog, after_threads, queue_worker
 from je_file_tree.gui.multi_scan import MultiScanDialog
 from je_file_tree.gui.folder_validation import FolderDrops
+from je_file_tree.gui.folder_budget_store import display_error
 from je_file_tree.gui.themes import ThemeMenu
 from je_file_tree.gui.updates import UpdateNotice
 from je_file_tree.gui.operation_group import OperationGroup
@@ -125,10 +131,21 @@ def read_workers(settings: QSettings) -> int:
     return value if 1 <= value <= _MAX_SCAN_WORKERS else DEFAULT_WORKERS
 
 
+@dataclass(frozen=True, slots=True)
+class FolderContext:
+    """A current loaded folder or the translation key explaining why none is available."""
+
+    node: Node | None
+    reason: str = ""
+
+
 class MainWindow(QMainWindow):
     """The FileTree window."""
 
     shutdown_finished = Signal()
+    scan_scope_changed = Signal()
+    scan_activity_changed = Signal()
+    size_unit_changed = Signal(str)
 
     def __init__(self, settings: QSettings | None = None, *, operations: OperationGroup | None = None) -> None:
         super().__init__()
@@ -184,6 +201,11 @@ class MainWindow(QMainWindow):
         self._restore_cleanup_policy()
 
     def _init_scan_state(self) -> None:
+        self._budget_store = None
+        self._budget_show = None
+        self._prepared_scope: str | tuple[str, ...] | None = None
+        self._has_prepared_scope = False
+        self._prepared_errors: tuple[str, ...] = ()
         self._restart_arguments: Callable[[], list[str]] | None = None
         self._scan_defaults: ScanDefaults | None = None
         self._worker: ScanWorker | None = None
@@ -259,6 +281,55 @@ class MainWindow(QMainWindow):
             return
         self._begin_scan(tuple(paths), exact_allocation=exact_allocation)
 
+    def capture_scan_scope(self) -> str | tuple[str, ...] | None:
+        """Return next-scan input independently of roots belonging to existing results."""
+        return self._prepared_scope
+
+    def capture_restart_scope(self) -> str | tuple[str, ...] | None:
+        """Prefer explicit next input, including blank; retain result scopes for untouched integrations."""
+        if self._has_prepared_scope:
+            return self.capture_scan_scope()
+        return self._last_roots or self._last_path or None
+
+    def prepare_scan_scope(self, scope: str | tuple[str, ...] | None,
+                           errors: tuple[str, ...] = ()) -> None:
+        """Stage exact inputs without scanning or changing existing results."""
+        if self._prepared_errors:
+            self.statusBar().clearMessage()
+        self._prepared_scope, self._prepared_errors = scope, errors
+        self._has_prepared_scope = True
+        self._render_scan_scope()
+        self.scan_scope_changed.emit()
+        if errors:
+            self.statusBar().showMessage("\n".join(errors))
+
+    def _render_scan_scope(self) -> None:
+        scope = self.capture_scan_scope()
+        self.path_edit.blockSignals(True)
+        self.path_edit.setText(tr("multi_roots") if isinstance(scope, tuple) else scope or "")
+        self.path_edit.blockSignals(False)
+        roots = scope if isinstance(scope, tuple) else (scope,) if scope else ()
+        self.path_edit.setToolTip("\n".join((*roots, *self._prepared_errors)))
+        self._update_path_button()
+
+    def _path_input_changed(self) -> None:
+        if self._prepared_errors:
+            self.statusBar().clearMessage()
+        self._has_prepared_scope = True
+        self._prepared_scope = self.path_edit.text().strip() or None
+        self._prepared_errors = ()
+        self._update_path_button()
+
+    def start_prepared_scan(self) -> None:
+        """Start the exact staged single or combined scope only on explicit request."""
+        scope = self.capture_scan_scope()
+        if self._prepared_errors or scope is None:
+            return
+        if isinstance(scope, tuple):
+            self.start_scan_roots(scope)
+        else:
+            self.start_scan(scope)
+
     def scan_all_drives(self) -> None:
         """Capture the currently ready mounted roots once; discovery does not grant mutation authority."""
         self.start_scan_roots(tuple(volume.root for volume in self.welcome.drive_rows))
@@ -297,10 +368,15 @@ class MainWindow(QMainWindow):
         self._analyser = None
         self._last_roots = path if isinstance(path, tuple) else ()
         self._last_path = path if isinstance(path, str) else ""
-        self.path_edit.setText(self._last_path)
-        self.path_edit.setToolTip("\n".join(self._last_roots) if self._last_roots else self._last_path)
+        self.prepare_scan_scope(path)
+        ticket = None
+        if self._budget_store is not None:
+            try:
+                ticket = self._budget_store.ticket()
+            except (OSError, ValueError) as error:
+                self.statusBar().showMessage(tr("budget_save_error", reason=display_error(str(error))))
         worker = ScanWorker(path, self._scan_options(exact_allocation=exact_allocation), self,
-                            history=configured_history(self.settings))
+                            history=configured_history(self.settings), budget_ticket=ticket)
         # Signals of a worker that was replaced (a new scan started while it was
         # stopping) arrive late and must not touch the window any more.
         worker.started.connect(lambda root: self._is_current(worker) and self.results.show_live_root(root))
@@ -316,6 +392,7 @@ class MainWindow(QMainWindow):
         self._worker = worker
         self._pending_scan = worker
         self.results.begin_scan()
+        self.scan_activity_changed.emit()
         self.pages.setCurrentIndex(RESULTS_PAGE)
         self._update_actions()
         self._live_timer.start()
@@ -333,6 +410,7 @@ class MainWindow(QMainWindow):
     def _release_scan(self, worker: ScanWorker) -> None:
         if self._closing and self._worker is worker:
             self._worker = None
+            self.scan_activity_changed.emit()
         self._scan_workers.discard(worker)
         worker.deleteLater()
 
@@ -349,6 +427,7 @@ class MainWindow(QMainWindow):
         self.results.scan_bar.stopping()
         if worker is self._pending_scan:
             self._pending_scan = self._worker = None
+            self.scan_activity_changed.emit()
             worker.deleteLater()
             self._live_timer.stop()
             self._back_from_scan()
@@ -356,6 +435,7 @@ class MainWindow(QMainWindow):
         if wait:
             wait_for(worker)
             self._worker = None
+            self.scan_activity_changed.emit()
             self._live_timer.stop()
 
     def _is_current(self, worker: ScanWorker) -> bool:
@@ -375,7 +455,13 @@ class MainWindow(QMainWindow):
 
     def _scan_succeeded(self, outcome: ScanOutcome) -> None:
         self._scan_ended()
+        if self._budget_store is not None and outcome.budget_batch is not None:
+            try:
+                self._budget_store.publish(outcome.budget_batch)
+            except (OSError, ValueError) as error:
+                self.statusBar().showMessage(tr("budget_save_error", reason=display_error(str(error))))
         self.results.show_outcome(outcome)
+        self.scan_activity_changed.emit()
         self.pages.setCurrentIndex(RESULTS_PAGE)
         root = outcome.result.root
         for source in root.children if root.path is None else (root,):
@@ -384,7 +470,8 @@ class MainWindow(QMainWindow):
         self._update_actions()
 
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
         self._follow.adopt(root)
 
     def _scan_failed(self, reason: str) -> None:
@@ -400,13 +487,16 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("scan_cancelled"), _STATUS_TIMEOUT_MS)
             return
         self.results.show_outcome(outcome)
+        self.scan_activity_changed.emit()
         self._update_actions()
         self.statusBar().showMessage(tr("scan_stopped_partial"), _STATUS_TIMEOUT_MS)
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
 
     def _scan_ended(self) -> None:
         self._worker = None
+        self.scan_activity_changed.emit()
         self._live_timer.stop()
         if self._trash_rescans:
             QTimer.singleShot(0, self._rescan_after_trash)
@@ -607,6 +697,7 @@ class MainWindow(QMainWindow):
         worker.analysing.connect(lambda: self._is_current(worker) and self.results.scan_bar.analysing())
         worker.finished.connect(lambda: after_threads((worker,), lambda: self._release_scan(worker), self))
         self._worker = worker
+        self.scan_activity_changed.emit()
         self._scan_workers.add(worker)
         self.results.scan_bar.start()
         self._update_actions()
@@ -617,6 +708,7 @@ class MainWindow(QMainWindow):
         if worker is self._worker:
             if self._closing:
                 self._worker = None
+                self.scan_activity_changed.emit()
             else:
                 self._branch_cancelled()
         self._release_scan(worker)
@@ -642,7 +734,8 @@ class MainWindow(QMainWindow):
         analyser.start()
         self._follow.adopt(root)
         if outcome.result.warnings:
-            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(outcome.result.warnings)))
+            self.statusBar().showMessage(tr("scan_priority_warning", reason="; ".join(
+                problem_text(reason) for reason in outcome.result.warnings)))
 
     def _without_managed(self, nodes: list[Node]) -> list[Node]:
         # 10k managed refusals: the old full warning label took 5.14 s to display.
@@ -791,7 +884,14 @@ class MainWindow(QMainWindow):
         self.results.setEnabled(True)
         self._update_actions()
         moved, failed = result.moved, result.failed
-        moved_size = format_size(sum(node.size for node in moved), self._unit)
+        summary = result.summary or MoveSummary(len(moved), len(result.skipped), len(failed),
+                                               sum(node.size for node in moved),
+                                               journal_errors=len(result.journal_errors),
+                                               copy_errors=len(result.copy_errors))
+        moved_size = format_size(summary.moved_bytes, self._unit)
+        outcome = self.results.outcome
+        self.results.completion.show_summary(summary, outcome.result.root if outcome is not None else None,
+                                             outcome.capacity if outcome is not None else None)
         if moved:
             self._analyser = None
             outcome = self.results.outcome
@@ -812,6 +912,7 @@ class MainWindow(QMainWindow):
         unavailable = self._undo.offer(worker)
         self.statusBar().showMessage(done + ("\n" + unavailable if unavailable else ""), _STATUS_TIMEOUT_MS)
         self._trash_rescans = outermost(result.parents)
+        self._update_actions()
         QTimer.singleShot(0, self._rescan_after_trash)
 
     def _show_failed(self, result: MoveResult) -> None:
@@ -905,6 +1006,7 @@ class MainWindow(QMainWindow):
             self.move_to_trash(self.results.focused_selection())
 
     def _selection_changed(self, node: Node | None) -> None:
+        self._update_folder_context()
         picked = self.results.selected_nodes()
         if len(picked) > 1:
             size = format_size(sum(entry.size for entry in outermost(picked)), self._unit)
@@ -1074,6 +1176,7 @@ class MainWindow(QMainWindow):
         self.results.set_unit(unit)
         self.welcome.set_unit(unit)
         self._unit_actions[unit].setChecked(True)
+        self.size_unit_changed.emit(unit)
 
     def change_language(self, code: str) -> None:
         """Switch every text to another language and remember it."""
@@ -1100,7 +1203,7 @@ class MainWindow(QMainWindow):
         for unit, action in self._unit_actions.items():
             action.setText(tr("unit_auto") if unit == AUTO_UNIT else unit)
         self.path_edit.setPlaceholderText(tr("path_placeholder"))
-        self.path_edit.setToolTip(tr("path_placeholder"))
+        self._render_scan_scope()
         self.path_edit.setAccessibleName(tr("overview_path"))
         self._scan_path.setText(tr("overview_scan_path"))
         self._scan_path.setToolTip(tr("overview_scan_path_tip"))
@@ -1179,6 +1282,7 @@ class MainWindow(QMainWindow):
         """Invalidate all replies; optional joins are used only after the closing fence has completed."""
         self._trash_rescans.clear()
         self._closing = True
+        self._update_folder_context()
         self._live_timer.stop()
         self._folder_drops.shutdown(wait=wait)
         self.welcome.shutdown(wait=wait)
@@ -1272,6 +1376,7 @@ class MainWindow(QMainWindow):
             ("history", None, self.show_history),
             ("recurring", None, self.show_recurring),
             ("history_settings", None, self.configure_history),
+            ("scan_presets", None, self.configure_scan_presets),
             ("projects", None, self.show_projects),
             ("programs", None, self.show_programs),
             ("virtual_disks", None, self.show_virtual_disks),
@@ -1282,6 +1387,7 @@ class MainWindow(QMainWindow):
             ("count_hard_links", None, lambda: None),
             ("follow_changes", None, lambda: None),
             ("background_monitor", None, self.configure_background),
+            ("folder_budgets", None, self.show_folder_budgets),
             ("volumes", None, self.show_volumes),
             ("bins", None, self.show_bins),
             ("quit", "Ctrl+Q", self.quit_application),  # Windows has no standard Quit key
@@ -1312,6 +1418,7 @@ class MainWindow(QMainWindow):
         self._actions["follow_changes"].setEnabled(follow_supported())
         self._actions["follow_changes"].toggled.connect(self._follow.configure)
         self._actions["background_monitor"].setEnabled(False)
+        self._actions["folder_budgets"].setEnabled(False)
         self._actions["recurring"].setEnabled(False)
         self._actions["hidden"].setCheckable(True)
         self._actions["ask_admin"].setCheckable(True)
@@ -1350,7 +1457,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._actions["print_view"])
         file_menu.addAction(self._actions["compare"])
         for key in ("recent_actions", "special_files", "live_compare", "git_history", "projects", "history",
-                    "programs", "virtual_disks", "file_times", "recurring"):
+                    "programs", "virtual_disks", "file_times", "recurring", "folder_budgets"):
             file_menu.addAction(self._actions[key])
         file_menu.addSeparator()
         file_menu.addAction(self._actions["trash"])
@@ -1382,10 +1489,8 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._actions["exclusions"])
         view_menu.addAction(self._actions["ask_admin"])
         options_menu = bar.addMenu("")
-        options_menu.addAction(self._actions["cleanup_policy"])
-        options_menu.addAction(self._actions["gentle"])
-        options_menu.addAction(self._actions["scan_workers"])
-        options_menu.addAction(self._actions["history_settings"])
+        for key in ("cleanup_policy", "gentle", "scan_workers", "scan_presets", "history_settings"):
+            options_menu.addAction(self._actions[key])
         for key in ("check_updates", "follow_changes", "background_monitor"):
             options_menu.addAction(self._actions[key])
         for key in ("capture_file_times", "capture_owners", "exact_allocation", "count_hard_links"):
@@ -1412,9 +1517,9 @@ class MainWindow(QMainWindow):
         self.path_edit.setClearButtonEnabled(True)
         toolbar.addWidget(self.path_edit)
         self._scan_path = QPushButton()
-        self._scan_path.clicked.connect(lambda: self.start_scan(self.path_edit.text()))
+        self._scan_path.clicked.connect(self.start_prepared_scan)
         self.path_edit.returnPressed.connect(self._scan_path.click)
-        self.path_edit.textChanged.connect(self._update_path_button)
+        self.path_edit.textChanged.connect(self._path_input_changed)
         toolbar.addWidget(self._scan_path)
         toolbar.addSeparator()
         toolbar.addAction(self._actions["help"])
@@ -1432,15 +1537,23 @@ class MainWindow(QMainWindow):
             self._paint_action_icons()
 
     def _update_path_button(self) -> None:
-        ready = bool(self.path_edit.text().strip()) and not self.operation_busy and not self._closing
+        ready = (self.capture_scan_scope() is not None and not self._prepared_errors
+                 and not self.operation_busy and not self._closing)
         self._scan_path.setEnabled(ready)
 
     def _connect(self) -> None:
+        self.results.details.history_requested.connect(self.show_history)
+        self.results.details.budget_requested.connect(self._show_context_budget)
+        self.results.completion.records_requested.connect(self.show_recent_actions)
+        self.results.completion.undo_requested.connect(self._undo.undo)
+        self.results.completion.rescan_requested.connect(self.start_scan)
+        self._undo.timer.timeout.connect(self._update_actions)
         self.welcome.drives_changed.connect(self._update_actions)
         self.results.duplicates.link_requested.connect(self.show_duplicate_links)
         self.results.cleanup.review_requested.connect(self.move_to_trash)
         self.welcome.choose_folder_requested.connect(self.choose_folder)
         self.welcome.scan_requested.connect(self.start_scan)
+        self.welcome.presets_requested.connect(self.configure_scan_presets)
         self.welcome.scan_all_requested.connect(self.scan_all_drives)
         self.welcome.overview_requested.connect(self.show_volumes)
         self.welcome.bins_requested.connect(self.show_bins)
@@ -1466,6 +1579,7 @@ class MainWindow(QMainWindow):
         self.results.elevate_requested.connect(self.restart_as_admin)
 
     def _update_actions(self) -> None:
+        self._update_folder_context()
         self._update_path_button()
         if self.operation_busy:
             self.pending_source_workers()
@@ -1474,6 +1588,8 @@ class MainWindow(QMainWindow):
         self._actions["elevate"].setEnabled(
             not self._closing and not self.operation_busy and not self._settings_dialogs)
         scanning = self._worker is not None or self.operation_busy
+        self._actions["scan_presets"].setEnabled(not scanning and not self._closing and not self._settings_dialogs)
+        self.welcome.presets.setEnabled(self._actions["scan_presets"].isEnabled())
         self._actions["recurring"].setEnabled(self._recurring_show is not None and not scanning)
         has_results = self.results.outcome is not None
         self._actions["stop"].setEnabled(scanning)
@@ -1503,10 +1619,11 @@ class MainWindow(QMainWindow):
         self._update_bin_buttons()
 
     def _update_bin_buttons(self) -> None:
-        idle = (not self._closing and not self._bin_labels.busy
-                and self._worker is None and not self.operation_busy)
+        ready = not self._closing and self._worker is None and not self.operation_busy
+        idle = ready and not self._bin_labels.busy
         self.welcome.bin_refresh.setEnabled(idle)
         self.results.cleanup.bin_refresh.setEnabled(idle and self.results.outcome is not None)
+        self.results.completion.set_actions(undo=ready and self._undo.available, rescan=ready)
 
     def refresh_bin_labels(self) -> None:
         """Refresh read-only drive totals off the GUI thread, retaining the current scan's scope."""
@@ -1572,6 +1689,43 @@ class MainWindow(QMainWindow):
         finally:
             dialog.deleteLater()
 
+    def configure_scan_presets(self) -> None:
+        """Manage named choices; loading changes inputs but never starts or replaces a scan."""
+        if self._worker is not None or self.operation_busy or self._closing or self._settings_dialogs:
+            return
+        try:
+            scope = self.capture_scan_scope()
+            dialog = ScanPresetsDialog(self.settings, scope if isinstance(scope, str) else "",
+                                       self._scan_options(), self)
+        except (ValueError, TypeError, RecursionError):
+            QMessageBox.warning(self, tr("action_scan_presets"), tr("presets_read_failed"))
+            return
+        self._settings_dialogs.add(dialog)
+        self._update_actions()
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted and dialog.chosen is not None and not self._closing:
+                self._apply_scan_preset(dialog.chosen)
+        finally:
+            dialog.shutdown()
+            self._settings_dialogs.discard(dialog)
+            self._update_actions()
+            dialog.deleteLater()
+
+    def _apply_scan_preset(self, preset: ScanPreset) -> None:
+        options = preset.options
+        keys = ("include_hidden", "gentle_scan", "capture_file_times", "capture_owners",
+                "exact_allocation", "count_hard_links")
+        for (action, field), key in zip(SCAN_FLAGS, keys, strict=True):
+            with QSignalBlocker(self._actions[action]):
+                self._actions[action].setChecked(getattr(options, field))
+            self.settings.setValue(key, getattr(options, field))
+        self.settings.setValue(SCAN_WORKERS_KEY, options.workers)
+        self.settings.setValue(EXCLUSIONS_KEY, list(options.exclude))
+        if self._scan_defaults is not None:
+            self._scan_defaults.workers, self._scan_defaults.exclude = options.workers, options.exclude
+        self.path_edit.setText(preset.path)
+        self.statusBar().showMessage(tr("presets_loaded", name=preset.name), _STATUS_TIMEOUT_MS)
+
     def show_file_times(self) -> None:
         """Query optional recorded file dates on an owned worker, without opening scanned payloads."""
         if self._worker is not None or self.operation_busy or self.results.outcome is None:
@@ -1587,13 +1741,15 @@ class MainWindow(QMainWindow):
 
     def show_history(self) -> None:
         """Review local history for the full current root and reuse the Changes worker for comparison."""
-        if self._worker is not None or self.operation_busy or self.results.outcome is None:
+        context = self.folder_context()
+        if context.node is None:
             return
         root = self.results.outcome.result.root
-        if root.path is None:
-            return
         store = ScanHistory(history_folder(), max_bytes=history_limit(self.settings) * 1024 * 1024)
-        dialog = HistoryDialog(store, root.path, self._unit, self)
+        folder = context.node
+        relative = os.path.relpath(folder.path, root.path)
+        dialog = HistoryDialog(store, root.path, self._unit, self,
+                               folder="" if relative == "." else relative, loaded_root=root)
         dialog.compare_requested.connect(self.results.compare_saved)
         try:
             dialog.exec()
@@ -1654,7 +1810,7 @@ class MainWindow(QMainWindow):
             return
         try:
             arguments = (self._restart_arguments() if self._restart_arguments is not None
-                         else WorkspaceState((self._last_roots or self._last_path or None,),
+                         else WorkspaceState((self.capture_restart_scope(),),
                                              options=(self._scan_options(),)).arguments())
         except ValueError as error:
             self.statusBar().showMessage(tr("elevate_failed", reason=str(error)), _STATUS_TIMEOUT_MS)
@@ -1840,6 +1996,41 @@ class MainWindow(QMainWindow):
         finally:
             dialog.shutdown()
             dialog.deleteLater()
+
+    def show_folder_budgets(self) -> None:
+        """Open the shared manager even when no contextual folder is available."""
+        if self._budget_show is None:
+            return
+        context = self.folder_context()
+        self._budget_show(context.node.path if context.node is not None else "")
+
+    def folder_context(self) -> FolderContext:
+        """Resolve current selection against its owning scan without walking source descendants."""
+        if self._closing or self._worker is not None or self.operation_busy:
+            return FolderContext(None, "folder_context_closing" if self._closing else "folder_context_busy")
+        outcome = self.results.outcome
+        if outcome is None:
+            return FolderContext(None, "folder_context_empty")
+        root = outcome.result.root
+        if root.path is None:
+            return FolderContext(None, "folder_context_virtual")
+        selected = self.results.selected_node() or root
+        if not selected.is_in(root) or selected.is_link:
+            return FolderContext(None, "folder_context_link" if selected.is_link else "folder_context_stale")
+        folder = selected if selected.is_dir else selected.parent
+        if folder is None or folder.is_link or folder.path is None:
+            return FolderContext(None, "folder_context_stale")
+        return FolderContext(folder)
+
+    def _update_folder_context(self) -> None:
+        context = self.folder_context()
+        self.results.details.set_folder_context(context.node.path if context.node is not None else "",
+                                               context.reason, budget_available=self._budget_show is not None)
+
+    def _show_context_budget(self) -> None:
+        context = self.folder_context()
+        if context.node is not None and self._budget_show is not None:
+            self._budget_show(context.node.path)
 
     def show_about(self) -> None:
         """Show the version."""

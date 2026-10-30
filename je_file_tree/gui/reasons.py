@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from je_file_tree.core.scanner import (
-    ACCESS_DENIED, HIDDEN_OMITTED, NOT_FOUND, NOT_SCANNED, PARTIAL_FOLDER, PATH_TOO_LONG,
+    ACCESS_DENIED, HIDDEN_OMITTED, MFT_FALLBACK, NOT_FOUND, NOT_SCANNED, PARTIAL_FOLDER, PATH_TOO_LONG,
 )
 from je_file_tree.gui.i18n import tr
 from je_file_tree.core.mounts import MOUNT_BOUNDARY
@@ -11,7 +11,7 @@ from je_file_tree.core.mounts import MOUNT_BOUNDARY
 _REASON_KEYS = {ACCESS_DENIED: "problem_access_denied", NOT_FOUND: "problem_not_found",
                 PATH_TOO_LONG: "problem_path_too_long", NOT_SCANNED: "problem_not_scanned",
                 HIDDEN_OMITTED: "problem_hidden_omitted", PARTIAL_FOLDER: "problem_partial_folder",
-                MOUNT_BOUNDARY: "problem_mount_boundary"}
+                MOUNT_BOUNDARY: "problem_mount_boundary", MFT_FALLBACK: "scan_mft_fallback"}
 
 
 def problem_text(reason: str) -> str:

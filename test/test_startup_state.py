@@ -118,6 +118,7 @@ def test_startup_dispatches_each_scan_kind_and_active_tab(qapp, monkeypatch, tmp
     monkeypatch.setattr(app, "QSettings", lambda: settings)
     monkeypatch.setattr(app, "wants_admin_prompt", lambda _settings: False)
     monkeypatch.setattr(app, "create_workspace", lambda *_args: target)
+    monkeypatch.setattr(app, "pace_workers", lambda: None)
     monkeypatch.setattr(type(qapp), "exec", lambda _self: 0)
     assert app.main(state.arguments()) == 0
     assert [window.scans for window in target.windows] == [[], [("single", "single")],

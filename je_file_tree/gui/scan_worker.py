@@ -9,8 +9,9 @@ from __future__ import annotations
 import threading
 import time
 import os
+import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from PySide6.QtCore import QAbstractEventDispatcher, QObject, QThread, Signal
 
@@ -21,6 +22,7 @@ from je_file_tree.core.cleanup import find_cleanup
 from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.capacity import CapacityLedger, capacity_ledger
 from je_file_tree.core.coverage import coverage_of
+from je_file_tree.core.folder_budgets import BudgetBatch, BudgetTicket, observe_budgets
 from je_file_tree.core.compare import SavedScan, SavedScanError, compare, load_saved
 from je_file_tree.core.duplicates import DuplicateProgress, DuplicateSearchCancelledError, find_duplicates
 from je_file_tree.core.similar_photos import PhotoSearchCancelledError
@@ -34,6 +36,7 @@ from je_file_tree.core.search import Query, search
 from je_file_tree.gui.i18n import tr
 
 LARGEST_FILES_LIMIT = 1000
+_LOG = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +52,8 @@ class ScanOutcome:
     partial: bool = False
     capacity: CapacityLedger | None = None
     chart_categories: list[CategoryStat] | None = None
+    top_folders: tuple[Node, ...] | None = None
+    budget_batch: BudgetBatch | None = None
 
 
 def pace_workers(connect: bool = True) -> None:
@@ -80,7 +85,7 @@ def analyse(result: ScanResult, *, partial: bool = False) -> ScanOutcome:
     summary = summarise(result.root, LARGEST_FILES_LIMIT)
     return ScanOutcome(result, summary.largest, summary.extensions, category_stats(summary.extensions),
                        summary.ages, summary.now, partial, capacity_ledger(result.root, partial=partial),
-                       summary.counted_categories)
+                       summary.counted_categories, summary.top_folders)
 
 
 class AnalyseWorker(QThread):
@@ -283,7 +288,7 @@ class ScanWorker(QThread):
     history_failed = Signal(str)
 
     def __init__(self, path: str | tuple[str, ...], options: ScanOptions, parent: QObject | None = None, *,
-                 history: ScanHistory | None = None) -> None:
+                 history: ScanHistory | None = None, budget_ticket: BudgetTicket | None = None) -> None:
         super().__init__(parent)
         self.path = path
         self._options = options
@@ -291,6 +296,7 @@ class ScanWorker(QThread):
         self._pause = threading.Event()
         self._scanning = True
         self._history = history
+        self._budget_ticket = budget_ticket
 
     def cancel(self) -> None:
         """Ask the scan to stop; ``cancelled`` follows shortly."""
@@ -312,6 +318,17 @@ class ScanWorker(QThread):
     def run(self) -> None:
         """Thread body: scan, analyse, report."""
         try:
+            self._run_scan()
+        except MountChangedError:
+            self.failed.emit(tr("scan_mount_changed"))
+        except (OSError, ValueError) as error:
+            self.failed.emit(getattr(error, "strerror", None) or str(error))
+        except Exception as error:  # noqa: BLE001 - terminal GUI boundary; retain diagnostics and signal failure
+            _LOG.exception("Unexpected scan or analysis failure")
+            self.failed.emit(str(error) or type(error).__name__)
+
+    def _run_scan(self) -> None:
+        try:
             if not self._validate_path():
                 return
             scanning = scan_roots if isinstance(self.path, tuple) else scan
@@ -320,16 +337,17 @@ class ScanWorker(QThread):
         except ScanCancelledError as stopped:
             self.cancelled.emit(self._analyse(stopped.partial, partial=True) if stopped.partial else None)
             return
-        except MountChangedError:
-            self.failed.emit(tr("scan_mount_changed"))
-            return
-        except (OSError, ValueError) as error:
-            self.failed.emit(getattr(error, "strerror", None) or str(error))
-            return
         if self._cancel.is_set():
             self.cancelled.emit(self._analyse(result, partial=True))
             return
         outcome = self._analyse(result)
+        if self._budget_ticket is not None and self._budget_ticket.rules and outcome.capacity is not None:
+            batch = observe_budgets(result.root, outcome.capacity.coverage,
+                                    self._budget_ticket, outcome.capacity.measured_at, self._cancel)
+            if batch is None:
+                self.cancelled.emit(replace(outcome, partial=True))
+                return
+            outcome = replace(outcome, budget_batch=batch)
         if not self._save_history(outcome):
             self.cancelled.emit(analyse(result, partial=True))
             return
@@ -355,7 +373,7 @@ class ScanWorker(QThread):
                 roots = root.children if root.path is None else (root,)
                 for source in roots:
                     if source.snapshot is not None:
-                        self._history.save(source, cancel=self._cancel)
+                        self._history.save(source, cancel=self._cancel, options=self._options)
             except HistoryCancelledError:
                 return False
             except (OSError, ValueError, UnicodeError, RecursionError) as error:

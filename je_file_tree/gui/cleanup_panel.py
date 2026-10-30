@@ -28,6 +28,7 @@ class CleanupPanel(QWidget):
     review_requested = Signal(object)
     bins_requested = Signal()
     bin_refresh_requested = Signal()
+    summary_changed = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -89,6 +90,13 @@ class CleanupPanel(QWidget):
     def busy(self) -> bool:
         """Whether a search for suggestions is running whose result will be shown."""
         return self._current is not None
+
+    @property
+    def proposal_summary(self) -> tuple[int, int] | None:
+        """Captured proposal count/bytes, or None until this root has a completed analysis."""
+        if self._root is None or self._current is not None or self._coverage is None:
+            return None
+        return sum(len(group.nodes) for group in self._groups), sum(group.size for group in self._groups)
 
     def set_root(self, root: Node | None, *, partial: bool = False) -> None:
         """Suggest from ``root`` (None while a scan runs: the list waits)."""
@@ -221,6 +229,7 @@ class CleanupPanel(QWidget):
                                             skipped=format_count(coverage.skipped_folders),
                                             denied=format_count(coverage.inaccessible_folders),
                                             pending=format_count(coverage.pending_folders)))
+        self.summary_changed.emit()
 
     def _group_button(self) -> None:
         index = self.view.currentIndex()

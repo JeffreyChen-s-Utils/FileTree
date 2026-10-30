@@ -64,6 +64,7 @@ NOT_SCANNED = "not scanned: the scan was stopped first"
 EXCLUDED = "excluded: skipped by the exclusions"
 HIDDEN_OMITTED = "excluded: hidden entries omitted"
 PARTIAL_FOLDER = "incomplete: some entries could not be read"
+MFT_FALLBACK = "experimental NTFS scan unavailable; ordinary scan used"
 
 
 class ScanCancelledError(Exception):
@@ -181,6 +182,8 @@ def scan(path: str | os.PathLike[str], *, options: ScanOptions | None = None,  #
             candidate.elapsed = time.monotonic() - started
             return candidate
     crawler = _Crawler(root, root_path, options, cancel, pause)
+    if options.experimental_mft:
+        crawler.warnings.append(MFT_FALLBACK)
     try:
         crawler.run(progress, cancel, progress_interval)
     except ScanCancelledError:
@@ -283,17 +286,21 @@ class _Crawler:
             raise ScanCancelledError
         threads = [threading.Thread(target=self._work, name=f"file-tree-scan-{number}", daemon=True)
                    for number in range(max(1, self._options.workers))]
-        for thread in threads:
-            thread.start()
+        started: list[threading.Thread] = []
         try:
+            for thread in threads:
+                thread.start()
+                started.append(thread)
             while not self._done.wait(interval):
                 if cancel is not None and cancel.is_set():
                     break
                 if progress is not None:
                     progress(self.snapshot())
+        except BaseException as error:  # noqa: BLE001 - stop and join owned threads, then re-raise the first failure
+            self._fail(error)
         finally:
             self._stop()
-            for thread in threads:
+            for thread in started:
                 thread.join()
         if self._failure is not None:
             raise self._failure
@@ -307,22 +314,33 @@ class _Crawler:
         self._done.set()
 
     def _work(self) -> None:
-        with background_priority(self._options.gentle) as warnings:
-            self._read_all()
+        try:
+            with background_priority(self._options.gentle) as warnings:
+                self._read_all()
+            with self._condition:
+                self.warnings.extend(warnings)
+        except BaseException as error:  # noqa: BLE001 - re-raised on the calling thread after joining
+            self._fail(error)
+
+    def _fail(self, error: BaseException) -> None:
         with self._condition:
-            self.warnings.extend(warnings)
+            if self._failure is None:
+                self._failure = error
+            self._stop()
 
     def _read_all(self) -> None:
         while (task := self._take()) is not None:
-            give_way()
             try:
+                give_way()
                 read = _read_folder(task[0], task[1], self._options, self._allocation, self._excluded, self._mounts)
+                self._finish(task[0], task[1], read)
             except BaseException as error:  # noqa: BLE001 - handed to the calling thread, which re-raises it
-                with self._condition:
-                    self._failure = error
-                self._stop()
+                self._fail(error)
                 return
-            self._finish(task[0], task[1], read)
+            finally:
+                with self._condition:
+                    self._busy -= 1
+                    self._condition.notify_all()
 
     def _take(self) -> tuple[Node, str] | None:
         """The next folder to read, or None once there is nothing left anywhere."""
@@ -343,7 +361,6 @@ class _Crawler:
 
     def _finish(self, folder: Node, path: str, read: _FolderRead) -> None:
         with self._condition:
-            self._busy -= 1
             self._pending.extend(read.subfolders)
             self.folders.extend(node for node, _ in read.subfolders)
             self.files += read.files
@@ -351,10 +368,6 @@ class _Crawler:
             self.errors.extend(read.errors)
             self._current = path
             _add_to_ancestors(folder, read)
-            if read.subfolders:
-                self._condition.notify(len(read.subfolders))
-            elif not self._busy and not self._pending:
-                self._condition.notify_all()
 
 
 def _add_to_ancestors(folder: Node, read: _FolderRead) -> None:

@@ -10,6 +10,8 @@ import time
 from PySide6.QtCore import QObject, QStorageInfo, QThread
 
 from je_file_tree.core.background import CapacityObservation, MAX_VOLUMES, ScanAttempt
+from je_file_tree.core.coverage import coverage_of
+from je_file_tree.core.folder_budgets import BudgetBatch, BudgetTicket, observe_budgets
 from je_file_tree.core.cleanup_policy import CleanupPolicy
 from je_file_tree.core.history import HistoryCancelledError, HistoryEntry, ScanHistory, load_history, load_recurring
 from je_file_tree.core.recurring import (
@@ -53,7 +55,8 @@ class ScheduledWorker(QThread):
     """Scan one explicitly selected root gently and save ordinary bounded local history."""
 
     def __init__(self, root: str, options: ScanOptions, history: ScanHistory, parent: QObject, *,
-                 proposal_context: tuple[ScanAttempt, int] | None = None, policy: CleanupPolicy | None = None) -> None:
+                 proposal_context: tuple[ScanAttempt, int] | None = None, policy: CleanupPolicy | None = None,
+                 budget_ticket: BudgetTicket | None = None) -> None:
         super().__init__(parent)
         self.root, self.history = root, history
         self.options = replace(options, gentle=True, workers=1)
@@ -64,6 +67,8 @@ class ScheduledWorker(QThread):
         self.proposal_context, self.policy = proposal_context, policy or CleanupPolicy()
         self.proposal: RecurringProposal | None = None
         self.proposal_error = ""
+        self.budget_ticket = budget_ticket
+        self.budget_batch: BudgetBatch | None = None
 
     def run(self) -> None:
         """Retain canceled partial results/errors; only an actual saved history entry marks completion."""
@@ -74,7 +79,15 @@ class ScheduledWorker(QThread):
             self.result = scan(self.root, options=self.options, cancel=self.cancel)
             if self.proposal_context is not None:
                 self._prepare_proposal()
-            self.entry = self.history.save(self.result.root, cancel=self.cancel,
+            if self.budget_ticket is not None and self.budget_ticket.rules:
+                coverage = coverage_of(self.result.root, cancel=self.cancel)
+                if coverage is None:
+                    raise HistoryCancelledError
+                self.budget_batch = observe_budgets(self.result.root, coverage,
+                                                    self.budget_ticket, time.time(), self.cancel)
+                if self.budget_batch is None:
+                    raise HistoryCancelledError
+            self.entry = self.history.save(self.result.root, cancel=self.cancel, options=self.options,
                                            baseline=self.proposal.baseline if self.proposal is not None else None)
             self.state = "complete"
         except ScanCancelledError as error:

@@ -11,6 +11,183 @@ def _cjk(html: str) -> str:
 
 
 EN: dict[str, str] = {
+    "budget_filter": "Show budgets",
+    "budget_filter_all": "All budgets",
+    "budget_filter_over": "Over limit",
+    "budget_filter_unknown": "Unknown or not scanned",
+    "budget_filter_empty": "No budgets match this filter. Choose All budgets to see every rule.",
+    "budget_editing_hidden": "Editing {name}, hidden by this filter. Status: {status}. Your draft is retained.",
+    "budget_count_over": "{count} over limit",
+    "budget_count_unknown": "{count} unknown",
+    "folder_context_target": "Target folder",
+    "folder_context_ready": "For a selected file, these actions use its containing folder.",
+    "folder_context_history": "View growth trend",
+    "folder_context_budget": "Set folder budget",
+    "folder_context_empty": "Complete a scan to use folder actions.",
+    "folder_context_busy": "Wait for scanning or the current operation to finish.",
+    "folder_context_closing": "This scan tab is closing.",
+    "folder_context_virtual": "Open an individual source scan to use folder actions.",
+    "folder_context_stale": "Select a folder in the current scan.",
+    "folder_context_link": "Folder actions are unavailable for links.",
+    "trend_choose_folder": "Choose loaded folder…",
+    "trend_loaded_folders": "Loaded child folders",
+    "trend_full_path": "Full folder path",
+    "trend_root": "Return to root",
+    "trend_up": "Up",
+    "trend_enter": "Open folder",
+    "trend_previous": "Previous page",
+    "trend_next": "Next page",
+    "trend_choose_current": "Use this folder",
+    "trend_folder_page": "Folders {first}–{last} of {total}. Only loaded folders are listed.",
+    "trend_period": "Period",
+    "trend_period_all": "All retained history",
+    "trend_period_30": "Last 30 days",
+    "trend_period_90": "Last 90 days",
+    "trend_period_custom": "Custom dates",
+    "trend_date_order": "End date must be on or after start date.",
+    "trend_point_details": "Selected observation details",
+    "trend_select_point": "Select an observation in the chart or table. Arrow keys visit each observation.",
+    "trend_size_reason": "Size unknown: {reason}",
+    "trend_change_reason": "Change unknown: {reason}",
+    "trend_first_point": "No previous observation in this period",
+    "trend_point_value": "{date} · Size {size} ({exact_size}) · Change {change} ({exact_change})",
+    "templates_select": "Select a saved template",
+    "templates_remove": "Delete template",
+    "templates_save_section": "Save opening workspace",
+    "templates_save_source": (
+        'Add and Update save the tabs and optio'
+        'ns captured when this dialog opened. P'
+        'review edits below are not saved.'),
+    "templates_add_current": "Add opening tabs",
+    "templates_update_current": "Update from opening tabs",
+    "templates_preview_hint": (
+        'Load preview · Edit paths for this loa'
+        'd only, then check them. Loaded tabs w'
+        'ait for Start.'),
+    "templates_preview_modified": (
+        'Modified for this load only · Check pa'
+        'ths again before replacing tabs.'),
+    "templates_active": "Active",
+    "templates_scanning": "Scanning",
+    "templates_impact": (
+        'Replace will close {tabs} tabs, stop {'
+        'scans} scans and close {results} resul'
+        'ts. Unavailable preview paths: {unavai'
+        'lable}.'),
+    "templates_saved": 'Saved templates',
+    'workspace_templates': 'Workspace templates…',
+    'templates_tab': 'Tab',
+    'templates_kind': 'Scope',
+    'templates_status': 'Availability',
+    'templates_single': 'Single folder',
+    'templates_check': 'Check paths',
+    'templates_replace': 'Replace tabs',
+    'templates_hint': (
+        'Save the current tabs, or select a tem'
+        'plate to preview. Edit paths and check'
+        ' them before replacing tabs. Replaceme'
+        'nt closes existing scans and results. '
+        'Loaded tabs stay idle until Start. Una'
+        'vailable roots are retained; repair th'
+        'em here and check again. Add and Updat'
+        'e save the current workspace.'),
+    'templates_invalid': (
+        'Invalid template data. Use unique name'
+        's and absolute paths. Existing setting'
+        's were not changed.'),
+    'templates_unchecked': 'Not checked',
+    'templates_checking': 'Checking all paths…',
+    'templates_ready': 'Ready',
+    'templates_checked': (
+        'Paths checked. Replace tabs loads all '
+        'inputs, including unavailable roots. S'
+        'tart stays disabled for tabs with erro'
+        'rs.'),
+    'templates_not_folder': 'Not a folder',
+    "completion_title": 'Last cleanup result',
+    "completion_undo": 'Undo available moves',
+    "completion_rescan": 'Rescan original folder',
+    "completion_dismiss": 'Dismiss summary',
+    "completion_source": 'Source: {path}',
+    "completion_counts": (
+        'Moved: {moved} ({size}); skipp'
+        'ed: {skipped}; failed: {failed'
+        '}'
+    ),
+    "completion_space": (
+        'Observed free-space change bet'
+        'ween scans: {change} (includes'
+        ' other activity)'
+    ),
+    "completion_measurements": (
+        'Scan observations: {before} → '
+        '{after}'
+    ),
+    "completion_space_pending": (
+        'No later comparable scan obser'
+        'vation yet. Unknown is not zer'
+        'o.'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": (
+        'More reasons are available in '
+        'the operation records.'
+    ),
+    "completion_errors": (
+        'Journal errors: {journal}; cop'
+        'y-finalization errors: {copies'
+        '}.'
+    ),
+    "completion_hint": (
+        'Moved bytes are logical data, '
+        'not space freed. Emptying the '
+        'Recycle Bin is a separate acti'
+        'on. Review operation records a'
+        'nd failure reports for details'
+        '.'
+    ),
+    "action_scan_presets_tip": "Save and load named paths and scan options without starting a scan",
+    "action_scan_presets": 'Scan presets…',
+    "presets_empty": 'No saved presets',
+    "presets_hint": (
+        'Add and Update save the current scan opt'
+        'ions with the entered path. Load fills t'
+        'he inputs; press Scan path to start. Con'
+        'currency and exclusions apply to the wor'
+        'kspace.'
+    ),
+    "presets_saved": 'Saved presets',
+    "presets_name": 'Name',
+    "presets_add": 'Add current options',
+    "presets_update": 'Update selected',
+    "presets_rename": 'Rename',
+    "presets_remove": 'Delete preset',
+    "presets_load": 'Load',
+    "presets_options": (
+        'Workers: {workers}; exclusions: {exclusi'
+        'ons}; enabled: {flags}'
+    ),
+    "presets_no_flags": 'none',
+    "presets_invalid": (
+        'Use a unique name (1–80 characters), an '
+        'absolute path and valid scan options. At'
+        ' most 32 presets are supported.'
+    ),
+    "presets_read_failed": (
+        'Saved presets could not be read. Existin'
+        'g data has been retained.'
+    ),
+    "presets_loaded": 'Loaded {name}. Press Scan path to start.',
+    "highlights_title": 'Scan highlights',
+    "highlights_waiting": 'Waiting for scan analysis…',
+    "highlights_folders": 'Largest direct folders — select one to locate it.',
+    "highlights_partial": 'Partial results: sizes describe only the entries read.',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": 'Clean up: analysis pending…',
+    "highlights_cleanup": 'Review {count} candidates ({size})',
+    "highlights_cleanup_hint": 'Candidate bytes require review and do not represent immediately recoverable space.',
+    "highlights_coverage_unknown": 'Coverage not yet available',
+    "highlights_coverage": 'Scan limits: {skipped} skipped, {denied} unreadable, {pending} pending',
     "shell_reading": "Reading Explorer registration…",
     "shell_saving": "Saving Explorer registration…",
     "shell_waiting": "Waiting for the current Explorer settings request to finish… A started Save continues.",
@@ -563,7 +740,7 @@ EN: dict[str, str] = {
                              "to future full scans; a lower limit takes effect on the next save.",
     "history_limit": "Total history limit",
     "history_time": "Scan time",
-    "history_logical": "Logical bytes",
+    "history_logical": "Logical size",
     "history_allocated": "Allocated named bytes",
     "history_coverage": "Coverage",
     "history_incomplete": "Incomplete; known data only",
@@ -571,6 +748,36 @@ EN: dict[str, str] = {
     "history_chart": "Logical folder size over time",
     "history_chart_range": "{first}: {before}; {last}: {after}",
     "history_empty": "No retained scans for this root",
+    "trend_folder": "Root-relative folder",
+    "trend_folder_hint": "Blank means root",
+    "trend_start": "From date (inclusive)",
+    "trend_end": "Through date (inclusive)",
+    "trend_apply": "Apply trend",
+    "trend_change": "Change",
+    "trend_child": "Direct child",
+    "trend_before": "First size",
+    "trend_after": "Last size",
+    "trend_direct_files": "Direct files",
+    "trend_unknown": "Unknown",
+    "trend_net": "Period net change: {change}",
+    "trend_net_unknown": "Period net change unknown",
+    "trend_summary": "Showing {shown} of {count} dated scans; {invalid} invalid headers. "
+                     "Direct items: {children} of {child_count}. {cap}",
+    "trend_capped": "Period capped; full-period net change unavailable",
+    "trend_invalid": "Invalid trend query: {reason}",
+    "trend_reason_legacy": "Legacy scan rules unknown",
+    "trend_reason_incomplete": "Incomplete scan",
+    "trend_reason_incompatible": "Incompatible scan rules or root",
+    "trend_reason_missing": "Folder missing",
+    "trend_reason_corrupt": "Damaged scan body",
+    "trend_chart_known": "{known} of {total} sizes known; gaps break the line",
+    "trend_chart_unknown": "No comparable folder sizes",
+    "trend_net_reason": "Period net change unknown: {reason}",
+    "trend_reason_truncated": "Period capped",
+    "trend_reason_insufficient": "Fewer than two observations",
+    "trend_tab_sizes": "Folder sizes",
+    "trend_tab_sources": "Direct contributors",
+    "trend_tab_compare": "Full-root comparison",
     "history_compare": "Compare selected scan with current results",
     "history_reading": "Reading local scan history…",
     "history_hint": "The latest 1,000 retained full scans for this root. Stopped scans and branch rescans are "
@@ -875,7 +1082,8 @@ EN: dict[str, str] = {
                         "Grouped tiles stay grey."),
     "action_gentle": "Gentle scanning",
     "action_gentle_tip": "Lower CPU and I/O priority for new scans; may take longer",
-    "scan_priority_warning": "Some scan priority settings could not be applied: {reason}",
+    "scan_priority_warning": "Scan notes: {reason}",
+    "scan_mft_fallback": "The experimental NTFS scan was unavailable; an ordinary scan was used.",
     "scan_pause": "Pause",
     "scan_resume": "Resume",
     "scan_pause_tip": "Pause new folder reads; current reads finish. Stop works while paused.",
@@ -1020,7 +1228,22 @@ EN: dict[str, str] = {
     'capacity_row_mounts': 'Different-device mount boundaries',
     'capacity_row_coverage': 'Coverage',
     "review_title": "Review clean-up proposals",
-    "review_details": "{path}\nRule: {rule}; protection: {protection}. {consequence}",
+    'review_logical_size': 'Logical size',
+    'review_risk': 'Risk',
+    'review_risk_low': 'Lower risk',
+    'review_risk_manual': 'Review manually',
+    'review_details_label': 'Entry details',
+    'review_scope': 'Scan scope',
+    'review_details': (
+        '{path}\n'
+        'Rule: {rule}\n'
+        'Modified: {modified}\n'
+        'Logical size: {logical}; allocated estimate: {allocated}\n'
+        'Risk: {risk}\n'
+        'Protection: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "Review every path and consequence. Uncheck entries to keep them; Continue opens the confirmations.",
     "review_select": "Move",
     "review_rule": "Rule",
@@ -1247,8 +1470,24 @@ EN: dict[str, str] = {
     "search_hint": ("Type part of a name or a pattern with * and ?, choose conditions, or both, to find files "
                     "and folders anywhere in the scan."),
     "search_running": "Searching…",
-    "search_larger": "Larger than",
-    "search_smaller": "Smaller than",
+    'search_larger': 'At least (inclusive)',
+    'search_smaller': 'At most (inclusive)',
+    'search_custom_ranges': 'Custom ranges…',
+    'search_changed_custom': 'custom dates',
+    'search_exact_bytes': '{value} B (exact)',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': 'From date (inclusive)',
+    'search_date_through': 'Through date (inclusive)',
+    'search_range_hint': ('Leave either bound blank for no limit. Sizes use'
+        ' exact bytes; dates use local time (YYYY-MM-DD).'),
+    'search_range_size_error': ('Enter a nonnegative size in whole bytes, up to 9223'
+        '372036854775807 B. Fractional bytes are not allowed.'),
+    'search_range_order_error': ('The minimum size must '
+        'not exceed the maximum.'),
+    'search_range_date_error': ('Enter valid local dates as YYYY-MM-DD,'
+        ' with the start no later than the end.'),
+    'search_range_invalid': ('Invalid search ranges. Correct the size o'
+        'r date bounds before searching or saving.'),
     "search_no_limit": "no limit",
     "search_changed": "Changed",
     "search_changed_any": "any time",
@@ -1465,6 +1704,136 @@ listed greyed out, with size 0.</li>
 }
 
 ZH_TW: dict[str, str] = {
+    "budget_filter": "顯示預算",
+    "budget_filter_all": "全部預算",
+    "budget_filter_over": "超過上限",
+    "budget_filter_unknown": "未知或尚未掃描",
+    "budget_filter_empty": "此篩選沒有符合的預算。選擇「全部預算」可查看所有規則。",
+    "budget_editing_hidden": "正在編輯「{name}」，此篩選已隱藏該規則。狀態：{status}。草稿仍保留。",
+    "budget_count_over": "{count} 個超過上限",
+    "budget_count_unknown": "{count} 個未知",
+    "folder_context_target": "目標資料夾",
+    "folder_context_ready": "選取檔案時，這些動作會使用其所在資料夾。",
+    "folder_context_history": "查看成長趨勢",
+    "folder_context_budget": "設定容量預算",
+    "folder_context_empty": "請先完成掃描，再使用資料夾動作。",
+    "folder_context_busy": "請等待掃描或目前操作完成。",
+    "folder_context_closing": "此掃描分頁正在關閉。",
+    "folder_context_virtual": "請開啟個別來源的掃描，再使用資料夾動作。",
+    "folder_context_stale": "請選取目前掃描中的資料夾。",
+    "folder_context_link": "連結無法使用資料夾動作。",
+    "trend_choose_folder": "選擇已載入資料夾…",
+    "trend_loaded_folders": "已載入的子資料夾",
+    "trend_full_path": "完整資料夾路徑",
+    "trend_root": "返回根目錄",
+    "trend_up": "上一層",
+    "trend_enter": "開啟資料夾",
+    "trend_previous": "上一頁",
+    "trend_next": "下一頁",
+    "trend_choose_current": "使用此資料夾",
+    "trend_folder_page": "資料夾 {first}–{last}，共 {total} 個。僅列出已載入資料夾。",
+    "trend_period": "期間",
+    "trend_period_all": "全部保留紀錄",
+    "trend_period_30": "最近 30 日",
+    "trend_period_90": "最近 90 日",
+    "trend_period_custom": "自訂日期",
+    "trend_date_order": "結束日期不得早於開始日期。",
+    "trend_point_details": "所選觀察點詳細資訊",
+    "trend_select_point": "選取圖表或表格的觀察點。方向鍵可逐筆移動。",
+    "trend_size_reason": "容量未知：{reason}",
+    "trend_change_reason": "變化未知：{reason}",
+    "trend_first_point": "此期間沒有上一筆觀察",
+    "trend_point_value": "{date} · 容量 {size}（{exact_size}）· 變化 {change}（{exact_change}）",
+    "templates_select": "選擇已儲存範本",
+    "templates_remove": "刪除範本",
+    "templates_save_section": "儲存開啟時的工作區",
+    "templates_save_source": "新增與更新儲存開啟此視窗時擷取的分頁與選項；不會儲存下方的預覽修改。",
+    "templates_add_current": "新增開啟時分頁",
+    "templates_update_current": "以開啟時分頁更新",
+    "templates_preview_hint": "載入預覽 · 路徑修改僅供此次載入，修改後請檢查。載入後按開始才掃描。",
+    "templates_preview_modified": "已修改，僅供此次載入 · 取代分頁前請重新檢查路徑。",
+    "templates_active": "作用中",
+    "templates_scanning": "掃描中",
+    "templates_impact": (
+        '取代將關閉 {tabs} 個分頁、停止 {scans} 個掃描並關閉 {re'
+        'sults} 份結果。預覽中不可用路徑：{unavailable}。'),
+    "templates_saved": '已儲存範本',
+    'workspace_templates': '工作區範本…',
+    'templates_tab': '分頁',
+    'templates_kind': '範圍',
+    'templates_status': '可用狀態',
+    'templates_single': '單一資料夾',
+    'templates_check': '檢查路徑',
+    'templates_replace': '取代分頁',
+    'templates_hint': (
+        '儲存目前分頁，或選擇範本預覽。可編輯路徑，檢查後再取代分頁。取代會關閉現有掃'
+        '描與結果；載入後須按開始才會掃描。無法使用的路徑會保留，可在此修正後重新檢查'
+        '。新增及更新會儲存目前工作區。'),
+    'templates_invalid': (
+        '範本資料無效。請使用不重複的名稱及絕對路徑。既有設定未變更。'),
+    'templates_unchecked': '尚未檢查',
+    'templates_checking': '正在檢查所有路徑…',
+    'templates_ready': '可使用',
+    'templates_checked': (
+        '路徑檢查完成。取代分頁會載入全部輸入，包含無法使用的路徑。有錯誤的分頁無法開'
+        '始掃描。'),
+    'templates_not_folder': '不是資料夾',
+    "completion_title": '上次清理結果',
+    "completion_undo": '復原可還原項目',
+    "completion_rescan": '重新掃描原資料夾',
+    "completion_dismiss": '關閉摘要',
+    "completion_source": '來源：{path}',
+    "completion_counts": (
+        '已移入：{moved}（{size}）；略過：{skippe'
+        'd}；失敗：{failed}'
+    ),
+    "completion_space": (
+        '掃描間觀測的可用空間變化：{change}（包含其他活動）'
+    ),
+    "completion_measurements": '掃描觀測時間：{before} → {after}',
+    "completion_space_pending": '尚無後續可比較的掃描觀測；未知不等於零。',
+    "completion_reason": '{reason}：{count}',
+    "completion_more": '完整原因可在操作紀錄中檢視。',
+    "completion_errors": (
+        '紀錄寫入錯誤：{journal}；複製收尾錯誤：{copie'
+        's}。'
+    ),
+    "completion_hint": (
+        '移入大小是邏輯資料量，不等於已釋出空間；清空資源回收筒需另行'
+        '操作。詳情請查看操作紀錄與失敗報告。'
+    ),
+    "action_scan_presets_tip": "儲存及載入具名路徑與掃描選項，不會自動開始掃描",
+    "action_scan_presets": '常用掃描設定…',
+    "presets_empty": '尚無常用設定',
+    "presets_hint": (
+        '新增與更新會儲存目前的掃描選項及輸入的路徑。載入只填入設定，請按「掃描路徑」開始'
+        '。執行緒數與排除規則適用於工作區。'
+    ),
+    "presets_saved": '已儲存設定',
+    "presets_name": '名稱',
+    "presets_add": '新增目前選項',
+    "presets_update": '更新所選',
+    "presets_rename": '重新命名',
+    "presets_remove": '刪除設定',
+    "presets_load": '載入',
+    "presets_options": '執行緒：{workers}；排除規則：{exclusions}；已啟用：{flags}',
+    "presets_no_flags": '無',
+    "presets_invalid": (
+        '請使用不重複的名稱（1–80 字）、絕對路徑及有效掃描選項。最多可儲存 32 組'
+        '設定。'
+    ),
+    "presets_read_failed": '無法讀取常用設定，原有資料已保留。',
+    "presets_loaded": '已載入 {name}，請按「掃描路徑」開始。',
+    "highlights_title": '掃描重點',
+    "highlights_waiting": '等待掃描分析…',
+    "highlights_folders": '最大的直屬資料夾；點選即可定位。',
+    "highlights_partial": '結果不完整；大小只包含已讀取的項目。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '清理：等待分析…',
+    "highlights_cleanup": '審查 {count} 個候選項目（{size}）',
+    "highlights_cleanup_hint": '候選資料量需要審查，不代表可立即釋出的空間。',
+    "highlights_coverage_unknown": '尚無掃描範圍資料',
+    "highlights_coverage": '掃描限制：略過 {skipped}、無法讀取 {denied}、待掃描 {pending}',
     "shell_reading": "正在讀取檔案總管登錄…",
     "shell_saving": "正在儲存檔案總管登錄…",
     "shell_waiting": "正在等待目前的檔案總管設定作業完成…已開始的儲存會繼續執行。",
@@ -1977,6 +2346,36 @@ ZH_TW: dict[str, str] = {
     "history_chart": "資料夾邏輯大小隨時間的變化",
     "history_chart_range": "{first}：{before}；{last}：{after}",
     "history_empty": "此根目錄沒有保留的掃描",
+    "trend_folder": "根目錄相對資料夾",
+    "trend_folder_hint": "留空代表根目錄",
+    "trend_start": "起始日期（含）",
+    "trend_end": "結束日期（含）",
+    "trend_apply": "套用趨勢",
+    "trend_change": "變化",
+    "trend_child": "直屬子資料夾",
+    "trend_before": "起始容量",
+    "trend_after": "結束容量",
+    "trend_direct_files": "直屬檔案",
+    "trend_unknown": "未知",
+    "trend_net": "期間淨變化：{change}",
+    "trend_net_unknown": "期間淨變化未知",
+    "trend_summary": "顯示 {shown}/{count} 筆日期有效的掃描；無效標頭 {invalid} 筆。"
+                     "直屬項目 {children}/{child_count}。{cap}",
+    "trend_capped": "期間資料已截斷，無法計算完整期間淨變化",
+    "trend_invalid": "趨勢查詢無效：{reason}",
+    "trend_reason_legacy": "舊紀錄的掃描規則未知",
+    "trend_reason_incomplete": "掃描不完整",
+    "trend_reason_incompatible": "掃描規則或根目錄不相容",
+    "trend_reason_missing": "資料夾不存在",
+    "trend_reason_corrupt": "掃描內容損壞",
+    "trend_chart_known": "已知容量 {known}/{total}；未知處斷線",
+    "trend_chart_unknown": "沒有可比較的資料夾容量",
+    "trend_net_reason": "期間淨變化未知：{reason}",
+    "trend_reason_truncated": "期間資料已截斷",
+    "trend_reason_insufficient": "少於兩筆觀察",
+    "trend_tab_sizes": "資料夾容量",
+    "trend_tab_sources": "直屬來源",
+    "trend_tab_compare": "完整根目錄比較",
     "history_compare": "將所選掃描與目前結果比較",
     "history_reading": "正在讀取本機掃描歷史…",
     "history_hint": "顯示此根目錄最近 1,000 筆保留的整棵掃描，不儲存停止的掃描及局部重掃。不完整掃描僅描述"
@@ -2251,7 +2650,8 @@ ZH_TW: dict[str, str] = {
     "age_colour_tip": "距離修改的時間。資料夾依最新的修改記錄著色，無可用日期時為灰色；合併的小項目保持灰色。",
     "action_gentle": "低優先順序掃描",
     "action_gentle_tip": "降低新掃描的 CPU 與 I/O 優先順序，可能花較久時間",
-    "scan_priority_warning": "部分掃描優先順序設定無法套用：{reason}",
+    "scan_priority_warning": "掃描注意事項：{reason}",
+    "scan_mft_fallback": "實驗 NTFS 掃描無法使用，已改用一般掃描。",
     "scan_pause": "暫停",
     "scan_resume": "繼續",
     "scan_pause_tip": "暫停取得新資料夾；目前讀取會完成。暫停時仍可停止。",
@@ -2373,7 +2773,22 @@ ZH_TW: dict[str, str] = {
     'capacity_row_mounts': '跨磁碟掛載邊界',
     'capacity_row_coverage': '掃描涵蓋範圍',
     "review_title": "審查清理建議",
-    "review_details": "{path}\n規則：{rule}；保護狀態：{protection}。{consequence}",
+    'review_logical_size': '邏輯大小',
+    'review_risk': '風險',
+    'review_risk_low': '較低風險',
+    'review_risk_manual': '需手動審閱',
+    'review_details_label': '項目詳細資訊',
+    'review_scope': '掃描範圍',
+    'review_details': (
+        '{path}\n'
+        '規則：{rule}\n'
+        '修改時間：{modified}\n'
+        '邏輯大小：{logical}；配置空間估計：{allocated}\n'
+        '風險：{risk}\n'
+        '保護狀態：{protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "請檢查每條路徑與移除後果，取消勾選即可保留項目；繼續後才會顯示確認問題。",
     "review_select": "移動",
     "review_rule": "規則",
@@ -2585,8 +3000,21 @@ ZH_TW: dict[str, str] = {
     "search_placeholder": "名稱的一部分，或樣式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "輸入名稱的一部分或含 * 和 ? 的樣式、選擇條件，或兩者一起，在整個掃描結果裡找檔案和資料夾。",
     "search_running": "搜尋中…",
-    "search_larger": "大於",
-    "search_smaller": "小於",
+    'search_larger': '至少（含）',
+    'search_smaller': '至多（含）',
+    'search_custom_ranges': '自訂範圍…',
+    'search_changed_custom': '自訂日期',
+    'search_exact_bytes': '{value} B（精確）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '起始日期（含）',
+    'search_date_through': '結束日期（含）',
+    'search_range_hint': '留空表示不限。大小使用精確位元組；日期使用本機時間（YYYY-MM-DD）。',
+    'search_range_size_error': ('請輸入非負整數位元組，最多 9223372036'
+        '854775807 B，不接受不足一位元組的數值。'),
+    'search_range_order_error': '大小下限不可超過上限。',
+    'search_range_date_error': ('請以 YYYY-MM-DD 輸入有效'
+        '的本機日期，起始日期不可晚於結束日期。'),
+    'search_range_invalid': '搜尋範圍無效。請修正大小或日期範圍後再搜尋或儲存。',
     "search_no_limit": "不限",
     "search_changed": "修改時間",
     "search_changed_any": "不限",
@@ -2785,6 +3213,136 @@ FileTree 不會永久刪除任何東西：每次都會先詢問，
 }
 
 ZH_CN: dict[str, str] = {
+    "budget_filter": "显示预算",
+    "budget_filter_all": "全部预算",
+    "budget_filter_over": "超过上限",
+    "budget_filter_unknown": "未知或尚未扫描",
+    "budget_filter_empty": "此筛选没有匹配的预算。选择“全部预算”可查看所有规则。",
+    "budget_editing_hidden": "正在编辑“{name}”，此筛选已隐藏该规则。状态：{status}。草稿仍保留。",
+    "budget_count_over": "{count} 个超过上限",
+    "budget_count_unknown": "{count} 个未知",
+    "folder_context_target": "目标文件夹",
+    "folder_context_ready": "选择文件时，这些操作会使用其所在文件夹。",
+    "folder_context_history": "查看增长趋势",
+    "folder_context_budget": "设置容量预算",
+    "folder_context_empty": "请先完成扫描，再使用文件夹操作。",
+    "folder_context_busy": "请等待扫描或当前操作完成。",
+    "folder_context_closing": "此扫描标签页正在关闭。",
+    "folder_context_virtual": "请打开单个来源的扫描，再使用文件夹操作。",
+    "folder_context_stale": "请选择当前扫描中的文件夹。",
+    "folder_context_link": "链接无法使用文件夹操作。",
+    "trend_choose_folder": "选择已加载文件夹…",
+    "trend_loaded_folders": "已加载的子文件夹",
+    "trend_full_path": "完整文件夹路径",
+    "trend_root": "返回根目录",
+    "trend_up": "上一级",
+    "trend_enter": "打开文件夹",
+    "trend_previous": "上一页",
+    "trend_next": "下一页",
+    "trend_choose_current": "使用此文件夹",
+    "trend_folder_page": "文件夹 {first}–{last}，共 {total} 个。仅列出已加载文件夹。",
+    "trend_period": "期间",
+    "trend_period_all": "全部保留记录",
+    "trend_period_30": "最近 30 天",
+    "trend_period_90": "最近 90 天",
+    "trend_period_custom": "自定义日期",
+    "trend_date_order": "结束日期不得早于开始日期。",
+    "trend_point_details": "所选记录详情",
+    "trend_select_point": "选择图表或表格中的记录。方向键可逐条移动。",
+    "trend_size_reason": "容量未知：{reason}",
+    "trend_change_reason": "变化未知：{reason}",
+    "trend_first_point": "此期间没有上一条记录",
+    "trend_point_value": "{date} · 容量 {size}（{exact_size}）· 变化 {change}（{exact_change}）",
+    "templates_select": "选择已保存模板",
+    "templates_remove": "删除模板",
+    "templates_save_section": "保存打开时的工作区",
+    "templates_save_source": "添加和更新保存打开此窗口时记录的标签页和选项；不保存下方的预览修改。",
+    "templates_add_current": "添加打开时标签页",
+    "templates_update_current": "用打开时标签页更新",
+    "templates_preview_hint": "加载预览 · 路径修改仅用于此次加载，修改后请检查。加载后点击开始才扫描。",
+    "templates_preview_modified": "已修改，仅用于此次加载 · 替换标签页前请重新检查路径。",
+    "templates_active": "活动",
+    "templates_scanning": "扫描中",
+    "templates_impact": (
+        '替换将关闭 {tabs} 个标签页、停止 {scans} 个扫描并关闭 {r'
+        'esults} 份结果。预览中不可用路径：{unavailable}。'),
+    "templates_saved": '已保存模板',
+    'workspace_templates': '工作区模板…',
+    'templates_tab': '标签页',
+    'templates_kind': '范围',
+    'templates_status': '可用状态',
+    'templates_single': '单个文件夹',
+    'templates_check': '检查路径',
+    'templates_replace': '替换标签页',
+    'templates_hint': (
+        '保存当前标签页，或选择模板预览。可编辑路径，检查后再替换标签页。替换会关闭现'
+        '有扫描和结果；加载后须点击开始才会扫描。不可用的路径会保留，可在此修正后重新'
+        '检查。添加和更新会保存当前工作区。'),
+    'templates_invalid': (
+        '模板数据无效。请使用唯一名称和绝对路径。现有设置未更改。'),
+    'templates_unchecked': '尚未检查',
+    'templates_checking': '正在检查所有路径…',
+    'templates_ready': '可用',
+    'templates_checked': (
+        '路径检查完成。替换标签页会加载全部输入，包括不可用的路径。有错误的标签页无法'
+        '开始扫描。'),
+    'templates_not_folder': '不是文件夹',
+    "completion_title": '上次清理结果',
+    "completion_undo": '撤销可恢复项目',
+    "completion_rescan": '重新扫描原文件夹',
+    "completion_dismiss": '关闭摘要',
+    "completion_source": '来源：{path}',
+    "completion_counts": (
+        '已移入：{moved}（{size}）；跳过：{skippe'
+        'd}；失败：{failed}'
+    ),
+    "completion_space": (
+        '扫描间观测的可用空间变化：{change}（包含其他活动）'
+    ),
+    "completion_measurements": '扫描观测时间：{before} → {after}',
+    "completion_space_pending": '暂无后续可比较的扫描观测；未知不等于零。',
+    "completion_reason": '{reason}：{count}',
+    "completion_more": '完整原因可在操作记录中查看。',
+    "completion_errors": (
+        '记录写入错误：{journal}；复制收尾错误：{copie'
+        's}。'
+    ),
+    "completion_hint": (
+        '移入大小是逻辑数据量，不等于已释放空间；清空回收站需另行操作'
+        '。详情请查看操作记录与失败报告。'
+    ),
+    "action_scan_presets_tip": "保存及加载命名路径与扫描选项，不会自动开始扫描",
+    "action_scan_presets": '常用扫描设置…',
+    "presets_empty": '暂无常用设置',
+    "presets_hint": (
+        '新增与更新会保存当前扫描选项及输入的路径。加载只填入设置，请按“扫描路径”开始。'
+        '线程数与排除规则适用于工作区。'
+    ),
+    "presets_saved": '已保存设置',
+    "presets_name": '名称',
+    "presets_add": '新增当前选项',
+    "presets_update": '更新所选',
+    "presets_rename": '重命名',
+    "presets_remove": '删除设置',
+    "presets_load": '加载',
+    "presets_options": '线程：{workers}；排除规则：{exclusions}；已启用：{flags}',
+    "presets_no_flags": '无',
+    "presets_invalid": (
+        '请使用不重复的名称（1–80 字）、绝对路径及有效扫描选项。最多可保存 32 组'
+        '设置。'
+    ),
+    "presets_read_failed": '无法读取常用设置，原有数据已保留。',
+    "presets_loaded": '已加载 {name}，请按“扫描路径”开始。',
+    "highlights_title": '扫描重点',
+    "highlights_waiting": '等待扫描分析…',
+    "highlights_folders": '最大的直属文件夹；点击即可定位。',
+    "highlights_partial": '结果不完整；大小只包含已读取的项目。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '清理：等待分析…',
+    "highlights_cleanup": '检查 {count} 个候选项目（{size}）',
+    "highlights_cleanup_hint": '候选数据量需要检查，不代表可立即释放的空间。',
+    "highlights_coverage_unknown": '暂无扫描范围数据',
+    "highlights_coverage": '扫描限制：跳过 {skipped}、无法读取 {denied}、待扫描 {pending}',
     "shell_reading": "正在读取资源管理器注册项…",
     "shell_saving": "正在保存资源管理器注册项…",
     "shell_waiting": "正在等待当前资源管理器设置操作完成…已开始的保存会继续执行。",
@@ -3298,6 +3856,36 @@ ZH_CN: dict[str, str] = {
     "history_chart": "文件夹逻辑大小随时间的变化",
     "history_chart_range": "{first}：{before}；{last}：{after}",
     "history_empty": "此根目录没有保留的扫描",
+    "trend_folder": "根目录相对文件夹",
+    "trend_folder_hint": "留空表示根目录",
+    "trend_start": "起始日期（含）",
+    "trend_end": "结束日期（含）",
+    "trend_apply": "应用趋势",
+    "trend_change": "变化",
+    "trend_child": "直属子文件夹",
+    "trend_before": "起始大小",
+    "trend_after": "结束大小",
+    "trend_direct_files": "直属文件",
+    "trend_unknown": "未知",
+    "trend_net": "期间净变化：{change}",
+    "trend_net_unknown": "期间净变化未知",
+    "trend_summary": "显示 {shown}/{count} 条日期有效的扫描；无效标头 {invalid} 条。"
+                     "直属项目 {children}/{child_count}。{cap}",
+    "trend_capped": "期间记录已截断，无法计算完整期间净变化",
+    "trend_invalid": "趋势查询无效：{reason}",
+    "trend_reason_legacy": "旧记录的扫描规则未知",
+    "trend_reason_incomplete": "扫描不完整",
+    "trend_reason_incompatible": "扫描规则或根目录不兼容",
+    "trend_reason_missing": "文件夹不存在",
+    "trend_reason_corrupt": "扫描内容损坏",
+    "trend_chart_known": "已知大小 {known}/{total}；未知处断线",
+    "trend_chart_unknown": "没有可比较的文件夹大小",
+    "trend_net_reason": "期间净变化未知：{reason}",
+    "trend_reason_truncated": "期间记录已截断",
+    "trend_reason_insufficient": "少于两条记录",
+    "trend_tab_sizes": "文件夹大小",
+    "trend_tab_sources": "直属来源",
+    "trend_tab_compare": "完整根目录比较",
     "history_compare": "将所选扫描与当前结果比较",
     "history_reading": "正在读取本地扫描历史…",
     "history_hint": "显示此根目录最近 1,000 条保留的整个扫描，不保存停止的扫描及局部重扫。不完整扫描仅描述"
@@ -3571,7 +4159,8 @@ ZH_CN: dict[str, str] = {
     "age_colour_tip": "距离修改的时间。文件夹按最新修改记录着色，无可用日期时为灰色；合并的小项目保持灰色。",
     "action_gentle": "低优先级扫描",
     "action_gentle_tip": "降低新扫描的 CPU 与 I/O 优先级，可能花费较长时间",
-    "scan_priority_warning": "部分扫描优先级设置无法应用：{reason}",
+    "scan_priority_warning": "扫描注意事项：{reason}",
+    "scan_mft_fallback": "实验 NTFS 扫描无法使用，已改用普通扫描。",
     "scan_pause": "暂停",
     "scan_resume": "继续",
     "scan_pause_tip": "暂停获取新文件夹；当前读取会完成。暂停时仍可停止。",
@@ -3694,7 +4283,22 @@ ZH_CN: dict[str, str] = {
     'capacity_row_mounts': '跨磁盘挂载边界',
     'capacity_row_coverage': '扫描覆盖范围',
     "review_title": "审查清理建议",
-    "review_details": "{path}\n规则：{rule}；保护状态：{protection}。{consequence}",
+    'review_logical_size': '逻辑大小',
+    'review_risk': '风险',
+    'review_risk_low': '较低风险',
+    'review_risk_manual': '需手动审阅',
+    'review_details_label': '项目详细信息',
+    'review_scope': '扫描范围',
+    'review_details': (
+        '{path}\n'
+        '规则：{rule}\n'
+        '修改时间：{modified}\n'
+        '逻辑大小：{logical}；分配空间估计：{allocated}\n'
+        '风险：{risk}\n'
+        '保护状态：{protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     "review_hint": "请检查每条路径与删除后果，取消勾选即可保留项目；继续后才会显示确认问题。",
     "review_select": "移动",
     "review_rule": "规则",
@@ -3905,8 +4509,21 @@ ZH_CN: dict[str, str] = {
     "search_placeholder": "名称的一部分，或模式：backup、*.mp4、*.iso;*.zip",
     "search_hint": "输入名称的一部分或含 * 和 ? 的模式、选择条件，或两者一起，在整个扫描结果里找文件和文件夹。",
     "search_running": "搜索中…",
-    "search_larger": "大于",
-    "search_smaller": "小于",
+    'search_larger': '至少（含）',
+    'search_smaller': '至多（含）',
+    'search_custom_ranges': '自定义范围…',
+    'search_changed_custom': '自定义日期',
+    'search_exact_bytes': '{value} B（精确）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '开始日期（含）',
+    'search_date_through': '结束日期（含）',
+    'search_range_hint': '留空表示不限。大小使用精确字节；日期使用本地时间（YYYY-MM-DD）。',
+    'search_range_size_error': ('请输入非负整数字节，最多 9223372036'
+        '854775807 B，不接受不足一字节的数值。'),
+    'search_range_order_error': '大小下限不能超过上限。',
+    'search_range_date_error': ('请以 YYYY-MM-DD 输入有效'
+        '的本地日期，开始日期不能晚于结束日期。'),
+    'search_range_invalid': '搜索范围无效。请修正大小或日期范围后再搜索或保存。',
     "search_no_limit": "不限",
     "search_changed": "修改时间",
     "search_changed_any": "不限",
@@ -4117,6 +4734,148 @@ FileTree 不会永久删除任何东西：每次都会先询问，
 
 
 JA: dict[str, str] = {
+    "budget_filter": "予算を表示",
+    "budget_filter_all": "すべての予算",
+    "budget_filter_over": "上限超過",
+    "budget_filter_unknown": "不明または未スキャン",
+    "budget_filter_empty": "この条件に一致する予算はありません。「すべての予算」で全ルールを表示します。",
+    "budget_editing_hidden": "編集中の「{name}」はこの条件では非表示です。状態：{status}。入力内容は保持されています。",
+    "budget_count_over": "上限超過 {count} 件",
+    "budget_count_unknown": "不明 {count} 件",
+    "folder_context_target": "対象フォルダー",
+    "folder_context_ready": "ファイルを選択した場合、その親フォルダーが対象です。",
+    "folder_context_history": "増加の推移を見る",
+    "folder_context_budget": "フォルダー予算を設定",
+    "folder_context_empty": "スキャンを完了するとフォルダー操作を使用できます。",
+    "folder_context_busy": "スキャンまたは現在の操作が終わるまでお待ちください。",
+    "folder_context_closing": "このスキャンタブを閉じています。",
+    "folder_context_virtual": "個別のソースをスキャンしてフォルダー操作を使用してください。",
+    "folder_context_stale": "現在のスキャン内のフォルダーを選択してください。",
+    "folder_context_link": "リンクにはフォルダー操作を使用できません。",
+    "trend_choose_folder": "読み込み済みフォルダー…",
+    "trend_loaded_folders": "読み込み済みの子フォルダー",
+    "trend_full_path": "フォルダーのフルパス",
+    "trend_root": "ルートに戻る",
+    "trend_up": "上へ",
+    "trend_enter": "フォルダーを開く",
+    "trend_previous": "前のページ",
+    "trend_next": "次のページ",
+    "trend_choose_current": "このフォルダーを選択",
+    "trend_folder_page": "{total} 件中 {first}–{last} 件。読み込み済みのフォルダーのみ。",
+    "trend_period": "期間",
+    "trend_period_all": "保存された全履歴",
+    "trend_period_30": "過去 30 日",
+    "trend_period_90": "過去 90 日",
+    "trend_period_custom": "日付を指定",
+    "trend_date_order": "終了日は開始日以降にしてください。",
+    "trend_point_details": "選択した観測の詳細",
+    "trend_select_point": "グラフまたは表で観測を選択。矢印キーで各観測に移動できます。",
+    "trend_size_reason": "サイズ不明: {reason}",
+    "trend_change_reason": "変化不明: {reason}",
+    "trend_first_point": "この期間に前の観測がありません",
+    "trend_point_value": "{date} · サイズ {size} ({exact_size}) · 変化 {change} ({exact_change})",
+    "templates_select": "保存済みテンプレートを選択",
+    "templates_remove": "テンプレートを削除",
+    "templates_save_section": "開いた時点のワークスペースを保存",
+    "templates_save_source": (
+        "追加と更新は、この画面を開いた時点のタブと設定を保存します。"
+        "下のプレビューの変更は保存しません。"),
+    "templates_add_current": "開始時のタブを追加",
+    "templates_update_current": "開始時のタブで更新",
+    "templates_preview_hint": (
+        '読み込みプレビュー · パスの変更は今回の読み込みだけに適用します。確認後に'
+        '置換し、開始を押すとスキャンします。'),
+    "templates_preview_modified": "今回の読み込みだけ変更済み · 置換する前にパスを再確認してください。",
+    "templates_active": "選択中",
+    "templates_scanning": "スキャン中",
+    "templates_impact": (
+        '置換でタブ {tabs} 個を閉じ、スキャン {scans} 件を停止し、結'
+        '果 {results} 件を閉じます。利用できないプレビューパス：{unav'
+        'ailable}。'),
+    "templates_saved": '保存済みテンプレート',
+    'workspace_templates': 'ワークスペースのテンプレート…',
+    'templates_tab': 'タブ',
+    'templates_kind': '範囲',
+    'templates_status': '利用状況',
+    'templates_single': '単一フォルダー',
+    'templates_check': 'パスを確認',
+    'templates_replace': 'タブを置換',
+    'templates_hint': (
+        '現在のタブを保存するか、テンプレートを選んで確認します。パスを編集し、確認し'
+        'てからタブを置換してください。置換すると既存のスキャンと結果が閉じられます。'
+        '読み込み後は開始を押すまでスキャンしません。利用できないパスも保持されます。'
+        'ここで修正して再確認できます。追加と更新は現在のワークスペースを保存します。'),
+    'templates_invalid': (
+        'テンプレートが無効です。一意の名前と絶対パスを使用してください。既存の設定は'
+        '変更していません。'),
+    'templates_unchecked': '未確認',
+    'templates_checking': 'すべてのパスを確認中…',
+    'templates_ready': '利用可能',
+    'templates_checked': (
+        '確認が完了しました。利用できないパスも含めて読み込みます。エラーがあるタブで'
+        'は開始できません。'),
+    'templates_not_folder': 'フォルダーではありません',
+    "completion_title": '前回の整理結果',
+    "completion_undo": '可能な移動を元に戻す',
+    "completion_rescan": '元のフォルダーを再スキャン',
+    "completion_dismiss": '概要を閉じる',
+    "completion_source": '対象: {path}',
+    "completion_counts": (
+        '移動: {moved}（{size}）、除外: {skipp'
+        'ed}、失敗: {failed}'
+    ),
+    "completion_space": (
+        'スキャン間の空き容量変化: {change}（他の操作を含む'
+        '）'
+    ),
+    "completion_measurements": 'スキャン観測時刻: {before} → {after}',
+    "completion_space_pending": (
+        '比較できる後続の観測はまだありません。不明はゼロではありませ'
+        'ん。'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": 'すべての理由は操作履歴で確認できます。',
+    "completion_errors": (
+        '履歴エラー: {journal}、コピー終了処理エラー: {'
+        'copies}。'
+    ),
+    "completion_hint": (
+        '移動量は論理データ量で、解放された容量ではありません。ごみ箱'
+        'を空にする操作は別途必要です。詳細は操作履歴と失敗レポートを'
+        'ご覧ください。'
+    ),
+    "action_scan_presets_tip": "名前付きのパスと設定を保存・読み込みます。スキャンは開始しません",
+    "action_scan_presets": 'スキャン設定…',
+    "presets_empty": '保存済み設定はありません',
+    "presets_hint": (
+        '追加・更新は現在のスキャン設定と入力パスを保存します。読み込み後、「パスをスキャ'
+        'ン」で開始します。並列数と除外はワークスペース共通です。'
+    ),
+    "presets_saved": '保存済み設定',
+    "presets_name": '名前',
+    "presets_add": '現在の設定を追加',
+    "presets_update": '選択を更新',
+    "presets_rename": '名前を変更',
+    "presets_remove": '設定を削除',
+    "presets_load": '読み込む',
+    "presets_options": 'ワーカー: {workers}、除外: {exclusions}、有効: {flags}',
+    "presets_no_flags": 'なし',
+    "presets_invalid": (
+        '重複しない名前（1～80 文字）、絶対パス、有効なスキャン設定を指定してください'
+        '。最大 32 件です。'
+    ),
+    "presets_read_failed": '保存済み設定を読み取れません。既存データは保持しました。',
+    "presets_loaded": '{name} を読み込みました。「パスをスキャン」で開始してください。',
+    "highlights_title": 'スキャンの要点',
+    "highlights_waiting": 'スキャン分析を待機中…',
+    "highlights_folders": '直下の大きいフォルダーを選んで表示します。',
+    "highlights_partial": '不完全な結果：サイズは読み取れた項目のみです。',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '整理：分析を待機中…',
+    "highlights_cleanup": '候補 {count} 件を確認（{size}）',
+    "highlights_cleanup_hint": '候補の容量は確認が必要で、すぐに空く容量ではありません。',
+    "highlights_coverage_unknown": 'スキャン範囲はまだ不明です',
+    "highlights_coverage": 'スキャン制限：除外 {skipped}、読取不可 {denied}、未読 {pending}',
     "shell_reading": "エクスプローラーの登録を読み取り中…",
     "shell_saving": "エクスプローラーの登録を保存中…",
     "shell_waiting": "現在のエクスプローラー設定の処理が終わるまで待機中…開始済みの保存は続行します。",
@@ -4720,7 +5479,7 @@ JA: dict[str, str] = {
     ),
     'history_limit': '合計履歴制限',
     'history_time': 'スキャン時間',
-    'history_logical': '論理バイト',
+    'history_logical': '論理サイズ',
     'history_allocated': '割り当てられた名前付きバイト',
     'history_coverage': '適用範囲',
     'history_incomplete': '不完全;既知のデータのみ',
@@ -4728,6 +5487,36 @@ JA: dict[str, str] = {
     'history_chart': '論理フォルダーのサイズの経時変化',
     'history_chart_range': '{first}: {before}; {last}: {after}',
     'history_empty': 'このルートのスキャンは保持されていません',
+    'trend_folder': 'ルートからの相対フォルダー',
+    'trend_folder_hint': '空欄はルート',
+    'trend_start': '開始日（含む）',
+    'trend_end': '終了日（含む）',
+    'trend_apply': '傾向を表示',
+    'trend_change': '変化',
+    'trend_child': '直下のフォルダー',
+    'trend_before': '開始時のサイズ',
+    'trend_after': '終了時のサイズ',
+    'trend_direct_files': '直下のファイル',
+    'trend_unknown': '不明',
+    'trend_net': '期間の正味変化: {change}',
+    'trend_net_unknown': '期間の正味変化は不明',
+    'trend_summary': '日時が有効なスキャン {shown}/{count} 件、無効なヘッダー {invalid} 件。'
+                     '直下の項目 {children}/{child_count} 件。{cap}',
+    'trend_capped': '期間が上限で切られたため全期間の変化は不明',
+    'trend_invalid': '傾向の条件が無効です: {reason}',
+    'trend_reason_legacy': '旧記録の条件が不明',
+    'trend_reason_incomplete': 'スキャンが不完全',
+    'trend_reason_incompatible': '条件またはルートが非互換',
+    'trend_reason_missing': 'フォルダーが存在しない',
+    'trend_reason_corrupt': '記録本文が破損',
+    'trend_chart_known': '既知のサイズ {known}/{total} 件。不明箇所は線を切断',
+    'trend_chart_unknown': '比較できるフォルダーサイズがありません',
+    'trend_net_reason': '期間の正味変化は不明: {reason}',
+    'trend_reason_truncated': '期間が上限で切られた',
+    'trend_reason_insufficient': '観測が 2 件未満',
+    'trend_tab_sizes': 'フォルダーサイズ',
+    'trend_tab_sources': '直下の内訳',
+    'trend_tab_compare': 'ルート全体との比較',
     'history_compare': '選択したスキャンと現在の結果を比較する',
     'history_reading': 'ローカルスキャン履歴を読み取っています…',
     'history_hint': (
@@ -5105,7 +5894,8 @@ JA: dict[str, str] = {
     ),
     'action_gentle': '穏やかなスキャン',
     'action_gentle_tip': '新しいスキャンの CPU と I/O の優先順位が低くなります。もっと時間がかかるかもしれない',
-    'scan_priority_warning': '一部のスキャン優先度設定を適用できませんでした: {reason}',
+    'scan_priority_warning': 'スキャンの注意事項: {reason}',
+    'scan_mft_fallback': '実験的な NTFS スキャンを利用できないため、通常のスキャンを使用しました。',
     'scan_pause': '一時停止',
     'scan_resume': '再開',
     'scan_pause_tip': (
@@ -5297,7 +6087,22 @@ JA: dict[str, str] = {
     'capacity_row_mounts': '別デバイスへのマウント境界',
     'capacity_row_coverage': '検査範囲',
     'review_title': 'クリーンアップ提案を検討する',
-    'review_details': '{path}\nルール: {rule};保護: {protection}。 {consequence}',
+    'review_logical_size': '論理サイズ',
+    'review_risk': 'リスク',
+    'review_risk_low': '低リスク',
+    'review_risk_manual': '手動確認が必要',
+    'review_details_label': '項目の詳細',
+    'review_scope': 'スキャン範囲',
+    'review_details': (
+        '{path}\n'
+        'ルール: {rule}\n'
+        '更新日時: {modified}\n'
+        '論理サイズ: {logical}; 割り当て推定: {allocated}\n'
+        'リスク: {risk}\n'
+        '保護: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     'review_hint': (
         'あらゆる道筋と結果を見直してください。エントリを保持するにはチェックを外します。 [続行] をクリックす'
         'ると確認が開きます。'
@@ -5584,8 +6389,23 @@ JA: dict[str, str] = {
         '場所にあるファイルとフォルダーを検索します。'
     ),
     'search_running': '検索中…',
-    'search_larger': 'より大きい',
-    'search_smaller': 'より小さい',
+    'search_larger': '最小サイズ（含む）',
+    'search_smaller': '最大サイズ（含む）',
+    'search_custom_ranges': '範囲を指定…',
+    'search_changed_custom': '日付指定',
+    'search_exact_bytes': '{value} B（正確）',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '開始日（含む）',
+    'search_date_through': '終了日（含む）',
+    'search_range_hint': ('空欄は制限なし。サイズは正確なバイト数、日付'
+        'はローカル時間（YYYY-MM-DD）です。'),
+    'search_range_size_error': ('0 以上、9223372036854775807 B 以下の整'
+        '数バイト数を入力してください。1 バイト未満の端数は使えません。'),
+    'search_range_order_error': '最小サイズは最大サイズ以下にしてください。',
+    'search_range_date_error': ('有効なローカル日付を YYYY-MM-DD 形'
+        '式で入力し、開始日を終了日以前にしてください。'),
+    'search_range_invalid': ('検索範囲が無効です。サイズまたは日付の範'
+        '囲を修正してから検索・保存してください。'),
     'search_no_limit': '制限なし',
     'search_changed': '変更されました',
     'search_changed_any': 'いつでも',
@@ -5793,6 +6613,150 @@ JA: dict[str, str] = {
 
 
 KO: dict[str, str] = {
+    "budget_filter": "예산 표시",
+    "budget_filter_all": "모든 예산",
+    "budget_filter_over": "한도 초과",
+    "budget_filter_unknown": "알 수 없음 또는 미스캔",
+    "budget_filter_empty": "이 필터에 맞는 예산이 없습니다. 모든 예산을 선택하면 전체 규칙을 볼 수 있습니다.",
+    "budget_editing_hidden": "편집 중인 {name} 규칙은 이 필터에서 숨겨져 있습니다. 상태: {status}. 초안은 유지됩니다.",
+    "budget_count_over": "한도 초과 {count}개",
+    "budget_count_unknown": "알 수 없음 {count}개",
+    "folder_context_target": "대상 폴더",
+    "folder_context_ready": "파일을 선택하면 해당 파일이 있는 폴더에 적용됩니다.",
+    "folder_context_history": "용량 증가 추세 보기",
+    "folder_context_budget": "폴더 용량 예산 설정",
+    "folder_context_empty": "스캔을 완료한 후 폴더 작업을 사용하세요.",
+    "folder_context_busy": "스캔 또는 현재 작업이 끝날 때까지 기다리세요.",
+    "folder_context_closing": "이 스캔 탭을 닫는 중입니다.",
+    "folder_context_virtual": "개별 원본을 스캔한 후 폴더 작업을 사용하세요.",
+    "folder_context_stale": "현재 스캔에 있는 폴더를 선택하세요.",
+    "folder_context_link": "링크에는 폴더 작업을 사용할 수 없습니다.",
+    "trend_choose_folder": "불러온 폴더 선택…",
+    "trend_loaded_folders": "불러온 하위 폴더",
+    "trend_full_path": "전체 폴더 경로",
+    "trend_root": "루트로 돌아가기",
+    "trend_up": "상위",
+    "trend_enter": "폴더 열기",
+    "trend_previous": "이전 페이지",
+    "trend_next": "다음 페이지",
+    "trend_choose_current": "이 폴더 사용",
+    "trend_folder_page": "총 {total}개 중 {first}–{last}개. 불러온 폴더만 표시합니다.",
+    "trend_period": "기간",
+    "trend_period_all": "보관된 전체 기록",
+    "trend_period_30": "최근 30일",
+    "trend_period_90": "최근 90일",
+    "trend_period_custom": "사용자 지정 날짜",
+    "trend_date_order": "종료일은 시작일 이후여야 합니다.",
+    "trend_point_details": "선택한 관측값 상세",
+    "trend_select_point": "차트나 표에서 관측값을 선택하세요. 방향키로 각 관측값을 이동합니다.",
+    "trend_size_reason": "크기 알 수 없음: {reason}",
+    "trend_change_reason": "변화 알 수 없음: {reason}",
+    "trend_first_point": "이 기간에 이전 관측값이 없음",
+    "trend_point_value": "{date} · 크기 {size} ({exact_size}) · 변화 {change} ({exact_change})",
+    "templates_select": "저장한 템플릿 선택",
+    "templates_remove": "템플릿 삭제",
+    "templates_save_section": "창을 열 때의 작업 공간 저장",
+    "templates_save_source": (
+        '추가와 업데이트는 이 창을 열 때의 탭과 옵션을 저장합니다. 아래 미'
+        '리 보기의 변경은 저장하지 않습니다.'),
+    "templates_add_current": "열 때의 탭 추가",
+    "templates_update_current": "열 때의 탭으로 업데이트",
+    "templates_preview_hint": (
+        '불러오기 미리 보기 · 경로 변경은 이번 불러오기에만 적용됩니다. 확'
+        '인 후 교체하고 시작을 눌러 검사하세요.'),
+    "templates_preview_modified": "이번 불러오기만 수정됨 · 탭 교체 전에 경로를 다시 확인하세요.",
+    "templates_active": "활성",
+    "templates_scanning": "검사 중",
+    "templates_impact": (
+        '교체하면 탭 {tabs}개를 닫고 검사 {scans}개를 중지하며 결'
+        '과 {results}개를 닫습니다. 미리 보기의 사용할 수 없는 경로'
+        ': {unavailable}.'),
+    "templates_saved": '저장한 템플릿',
+    'workspace_templates': '작업 공간 템플릿…',
+    'templates_tab': '탭',
+    'templates_kind': '범위',
+    'templates_status': '사용 가능 여부',
+    'templates_single': '단일 폴더',
+    'templates_check': '경로 확인',
+    'templates_replace': '탭 교체',
+    'templates_hint': (
+        '현재 탭을 저장하거나 템플릿을 선택하여 미리 봅니다. 경로를 편집하고'
+        ' 확인한 다음 탭을 교체하세요. 교체하면 기존 검사와 결과가 닫힙니다'
+        '. 불러온 탭은 시작을 누를 때까지 검사하지 않습니다. 사용할 수 없'
+        '는 경로도 유지됩니다. 여기서 수정하고 다시 확인하세요. 추가와 업데'
+        '이트는 현재 작업 공간을 저장합니다.'),
+    'templates_invalid': (
+        '잘못된 템플릿입니다. 고유한 이름과 절대 경로를 사용하세요. 기존 설'
+        '정은 변경되지 않았습니다.'),
+    'templates_unchecked': '확인 전',
+    'templates_checking': '모든 경로 확인 중…',
+    'templates_ready': '사용 가능',
+    'templates_checked': (
+        '경로 확인이 완료되었습니다. 사용할 수 없는 경로를 포함한 모든 입력'
+        '을 불러옵니다. 오류가 있는 탭은 시작할 수 없습니다.'),
+    'templates_not_folder': '폴더가 아닙니다',
+    "completion_title": '최근 정리 결과',
+    "completion_undo": '복원 가능한 이동 취소',
+    "completion_rescan": '원래 폴더 다시 스캔',
+    "completion_dismiss": '요약 닫기',
+    "completion_source": '원본: {path}',
+    "completion_counts": (
+        '이동: {moved} ({size}); 제외: {ski'
+        'pped}; 실패: {failed}'
+    ),
+    "completion_space": (
+        '스캔 사이에 관측한 여유 공간 변화: {change} '
+        '(다른 활동 포함)'
+    ),
+    "completion_measurements": '스캔 관측 시간: {before} → {after}',
+    "completion_space_pending": (
+        '비교 가능한 후속 스캔 관측이 아직 없습니다. 알 수 '
+        '없음은 0이 아닙니다.'
+    ),
+    "completion_reason": '{reason}: {count}',
+    "completion_more": '전체 이유는 작업 기록에서 확인할 수 있습니다.',
+    "completion_errors": (
+        '기록 오류: {journal}; 복사 마무리 오류: {'
+        'copies}.'
+    ),
+    "completion_hint": (
+        '이동 크기는 논리 데이터양이며 확보된 공간이 아닙니다.'
+        ' 휴지통 비우기는 별도 작업입니다. 자세한 내용은 작업'
+        ' 기록과 실패 보고서에서 확인하세요.'
+    ),
+    "action_scan_presets_tip": "이름을 지정한 경로와 옵션을 저장하고 불러옵니다. 스캔은 시작하지 않습니다",
+    "action_scan_presets": '자주 쓰는 스캔 설정…',
+    "presets_empty": '저장된 설정 없음',
+    "presets_hint": (
+        '추가와 업데이트는 현재 스캔 옵션과 입력한 경로를 저장합니다. 불러온 후'
+        ' 경로 스캔을 눌러 시작하세요. 스레드 수와 제외 규칙은 작업 공간에 적'
+        '용됩니다.'
+    ),
+    "presets_saved": '저장된 설정',
+    "presets_name": '이름',
+    "presets_add": '현재 옵션 추가',
+    "presets_update": '선택 업데이트',
+    "presets_rename": '이름 바꾸기',
+    "presets_remove": '설정 삭제',
+    "presets_load": '불러오기',
+    "presets_options": '스레드: {workers}; 제외 규칙: {exclusions}; 사용: {flags}',
+    "presets_no_flags": '없음',
+    "presets_invalid": (
+        '중복되지 않는 이름(1–80자), 절대 경로, 올바른 스캔 옵션을 사용하'
+        '세요. 최대 32개를 저장할 수 있습니다.'
+    ),
+    "presets_read_failed": '저장된 설정을 읽을 수 없습니다. 기존 데이터는 유지했습니다.',
+    "presets_loaded": '{name} 설정을 불러왔습니다. 경로 스캔을 눌러 시작하세요.',
+    "highlights_title": '스캔 핵심 정보',
+    "highlights_waiting": '스캔 분석 대기 중…',
+    "highlights_folders": '바로 아래의 큰 폴더를 선택하여 위치를 확인하세요.',
+    "highlights_partial": '불완전한 결과: 읽은 항목의 크기만 포함합니다.',
+    "highlights_folder": '{name} — {size}',
+    "highlights_cleanup_waiting": '정리: 분석 대기 중…',
+    "highlights_cleanup": '후보 {count}개 검토 ({size})',
+    "highlights_cleanup_hint": '후보 데이터 크기는 검토가 필요하며 즉시 확보할 수 있는 공간이 아닙니다.',
+    "highlights_coverage_unknown": '스캔 범위 정보가 아직 없습니다',
+    "highlights_coverage": '스캔 제한: 제외 {skipped}, 읽기 불가 {denied}, 대기 {pending}',
     "shell_reading": "탐색기 등록을 읽는 중…",
     "shell_saving": "탐색기 등록을 저장하는 중…",
     "shell_waiting": "현재 탐색기 설정 요청이 끝날 때까지 기다리는 중…이미 시작한 저장은 계속됩니다.",
@@ -6346,7 +7310,7 @@ KO: dict[str, str] = {
     ),
     'history_limit': '총 내역 한도',
     'history_time': '스캔 시간',
-    'history_logical': '논리 바이트',
+    'history_logical': '논리 크기',
     'history_allocated': '할당된 명명된 바이트',
     'history_coverage': '적용 범위',
     'history_incomplete': '미완성; 알려진 데이터만',
@@ -6354,6 +7318,36 @@ KO: dict[str, str] = {
     'history_chart': '시간 경과에 따른 논리적 폴더 크기',
     'history_chart_range': '{first}: {before}; {last}: {after}',
     'history_empty': '이 루트에 대해 보관된 스캔이 없습니다.',
+    'trend_folder': '루트 상대 폴더',
+    'trend_folder_hint': '비워 두면 루트',
+    'trend_start': '시작 날짜(포함)',
+    'trend_end': '끝 날짜(포함)',
+    'trend_apply': '추세 적용',
+    'trend_change': '변화',
+    'trend_child': '직계 하위 폴더',
+    'trend_before': '시작 크기',
+    'trend_after': '종료 크기',
+    'trend_direct_files': '직계 파일',
+    'trend_unknown': '알 수 없음',
+    'trend_net': '기간 순변화: {change}',
+    'trend_net_unknown': '기간 순변화를 알 수 없음',
+    'trend_summary': '날짜가 유효한 스캔 {shown}/{count}개, 잘못된 헤더 {invalid}개. '
+                     '직계 항목 {children}/{child_count}개. {cap}',
+    'trend_capped': '기간이 제한되어 전체 순변화를 계산할 수 없음',
+    'trend_invalid': '잘못된 추세 조건: {reason}',
+    'trend_reason_legacy': '이전 기록의 스캔 규칙을 알 수 없음',
+    'trend_reason_incomplete': '불완전한 스캔',
+    'trend_reason_incompatible': '스캔 규칙 또는 루트가 호환되지 않음',
+    'trend_reason_missing': '폴더 없음',
+    'trend_reason_corrupt': '스캔 본문 손상',
+    'trend_chart_known': '알려진 크기 {known}/{total}개. 알 수 없는 지점에서 선이 끊김',
+    'trend_chart_unknown': '비교할 수 있는 폴더 크기가 없음',
+    'trend_net_reason': '기간 순변화를 알 수 없음: {reason}',
+    'trend_reason_truncated': '기간 기록이 제한됨',
+    'trend_reason_insufficient': '관측값이 2개 미만',
+    'trend_tab_sizes': '폴더 크기',
+    'trend_tab_sources': '직계 기여 항목',
+    'trend_tab_compare': '전체 루트 비교',
     'history_compare': '선택한 스캔을 현재 결과와 비교',
     'history_reading': '로컬 검사 기록을 읽는 중…',
     'history_hint': (
@@ -6707,7 +7701,8 @@ KO: dict[str, str] = {
     ),
     'action_gentle': '부드러운 스캐닝',
     'action_gentle_tip': '새로운 스캔에 대해서는 CPU 및 I/O 우선순위를 낮춥니다. 더 오래 걸릴 수 있습니다',
-    'scan_priority_warning': '일부 스캔 우선순위 설정을 적용할 수 없습니다: {reason}',
+    'scan_priority_warning': '스캔 참고 사항: {reason}',
+    'scan_mft_fallback': '실험적 NTFS 스캔을 사용할 수 없어 일반 스캔을 사용했습니다.',
     'scan_pause': '일시중지',
     'scan_resume': '이력서',
     'scan_pause_tip': (
@@ -6878,7 +7873,22 @@ KO: dict[str, str] = {
     'capacity_row_mounts': '다른 장치의 마운트 경계',
     'capacity_row_coverage': '적용 범위',
     'review_title': '청소 제안 검토',
-    'review_details': '{path}\n규칙: {rule}; 보호: {protection}. {consequence}',
+    'review_logical_size': '논리 크기',
+    'review_risk': '위험',
+    'review_risk_low': '낮은 위험',
+    'review_risk_manual': '수동 검토 필요',
+    'review_details_label': '항목 세부 정보',
+    'review_scope': '스캔 범위',
+    'review_details': (
+        '{path}\n'
+        '규칙: {rule}\n'
+        '수정 시간: {modified}\n'
+        '논리 크기: {logical}; 할당 추정치: {allocated}\n'
+        '위험: {risk}\n'
+        '보호: {protection}\n'
+        '\n'
+        '{consequence}'
+    ),
     'review_hint': '모든 경로와 결과를 검토하십시오. 항목을 유지하려면 선택을 취소하세요. 계속 확인이 열립니다.',
     'review_select': '이동',
     'review_rule': '규칙',
@@ -7124,8 +8134,23 @@ KO: dict[str, str] = {
         '치에서나 파일과 폴더를 찾습니다.'
     ),
     'search_running': '검색 중…',
-    'search_larger': '다음보다 큼',
-    'search_smaller': '보다 작음',
+    'search_larger': '최소 크기(포함)',
+    'search_smaller': '최대 크기(포함)',
+    'search_custom_ranges': '범위 지정…',
+    'search_changed_custom': '날짜 지정',
+    'search_exact_bytes': '{value} B(정확)',
+    'search_date_format': 'YYYY-MM-DD',
+    'search_date_start': '시작 날짜(포함)',
+    'search_date_through': '종료 날짜(포함)',
+    'search_range_hint': ('비워 두면 제한이 없습니다. 크기는 정확한 바이트 '
+        '수이며 날짜는 현지 시간(YYYY-MM-DD)입니다.'),
+    'search_range_size_error': ('0 이상 9223372036854775807 B 이하의 정수 '
+        '바이트를 입력하세요. 1바이트 미만의 소수는 허용되지 않습니다.'),
+    'search_range_order_error': '최소 크기는 최대 크기를 초과할 수 없습니다.',
+    'search_range_date_error': ('유효한 현지 날짜를 YYYY-MM-DD 형식으로 입'
+        '력하고 시작 날짜를 종료 날짜 이전으로 지정하세요.'),
+    'search_range_invalid': ('검색 범위가 잘못되었습니다. 검색하거나 저장'
+        '하기 전에 크기 또는 날짜 범위를 수정하세요.'),
     'search_no_limit': '제한 없음',
     'search_changed': '변경됨',
     'search_changed_any': '언제든지',
@@ -7318,5 +8343,268 @@ KO: dict[str, str] = {
         '합니다</i>: CSV은 Excel에서 열리고 JSON은 스크립트용입니다.</li>\n</ul>\n'
     ),
 }
+
+EN.update({
+    "budget_close": "Close",
+    "action_folder_budgets": "Folder budgets…", "action_folder_budgets_tip": "Manage folder limits and dated usage",
+    "budget_title": "Folder budgets", "budget_name": "Name", "budget_path": "Folder path",
+    "budget_limit": "Limit", "budget_usage": "Last usage", "budget_excess": "Excess",
+    "budget_status": "Status", "budget_add": "Add", "budget_update": "Update", "budget_delete": "Delete",
+    "budget_new": "New", "budget_waiting": "Waiting for full scan", "budget_unknown": "Unknown",
+    "budget_over": "Over limit", "budget_within": "Within limit", "budget_alerted": "{status}, reminder recorded",
+    "budget_dated_usage": "{usage} at {when}", "budget_invalid_limit": "Enter an exact byte limit",
+    "budget_summary": "Budgets: {over} over, {unknown} unknown",
+    "budget_save_error": "Folder budgets could not be saved: {reason}",
+    "budget_unknown_reason": "Unknown: {reason}", "budget_reason_missing": "folder not found in scan",
+    "budget_reason_linked": "linked folder", "budget_reason_not_folder": "not a folder",
+    "budget_reason_incomplete": "incomplete coverage",
+    "budget_invalid_input": "Enter a valid name, absolute path and exact limit",
+    "budget_invalid_data": "Saved budget data is invalid", "budget_duplicate_path": "This path already has a budget",
+    "budget_missing_rule": "This budget no longer exists", "budget_too_many": "Too many budgets",
+    "budget_settings_locked": "Budget settings are busy", "budget_storage_unavailable": "Budget storage is unavailable",
+    "budget_read_failed": "Could not read budget settings", "budget_write_failed": "Could not save budget settings",
+    "budget_observed": "Observed at",
+    "budget_not_scanned": "Not scanned yet",
+    "budget_changed_limit": "Limit changed; waiting for full scan",
+    "budget_input_unit": "Limit unit (binary)",
+    "budget_choose": "Choose folder…",
+    "budget_empty": "No folder budgets yet. Choose a folder, enter a name and a limit, then select Add.",
+    "budget_edit_hint": (
+        'Limits use exact binary units. Adding or editing a budg'
+        'et does not scan. Usage is the last observation, not li'
+        've usage. A changed limit needs a new full scan.'
+    ),
+    "budget_keep_draft": "Your unsaved input was kept. Save it or select New before choosing another target.",
+    "budget_editing": "Editing the selected budget",
+    "budget_creating": "New budget",
+    "budget_exact": "Exact size: {value}",
+    "budget_invalid_name": "Enter a budget name",
+})
+ZH_TW.update({
+    "budget_close": "關閉",
+    "action_folder_budgets": "資料夾容量預算…", "action_folder_budgets_tip": "管理資料夾上限與上次掃描用量",
+    "budget_title": "資料夾容量預算", "budget_name": "名稱", "budget_path": "資料夾路徑",
+    "budget_limit": "上限", "budget_usage": "上次用量", "budget_excess": "超額量",
+    "budget_status": "狀態", "budget_add": "新增", "budget_update": "更新", "budget_delete": "刪除",
+    "budget_new": "新規則", "budget_waiting": "等待完整掃描", "budget_unknown": "未知",
+    "budget_over": "超過上限", "budget_within": "未超過上限", "budget_alerted": "{status}，已記錄提醒",
+    "budget_dated_usage": "{when}：{usage}", "budget_invalid_limit": "請輸入精確的位元組上限",
+    "budget_summary": "預算：{over} 項超額，{unknown} 項未知",
+    "budget_save_error": "無法儲存資料夾預算：{reason}",
+    "budget_unknown_reason": "未知：{reason}", "budget_reason_missing": "掃描中未找到資料夾",
+    "budget_reason_linked": "連結資料夾", "budget_reason_not_folder": "不是資料夾",
+    "budget_reason_incomplete": "涵蓋範圍不完整",
+    "budget_invalid_input": "請輸入有效名稱、絕對路徑及精確上限",
+    "budget_invalid_data": "已儲存的預算資料無效", "budget_duplicate_path": "此路徑已有預算",
+    "budget_missing_rule": "此預算已不存在", "budget_too_many": "預算數量過多",
+    "budget_settings_locked": "預算設定忙碌中", "budget_storage_unavailable": "無法使用預算儲存位置",
+    "budget_read_failed": "無法讀取預算設定", "budget_write_failed": "無法儲存預算設定",
+    "budget_observed": "觀察時間",
+    "budget_not_scanned": "尚未掃描",
+    "budget_changed_limit": "上限已變更，等待完整掃描",
+    "budget_input_unit": "上限單位（二進位）",
+    "budget_choose": "選擇資料夾…",
+    "budget_empty": "尚未設定資料夾容量預算。選擇資料夾，輸入名稱與上限，再按新增。",
+    "budget_edit_hint": (
+        '上限使用精確二進位單位。新增或編輯預算不會開始掃描。用量為上次觀察，並非即時用量；變更上限後須重新完整掃描。'
+    ),
+    "budget_keep_draft": "已保留尚未儲存的輸入。請先儲存或按新規則，再選擇其他目標。",
+    "budget_editing": "正在編輯選取的預算",
+    "budget_creating": "新增預算",
+    "budget_exact": "精確大小：{value}",
+    "budget_invalid_name": "請輸入預算名稱",
+})
+ZH_CN.update({
+    "budget_close": "关闭",
+    "action_folder_budgets": "文件夹容量预算…", "action_folder_budgets_tip": "管理文件夹上限和上次扫描用量",
+    "budget_title": "文件夹容量预算", "budget_name": "名称", "budget_path": "文件夹路径",
+    "budget_limit": "上限", "budget_usage": "上次用量", "budget_excess": "超出量",
+    "budget_status": "状态", "budget_add": "添加", "budget_update": "更新", "budget_delete": "删除",
+    "budget_new": "新规则", "budget_waiting": "等待完整扫描", "budget_unknown": "未知",
+    "budget_over": "超过上限", "budget_within": "未超过上限", "budget_alerted": "{status}，已记录提醒",
+    "budget_dated_usage": "{when}：{usage}", "budget_invalid_limit": "请输入精确的字节上限",
+    "budget_summary": "预算：{over} 项超额，{unknown} 项未知",
+    "budget_save_error": "无法保存文件夹预算：{reason}",
+    "budget_unknown_reason": "未知：{reason}", "budget_reason_missing": "扫描中未找到文件夹",
+    "budget_reason_linked": "链接文件夹", "budget_reason_not_folder": "不是文件夹",
+    "budget_reason_incomplete": "覆盖范围不完整",
+    "budget_invalid_input": "请输入有效名称、绝对路径和精确上限",
+    "budget_invalid_data": "已保存的预算数据无效", "budget_duplicate_path": "此路径已有预算",
+    "budget_missing_rule": "此预算已不存在", "budget_too_many": "预算数量过多",
+    "budget_settings_locked": "预算设置正忙", "budget_storage_unavailable": "预算存储位置不可用",
+    "budget_read_failed": "无法读取预算设置", "budget_write_failed": "无法保存预算设置",
+    "budget_observed": "观测时间",
+    "budget_not_scanned": "尚未扫描",
+    "budget_changed_limit": "上限已更改，等待完整扫描",
+    "budget_input_unit": "上限单位（二进制）",
+    "budget_choose": "选择文件夹…",
+    "budget_empty": "尚未设置文件夹容量预算。选择文件夹，输入名称和上限，再点击添加。",
+    "budget_edit_hint": (
+        '上限使用精确的二进制单位。添加或编辑预算不会开始扫描。用量为上次观测，并非实时用量；更改上限后需要重新完整扫描'
+        '。'
+    ),
+    "budget_keep_draft": "已保留尚未保存的输入。请先保存或点击新规则，再选择其他目标。",
+    "budget_editing": "正在编辑所选预算",
+    "budget_creating": "新建预算",
+    "budget_exact": "精确大小：{value}",
+    "budget_invalid_name": "请输入预算名称",
+})
+JA.update({
+    "budget_close": "閉じる",
+    "action_folder_budgets": "フォルダー容量予算…", "action_folder_budgets_tip": "上限と前回のスキャン使用量を管理",
+    "budget_title": "フォルダー容量予算", "budget_name": "名前", "budget_path": "フォルダーのパス",
+    "budget_limit": "上限", "budget_usage": "前回の使用量", "budget_excess": "超過量",
+    "budget_status": "状態", "budget_add": "追加", "budget_update": "更新", "budget_delete": "削除",
+    "budget_new": "新規", "budget_waiting": "完全スキャン待ち", "budget_unknown": "不明",
+    "budget_over": "上限超過", "budget_within": "上限以内", "budget_alerted": "{status}、通知済み",
+    "budget_dated_usage": "{when}：{usage}", "budget_invalid_limit": "正確なバイト上限を入力してください",
+    "budget_summary": "予算：超過 {over} 件、不明 {unknown} 件",
+    "budget_save_error": "フォルダー予算を保存できませんでした：{reason}",
+    "budget_unknown_reason": "不明：{reason}", "budget_reason_missing": "スキャンにフォルダーがない",
+    "budget_reason_linked": "リンクされたフォルダー", "budget_reason_not_folder": "フォルダーではない",
+    "budget_reason_incomplete": "スキャンが不完全",
+    "budget_invalid_input": "有効な名前、絶対パス、正確な上限を入力してください",
+    "budget_invalid_data": "保存済みの予算データが無効です", "budget_duplicate_path": "このパスには予算があります",
+    "budget_missing_rule": "この予算はもうありません", "budget_too_many": "予算が多すぎます",
+    "budget_settings_locked": "予算設定は使用中です", "budget_storage_unavailable": "予算の保存先を利用できません",
+    "budget_read_failed": "予算設定を読み取れません", "budget_write_failed": "予算設定を保存できません",
+    "budget_observed": "観測日時",
+    "budget_not_scanned": "未スキャン",
+    "budget_changed_limit": "上限を変更済み。完全スキャン待ち",
+    "budget_input_unit": "上限の単位（二進）",
+    "budget_choose": "フォルダーを選択…",
+    "budget_empty": "容量予算はまだありません。フォルダーを選び、名前と上限を入力して追加してください。",
+    "budget_edit_hint": (
+        '上限は正確な二進単位です。追加や編集ではスキャンしません。使用量は前回の観測値で、現在の値ではありません。上限'
+        '変更後は新しい完全スキャンが必要です。'
+    ),
+    "budget_keep_draft": "未保存の入力を保持しました。保存するか新規を選んでから、別の対象を選択してください。",
+    "budget_editing": "選択した予算を編集中",
+    "budget_creating": "新しい予算",
+    "budget_exact": "正確なサイズ：{value}",
+    "budget_invalid_name": "予算名を入力してください",
+})
+KO.update({
+    "budget_close": "닫기",
+    "action_folder_budgets": "폴더 용량 예산…", "action_folder_budgets_tip": "폴더 한도와 마지막 스캔 사용량 관리",
+    "budget_title": "폴더 용량 예산", "budget_name": "이름", "budget_path": "폴더 경로",
+    "budget_limit": "한도", "budget_usage": "최근 사용량", "budget_excess": "초과량",
+    "budget_status": "상태", "budget_add": "추가", "budget_update": "업데이트", "budget_delete": "삭제",
+    "budget_new": "새 규칙", "budget_waiting": "전체 스캔 대기", "budget_unknown": "알 수 없음",
+    "budget_over": "한도 초과", "budget_within": "한도 이내", "budget_alerted": "{status}, 알림 기록됨",
+    "budget_dated_usage": "{when}: {usage}", "budget_invalid_limit": "정확한 바이트 한도를 입력하세요",
+    "budget_summary": "예산: 초과 {over}개, 알 수 없음 {unknown}개",
+    "budget_save_error": "폴더 예산을 저장할 수 없습니다: {reason}",
+    "budget_unknown_reason": "알 수 없음: {reason}", "budget_reason_missing": "스캔에서 폴더를 찾을 수 없음",
+    "budget_reason_linked": "링크된 폴더", "budget_reason_not_folder": "폴더가 아님",
+    "budget_reason_incomplete": "검사 범위가 불완전함",
+    "budget_invalid_input": "유효한 이름, 절대 경로와 정확한 한도를 입력하세요",
+    "budget_invalid_data": "저장된 예산 데이터가 올바르지 않습니다",
+    "budget_duplicate_path": "이 경로에는 이미 예산이 있습니다",
+    "budget_missing_rule": "이 예산은 더 이상 없습니다", "budget_too_many": "예산이 너무 많습니다",
+    "budget_settings_locked": "예산 설정이 사용 중입니다",
+    "budget_storage_unavailable": "예산 저장소를 사용할 수 없습니다",
+    "budget_read_failed": "예산 설정을 읽을 수 없습니다", "budget_write_failed": "예산 설정을 저장할 수 없습니다",
+    "budget_observed": "관측 시간",
+    "budget_not_scanned": "아직 스캔하지 않음",
+    "budget_changed_limit": "한도 변경됨, 전체 스캔 대기 중",
+    "budget_input_unit": "한도 단위(이진)",
+    "budget_choose": "폴더 선택…",
+    "budget_empty": "폴더 예산이 없습니다. 폴더를 선택하고 이름과 한도를 입력한 다음 추가하세요.",
+    "budget_edit_hint": (
+        '한도는 정확한 이진 단위를 사용합니다. 추가나 편집은 스캔을 시작하지 않습니다. 사용량은 마지막 관'
+        '측값이며 실시간 값이 아닙니다. 한도 변경 후 새 전체 스캔이 필요합니다.'
+    ),
+    "budget_keep_draft": "저장하지 않은 입력을 유지했습니다. 저장하거나 새 규칙을 선택한 후 다른 대상을 선택하세요.",
+    "budget_editing": "선택한 예산 편집 중",
+    "budget_creating": "새 예산",
+    "budget_exact": "정확한 크기: {value}",
+    "budget_invalid_name": "예산 이름을 입력하세요",
+})
+
+EN.update({'search_edit_conditions': 'Edit conditions',
+ 'date_accept': 'OK', 'date_cancel': 'Cancel', 'date_choose': 'Calendar…',
+ 'date_clear': 'Clear date',
+ 'search_fix_field': 'Correct the marked field to apply this range.',
+ 'search_size_unit': 'Size unit (binary)',
+ 'search_condition_name': 'Name: {value}',
+ 'search_condition_value': '{label}: {value}',
+ 'search_condition_dates': 'Dates, inclusive: {start} through {through}',
+ 'search_scope_none': 'Search scope: no completed scan',
+ 'search_scope_root': 'Entire scan: {path}',
+ 'search_scope_multi': 'Entire scan: all combined sources',
+ 'search_scope': 'Search scope',
+ 'search_clear_all': 'Clear all conditions',
+ 'search_no_conditions': 'Add a name or condition to search the entire scan.',
+ 'search_clear_condition': 'Clear',
+ 'search_remove_condition': 'Clear condition: {condition}'})
+
+ZH_TW.update({'search_edit_conditions': '調整條件',
+ 'date_accept': '確定', 'date_cancel': '取消', 'date_choose': '選擇日期…',
+ 'date_clear': '清除日期',
+ 'search_fix_field': '請修正標示的欄位，再套用範圍。',
+ 'search_size_unit': '大小單位（二進位）',
+ 'search_condition_name': '名稱：{value}',
+ 'search_condition_value': '{label}：{value}',
+ 'search_condition_dates': '日期（含首末日）：{start} 至 {through}',
+ 'search_scope_none': '搜尋範圍：尚無已完成的掃描',
+ 'search_scope_root': '整份掃描：{path}',
+ 'search_scope_multi': '整份掃描：全部合併來源',
+ 'search_scope': '搜尋範圍',
+ 'search_clear_all': '清除全部條件',
+ 'search_no_conditions': '加入名稱或條件，即可搜尋整份掃描結果。',
+ 'search_clear_condition': '解除',
+ 'search_remove_condition': '解除條件：{condition}'})
+
+ZH_CN.update({'search_edit_conditions': '调整条件',
+ 'date_accept': '确定', 'date_cancel': '取消', 'date_choose': '选择日期…',
+ 'date_clear': '清除日期',
+ 'search_fix_field': '请修正标记的字段，再应用范围。',
+ 'search_size_unit': '大小单位（二进制）',
+ 'search_condition_name': '名称：{value}',
+ 'search_condition_value': '{label}：{value}',
+ 'search_condition_dates': '日期（含首末日）：{start} 至 {through}',
+ 'search_scope_none': '搜索范围：尚无已完成的扫描',
+ 'search_scope_root': '整个扫描：{path}',
+ 'search_scope_multi': '整个扫描：全部合并来源',
+ 'search_scope': '搜索范围',
+ 'search_clear_all': '清除全部条件',
+ 'search_no_conditions': '添加名称或条件，即可搜索整个扫描结果。',
+ 'search_clear_condition': '清除',
+ 'search_remove_condition': '清除条件：{condition}'})
+
+JA.update({'search_edit_conditions': '条件を編集',
+ 'date_accept': '決定', 'date_cancel': 'キャンセル', 'date_choose': '日付を選択…',
+ 'date_clear': '日付をクリア',
+ 'search_fix_field': '示された入力を修正してから範囲を適用してください。',
+ 'search_size_unit': 'サイズ単位（2進数）',
+ 'search_condition_name': '名前：{value}',
+ 'search_condition_value': '{label}：{value}',
+ 'search_condition_dates': '日付（両端を含む）：{start} から {through}',
+ 'search_scope_none': '検索範囲：完了したスキャンがありません',
+ 'search_scope_root': 'スキャン全体：{path}',
+ 'search_scope_multi': 'スキャン全体：すべての結合元',
+ 'search_scope': '検索範囲',
+ 'search_clear_all': 'すべての条件を解除',
+ 'search_no_conditions': '名前または条件を指定して、スキャン全体を検索します。',
+ 'search_clear_condition': '解除',
+ 'search_remove_condition': '条件を解除：{condition}'})
+
+KO.update({'search_edit_conditions': '조건 편집',
+ 'date_accept': '확인', 'date_cancel': '취소', 'date_choose': '날짜 선택…',
+ 'date_clear': '날짜 지우기',
+ 'search_fix_field': '표시된 입력을 수정한 후 범위를 적용하세요.',
+ 'search_size_unit': '크기 단위(이진)',
+ 'search_condition_name': '이름: {value}',
+ 'search_condition_value': '{label}: {value}',
+ 'search_condition_dates': '날짜(양 끝 포함): {start}부터 {through}까지',
+ 'search_scope_none': '검색 범위: 완료된 스캔 없음',
+ 'search_scope_root': '전체 스캔: {path}',
+ 'search_scope_multi': '전체 스캔: 결합된 모든 원본',
+ 'search_scope': '검색 범위',
+ 'search_clear_all': '모든 조건 지우기',
+ 'search_no_conditions': '전체 스캔을 검색하려면 이름이나 조건을 입력하세요。',
+ 'search_clear_condition': '지우기',
+ 'search_remove_condition': '조건 지우기: {condition}'})
 
 STRINGS: dict[str, dict[str, str]] = {"en": EN, "zh-TW": ZH_TW, "zh-CN": ZH_CN, "ja": JA, "ko": KO}
