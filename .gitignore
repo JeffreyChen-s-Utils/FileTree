@@ -24,3 +24,7 @@ nuitka-crash-report.xml
 
 # docs/updates ID lock (never committed)
 docs/updates/.id-lock/
+
+# Local scratch for manual acceptance checks: screenshots, probes and CI diagnostics.
+# Never committed; lasting results go to tools/verify_*.py and docs/updates/.
+.audit/
